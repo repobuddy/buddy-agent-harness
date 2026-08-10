@@ -15,6 +15,18 @@ Feature: Initialize local agent skills across coding harnesses
     Then the monorepo root contains the canonical directory and enabled-harness configuration
 
   @behavior
+  Scenario: preserves user-authored canonical instructions
+    Given a consumer repository has user-authored `AGENTS.md` and `.agents/AGENTS.md` files
+    When the agent runs `buddy-agent-harness init`
+    Then both canonical instruction files remain unchanged
+
+  @behavior
+  Scenario: leaves unsupported tool settings canonical only
+    Given a consumer repository has a canonical tool setting with no mapping for the active harness
+    When the agent runs `buddy-agent-harness init`
+    Then the tool setting remains canonical and no vendor conversion is created
+
+  @behavior
   Scenario: configures the active harness by default
     Given Codex is the active harness and a consumer repository has canonical skill `review`
     When the agent runs `buddy-agent-harness init`

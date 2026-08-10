@@ -1,0 +1,4 @@
+interface:
+  display_name: "Initialize Agent Harnesses"
+  short_description: "Link canonical skills across agent harnesses"
+  default_prompt: "Use $harness-init to initialize canonical skills in this repository."

@@ -1,7 +1,7 @@
 {
 	"name": "buddy-agent-harness",
 	"version": "0.1.0",
-	"description": "Initialize agent harness skill compatibility in consumer repositories",
+	"description": "Initialize standards-based agent configuration across coding-agent harnesses",
 	"author": {
 		"name": "repobuddy"
 	},

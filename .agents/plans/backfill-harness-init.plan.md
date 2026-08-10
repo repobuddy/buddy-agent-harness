@@ -24,4 +24,4 @@ Target: `packages/buddy-agent-harness/skills/harness-init/` (skill artifact).
 
 ## NEXT
 
-Reconcile the implementation with the settled repository-root contract, then run the spec gate after making the `check-suite` validator available.
+Implement the settled repository-root and multi-harness agent-configuration contract, then run the spec gate after making the `check-suite` validator available.

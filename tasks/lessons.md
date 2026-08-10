@@ -20,6 +20,24 @@ Applies to monorepos and repositories that contain publishable plugin packages w
 
 ## Pattern
 
+Equated agent configuration with the Agent Skills standard after the user described a broader `.agents` and `AGENTS.md` configuration surface.
+
+## Rule
+
+Distinguish skill packaging from repository agent configuration. When the request covers `.agents`, `AGENTS.md`, and vendor views, research and specify the broader configuration contract before naming a standard.
+
+## Context
+
+Applies to multi-harness repository setup and portability tooling.
+
+## Category
+
+`architecture`
+
+---
+
+## Pattern
+
 Stopped to ask for an implementation detail when the user was directing that the behavior itself belongs in the SDD contract.
 
 ## Rule
