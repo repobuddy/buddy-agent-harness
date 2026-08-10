@@ -2,23 +2,24 @@
 
 ## Approach
 
-Remove the advanced CodeQL workflow that conflicts with GitHub's enabled default setup, then validate the focused CI fix and open a pull request.
+Restore the repository's advanced CodeQL workflow and disable GitHub's conflicting default setup, matching the established Buddy Codecov configuration.
 
 ## Scope
 
-- **In**: Removing the duplicate CodeQL workflow and validating the repository after the CI repair.
-- **Out**: Changes to the harness initialization contract or GitHub's enabled default CodeQL setup.
+- **In**: Restoring the advanced CodeQL workflow, disabling the conflicting default setup, and validating the CI repair.
+- **Out**: Changes to the harness initialization contract.
 
 ## Action Items
 
 - [x] Inspect the failed CodeQL job and confirm the default-setup conflict.
-- [x] Remove the duplicate advanced CodeQL workflow.
-- [x] Run repository verification and review the focused diff.
-- [x] Commit, push, and open the fix pull request.
+- [x] Compare the configuration with Buddy Codecov.
+- [x] Restore the advanced CodeQL workflow.
+- [x] Disable GitHub's CodeQL default setup.
+- [x] Run repository verification and update the pull request.
 
 ## Open Questions
 
-- None; the job log identifies the exact incompatible CodeQL configuration.
+- None; Buddy Codecov confirms that advanced CodeQL is the intended configuration when default setup is disabled.
 
 ---
 
@@ -28,7 +29,7 @@ _Complete after implementation._
 
 ### Summary
 
-Removed the advanced CodeQL workflow. GitHub's enabled default CodeQL setup performs the scan; GitHub rejects SARIF uploads from an advanced workflow while that setup is active.
+Restored the advanced CodeQL workflow and disabled GitHub's conflicting default setup. This matches Buddy Codecov's configuration and leaves the repository with one intended scanner.
 
 ### Verification
 
