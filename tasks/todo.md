@@ -2,24 +2,23 @@
 
 ## Approach
 
-Add the Buddy Codecov-style Astro documentation site and Pages deployment workflow, then apply the detected GitHub repository settings and default-branch ruleset.
+Remove the advanced CodeQL workflow that conflicts with GitHub's enabled default setup, then validate the focused CI fix and open a pull request.
 
 ## Scope
 
-- **In**: Astro documentation, GitHub Pages deployment, merge settings, Dependabot security updates, and a protected default-branch ruleset.
-- **Out**: changes to the harness initialization contract.
+- **In**: Removing the duplicate CodeQL workflow and validating the repository after the CI repair.
+- **Out**: Changes to the harness initialization contract or GitHub's enabled default CodeQL setup.
 
 ## Action Items
 
-- [x] Inspect the current GitHub configuration and Buddy Codecov's documentation implementation.
-- [x] Add the Astro site and Pages deployment workflow.
-- [x] Install site dependencies and build the documentation.
-- [x] Apply and verify GitHub merge, security, Pages, and branch-ruleset settings.
-- [x] Review, verify, and commit the change.
+- [x] Inspect the failed CodeQL job and confirm the default-setup conflict.
+- [x] Remove the duplicate advanced CodeQL workflow.
+- [x] Run repository verification and review the focused diff.
+- [x] Commit, push, and open the fix pull request.
 
 ## Open Questions
 
-- None; the user authorized both the Pages site and GitHub settings changes.
+- None; the job log identifies the exact incompatible CodeQL configuration.
 
 ---
 
@@ -29,13 +28,13 @@ _Complete after implementation._
 
 ### Summary
 
-Added the Buddy Codecov-style Starlight documentation site and GitHub Pages workflow. Configured GitHub Actions Pages deployment, the protected default-branch ruleset, merge controls, and Dependabot security updates.
+Removed the advanced CodeQL workflow. GitHub's enabled default CodeQL setup performs the scan; GitHub rejects SARIF uploads from an advanced workflow while that setup is active.
 
 ### Verification
 
 - [x] Tests pass (`pnpm verify`)
 - [x] Linter clean (`pnpm check`)
-- [x] Build succeeds (`pnpm verify`, `pnpm --filter website build`)
+- [x] Build succeeds (`pnpm verify`)
 - [x] Diff reviewed (`git diff --check`)
 
 ### Lessons Captured
