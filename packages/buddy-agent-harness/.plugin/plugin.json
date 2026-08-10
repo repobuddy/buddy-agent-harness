@@ -1,0 +1,22 @@
+{
+	"$schema": "https://raw.githubusercontent.com/cyberuni/universal-plugin/refs/heads/main/schema/v1.json",
+	"name": "buddy-agent-harness",
+	"version": "0.1.0",
+	"description": "Set up canonical agent skills across coding-agent harnesses.",
+	"author": { "name": "repobuddy" },
+	"repository": "https://github.com/repobuddy/buddy-agent-harness",
+	"license": "MIT",
+	"keywords": ["agent", "skills", "harness", "claude-code", "codex"],
+	"skills": "./skills/",
+	"vendorExtensions": {
+		"claude-code": {},
+		"cursor": { "category": "productivity", "tags": ["agent", "skills"] },
+		"codex": {
+			"interface": {
+				"displayName": "Buddy Agent Harness",
+				"category": "productivity"
+			}
+		},
+		"copilot-cli": { "category": "productivity", "tags": ["agent", "skills"] }
+	}
+}

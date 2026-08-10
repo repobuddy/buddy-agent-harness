@@ -1,0 +1,20 @@
+{
+	"name": "buddy-agent-harness-monorepo",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"build": "turbo build",
+		"check": "biome check",
+		"test": "turbo test",
+		"typecheck": "turbo typecheck",
+		"verify": "turbo verify"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.5.7",
+		"turbo": "^2.10.8"
+	},
+	"packageManager": "pnpm@11.21.0",
+	"engines": {
+		"node": ">=22"
+	}
+}

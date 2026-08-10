@@ -1,0 +1,5 @@
+{
+	"$schema": "https://biomejs.dev/schemas/2.5.7/schema.json",
+	"formatter": { "indentStyle": "tab" },
+	"files": { "includes": ["**", "!**/node_modules", "!**/dist", "!**/.turbo"] }
+}

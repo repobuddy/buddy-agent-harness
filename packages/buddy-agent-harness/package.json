@@ -1,0 +1,63 @@
+{
+	"name": "buddy-agent-harness",
+	"version": "0.1.0",
+	"description": "Initialize agent harness skill compatibility in consumer repositories",
+	"keywords": [
+		"repobuddy",
+		"agent",
+		"skills",
+		"claude-code",
+		"codex",
+		"cursor"
+	],
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/repobuddy/buddy-agent-harness.git"
+	},
+	"bugs": "https://github.com/repobuddy/buddy-agent-harness/issues",
+	"homepage": "https://github.com/repobuddy/buddy-agent-harness#readme",
+	"author": {
+		"name": "repobuddy"
+	},
+	"type": "module",
+	"bin": {
+		"buddy-agent-harness": "./bin/buddy-agent-harness.mjs"
+	},
+	"exports": {
+		".": {
+			"types": "./dist/index.d.mts",
+			"default": "./dist/index.mjs"
+		}
+	},
+	"files": [
+		"bin",
+		"dist",
+		"src",
+		"!**/*.{test,spec}.ts",
+		"skills",
+		"plugin.json",
+		".plugin",
+		".claude-plugin",
+		".cursor-plugin",
+		".codex-plugin"
+	],
+	"scripts": {
+		"build": "tsdown",
+		"test": "vitest run",
+		"typecheck": "tsc --noEmit"
+	},
+	"engines": {
+		"node": ">=22"
+	},
+	"dependencies": {
+		"@toon-format/toon": "^4.1.1",
+		"clibuilder": "^9.1.0"
+	},
+	"devDependencies": {
+		"@types/node": "^24.12.4",
+		"tsdown": "^0.22.0",
+		"typescript": "^7.0.0",
+		"vitest": "^4.1.0"
+	}
+}

@@ -1,0 +1,12 @@
+{
+	"name": "buddy-agent-harness",
+	"version": "0.1.0",
+	"description": "Set up canonical agent skills across coding-agent harnesses.",
+	"author": {
+		"name": "repobuddy"
+	},
+	"repository": "https://github.com/repobuddy/buddy-agent-harness",
+	"license": "MIT",
+	"keywords": ["agent", "skills", "harness", "claude-code", "codex"],
+	"skills": "./skills/"
+}
