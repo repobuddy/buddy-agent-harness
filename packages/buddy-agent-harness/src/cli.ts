@@ -1,5 +1,5 @@
 import { cli } from "clibuilder";
-import { harnessCommand } from "./plugin.ts";
+import { initCommand } from "./plugin.ts";
 
 export async function main(): Promise<void> {
 	const app = cli({
@@ -9,7 +9,7 @@ export async function main(): Promise<void> {
 			"Initialize agent harness skill compatibility in consumer repositories.",
 	});
 	try {
-		await app.command(harnessCommand).parse(process.argv);
+		await app.command(initCommand).parse(process.argv);
 	} catch (error) {
 		process.stdout.write(
 			`error: ${error instanceof Error ? error.message : "Invalid command."}\n`,

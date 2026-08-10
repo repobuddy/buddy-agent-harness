@@ -5,7 +5,7 @@ description: Use this skill when initializing a consumer repository's canonical 
 
 # Harness Init
 
-Run `npx -y buddy-agent-harness harness init` from the consumer repository. The command uses `.agents/skills/` as the canonical skill directory.
+Run `npx -y buddy-agent-harness init` from the consumer repository. The command uses `.agents/skills/` as the canonical skill directory.
 
 It always configures Claude Code. It configures Cursor, Codex, Copilot CLI, and Windsurf only when their respective detection paths already exist. Pass `--root <directory>` when configuring a package inside a monorepo.
 

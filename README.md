@@ -3,7 +3,7 @@
 Initialize `.agents/skills/` for the coding-agent harnesses enabled in a consumer repository.
 
 ```sh
-npx -y buddy-agent-harness harness init
+npx -y buddy-agent-harness init
 ```
 
 To mount the same command on `bd`, install the package alongside `repobuddy` and declare its plugin module in the consumer repository's `.repobuddy.json`:
