@@ -1,11 +1,11 @@
-# buddy-agent-harness
+# Buddy Agent Harness
 
 [![CI](https://github.com/repobuddy/buddy-agent-harness/actions/workflows/release.yml/badge.svg)](https://github.com/repobuddy/buddy-agent-harness/actions/workflows/release.yml)
 [![Codecov](https://codecov.io/gh/repobuddy/buddy-agent-harness/graph/badge.svg)](https://codecov.io/gh/repobuddy/buddy-agent-harness)
 [![npm](https://img.shields.io/npm/v/buddy-agent-harness)](https://www.npmjs.com/package/buddy-agent-harness)
 [![License](https://img.shields.io/npm/l/buddy-agent-harness)](LICENSE)
 
-Initialize `.agents/skills/` for the coding-agent harnesses enabled in a consumer repository.
+An agent plugin and CLI for initializing canonical skills across the coding-agent harnesses already enabled in a consumer repository.
 
 ## Install the plugin
 
@@ -26,20 +26,12 @@ Other agent clients can install the same repository through their plugin marketp
 
 ## CLI
 
+After the npm package is published, run the CLI without a global installation:
+
 ```sh
 npx -y buddy-agent-harness init
 ```
 
-To mount the same command on `bd`, install the package alongside `repobuddy` and declare its plugin module in the consumer repository's `.repobuddy.json`:
-
-```json
-{
-  "plugins": ["buddy-agent-harness"]
-}
-```
-
-Then run `bd harness init`. `repobuddy` deliberately loads plugins declared in this configuration; it does not scan installed dependencies.
-
-Claude Code receives relative per-skill links unconditionally. Cursor, Codex, Copilot CLI, and Windsurf are configured only when their documented skills path already exists. The command is non-interactive, reports TOON by default, and records its enabled harnesses in `.agents/buddy-agent-harness/config.json`.
+Claude Code receives relative per-skill links unconditionally. Cursor, Codex, Copilot CLI, and Windsurf are configured only when their documented skills path already exists. The command records its enabled harnesses in `.agents/buddy-agent-harness/config.json`.
 
 Use `buddy-agent-harness init --help` to see `--root`, `--copy`, `--force`, and `--format`.

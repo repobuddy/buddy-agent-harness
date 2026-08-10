@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
-const dir = dirname(fileURLToPath(import.meta.url));
-const { main } = await import(join(dir, "..", "dist", "cli.mjs"));
-await main();
+const dir = dirname(fileURLToPath(import.meta.url))
+const { main } = await import(join(dir, '..', 'dist', 'cli.mjs'))
+await main()
