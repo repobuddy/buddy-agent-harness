@@ -13,6 +13,7 @@
 		"test": "turbo test",
 		"typecheck": "turbo typecheck",
 		"verify": "turbo verify",
+		"web": "pnpm --filter website",
 		"version": "changeset version && pnpm dlx universal-plugin@0.2.2 publish sync-version --root packages/buddy-agent-harness && pnpm dlx universal-plugin@0.2.2 plugin build --root packages/buddy-agent-harness && pnpm exec biome format --write packages/buddy-agent-harness/.plugin/plugin.json packages/buddy-agent-harness/.claude-plugin/plugin.json packages/buddy-agent-harness/.cursor-plugin/plugin.json packages/buddy-agent-harness/.codex-plugin/plugin.json packages/buddy-agent-harness/plugin.json"
 	},
 	"devDependencies": {

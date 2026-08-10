@@ -1,0 +1,58 @@
+---
+title: Buddy Agent Harness
+description: Initialize canonical agent skills across enabled coding-agent harnesses.
+template: splash
+hero:
+  tagline: A portable agent skill and CLI for sharing canonical skills across the coding-agent harnesses in your repository.
+  actions:
+    - text: View on GitHub
+      link: https://github.com/repobuddy/buddy-agent-harness
+      icon: external
+      variant: minimal
+---
+
+## What it does
+
+Buddy Agent Harness uses `.agents/skills/` as the canonical source for your repository's agent skills. It links those skills into every enabled coding-agent harness, preserving local skills unless you explicitly replace them.
+
+## Install
+
+Install the plugin and its `harness-init` skill with `npx skills`:
+
+```sh
+npx skills add repobuddy/buddy-agent-harness --plugin
+```
+
+For Claude Code, add the marketplace and install the plugin:
+
+```text
+/plugin marketplace add repobuddy/buddy-agent-harness
+/plugin install buddy-agent-harness@repobuddy
+```
+
+Other agent clients can install the same plugin through their marketplace, or use `npx skills` above.
+
+## Use the skill
+
+Ask your agent to initialize the repository's harnesses, or run the CLI directly. Claude Code is configured automatically; Cursor, Codex, Copilot CLI, and Windsurf are configured only when their documented skills directory already exists.
+
+## CLI
+
+After the npm package is published, run the CLI without a global installation:
+
+```sh
+npx -y buddy-agent-harness init
+```
+
+The default output is token-efficient TOON. Use `--format json` when another program requires JSON, `--copy` when symlinks are unavailable, and `--force` only when replacing existing targets is intended.
+
+Run `buddy-agent-harness init --help` to see all options.
+
+## Development
+
+```sh
+pnpm install
+pnpm verify
+pnpm --filter website dev
+pnpm bah test
+```
