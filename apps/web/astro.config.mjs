@@ -14,7 +14,15 @@ export default defineConfig({
 					href: 'https://github.com/repobuddy/buddy-agent-harness',
 				},
 			],
-			sidebar: [{ label: 'Guide', items: [{ label: 'Overview', link: '/' }] }],
+			sidebar: [
+				{
+					label: 'Guide',
+					items: [
+						{ label: 'Overview', link: '/' },
+						{ label: 'Objective', slug: 'objective' },
+					],
+				},
+			],
 			editLink: {
 				baseUrl: 'https://github.com/repobuddy/buddy-agent-harness/edit/main/apps/web/',
 			},
