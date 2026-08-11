@@ -76,4 +76,4 @@ The consumer root is always the repository root, including in a monorepo. The ac
 
 ## References
 
-- [Agents Standard](https://agentsstandard.com/) supports the separation used here: agent behavior in `AGENTS.md`, capabilities in `skills/**/SKILL.md`, and tool settings as distinct configuration artifacts.
+- [AGENTS.md](https://agents.md/) defines the open, project-level instruction format used for canonical agent behavior here.

@@ -20,6 +20,24 @@ Applies to monorepos and repositories that contain publishable plugin packages w
 
 ## Pattern
 
+Promoted an emerging configuration site as an authority without checking adoption signals or package availability.
+
+## Rule
+
+Before citing a configuration standard as a project authority, verify its maintenance, adoption, and usable distribution. Otherwise describe the convention neutrally or omit the endorsement.
+
+## Context
+
+Applies to external standards and dependencies named in product documentation.
+
+## Category
+
+`architecture`
+
+---
+
+## Pattern
+
 Equated agent configuration with the Agent Skills standard after the user described a broader `.agents` and `AGENTS.md` configuration surface.
 
 ## Rule

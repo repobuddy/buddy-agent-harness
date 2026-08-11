@@ -24,5 +24,5 @@ The tool does not invent project instructions, replace unrelated configuration, 
 ## Related standards and projects
 
 - [Buddy Agent Harness on GitHub](https://github.com/repobuddy/buddy-agent-harness)
-- [Agents Standard](https://agentsstandard.com/) — the broader `AGENTS.md`, skills, and tool-settings configuration model.
+- [AGENTS.md](https://agents.md/) — the open, project-level instruction format for coding agents.
 - [Agent Skills](https://agentskills.io/specification) — the `SKILL.md` capability format that complements repository instructions.
