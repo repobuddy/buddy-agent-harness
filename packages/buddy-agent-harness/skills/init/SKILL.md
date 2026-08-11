@@ -1,5 +1,5 @@
 ---
-name: harness-init
+name: init
 description: Use this skill when initializing or updating a consumer repository's standards-based agent configuration for use across multiple coding-agent harnesses.
 ---
 

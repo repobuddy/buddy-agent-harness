@@ -9,7 +9,7 @@ Initialize or update a consumer repository's standards-based agent configuration
 
 ## Install the plugin
 
-Install the portable plugin and its `harness-init` skill with `npx skills`:
+Install the portable plugin and its `init` skill with `npx skills`:
 
 ```sh
 npx skills add repobuddy/buddy-agent-harness --plugin
