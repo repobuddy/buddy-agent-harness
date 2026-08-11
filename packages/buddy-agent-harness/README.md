@@ -5,7 +5,7 @@
 [![npm](https://img.shields.io/npm/v/buddy-agent-harness)](https://www.npmjs.com/package/buddy-agent-harness)
 [![License](https://img.shields.io/npm/l/buddy-agent-harness)](LICENSE)
 
-An agent plugin and CLI for initializing canonical skills across the coding-agent harnesses already enabled in a consumer repository.
+An agent plugin and CLI for initializing or updating a consumer repository's standards-based agent configuration across coding-agent harnesses.
 
 ## Install the plugin
 
@@ -32,6 +32,6 @@ After the npm package is published, run the CLI without a global installation:
 npx -y buddy-agent-harness init
 ```
 
-Claude Code receives relative per-skill links unconditionally. Cursor, Codex, Copilot CLI, and Windsurf are configured only when their documented skills path already exists. The command records its enabled harnesses in `.agents/buddy-agent-harness/config.json`.
+The repository root's `AGENTS.md` and `.agents/` tree are canonical: `.agents/AGENTS.md` holds shared behavior, `.agents/skills/**/SKILL.md` holds capabilities, and separately named files hold tool settings. The active harness is enabled by default; explicit user preferences add others. The command preserves user-authored configuration, projects only supported mappings, and records enabled harnesses in `.agents/buddy-agent-harness/config.json`.
 
 Use `buddy-agent-harness init --help` to see `--root`, `--copy`, `--force`, and `--format`.

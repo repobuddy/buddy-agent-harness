@@ -3,8 +3,12 @@ title: Buddy Agent Harness
 description: Initialize canonical agent skills across enabled coding-agent harnesses.
 template: splash
 hero:
-  tagline: A portable agent skill and CLI for sharing canonical skills across the coding-agent harnesses in your repository.
+  tagline: A portable agent skill and CLI for sharing standards-based agent configuration across coding-agent harnesses.
   actions:
+    - text: Get started
+      link: ./getting-started/introduction/
+      icon: right-arrow
+      variant: primary
     - text: View on GitHub
       link: https://github.com/repobuddy/buddy-agent-harness
       icon: external
@@ -13,7 +17,9 @@ hero:
 
 ## What it does
 
-Buddy Agent Harness uses `.agents/skills/` as the canonical source for your repository's agent skills. It links those skills into every enabled coding-agent harness, preserving local skills unless you explicitly replace them.
+Buddy Agent Harness uses the repository root's `AGENTS.md` and `.agents/` tree as canonical agent configuration: `.agents/AGENTS.md` holds shared behavior, `.agents/skills/**/SKILL.md` holds capabilities, and separately named files hold tool settings. It preserves user-authored configuration and projects only compatible artifacts into enabled coding-agent harnesses.
+
+Read the [objective](/objective/) for the configuration model and related standards.
 
 ## Install
 
@@ -34,7 +40,7 @@ Other agent clients can install the same plugin through their marketplace, or us
 
 ## Use the skill
 
-Ask your agent to initialize the repository's harnesses, or run the CLI directly. Claude Code is configured automatically; Cursor, Codex, Copilot CLI, and Windsurf are configured only when their documented skills directory already exists.
+Ask your agent to initialize the repository's configuration, or run the CLI directly. The active harness is configured by default; explicit user preferences can add other supported harnesses.
 
 ## CLI
 
