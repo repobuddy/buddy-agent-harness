@@ -20,6 +20,24 @@ Applies to monorepos and repositories that contain publishable plugin packages w
 
 ## Pattern
 
+Added a section-local “Overview” navigation item that routed back to the global splash page.
+
+## Rule
+
+Treat the homepage as the site landing page, not a section page. A sidebar section begins with its first actual document unless it has a dedicated section overview route.
+
+## Context
+
+Applies to manually configured Starlight navigation and documentation information architecture.
+
+## Category
+
+`documentation`
+
+---
+
+## Pattern
+
 Promoted an emerging configuration site as an authority without checking adoption signals or package availability.
 
 ## Rule
