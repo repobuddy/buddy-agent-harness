@@ -39,7 +39,11 @@ export default defineConfig({
 				},
 				{
 					label: 'Reference',
-					items: [{ label: 'Configuration Layout', slug: 'reference/configuration-layout' }],
+					items: [
+						{ label: 'Configuration Layout', slug: 'reference/configuration-layout' },
+						{ label: 'Standards', slug: 'reference/standards' },
+						{ label: 'Harness Support', slug: 'reference/harness-support' },
+					],
 				},
 			],
 			editLink: {
