@@ -1,0 +1,21 @@
+{
+  "name": "buddy-agent-harness-local",
+  "owner": {
+    "name": "repobuddy"
+  },
+  "metadata": {
+    "description": "Local development marketplace for Buddy Agent Harness",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "buddy-agent-harness",
+      "description": "Initialize agent harness skill compatibility.",
+      "version": "0.1.0",
+      "author": {
+        "name": "repobuddy"
+      },
+      "source": "./packages/buddy-agent-harness"
+    }
+  ]
+}
