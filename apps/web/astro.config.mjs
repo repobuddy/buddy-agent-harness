@@ -3,7 +3,7 @@ import { defineConfig } from 'astro/config'
 
 export default defineConfig({
 	site: 'https://repobuddy.github.io',
-	base: '/buddy-agent-harness',
+	base: process.env.NODE_ENV === 'development' ? '/' : '/buddy-agent-harness',
 	integrations: [
 		starlight({
 			title: 'Buddy Agent Harness',
@@ -16,11 +16,30 @@ export default defineConfig({
 			],
 			sidebar: [
 				{
-					label: 'Guide',
+					label: 'Getting Started',
 					items: [
 						{ label: 'Overview', link: '/' },
+						{ label: 'Introduction', slug: 'getting-started/introduction' },
 						{ label: 'Objective', slug: 'objective' },
 					],
+				},
+				{
+					label: 'Concepts',
+					items: [
+						{ label: 'Canonical Configuration', slug: 'concepts/canonical-configuration' },
+						{ label: 'Harness Selection', slug: 'concepts/harness-selection' },
+					],
+				},
+				{
+					label: 'CLI Reference',
+					items: [
+						{ label: 'Overview', slug: 'cli' },
+						{ label: 'init', slug: 'cli/init' },
+					],
+				},
+				{
+					label: 'Reference',
+					items: [{ label: 'Configuration Layout', slug: 'reference/configuration-layout' }],
 				},
 			],
 			editLink: {
