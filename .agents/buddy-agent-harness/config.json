@@ -1,5 +1,3 @@
 {
-  "harnesses": [
-    "claude-code"
-  ]
+	"harnesses": ["claude-code"]
 }
