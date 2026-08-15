@@ -1,0 +1,62 @@
+name: harness-drift
+on:
+  schedule:
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Print issue body without creating
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: harness-drift
+  cancel-in-progress: false
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: Detect drift
+        id: drift
+        continue-on-error: true
+        run: |
+          set +e
+          node scripts/harness-drift.mjs --json > /tmp/drift.json
+          exit_code=$?
+          set -e
+          echo "changed=$exit_code" >> "$GITHUB_OUTPUT"
+          cat /tmp/drift.json
+          if [ "$exit_code" -eq 1 ]; then
+            node scripts/harness-drift.mjs --issue-body > /tmp/issue-body.md
+          fi
+      - name: Fail on fetch or parse error
+        if: steps.drift.outputs.changed == '2'
+        run: |
+          echo "::error::Could not fetch or parse the upstream agent registry."
+          exit 1
+      - name: Print issue body (dry run)
+        if: steps.drift.outputs.changed == '1' && inputs.dry_run == true
+        run: cat /tmp/issue-body.md
+      - name: Open issue
+        if: steps.drift.outputs.changed == '1' && inputs.dry_run != true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh label create harness-drift --color 0E8A16 --description "Upstream harness registry drift" 2>/dev/null || true
+          gh label create maintenance --color C5DEF5 --description "Routine maintenance" 2>/dev/null || true
+          if gh issue list --label harness-drift --state open --json title --jq '.[].title' | grep -Fq 'upstream harness registry changed'; then
+            echo "Open issue already exists; skipping"
+            exit 0
+          fi
+          gh issue create --title "chore: upstream harness registry changed" \
+            --label harness-drift --label maintenance \
+            --body-file /tmp/issue-body.md
