@@ -1,25 +1,46 @@
 ---
 title: init
-description: Create canonical skill links or copies for supported coding harnesses.
+description: CLI reference for buddy-agent-harness init — flags, output, and conflict behavior.
 ---
 
 ```sh
-buddy-agent-harness init [--root <directory>] [--copy] [--force] [--format toon|json]
+buddy-agent-harness init [--root <directory>] [--harness <names>] [--copy] [--force] [--format toon|json]
 ```
+
+The CLI performs the linking step only. Consolidating existing configuration and writing the instruction bridges is the [`init` skill](/guides/initialize/)'s job, because both need judgment about user-authored content. Run the CLI directly on a repository that is already consolidated.
 
 ## Options
 
 | Option | Meaning |
 | --- | --- |
-| `--root <directory>` | Selects the directory the current implementation initializes. The product direction is repository-root-only configuration. |
-| `--copy` | Copy each canonical skill when links are unavailable or copying is required. |
+| `--root <directory>` | Selects the directory to initialize. The product direction is repository-root-only configuration. |
+| `--harness <names>` | Comma-separated harnesses to enable in addition to Claude Code and Cursor, such as `codex,windsurf`. |
+| `--copy` | Copy the canonical skills directory when links are unavailable. |
 | `--force` | Replace a conflicting target after the command has identified it. |
-| `--format toon|json` | Choose token-efficient TOON output (default) or JSON. |
+| `--format toon\|json` | Choose token-efficient TOON output (default) or JSON. |
 
 ## Output
 
-The result reports the selected root, enabled harnesses, canonical skill count, and whether copying was requested. It also writes `.agents/buddy-agent-harness/config.json` with the enabled harness names.
+The result reports the selected root, the canonical skill count, whether copying was requested, and three harness lists:
+
+| Field | Meaning |
+| --- | --- |
+| `harnesses` | Every enabled harness |
+| `native` | Harnesses that read `.agents/skills` directly, so nothing was written for them |
+| `linked` | Harnesses that received a projection |
+
+The `native` / `linked` split is the useful part: only `linked` is a real diff. A `deprecated` field reports any enabled deprecated harness name.
+
+It also writes `.agents/repobuddy/config.json` with the enabled harness names. That file is shared with repobuddy and its other plugins — this package owns only the `harnesses` key and preserves the rest. See [Configuration Layout](/reference/configuration-layout/).
+
+## Projections
+
+A projection is a single directory-level symlink from the harness path to `.agents/skills`, so a skill added later appears in every enabled harness without re-running the command. Only Claude Code and Gemini CLI need one; see [Harness Differences](/agent-configuration/harness-differences/) for the per-harness paths.
+
+`--copy` is reserved for environments where links are unavailable. A copy is a snapshot rather than a live projection, so it needs a re-run after every skill change.
 
 ## Conflicts
 
-The command checks every target before changing any of them. Without `--force`, conflicts stop the command and leave targets unchanged. A target that appears during a failed link attempt is preserved rather than overwritten.
+The command checks every target before changing any of them. Without `--force`, conflicts stop the command and leave all targets unchanged. A target that appears during a failed link attempt is preserved rather than overwritten.
+
+A pre-existing harness skills directory containing real skills is a conflict by design. Move those skills into `.agents/skills/` first — see [Migrating Existing Configuration](/guides/migrating/) — rather than discarding them with `--force`.

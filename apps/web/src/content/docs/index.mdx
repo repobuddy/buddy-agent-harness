@@ -1,9 +1,9 @@
 ---
 title: Buddy Agent Harness
-description: Initialize canonical agent skills across enabled coding-agent harnesses.
+description: One canonical agent configuration — AGENTS.md and .agents/skills — shared across every coding-agent harness.
 template: splash
 hero:
-  tagline: A portable agent skill and CLI for sharing standards-based agent configuration across coding-agent harnesses.
+  tagline: One repository-owned agent configuration, readable by every coding harness. An agent skill and a CLI, built on the open AGENTS.md and Agent Skills standards.
   actions:
     - text: Get started
       link: ./getting-started/introduction/
@@ -17,13 +17,13 @@ hero:
 
 ## What it does
 
-Buddy Agent Harness uses the repository root's `AGENTS.md` and `.agents/` tree as canonical agent configuration: `.agents/AGENTS.md` holds shared behavior, `.agents/skills/**/SKILL.md` holds capabilities, and separately named files hold tool settings. It preserves user-authored configuration and projects only compatible artifacts into enabled coding-agent harnesses.
+Buddy Agent Harness treats the repository root's `AGENTS.md` and `.agents/` tree as canonical agent configuration: `.agents/AGENTS.md` holds shared behavior, `.agents/skills/**/SKILL.md` holds capabilities, and separately named files hold tool settings.
 
-Read the [objective](/objective/) for the configuration model and related standards.
+It consolidates the configuration you already have into that source, then bridges the harnesses that cannot read it. Most need nothing — Codex, Cursor, Copilot CLI, and Devin Desktop read `.agents/skills/` natively. Only [Claude Code](/agent-configuration/harnesses/claude-code/) and [Gemini CLI](/agent-configuration/harnesses/gemini-cli/) need a link.
+
+It never invents policy, never rewrites your instructions, and leaves anything without a documented mapping canonical rather than converting it.
 
 ## Install
-
-Install the plugin and its `init` skill with `npx skills`:
 
 ```sh
 npx skills add repobuddy/buddy-agent-harness --plugin
@@ -36,29 +36,21 @@ For Claude Code, add the marketplace and install the plugin:
 /plugin install buddy-agent-harness@repobuddy
 ```
 
-Other agent clients can install the same plugin through their marketplace, or use `npx skills` above.
+Other agent clients can install the same plugin through their marketplace.
 
-## Use the skill
+## Use it
 
-Ask your agent to initialize the repository's configuration, or run the CLI directly. The active harness is configured by default; explicit user preferences can add other supported harnesses.
+Ask your agent to initialize the repository, and it runs the [`init` skill](/guides/initialize/) — survey, classify, confirm, apply, verify. Nothing you authored changes before you approve the plan.
 
-## CLI
-
-After the npm package is published, run the CLI without a global installation:
+For a repository that is already consolidated, run the [CLI](/cli/init/) directly:
 
 ```sh
 npx -y buddy-agent-harness init
 ```
 
-The default output is token-efficient TOON. Use `--format json` when another program requires JSON, `--copy` when symlinks are unavailable, and `--force` only when replacing existing targets is intended.
+## Where to go next
 
-Run `buddy-agent-harness init --help` to see all options.
-
-## Development
-
-```sh
-pnpm install
-pnpm verify
-pnpm --filter website dev
-pnpm bah test
-```
+- [Initialize a Repository](/guides/initialize/) — the skill, phase by phase.
+- [Migrating Existing Configuration](/guides/migrating/) — `CLAUDE.md`, `.cursor/rules/`, existing skills.
+- [Open Standards](/agent-configuration/open-standards/) — `AGENTS.md`, Agent Skills, and how much authority `.agents/skills/` has.
+- [Harness Differences](/agent-configuration/harness-differences/) — who reads what, and who needs a bridge.

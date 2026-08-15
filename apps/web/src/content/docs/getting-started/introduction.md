@@ -1,13 +1,39 @@
 ---
 title: Introduction
-description: Set up a shared agent-configuration source for a repository.
+description: Keep one repository-owned agent configuration that every coding harness can read.
 ---
 
-Buddy Agent Harness keeps repository agent configuration portable across coding harnesses. Use it when a team works with more than one agent and wants to avoid manually maintaining equivalent configuration in several vendor directories.
+Buddy Agent Harness gives a repository one canonical agent configuration — a root `AGENTS.md` and an `.agents/` tree — and bridges the coding harnesses that cannot read it directly.
+
+Use it when a team works with more than one agent and does not want to maintain equivalent instructions in `CLAUDE.md`, `.cursor/rules/`, `.github/copilot-instructions.md`, and a per-harness skills directory at the same time.
+
+## The model
+
+The repository root is the consumer boundary. Everything portable lives there:
+
+```text
+repository/
+├── AGENTS.md                 # project-level agent instructions
+└── .agents/
+    ├── AGENTS.md             # shared repository guidance
+    ├── skills/
+    │   └── <skill>/SKILL.md  # reusable capabilities
+    └── <tool-setting>        # separately named tool configuration
+```
+
+Harness-specific files are *projections* of that source, never a second source of truth. Most harnesses need no projection at all: Codex, Cursor, GitHub Copilot CLI, and Devin Desktop read `.agents/skills/` natively. Only Claude Code and Gemini CLI read solely their own directory and need a link.
+
+This is a consolidation job, not a copy-everywhere job. See [Configuration Layout](/reference/configuration-layout/) for the full layout and [Harness Differences](/agent-configuration/harness-differences/) for who needs what.
+
+## What it will not do
+
+Buddy Agent Harness does not invent instructions or rewrite a team's policy. It preserves user-authored configuration and projects an artifact only where a documented, safe mapping exists. A setting with no such mapping — MCP servers, subagents, hooks, path-scoped rules — stays canonical rather than being guessed at or converted.
+
+It also stays out of everything that is not local agent configuration: no changes to CI, workflows, repository settings, security scanning, or branch rules.
 
 ## Install
 
-Install the plugin and its `harness-init` skill:
+Install the plugin and its `init` skill:
 
 ```sh
 npx skills add repobuddy/buddy-agent-harness --plugin
@@ -20,16 +46,26 @@ In Claude Code, install it from the Repobuddy marketplace:
 /plugin install buddy-agent-harness@repobuddy
 ```
 
+Other agent clients can install the same plugin through their own marketplace.
+
 ## Initialize a repository
 
-From the repository root, ask your agent to run `harness-init`, or invoke the CLI directly:
+From the repository root, ask your agent to run the `init` skill:
+
+```text
+Initialize this repository's agent configuration.
+```
+
+The skill surveys what configuration you already have, proposes a consolidation plan, applies it once you approve, and runs the CLI to create the projections. That is the primary path — start at [Initialize a Repository](/guides/initialize/).
+
+The CLI alone handles only the linking step:
 
 ```sh
 npx -y buddy-agent-harness init
 ```
 
-The command creates `.agents/skills/` when needed, projects its skills into selected harness locations, and records the selected harnesses in `.agents/buddy-agent-harness/config.json`.
+Use it directly on a repository that is already consolidated. See the [CLI reference](/cli/init/).
 
 ## Start small
 
-You do not need to create every configuration artifact before initializing. Start with one repository skill, keep it in `.agents/skills/<name>/SKILL.md`, and rerun initialization after adding or changing a skill. See [Canonical Configuration](../concepts/canonical-configuration/) for the intended full layout.
+You do not need to create every configuration artifact before initializing. Start with one repository skill in `.agents/skills/<name>/SKILL.md` and a root `AGENTS.md`. Re-running initialization is idempotent — an existing symlink that already resolves into `.agents/` is left alone.

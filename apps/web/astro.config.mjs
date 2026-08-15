@@ -1,9 +1,20 @@
 import starlight from '@astrojs/starlight'
 import { defineConfig } from 'astro/config'
 
+const base = process.env.NODE_ENV === 'development' ? '/' : '/buddy-agent-harness'
+
 export default defineConfig({
 	site: 'https://repobuddy.github.io',
-	base: process.env.NODE_ENV === 'development' ? '/' : '/buddy-agent-harness',
+	base,
+	redirects: Object.fromEntries(
+		Object.entries({
+			'/objective': '/getting-started/introduction/',
+			'/concepts/canonical-configuration': '/reference/configuration-layout/',
+			'/concepts/harness-selection': '/agent-configuration/harness-differences/',
+			'/reference/standards': '/agent-configuration/open-standards/',
+			'/reference/harness-support': '/agent-configuration/harness-differences/',
+		}).map(([from, to]) => [from, base.replace(/\/$/, '') + to]),
+	),
 	integrations: [
 		starlight({
 			title: 'Buddy Agent Harness',
@@ -17,31 +28,38 @@ export default defineConfig({
 			sidebar: [
 				{
 					label: 'Getting Started',
+					items: [{ label: 'Introduction', slug: 'getting-started/introduction' }],
+				},
+				{
+					label: 'Guides',
 					items: [
-						{ label: 'Introduction', slug: 'getting-started/introduction' },
-						{ label: 'Objective', slug: 'objective' },
+						{ label: 'Initialize a Repository', slug: 'guides/initialize' },
+						{ label: 'Migrating Existing Configuration', slug: 'guides/migrating' },
 					],
 				},
 				{
-					label: 'Concepts',
+					label: 'Agent Configuration',
 					items: [
-						{ label: 'Canonical Configuration', slug: 'concepts/canonical-configuration' },
-						{ label: 'Harness Selection', slug: 'concepts/harness-selection' },
-					],
-				},
-				{
-					label: 'CLI Reference',
-					items: [
-						{ label: 'Overview', slug: 'cli' },
-						{ label: 'init', slug: 'cli/init' },
+						{ label: 'Open Standards', slug: 'agent-configuration/open-standards' },
+						{ label: 'Writing Portable Skills', slug: 'agent-configuration/portable-skills' },
+						{ label: 'Harness Differences', slug: 'agent-configuration/harness-differences' },
+						{
+							label: 'Harness Notes',
+							items: [
+								{ label: 'Claude Code', slug: 'agent-configuration/harnesses/claude-code' },
+								{ label: 'Cursor', slug: 'agent-configuration/harnesses/cursor' },
+								{ label: 'Gemini CLI', slug: 'agent-configuration/harnesses/gemini-cli' },
+							],
+						},
 					],
 				},
 				{
 					label: 'Reference',
 					items: [
 						{ label: 'Configuration Layout', slug: 'reference/configuration-layout' },
-						{ label: 'Standards', slug: 'reference/standards' },
-						{ label: 'Harness Support', slug: 'reference/harness-support' },
+						{ label: 'CLI Overview', slug: 'cli' },
+						{ label: 'CLI: init', slug: 'cli/init' },
+						{ label: 'Sources & Confidence', slug: 'sources' },
 					],
 				},
 			],
