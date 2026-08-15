@@ -136,6 +136,33 @@ describe('initializeHarnesses', () => {
 		expect(JSON.parse(readFileSync(file, 'utf8'))).toEqual({ harnesses: ['claude-code', 'cursor'] })
 	})
 
+	it('leaves an unchanged configuration file exactly as the repository formatted it', () => {
+		const root = repository()
+		initializeHarnesses({ root })
+		const file = join(root, '.agents', 'repobuddy', 'config.json')
+
+		// Whatever formatter the repository runs may repack what we wrote; a re-run must not undo it.
+		const formatted = '{ "harnesses": ["claude-code", "cursor"] }\n'
+		writeFileSync(file, formatted)
+		initializeHarnesses({ root })
+
+		expect(readFileSync(file, 'utf8')).toBe(formatted)
+	})
+
+	it('still rewrites when the recorded harnesses change', () => {
+		const root = repository()
+		mkdirSync(join(root, '.agents', 'repobuddy'), { recursive: true })
+		const file = join(root, '.agents', 'repobuddy', 'config.json')
+		writeFileSync(file, '{ "harnesses": ["claude-code"], "other": 1 }\n')
+
+		initializeHarnesses({ root })
+
+		expect(JSON.parse(readFileSync(file, 'utf8'))).toEqual({
+			harnesses: ['claude-code', 'cursor'],
+			other: 1,
+		})
+	})
+
 	it('copies the canonical directory when copying is requested', () => {
 		const root = repository()
 

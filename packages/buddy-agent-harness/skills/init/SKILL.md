@@ -48,6 +48,8 @@ Get explicit approval before any step that deletes, replaces, or rewrites a user
 
 Confirm each projection resolves into `.agents/skills`, every migrated `SKILL.md` parses and has valid frontmatter, and `config.json` lists the expected harnesses. Report what was created, consolidated, linked, and left canonical-only.
 
+`init` writes `config.json` using the repository's own indentation, but it is not a formatter and cannot match every rule a formatter has. If the repository has one, run it over the written files and say so.
+
 ## Rules
 
 - Never invent project policy, and never rewrite a user's `AGENTS.md`.
