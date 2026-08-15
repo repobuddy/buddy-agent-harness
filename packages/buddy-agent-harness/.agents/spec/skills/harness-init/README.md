@@ -49,7 +49,7 @@ flowchart TD
   N --> O[Emit TOON or JSON result]
 ```
 
-The consumer root is always the repository root, including in a monorepo. The active harness is selected unconditionally; a user preference can add other supported harnesses. Existing vendor directories do not themselves express installation intent. The initializer preserves canonical instructions and projects only artifacts with a supported harness mapping. Only immediate directory entries in `.agents/skills/`, sorted by name, are canonical skills.
+The consumer root is always the repository root, including in a monorepo. The active harness is selected unconditionally; a user preference can add other supported harnesses. Existing harness directories do not themselves express installation intent. The initializer preserves canonical instructions and projects only artifacts with a supported harness mapping. Only immediate directory entries in `.agents/skills/`, sorted by name, are canonical skills.
 
 ## Scenario map
 

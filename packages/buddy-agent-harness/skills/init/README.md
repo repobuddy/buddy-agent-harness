@@ -1,13 +1,29 @@
 # Harness Init
 
-Initialize or update a repository's standards-based agent configuration so its instructions, skills, and tool settings can be shared across coding-agent harnesses.
+Give a repository one canonical agent configuration — a root `AGENTS.md` and an `.agents/` tree — and bridge the harnesses that cannot read it directly.
 
-## Use
+## What it does
+
+The skill runs a five-phase workflow: survey the repository, classify what it finds, confirm the plan with you, apply it, then verify.
+
+It detects agent configuration you already have — instruction files, skills, commands, subagents, rules, MCP servers, hooks — and either consolidates it into the canonical source, links it back out, or reports it as canonical-only where no safe cross-harness mapping exists. It never removes or rewrites a file you authored without asking first.
+
+## Why the projection step is small
+
+Codex, Cursor, GitHub Copilot CLI, and Devin Desktop read `.agents/skills/` natively, so they need nothing. Only Claude Code and Gemini CLI need a link:
 
 ```sh
 npx -y buddy-agent-harness init
 ```
 
-The canonical repository surface is `.agents/`: `.agents/AGENTS.md` holds shared behavior, `.agents/skills/**/SKILL.md` holds reusable capabilities, and separately named files hold tool settings. The active harness is enabled by default; explicit user preferences may add others. Existing vendor directories do not imply a preference.
+Claude Code also reads `CLAUDE.md` rather than `AGENTS.md`, so the skill sets up a `CLAUDE.md` that imports `@AGENTS.md`.
 
-The initializer preserves user-authored configuration and projects compatible canonical artifacts into selected harnesses with links or copies. It does not invent instructions, convert unsupported tool settings, change CI, GitHub settings, security scanning, or branch rules.
+`references/standard.md` defines the baseline every repository gets from the open standards. `references/harnesses.md` routes to a `references/<harness>.md` per harness, covering what each one needs on top of that baseline — and how well-sourced each claim is.
+
+## The part that needs care
+
+Linking is easy; frontmatter is not. Each harness recognizes a different set of `SKILL.md` fields and silently drops the rest, so anything that must hold everywhere belongs in the Markdown body rather than in a harness-specific field. See `references/frontmatter.md`.
+
+## Boundaries
+
+Local agent configuration only. The skill does not invent instructions, convert tool settings without a documented mapping, or change CI, GitHub settings, security scanning, or branch rules.
