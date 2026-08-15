@@ -1,7 +1,5 @@
-export type {
-	HarnessName,
-	InitializeOptions,
-	InitializeResult,
-} from './harness.ts'
-export { harnessRegistry, initializeHarnesses } from './harness.ts'
-export { activate, harnessCommand, initCommand } from './plugin.ts'
+export type { HarnessName } from './harness-registry/harness-registry.ts'
+export { harnessRegistry } from './harness-registry/harness-registry.ts'
+export { activate, harnessCommand, initCommand } from './initialize-harnesses/init.command.ts'
+export type { InitializeOptions, InitializeResult } from './initialize-harnesses/initialize-harnesses.ts'
+export { initializeHarnesses } from './initialize-harnesses/initialize-harnesses.ts'

@@ -10,7 +10,7 @@ vi.mock('node:fs', async (importOriginal) => {
 	return { ...actual, symlinkSync: mockedSymlinkSync }
 })
 
-import { initializeHarnesses } from './harness.ts'
+import { initializeHarnesses } from '../initialize-harnesses/initialize-harnesses.ts'
 
 function repository(): string {
 	const root = mkdtempSync(join(tmpdir(), 'buddy-agent-harness-'))
@@ -28,15 +28,15 @@ describe('link fallback', () => {
 		const root = repository()
 		initializeHarnesses({ root })
 
-		expect(lstatSync(join(root, '.claude', 'skills', 'review')).isSymbolicLink()).toBe(false)
+		expect(lstatSync(join(root, '.claude', 'skills')).isSymbolicLink()).toBe(false)
 	})
 
 	it('preserves a concurrent target instead of overwriting it after a link failure', () => {
 		const root = repository()
-		const target = join(root, '.claude', 'skills', 'review')
+		const target = join(root, '.claude', 'skills')
 		const failure = new Error('target appeared')
 		mockedSymlinkSync.mockImplementationOnce(() => {
-			mkdirSync(join(root, '.claude', 'skills'), { recursive: true })
+			mkdirSync(join(root, '.claude'), { recursive: true })
 			writeFileSync(target, 'another process')
 			throw failure
 		})

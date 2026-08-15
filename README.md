@@ -40,6 +40,10 @@ To mount the same command on `bd`, install the package alongside `repobuddy` and
 
 Then run `bd harness init`. `repobuddy` deliberately loads plugins declared in this configuration; it does not scan installed dependencies.
 
-The canonical configuration is the repository root's `AGENTS.md` and `.agents/` tree: `.agents/AGENTS.md` holds shared behavior, `.agents/skills/**/SKILL.md` holds capabilities, and separately named files hold tool settings. The active harness is enabled by default; explicit user preferences add others. The command preserves user-authored configuration, projects only supported mappings, reports TOON by default, and records enabled harnesses in `.agents/buddy-agent-harness/config.json`.
+The canonical configuration is the repository root's `AGENTS.md` and `.agents/` tree: `.agents/AGENTS.md` holds shared behavior, `.agents/skills/**/SKILL.md` holds capabilities, and separately named files hold tool settings.
 
-Use `buddy-agent-harness init --help` to see `--root`, `--copy`, `--force`, and `--format`.
+Codex, Cursor, GitHub Copilot CLI, and Devin Desktop read `.agents/skills/` natively, so nothing is written for them. Claude Code and Gemini CLI get a directory-level symlink to it. Claude Code and Cursor are always enabled; a detected harness directory or `--harness codex,gemini-cli` adds others. The command preserves user-authored configuration, reports TOON by default, and records enabled harnesses in `.agents/repobuddy/config.json`.
+
+Use `buddy-agent-harness init --help` to see `--root`, `--harness`, `--copy`, `--force`, and `--format`.
+
+The `init` skill goes further than the CLI: it surveys agent configuration the repository already has, consolidates it into the canonical source with your approval, and then links. See [`skills/init/SKILL.md`](packages/buddy-agent-harness/skills/init/SKILL.md).

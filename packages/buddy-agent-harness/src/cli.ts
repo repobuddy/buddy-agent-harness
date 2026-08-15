@@ -1,5 +1,5 @@
 import { cli } from 'clibuilder'
-import { initCommand } from './plugin.ts'
+import { initCommand } from './initialize-harnesses/init.command.ts'
 
 export async function main(): Promise<void> {
 	const app = cli({

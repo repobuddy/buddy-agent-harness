@@ -1,28 +1,18 @@
-import { cli } from 'clibuilder'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { main } from './cli.ts'
-import { initializeHarnesses } from './harness.ts'
-import * as publicApi from './index.ts'
-import { activate, harnessCommand, initCommand } from './plugin.ts'
+import { activate, harnessCommand, initCommand } from './init.command.ts'
+import { initializeHarnesses } from './initialize-harnesses.ts'
 
-vi.mock('./harness.ts', () => ({ initializeHarnesses: vi.fn() }))
+vi.mock('./initialize-harnesses.ts', () => ({ initializeHarnesses: vi.fn() }))
 
-vi.mock('clibuilder', async (importOriginal) => {
-	const actual = await importOriginal<typeof import('clibuilder')>()
-	return { ...actual, cli: vi.fn() }
-})
-
-const mockedCli = vi.mocked(cli)
 const mockedInitializeHarnesses = vi.mocked(initializeHarnesses)
 const stderr = vi.spyOn(process.stderr, 'write').mockImplementation(() => true)
 const stdout = vi.spyOn(process.stdout, 'write').mockImplementation(() => true)
 
-function run(args: { copy?: boolean; force?: boolean; format?: string; root?: string }): void {
+function run(args: { copy?: boolean; force?: boolean; format?: string; harness?: string; root?: string }): void {
 	;(initCommand as { run(value: typeof args): void }).run(args)
 }
 
 beforeEach(() => {
-	mockedCli.mockReset()
 	mockedInitializeHarnesses.mockReset()
 	stderr.mockClear()
 	stdout.mockClear()
@@ -33,11 +23,14 @@ afterEach(() => {
 	process.exitCode = undefined
 })
 
-describe('plugin command', () => {
+describe('init command', () => {
 	it('initializes harnesses with explicit options and emits JSON', () => {
 		mockedInitializeHarnesses.mockReturnValue({
 			root: '/workspace',
 			harnesses: ['claude-code'],
+			native: [],
+			linked: ['claude-code'],
+			deprecated: [],
 			skills: 1,
 			copied: true,
 		})
@@ -57,6 +50,9 @@ describe('plugin command', () => {
 		mockedInitializeHarnesses.mockReturnValue({
 			root: process.cwd(),
 			harnesses: ['claude-code'],
+			native: [],
+			linked: ['claude-code'],
+			deprecated: [],
 			skills: 0,
 			copied: false,
 		})
@@ -84,6 +80,30 @@ describe('plugin command', () => {
 		expect(process.exitCode).toBe(1)
 	})
 
+	it('passes requested harnesses through and rejects unsupported names', () => {
+		mockedInitializeHarnesses.mockReturnValue({
+			root: '/workspace',
+			harnesses: ['claude-code', 'cursor', 'windsurf'],
+			native: ['cursor'],
+			linked: ['claude-code', 'windsurf'],
+			deprecated: [{ name: 'windsurf', replacedBy: 'devin-desktop' }],
+			skills: 0,
+			copied: false,
+		})
+
+		run({ format: 'json', harness: 'windsurf, codex', root: '/workspace' })
+
+		expect(mockedInitializeHarnesses).toHaveBeenCalledWith({
+			root: '/workspace',
+			harnesses: ['windsurf', 'codex'],
+		})
+
+		process.exitCode = undefined
+		run({ format: 'json', harness: 'aider', root: '/workspace' })
+		expect(stderr).toHaveBeenCalledWith(expect.stringContaining('Unsupported harness: aider'))
+		expect(process.exitCode).toBe(1)
+	})
+
 	it('registers its command group', () => {
 		const addCommand = vi.fn()
 
@@ -91,37 +111,5 @@ describe('plugin command', () => {
 
 		expect(addCommand).toHaveBeenCalledWith(harnessCommand)
 		expect(harnessCommand.commands).toEqual([initCommand])
-	})
-})
-
-describe('CLI and public entry point', () => {
-	it('exports the plugin API and parses the command line', async () => {
-		const parse = vi.fn(async () => undefined)
-		const command = vi.fn(() => ({ parse }))
-		mockedCli.mockReturnValue({ command } as never)
-
-		await main()
-
-		expect(publicApi.activate).toBe(activate)
-		expect(publicApi.initCommand).toBe(initCommand)
-		expect(command).toHaveBeenCalledWith(initCommand)
-		expect(parse).toHaveBeenCalledWith(process.argv)
-	})
-
-	it('reports Error and non-Error command-line failures', async () => {
-		const parse = vi.fn(async () => Promise.reject(new Error('bad options')))
-		mockedCli.mockReturnValue({ command: vi.fn(() => ({ parse })) } as never)
-
-		await main()
-
-		expect(stdout).toHaveBeenCalledWith('error: bad options\n')
-		expect(process.exitCode).toBe(2)
-
-		stdout.mockClear()
-		process.exitCode = undefined
-		parse.mockImplementationOnce(async () => Promise.reject('bad options'))
-		await main()
-		expect(stdout).toHaveBeenCalledWith('error: Invalid command.\n')
-		expect(process.exitCode).toBe(2)
 	})
 })

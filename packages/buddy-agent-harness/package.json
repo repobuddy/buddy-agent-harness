@@ -45,6 +45,7 @@
 	"scripts": {
 		"build": "tsdown",
 		"coverage": "vitest run --coverage",
+		"dev": "node bin/buddy-agent-harness.mjs",
 		"prepack": "pnpm build",
 		"test": "vitest run",
 		"test:dist": "tsc --noEmit -p tsconfig.dist.json && vitest run --config vitest.dist.config.ts",
