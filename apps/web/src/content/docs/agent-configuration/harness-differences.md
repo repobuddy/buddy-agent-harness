@@ -22,6 +22,29 @@ The five harnesses at the top need nothing written for them at all — the canon
 
 Vendor documentation changes independently. Follow the linked vendor documentation for setup requirements, product editions, and features beyond skills and instructions. The confidence behind each row is recorded in [Sources & Confidence](/sources/).
 
+## Nested instruction files resolve differently
+
+The two-question table asks whether a harness reads `AGENTS.md`. For a repository with nested instruction files, "yes" is not the whole answer — harnesses disagree about what happens when more than one file applies.
+
+| | Rule | On conflict |
+| --- | --- | --- |
+| [AGENTS.md](https://agents.md/), published | The closest file wins | The closest file governs |
+| [AGENTS.md v1.1](https://github.com/agentsmd/agents.md/issues/135), proposed | Guidance accumulates down the tree | More specific instructions take precedence |
+| [Claude Code](/agent-configuration/harnesses/claude-code/#how-claudemd-files-load) | All discovered files are concatenated | Undefined — "Claude may pick one arbitrarily" |
+
+Claude Code's model is additive: every `CLAUDE.md` from the filesystem root down to the working directory is loaded, ordered so the nearest is read last. Proximity buys recency, not authority.
+
+This matters when a nested file is written to *contradict* its parent — "this package uses vitest, not jest." Under the published rule that override is the point; under Claude Code both statements arrive together with no rule for choosing. So a nested instruction file behaves as intended for Codex and Cursor, and lands as a contradiction for Claude Code.
+
+Two things follow for authoring:
+
+- **Make a nested file self-sufficient** on any topic it touches, rather than relying on inheritance. This is correct under all three models above, which is why it is the portable choice — at the cost of some duplication that the proposed v1.1 accumulation model would make unnecessary.
+- **Prefer additive local content over contradiction.** A nested file that adds package-specific facts is unambiguous everywhere. One that reverses a root rule is only unambiguous where override is implemented.
+
+Claude Code's `claudeMdExcludes` setting can drop unwanted ancestor files, but it subtracts whole files rather than resolving conflicts — a mitigation, not an implementation of the standard's rule.
+
+Because the standard's own semantics are unratified, treat this divergence as a moving target rather than a stable difference. Confidence is recorded in [Sources & Confidence](/sources/).
+
 ## Two Google products, opposite sides of the line
 
 Gemini CLI and Antigravity are both Google's, and it is tempting to treat them as one target. They are not.

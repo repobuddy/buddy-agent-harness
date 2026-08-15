@@ -208,3 +208,55 @@ Status values: `confirmed`, `contested`, `thin`. Confidence: high / medium / low
 - **Confidence**: high
 - **Source**: https://agentskills.io/clients.md ; skills.sh
 - **Notes**: ~46 clients on the official showcase including Claude Code, Codex, Cursor, GitHub Copilot, VS Code, Gemini CLI, Goose, OpenCode, Amp, Junie, Kiro, Factory, Roo Code, Databricks Genie Code, Snowflake Cortex Code, Laravel Boost, Spring AI. `npx skills` claims 75 agents. Spec published as open standard 2025-12-18; governance at AAIF alongside MCP.
+
+## E-STD-03 — Nested `AGENTS.md` is supported, and the published rule is nearest-file-wins
+
+- **Date**: 2026-08-15
+- **Status**: confirmed
+- **Confidence**: high
+- **Source**: AGENTS.md — https://agents.md/ — official site, body copy and FAQ
+- **Notes**: Verbatim: "Large monorepo? Use nested AGENTS.md files for subprojects. Place another AGENTS.md inside each package. Agents automatically read the nearest file in the directory tree, so the closest one takes precedence and every subproject can ship tailored instructions." FAQ, verbatim: "The closest AGENTS.md to the edited file wins; explicit user chat prompts override everything." Cites the main OpenAI repo as carrying 88 `AGENTS.md` files at time of writing.
+
+  The site states **precedence**, not merge semantics. It does not say whether a nested file inherits ancestor content and overrides selectively, or replaces it wholesale. Do not assert either reading as published behavior — see E-STD-04, which would settle it in the inheriting direction but is unratified.
+
+## E-STD-04 — A v1.1 proposal would change nested resolution from override to accumulation
+
+- **Date**: 2026-08-15
+- **Status**: contested
+- **Confidence**: high (that the proposal exists and says this) / low (that it will be adopted)
+- **Source**: agentsmd/agents.md issue #135 — https://github.com/agentsmd/agents.md/issues/135
+- **Notes**: Open, no maintainer response at time of reading. Proposes two named principles. Accumulation, verbatim: "Guidance accumulates as you traverse the directory tree. A local AGENTS.md file extends and builds upon the guidance in ancestor AGENTS.md files rather than replacing it entirely." Precedence, verbatim: "When guidance conflicts, more specific instructions take precedence over more general ones. Local AGENTS.md files override ancestor AGENTS.md files."
+
+  This is **not** the published rule. It matters because it moves the standard toward Claude Code's existing behavior (E-CC-05) rather than away from it, so the current divergence may be transitional. Cite as a live proposal, never as the standard.
+
+## E-STD-05 — The standard has no local-override file; three open issues request one
+
+- **Date**: 2026-08-15
+- **Status**: confirmed (absence) / contested (proposals)
+- **Confidence**: high
+- **Source**: https://agents.md/ ; agentsmd/agents.md issues #13, #72, #211
+- **Notes**: The published site does not mention `AGENTS.local.md`, `AGENTS.override.md`, or any gitignored/personal variant anywhere, including the FAQ. Three open issues request the capability: #13 "Feature Request: Allow uncommitted AGENTS files" (Aug 2025), #72 "Maintaining local preferences" (Sep 2025), #211 "Define AGENTS.md implementation specification document for standardization" (Jun 2026).
+
+  #211 names both candidate filenames — "AGENTS.local.md (or AGENTS.override.md)" — and leans **additive** rather than overriding. Neither the filename nor the semantics is settled. Third-party blog posts recommending `AGENTS.local.md` with override semantics are describing a convention of their own, not the standard; do not cite them as such.
+
+## E-CC-05 — Claude Code concatenates every discovered `CLAUDE.md` rather than overriding
+
+- **Date**: 2026-08-15
+- **Status**: confirmed
+- **Confidence**: high
+- **Source**: Claude Code memory documentation — https://code.claude.com/docs/en/memory
+- **Notes**: Verbatim: "All discovered files are concatenated into context rather than overriding each other. Across the directory tree, content is ordered from the filesystem root down to your working directory... so instructions closer to where you launched Claude are read last." Nesting below the working directory, verbatim: "Claude also discovers `CLAUDE.md` and `CLAUDE.local.md` files in subdirectories under your current working directory. Instead of loading them at launch, they are included when Claude reads files in those subdirectories."
+
+  Conflicts are explicitly **undefined**, verbatim: "if two rules contradict each other, Claude may pick one arbitrarily." So proximity buys recency, not authority — the opposite of E-STD-03's published rule.
+
+  Same page confirms the Windows symlink guidance this project already gives, verbatim: "On Windows, creating a symlink requires Administrator privileges or Developer Mode, so use the `@AGENTS.md` import instead."
+
+## E-CC-06 — `claudeMdExcludes` is the only lever over which instruction files load
+
+- **Date**: 2026-08-15
+- **Status**: confirmed
+- **Confidence**: high
+- **Source**: Claude Code memory documentation — https://code.claude.com/docs/en/memory
+- **Notes**: Verbatim: "In large monorepos, ancestor CLAUDE.md files may contain instructions that aren't relevant to your work. The `claudeMdExcludes` setting lets you skip specific files by path or glob pattern." Patterns match **absolute** paths using glob syntax; also matches `.claude/rules/**` directories. Configurable at any settings layer — user, project, local, or managed policy — and "Arrays merge across layers." Managed policy `CLAUDE.md` cannot be excluded.
+
+  It subtracts whole files only, so it cannot express "the nested file wins on conflicts." It is a mitigation for unwanted inheritance, not an implementation of E-STD-03.

@@ -15,6 +15,10 @@ The harness claims across this site are not equally well-sourced, and the differ
 | Gemini CLI paths and `context.fileName` | Medium | project documentation, partly an issue thread |
 | Cursor's Agent-mode-only `AGENTS.md` support | Medium | secondary comparisons, not primary Cursor documentation |
 | `AGENTS.md` context cost and length guidance | Low | practitioner analysis and reported measurements, no vendor specification |
+| Nested `AGENTS.md` resolution (nearest-file-wins) | High | agents.md body copy and FAQ, primary |
+| Claude Code concatenating every discovered `CLAUDE.md` | High | Claude Code memory documentation, primary |
+| Nested-resolution semantics beyond precedence | Low | unratified v1.1 proposal, no maintainer response |
+| A standard local-override file (`AGENTS.local.md`) | Low | absent from the standard; three open issues, two candidate names |
 
 ## Cursor's mode split is not confirmed
 
@@ -34,6 +38,15 @@ Both vendors document skills without addressing repository instructions. Their r
 ## Undocumented but verified
 
 Symlinking the `.claude/skills` **directory itself** is not documented by Claude Code, which documents per-skill symlinks instead. The directory-level link is verified working and preferred because it is live, but it is supported in practice rather than guaranteed by contract. Per-skill links remain the documented fallback.
+
+## Unratified upstream proposals
+
+Two claims on this site describe upstream work that is proposed rather than adopted, and both are labelled as such where they appear:
+
+- the v1.1 [accumulation model](https://github.com/agentsmd/agents.md/issues/135) for nested `AGENTS.md`, which would move the standard toward Claude Code's existing behavior rather than away from it,
+- a local-override file, requested in three open issues under two different filenames with two different semantics.
+
+Neither has a maintainer resolution. They are recorded because the divergence they describe is real today, not because either outcome is expected. Positions this project has taken on them are tracked in [unsettled upstream questions](https://github.com/repobuddy/buddy-agent-harness/discussions?discussions_q=label%3Aupstream-unsettled).
 
 ## An unresolved third-party discrepancy
 
