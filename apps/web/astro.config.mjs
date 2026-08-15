@@ -3,9 +3,37 @@ import { defineConfig } from 'astro/config'
 
 const base = process.env.NODE_ENV === 'development' ? '/' : '/buddy-agent-harness'
 
+/**
+ * Astro does not prepend `base` to absolute links written in Markdown, so a
+ * link like `/cli/init/` 404s on a site served from a subpath. Rewrite them
+ * here, keeping page sources base-agnostic.
+ */
+function rehypeBaseLinks() {
+	if (base === '/') return () => {}
+	const prefix = base.replace(/\/$/, '')
+	const rewrite = (node) => {
+		if (node.tagName === 'a') {
+			const href = node.properties?.href
+			if (
+				typeof href === 'string' &&
+				href.startsWith('/') &&
+				!href.startsWith('//') &&
+				!href.startsWith(`${prefix}/`)
+			) {
+				node.properties.href = prefix + href
+			}
+		}
+		for (const child of node.children ?? []) rewrite(child)
+	}
+	return rewrite
+}
+
 export default defineConfig({
 	site: 'https://repobuddy.github.io',
 	base,
+	markdown: {
+		rehypePlugins: [rehypeBaseLinks],
+	},
 	redirects: Object.fromEntries(
 		Object.entries({
 			'/objective': '/getting-started/introduction/',
