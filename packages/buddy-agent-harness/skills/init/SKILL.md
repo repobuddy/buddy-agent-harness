@@ -37,9 +37,9 @@ Get explicit approval before any step that deletes, replaces, or rewrites a user
 
 ## 4. Apply
 
-1. Scaffold the baseline in `references/standard.md`: `.agents/`, `.agents/skills/`, and a root `AGENTS.md` if absent. Never rewrite an existing `AGENTS.md`.
+1. Scaffold the baseline in `references/standard.md`: `.agents/`, `.agents/skills/`, and a root `AGENTS.md` if absent. Never rewrite an existing `AGENTS.md`. `references/agents-md.md` decides what belongs in that file — a repository with no instruction content still needs one derived and confirmed, not an empty heading.
 2. Move approved skills and commands to `.agents/skills/<name>/SKILL.md`, preferring `git mv` so history follows. Fix frontmatter per `references/frontmatter.md` — this is where cross-harness portability is won or lost.
-3. Merge approved instruction content into `AGENTS.md`, preserving the author's wording. Append; do not restructure. Replace a harness file with a pointer only where approved.
+3. Merge approved instruction content into `AGENTS.md`, preserving the author's wording. Append; do not restructure. Replace a harness file with a pointer only where approved. Content only some tasks need belongs in a skill, not in `AGENTS.md`.
 4. Run `npx -y buddy-agent-harness init` at the repository root. It links `.agents/skills` into the harnesses that need it, skips those that read it natively, and records the enabled set in `.agents/repobuddy/config.json`. Add harnesses the user names with `--harness codex,gemini-cli`.
 5. If the command reports a conflict, resolve the named target and retry. Use `--force` only to replace that exact projection; use `--copy` only where links are unavailable.
 6. Apply the instruction bridges `init` does not write. Claude Code reads `CLAUDE.md`, not `AGENTS.md` — create a `CLAUDE.md` containing `@AGENTS.md`. Gemini CLI needs `AGENTS.md` added to `context.fileName` in `.gemini/settings.json`. Both are detailed in the matching `references/<harness>.md`; apply only the ones you enabled.
