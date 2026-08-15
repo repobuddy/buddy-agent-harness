@@ -31,7 +31,7 @@ The result reports the selected root, the canonical skill count, whether copying
 
 The `native` / `linked` split is the useful part: only `linked` is a real diff. A `deprecated` field reports any enabled deprecated harness name.
 
-It also writes `.agents/repobuddy/config.json` with the enabled harness names. That file is shared with repobuddy and its other plugins — this package owns only the `harnesses` key and preserves the rest. See [Configuration Layout](/reference/configuration-layout/).
+Nothing is written to record the run. The enabled set is derived from detection every time, so the result above is the only report — see [Configuration Layout](/reference/configuration-layout/#no-configuration-record).
 
 ## Projections
 

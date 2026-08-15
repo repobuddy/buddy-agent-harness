@@ -1,6 +1,5 @@
 import { join } from 'node:path'
 import { type HarnessName, selectHarnesses } from '../harness-registry/harness-registry.ts'
-import { writeConfig } from '../repobuddy-config/repobuddy-config.ts'
 import { countSkills, projectSkills } from '../skill-projection/skill-projection.ts'
 
 export type InitializeOptions = {
@@ -31,10 +30,6 @@ export function initializeHarnesses({
 	const harnesses = selectHarnesses(root, preferred)
 	const linked = projectSkills({ root, canonicalSkills, harnesses, copy, force })
 
-	writeConfig(
-		root,
-		harnesses.map((harness) => harness.name),
-	)
 	return {
 		root,
 		harnesses: harnesses.map((harness) => harness.name),

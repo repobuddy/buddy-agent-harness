@@ -26,8 +26,6 @@ There is no way to disable a harness. Never offer the user a choice that exclude
 
 Enabling a harness is not the same as writing files for it. Most enabled harnesses read `.agents/skills/` natively and receive nothing — see `harnesses.md` for which ones get a projection. Report both facts, because only the projections are a real diff.
 
-`.agents/repobuddy/config.json` records the last run under a `harnesses` key; nothing reads it back. Never infer the current enabled set from it, and expect a stale or hand-edited `harnesses` value to be silently rewritten.
-
-The file is shared with repobuddy and its other plugins. `init` owns only the `harnesses` key and preserves the rest, so **never rewrite this file wholesale** — you would discard another plugin's configuration.
+`init` records nothing on disk about a run. The enabled set is recomputed from detection every time, so a stored copy could only ever go stale or contradict what is actually there. The command's own output is the report — read it, do not look for a file.
 
 Detecting a harness directory means the repository has configuration to reconcile. It does not by itself mean the user wants that harness maintained — say which harnesses you are enabling and why, and let the user correct the part that is actually variable.

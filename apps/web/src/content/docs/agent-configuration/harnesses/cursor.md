@@ -5,7 +5,7 @@ description: Cursor reads .agents/skills natively, but AGENTS.md reportedly only
 
 Cursor reads `.agents/skills/` natively, plus `.cursor/skills/` and compatibility reads of `.claude/skills/` and `.codex/skills/`. **No skills projection is written.** The canonical directory is already a Cursor directory.
 
-Cursor is enabled unconditionally alongside Claude Code, so it appears in the configuration record whether or not `.cursor/` exists. That record changes nothing on disk.
+Cursor is enabled unconditionally alongside Claude Code, so the command reports it as enabled whether or not `.cursor/` exists. Nothing is written for it either way.
 
 The interesting part is instructions.
 

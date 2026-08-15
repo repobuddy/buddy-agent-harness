@@ -1,13 +1,4 @@
-import {
-	existsSync,
-	lstatSync,
-	mkdirSync,
-	mkdtempSync,
-	readFileSync,
-	readlinkSync,
-	symlinkSync,
-	writeFileSync,
-} from 'node:fs'
+import { existsSync, lstatSync, mkdirSync, mkdtempSync, readlinkSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
@@ -36,9 +27,6 @@ describe('initializeHarnesses', () => {
 		expect(lstatSync(target).isSymbolicLink()).toBe(true)
 		expect(readlinkSync(target)).toBe('../.agents/skills')
 		expect(existsSync(join(target, 'review', 'SKILL.md'))).toBe(true)
-		expect(JSON.parse(readFileSync(join(root, '.agents', 'repobuddy', 'config.json'), 'utf8'))).toEqual({
-			harnesses: ['claude-code', 'cursor'],
-		})
 		expect(existsSync(join(root, '.cursor', 'skills'))).toBe(false)
 	})
 
@@ -91,78 +79,6 @@ describe('initializeHarnesses', () => {
 		expect(lstatSync(join(root, '.windsurf', 'skills')).isSymbolicLink()).toBe(true)
 	})
 
-	it('preserves configuration owned by other repobuddy plugins', () => {
-		const root = repository()
-		mkdirSync(join(root, '.agents', 'repobuddy'), { recursive: true })
-		writeFileSync(
-			join(root, '.agents', 'repobuddy', 'config.json'),
-			JSON.stringify({ plugins: ['buddy-agent-harness'], harnesses: ['codex'] }),
-		)
-
-		initializeHarnesses({ root })
-
-		expect(JSON.parse(readFileSync(join(root, '.agents', 'repobuddy', 'config.json'), 'utf8'))).toEqual({
-			plugins: ['buddy-agent-harness'],
-			harnesses: ['claude-code', 'cursor'],
-		})
-	})
-
-	it('refuses to overwrite configuration it cannot parse', () => {
-		const root = repository()
-		mkdirSync(join(root, '.agents', 'repobuddy'), { recursive: true })
-		writeFileSync(join(root, '.agents', 'repobuddy', 'config.json'), '{ not json')
-
-		expect(() => initializeHarnesses({ root })).toThrow(/unparseable/)
-	})
-
-	it('refuses to overwrite configuration that is not an object', () => {
-		const root = repository()
-		mkdirSync(join(root, '.agents', 'repobuddy'), { recursive: true })
-		writeFileSync(join(root, '.agents', 'repobuddy', 'config.json'), '["claude-code"]')
-		expect(() => initializeHarnesses({ root })).toThrow(/non-object/)
-
-		writeFileSync(join(root, '.agents', 'repobuddy', 'config.json'), 'null')
-		expect(() => initializeHarnesses({ root })).toThrow(/non-object/)
-	})
-
-	it('treats an empty configuration file as absent', () => {
-		const root = repository()
-		mkdirSync(join(root, '.agents', 'repobuddy'), { recursive: true })
-		const file = join(root, '.agents', 'repobuddy', 'config.json')
-		writeFileSync(file, '  \n')
-
-		initializeHarnesses({ root })
-
-		expect(JSON.parse(readFileSync(file, 'utf8'))).toEqual({ harnesses: ['claude-code', 'cursor'] })
-	})
-
-	it('leaves an unchanged configuration file exactly as the repository formatted it', () => {
-		const root = repository()
-		initializeHarnesses({ root })
-		const file = join(root, '.agents', 'repobuddy', 'config.json')
-
-		// Whatever formatter the repository runs may repack what we wrote; a re-run must not undo it.
-		const formatted = '{ "harnesses": ["claude-code", "cursor"] }\n'
-		writeFileSync(file, formatted)
-		initializeHarnesses({ root })
-
-		expect(readFileSync(file, 'utf8')).toBe(formatted)
-	})
-
-	it('still rewrites when the recorded harnesses change', () => {
-		const root = repository()
-		mkdirSync(join(root, '.agents', 'repobuddy'), { recursive: true })
-		const file = join(root, '.agents', 'repobuddy', 'config.json')
-		writeFileSync(file, '{ "harnesses": ["claude-code"], "other": 1 }\n')
-
-		initializeHarnesses({ root })
-
-		expect(JSON.parse(readFileSync(file, 'utf8'))).toEqual({
-			harnesses: ['claude-code', 'cursor'],
-			other: 1,
-		})
-	})
-
 	it('copies the canonical directory when copying is requested', () => {
 		const root = repository()
 
@@ -201,15 +117,22 @@ describe('initializeHarnesses', () => {
 		expect(() => initializeHarnesses({ root: conflictingRoot })).toThrow(/\.claude\/skills/)
 	})
 
-	it('records enabled harnesses even when no canonical skills exist', () => {
+	it('scaffolds the canonical directory even when no skills exist', () => {
 		const root = mkdtempSync(join(tmpdir(), 'buddy-agent-harness-'))
 
 		const result = initializeHarnesses({ root })
 
 		expect(result.skills).toBe(0)
 		expect(existsSync(join(root, '.agents', 'skills'))).toBe(true)
-		expect(JSON.parse(readFileSync(join(root, '.agents', 'repobuddy', 'config.json'), 'utf8'))).toEqual({
-			harnesses: ['claude-code', 'cursor'],
-		})
+	})
+
+	// The enabled set is recomputed from detection on every run, so persisting it would be a second
+	// source of truth that can only ever disagree. The result object is the only report.
+	it('records nothing about the run on disk', () => {
+		const root = repository()
+
+		initializeHarnesses({ root })
+
+		expect(existsSync(join(root, '.agents', 'repobuddy'))).toBe(false)
 	})
 })

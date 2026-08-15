@@ -32,6 +32,6 @@ After the npm package is published, run the CLI without a global installation:
 npx -y buddy-agent-harness init
 ```
 
-The repository root's `AGENTS.md` and `.agents/` tree are canonical: `.agents/AGENTS.md` holds shared behavior, `.agents/skills/**/SKILL.md` holds capabilities, and separately named files hold tool settings. The active harness is enabled by default; explicit user preferences add others. The command preserves user-authored configuration, projects only supported mappings, and records enabled harnesses in `.agents/repobuddy/config.json`.
+The repository root's `AGENTS.md` and `.agents/` tree are canonical: `.agents/AGENTS.md` holds shared behavior, `.agents/skills/**/SKILL.md` holds capabilities, and separately named files hold tool settings. The active harness is enabled by default; explicit user preferences add others. The command preserves user-authored configuration and projects only supported mappings; it records nothing on disk.
 
 Use `buddy-agent-harness init --help` to see `--root`, `--copy`, `--force`, and `--format`.

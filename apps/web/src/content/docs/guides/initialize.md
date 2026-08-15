@@ -21,7 +21,7 @@ The skill locates the Git repository root first. Canonical configuration always 
 
 The skill inventories two surfaces and writes nothing.
 
-The **canonical surface**: `AGENTS.md`, `.agents/AGENTS.md`, `.agents/skills/`, `.agents/repobuddy/config.json`.
+The **canonical surface**: `AGENTS.md`, `.agents/AGENTS.md`, `.agents/skills/`.
 
 The **existing harness surface**: instruction files, skill directories, commands, subagents, rules, MCP servers, and hooks across every supported harness. See [Migrating Existing Configuration](/guides/migrating/) for the full detection table.
 
@@ -65,7 +65,7 @@ Explicit approval is required before any step that deletes, replaces, or rewrite
 
 ### 5. Verify and report
 
-Each projection is checked to resolve into `.agents/skills`, every migrated `SKILL.md` is checked to parse with valid frontmatter, and `config.json` is checked to list the expected harnesses. The report states what was created, consolidated, linked, and left canonical-only.
+Each projection is checked to resolve into `.agents/skills`, and every migrated `SKILL.md` is checked to parse with valid frontmatter. The report states what was created, consolidated, linked, and left canonical-only.
 
 ## Rules the skill follows
 

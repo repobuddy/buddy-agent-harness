@@ -1,6 +1,6 @@
 ---
 title: Configuration Layout
-description: What initialization puts on disk — the canonical tree, the projections, and the configuration record.
+description: What initialization puts on disk — the canonical tree and the projections, and why it records nothing else.
 ---
 
 The canonical configuration belongs to the repository, not to a particular coding harness. This page is what ends up on disk: the layout, the projections, and the record of what was enabled.
@@ -37,19 +37,15 @@ Only [Claude Code](/agent-configuration/harnesses/claude-code/) and [Gemini CLI]
 
 `windsurf` remains accepted as a deprecated alias for `devin-desktop`. It still creates the legacy `.windsurf/skills` projection, which Devin continues to scan, so existing repositories keep working. New repositories should use `devin-desktop`, which needs no projection at all. Any enabled deprecated name is reported in the result's `deprecated` field.
 
-## The configuration record
+## No configuration record
 
-After a successful run, the initializer writes:
+Initialization writes nothing to record what it did. There is no state file, and no key in a shared one.
 
-```text
-.agents/repobuddy/config.json
-```
+That is deliberate. The enabled set is derived on every run — Claude Code and Cursor unconditionally, plus any harness whose directory is already present, plus anything named with `--harness`. A stored copy of a derived value cannot be authoritative: it can only agree with detection, in which case it is redundant, or disagree, in which case it is wrong. It would also read as editable when it is not, quietly discarding anyone who tried to disable a harness by hand.
 
-The record lists the harnesses enabled for that run under a `harnesses` key, whether or not each one required a projection. It is not a replacement for user-authored policy, and nothing reads it back — do not infer the current enabled set from it, and expect a stale or hand-edited value to be silently rewritten.
+Nor is a record needed to clean up after a harness that drops out, because none can. The enabled set only ever grows.
 
-**This file belongs to repobuddy, not to this package.** Buddy Agent Harness is a plugin in that ecosystem and owns exactly one key in it. Initialization reads whatever is already there, replaces `harnesses`, and writes every other key back untouched, so configuration belonging to repobuddy or another plugin survives.
-
-If the file exists but cannot be parsed as a JSON object, initialization fails rather than overwriting it. Repairing a corrupt shared configuration is not something a projection step should do silently.
+The command's own output is the report. Read it, or re-run the command — it is idempotent and cheap.
 
 ## What stays canonical
 

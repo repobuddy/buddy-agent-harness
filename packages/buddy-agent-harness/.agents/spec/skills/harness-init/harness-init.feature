@@ -12,7 +12,7 @@ Feature: Initialize local agent skills across coding harnesses
   Scenario: initializes the repository root when invoked from a nested package
     Given a monorepo command is invoked from one of its packages
     When the agent runs `buddy-agent-harness init`
-    Then the monorepo root contains the canonical directory and enabled-harness configuration
+    Then the monorepo root contains the canonical directory
 
   @behavior
   Scenario: preserves user-authored canonical instructions
@@ -30,19 +30,19 @@ Feature: Initialize local agent skills across coding harnesses
   Scenario: configures the active harness by default
     Given Codex is the active harness and a consumer repository has canonical skill `review`
     When the agent runs `buddy-agent-harness init`
-    Then Codex contains the canonical `review` skill and the configuration lists Codex
+    Then Codex contains the canonical `review` skill and the command reports Codex as enabled
 
   @behavior
   Scenario: configures the active harness and preferred harnesses
     Given Claude Code is the active harness, the user prefers Cursor and Windsurf, and the repository has canonical skill `review`
     When the agent runs `buddy-agent-harness init`
-    Then Claude Code, Cursor, and Windsurf contain canonical skills and the configuration lists each of them
+    Then Claude Code, Cursor, and Windsurf contain canonical skills and the command reports each of them as enabled
 
   @behavior
   Scenario: preflights every conflict before writing initialization output
     Given a consumer repository has conflicting targets for canonical skills across enabled harnesses
     When the agent runs `buddy-agent-harness init` without `--force`
-    Then the command reports every conflict and leaves harness targets and configuration unchanged
+    Then the command reports every conflict and leaves every harness target unchanged
 
   @behavior
   Scenario: replaces conflicting skill targets when force is requested
@@ -69,10 +69,16 @@ Feature: Initialize local agent skills across coding harnesses
     Then the command fails and leaves the appearing target unchanged
 
   @behavior
-  Scenario: records enabled harnesses even when no skills exist
+  Scenario: scaffolds the canonical directory even when no skills exist
     Given a consumer repository has an empty canonical skills directory
     When the agent runs `buddy-agent-harness init`
-    Then `.agents/buddy-agent-harness/config.json` lists the enabled harnesses
+    Then the repository contains `.agents/skills` and the command reports the enabled harnesses
+
+  @behavior
+  Scenario: records nothing about the run on disk
+    Given a consumer repository has canonical skill `review`
+    When the agent runs `buddy-agent-harness init`
+    Then the command writes no record of the run and reports the enabled harnesses in its output
 
   @behavior
   Scenario: selects only immediate canonical skill directories in sorted order

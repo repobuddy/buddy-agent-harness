@@ -32,7 +32,7 @@ Antigravity reads `<workspace-root>/.agents/skills/` and needs nothing written f
 
 Antigravity and VS Code read the canonical directory but are not selectable via `--harness`, because harness registration exists to decide projections and detection, and neither needs either.
 
-Neither has a safe project-scope detection marker. Antigravity documents no project harness directory, and VS Code's `.vscode/` indicates the editor rather than skills support — it exists in repositories with no agent configuration at all, so detecting on it would enable a harness almost everywhere. Registering them would add a line to the configuration record, write zero files, and introduce a false positive. Documenting them is the useful part.
+Neither has a safe project-scope detection marker. Antigravity documents no project harness directory, and VS Code's `.vscode/` indicates the editor rather than skills support — it exists in repositories with no agent configuration at all, so detecting on it would enable a harness almost everywhere. Registering them would add a name to the reported enabled set, write zero files, and introduce a false positive. Documenting them is the useful part.
 
 ## Enabled is not the same as projected
 

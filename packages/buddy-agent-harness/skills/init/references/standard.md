@@ -6,10 +6,9 @@ What to create in every repository, before any harness-specific work.
 
 | Path | When |
 | --- | --- |
-| `AGENTS.md` at the repository root | if absent — never rewrite an existing one; contents per `agents-md.md` |
+| `AGENTS.md` at the repository root | if absent — never clobber an existing one; contents per `agents-md.md` |
 | `.agents/` | if absent |
 | `.agents/skills/<name>/SKILL.md` | one directory per skill; frontmatter per `frontmatter.md` |
-| `.agents/repobuddy/config.json` | written by `init`; shared with repobuddy — never rewrite it wholesale |
 
 Optional, only when the repository already has content for them: `.agents/AGENTS.md` for shared behavior, and a skill's `scripts/`, `references/`, `assets/` subdirectories.
 

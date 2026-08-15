@@ -44,7 +44,7 @@ flowchart TD
   I -->|no, or --force| K{Copy requested or link unavailable?}
   K -->|no| L[Create relative links]
   K -->|yes| M[Copy skill directories]
-  L --> N[Write enabled-harness configuration]
+  L --> N[Report the enabled harnesses]
   M --> N
   N --> O[Emit TOON or JSON result]
 ```
@@ -68,7 +68,8 @@ The consumer root is always the repository root, including in a monorepo. The ac
 | Link or copy               | links are available and copy is not requested            | `creates relative links for canonical skills`                            |
 | Link or copy               | copy is requested or links are unavailable               | `copies canonical skills when links cannot be used`                      |
 | Preserve concurrent target | a target appears during a failed link attempt            | `preserves a target that appears during link fallback`                   |
-| Write configuration        | canonical skills may be empty                            | `records enabled harnesses even when no skills exist`                    |
+| Report the run             | canonical skills may be empty                            | `scaffolds the canonical directory even when no skills exist`            |
+| Report the run             | the enabled set is recomputed every run                  | `records nothing about the run on disk`                                  |
 | Select canonical skills    | files and directories share the canonical directory      | `selects only immediate canonical skill directories in sorted order`     |
 | Write result               | default output requested                                 | `reports the initialization result as TOON by default`                   |
 | Write result               | JSON output requested                                    | `reports the requested copy option as JSON`                              |
