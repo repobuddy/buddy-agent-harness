@@ -69,6 +69,7 @@ export default defineConfig({
 					label: 'Agent Configuration',
 					items: [
 						{ label: 'Open Standards', slug: 'agent-configuration/open-standards' },
+						{ label: 'What Belongs in AGENTS.md', slug: 'agent-configuration/instruction-files' },
 						{ label: 'Writing Portable Skills', slug: 'agent-configuration/portable-skills' },
 						{ label: 'Harness Differences', slug: 'agent-configuration/harness-differences' },
 						{

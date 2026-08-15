@@ -14,6 +14,7 @@ The harness claims across this site are not equally well-sourced, and the differ
 | Antigravity and VS Code skill paths | High / Medium | primary vendor documentation |
 | Gemini CLI paths and `context.fileName` | Medium | project documentation, partly an issue thread |
 | Cursor's Agent-mode-only `AGENTS.md` support | Medium | secondary comparisons, not primary Cursor documentation |
+| `AGENTS.md` context cost and length guidance | Low | practitioner analysis and reported measurements, no vendor specification |
 
 ## Cursor's mode split is not confirmed
 
