@@ -1,6 +1,6 @@
 ---
 title: Buddy Agent Harness
-description: One canonical agent configuration — AGENTS.md and .agents/skills — shared across every coding-agent harness.
+description: One canonical agent configuration (AGENTS.md and .agents/skills), shared across every coding-agent harness.
 template: splash
 hero:
   tagline: One repository-owned agent configuration, readable by every coding harness. An agent skill and a CLI, built on the open AGENTS.md and Agent Skills standards.
@@ -19,7 +19,7 @@ hero:
 
 Buddy Agent Harness treats the repository root's `AGENTS.md` and `.agents/` tree as canonical agent configuration: `.agents/AGENTS.md` holds shared behavior, `.agents/skills/**/SKILL.md` holds capabilities, and separately named files hold tool settings.
 
-It consolidates the configuration you already have into that source, then bridges the harnesses that cannot read it. Most need nothing — Codex, Cursor, Copilot CLI, and Devin Desktop read `.agents/skills/` natively. Only [Claude Code](/agent-configuration/harnesses/claude-code/) and [Gemini CLI](/agent-configuration/harnesses/gemini-cli/) need a link.
+It consolidates the configuration you already have into that source, then bridges the harnesses that cannot read it. Most need nothing: Codex, Cursor, Copilot CLI, and Devin Desktop read `.agents/skills/` natively. Only [Claude Code](/agent-configuration/harnesses/claude-code/) and [Gemini CLI](/agent-configuration/harnesses/gemini-cli/) need a link.
 
 It never invents policy, never rewrites your instructions, and leaves anything without a documented mapping canonical rather than converting it.
 
@@ -40,7 +40,7 @@ Other agent clients can install the same plugin through their marketplace.
 
 ## Use it
 
-Ask your agent to initialize the repository, and it runs the [`init` skill](/guides/initialize/) — survey, classify, confirm, apply, verify. Nothing you authored changes before you approve the plan.
+Ask your agent to initialize the repository, and it runs the [`init` skill](/guides/initialize/): survey, classify, confirm, apply, verify. Nothing you authored changes before you approve the plan.
 
 For a repository that is already consolidated, run the [CLI](/cli/init/) directly:
 
@@ -50,7 +50,7 @@ npx -y buddy-agent-harness init
 
 ## Where to go next
 
-- [Initialize a Repository](/guides/initialize/) — the skill, phase by phase.
-- [Migrating Existing Configuration](/guides/migrating/) — `CLAUDE.md`, `.cursor/rules/`, existing skills.
-- [Open Standards](/agent-configuration/open-standards/) — `AGENTS.md`, Agent Skills, and how much authority `.agents/skills/` has.
-- [Harness Differences](/agent-configuration/harness-differences/) — who reads what, and who needs a bridge.
+- [Initialize a Repository](/guides/initialize/): the skill, phase by phase.
+- [Migrating Existing Configuration](/guides/migrating/): `CLAUDE.md`, `.cursor/rules/`, existing skills.
+- [Open Standards](/agent-configuration/open-standards/): `AGENTS.md`, Agent Skills, and how much authority `.agents/skills/` has.
+- [Harness Differences](/agent-configuration/harness-differences/): who reads what, and who needs a bridge.

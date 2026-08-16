@@ -5,11 +5,11 @@ description: Which SKILL.md frontmatter survives across harnesses, and which two
 
 Linking a skill into every harness is straightforward. Making it *behave* the same everywhere is not, and this is where the real cost of cross-harness authoring sits.
 
-This page covers frontmatter — what survives the trip between harnesses. For how to split a skill across `SKILL.md` and `references/`, see [Best Practices](/agent-configuration/best-practices/).
+This page covers frontmatter: what survives the trip between harnesses. For how to split a skill across `SKILL.md` and `references/`, see [Best Practices](/agent-configuration/best-practices/).
 
 ## Frontmatter is a per-harness superset
 
-The [Agent Skills specification](https://agentskills.io/specification) requires `name` (1–64 characters, lowercase letters, digits, and hyphens, matching the parent directory) and `description` (1–1024 characters). Everything beyond that is a per-harness extension, and each harness silently drops the fields it does not recognize.
+The [Agent Skills specification](https://agentskills.io/specification) requires `name` (1 to 64 characters, lowercase letters, digits, and hyphens, matching the parent directory) and `description` (1 to 1024 characters). Everything beyond that is a per-harness extension, and each harness silently drops the fields it does not recognize.
 
 | Field | Origin | Recognized by |
 | --- | --- | --- |
@@ -23,7 +23,7 @@ The [Agent Skills specification](https://agentskills.io/specification) requires 
 
 Two consequences follow.
 
-Claude Code has the largest field surface, so a skill authored there and shared everywhere carries fields other harnesses parse and discard — a small, unavoidable context cost.
+Claude Code has the largest field surface, so a skill authored there and shared everywhere carries fields other harnesses parse and discard. That is a small, unavoidable context cost.
 
 More importantly, **behavior encoded only in a harness-specific field disappears on every harness that drops it**. Anything that must hold everywhere belongs in the Markdown body, which is the one part every harness reads. Treat harness-specific frontmatter as an optimization over instructions that already work without it.
 

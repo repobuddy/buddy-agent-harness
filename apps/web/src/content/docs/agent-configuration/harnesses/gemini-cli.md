@@ -11,7 +11,7 @@ Do not enable Gemini CLI speculatively. Unlike Cursor, enabling it writes a real
 buddy-agent-harness init --harness gemini-cli
 ```
 
-## Bridge 1 — skills
+## Bridge 1: skills
 
 `buddy-agent-harness init` creates this when `gemini-cli` is enabled:
 
@@ -19,7 +19,7 @@ buddy-agent-harness init --harness gemini-cli
 .gemini/skills → ../.agents/skills
 ```
 
-## Bridge 2 — instructions
+## Bridge 2: instructions
 
 The CLI does **not** write this one, and it cannot be a link. Add `AGENTS.md` to `context.fileName` in `.gemini/settings.json`:
 
