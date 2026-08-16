@@ -15,7 +15,7 @@ Claude Code is the only supported harness that reads **neither** canonical forma
 
 The link is at the directory level, so a skill added to `.agents/skills/` later appears in Claude Code with no further action.
 
-Claude Code documents symlinks at the *per-skill* level: a `<skill-name>` entry may point elsewhere on disk, and a skill reachable from several locations is loaded once. Linking the `.claude/skills` directory itself is undocumented but verified working, and is preferred because it is live. If the directory-level link ever fails, fall back to per-skill symlinks (`.claude/skills/<name>` → the canonical skill directory), which are the documented form.
+Claude Code documents symlinks at the *per-skill* level: a `<skill-name>` entry may point elsewhere on disk, and a skill reachable from several locations is loaded once. Linking the `.claude/skills` directory itself is undocumented but verified working, and is preferred because it is live. Treat it as supported in practice rather than guaranteed by contract. If the directory-level link ever fails, fall back to per-skill symlinks (`.claude/skills/<name>` → the canonical skill directory), which are the documented form.
 
 ## Bridge 2: instructions
 
