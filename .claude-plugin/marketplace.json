@@ -1,10 +1,10 @@
 {
-	"name": "buddy-agent-harness-local",
+	"name": "repobuddy",
 	"owner": {
 		"name": "repobuddy"
 	},
 	"metadata": {
-		"description": "Local development marketplace for Buddy Agent Harness",
+		"description": "Repobuddy agent plugins",
 		"version": "0.1.0"
 	},
 	"plugins": [

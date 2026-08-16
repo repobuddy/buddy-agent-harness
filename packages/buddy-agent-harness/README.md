@@ -9,24 +9,16 @@ An agent plugin and CLI for initializing or updating a consumer repository's sta
 
 ## Install the plugin
 
-Install the portable plugin and its `init` skill with `npx skills`:
-
-```sh
-npx skills add repobuddy/buddy-agent-harness --plugin
-```
-
-In Claude Code, add the marketplace and install the plugin:
+In Claude Code, add the marketplace and install the plugin and its `init` skill:
 
 ```text
 /plugin marketplace add repobuddy/buddy-agent-harness
 /plugin install buddy-agent-harness@repobuddy
 ```
 
-Other agent clients can install the same repository through their plugin marketplace or use the `npx skills` command above.
-
 ## CLI
 
-After the npm package is published, run the CLI without a global installation:
+Run the CLI without a global installation:
 
 ```sh
 npx -y buddy-agent-harness init
