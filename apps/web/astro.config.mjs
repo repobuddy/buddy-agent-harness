@@ -53,6 +53,21 @@ export default defineConfig({
 				dark: './src/assets/logo.svg',
 			},
 			customCss: ['./src/styles/custom.css'],
+			/*
+			 * `favicon` above sets the SVG. These are the raster fallbacks: Safari
+			 * has no SVG favicon support, and Chrome renders one but is erratic
+			 * about a file this size. A browser picks the first format it knows.
+			 */
+			head: [
+				{
+					tag: 'link',
+					attrs: { rel: 'icon', href: `${base.replace(/\/$/, '')}/favicon-32.png`, sizes: '32x32', type: 'image/png' },
+				},
+				{
+					tag: 'link',
+					attrs: { rel: 'apple-touch-icon', href: `${base.replace(/\/$/, '')}/apple-touch-icon.png`, sizes: '180x180' },
+				},
+			],
 			social: [
 				{
 					icon: 'github',
