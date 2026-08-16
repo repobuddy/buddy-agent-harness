@@ -1,0 +1,9 @@
+/*
+ * Starlight sets the title's gap from `--sl-nav-gap`, which is the content
+ * padding variable and is sized for spacing between nav regions rather than
+ * between a logo and the words next to it. At the header's scale that reads
+ * as the logo and the title belonging to different elements.
+ */
+.site-title {
+	gap: 0.5rem;
+}

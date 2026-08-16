@@ -52,6 +52,7 @@ export default defineConfig({
 				light: './src/assets/logo.svg',
 				dark: './src/assets/logo.svg',
 			},
+			customCss: ['./src/styles/custom.css'],
 			social: [
 				{
 					icon: 'github',
