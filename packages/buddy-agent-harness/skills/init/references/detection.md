@@ -25,8 +25,10 @@ The enabled set is the union of three sources: Claude Code and Cursor unconditio
 
 There is no way to disable a harness. Never offer the user a choice that excludes Claude Code or Cursor; `init` enables them whatever the answer, so the question would be a fiction.
 
-Enabling a harness is not the same as writing files for it. Most enabled harnesses read `.agents/skills/` natively and receive nothing — see `harnesses.md` for which ones get a projection. Report both facts, because only the projections are a real diff.
+Enabling a harness is not the same as writing files for it. Most enabled harnesses read `.agents/skills/` natively and receive nothing — see the table in `SKILL.md` for which ones get a projection. Report both facts, because only the projections are a real diff.
 
 `init` records nothing on disk about a run. The enabled set is recomputed from detection every time, so a stored copy could only ever go stale or contradict what is actually there. The command's own output is the report — read it, do not look for a file.
+
+Antigravity and VS Code are native readers and are not registry entries — never write anything for them. Do not treat a `.vscode/` directory as a signal that any harness needs configuring.
 
 Detecting a harness directory means the repository has configuration to reconcile. It does not by itself mean the user wants that harness maintained — say which harnesses you are enabling and why, and let the user correct the part that is actually variable.

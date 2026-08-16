@@ -9,7 +9,18 @@ Give the repository one canonical agent configuration — a root `AGENTS.md` and
 
 Most of the field already reads `.agents/skills/` natively: Codex, Cursor, GitHub Copilot CLI, and Devin Desktop need no projection at all. Only Claude Code and Gemini CLI read solely their own directory and need a link. Keep that asymmetry in mind — this is a consolidation job, not a copy-everywhere job.
 
-`references/standard.md` defines the baseline every repository gets. `references/harnesses.md` routes from there to the per-harness augmentation in `references/<harness>.md` — read only the ones you are enabling.
+`references/standard.md` defines the baseline every repository gets. Read the file below for each harness you are enabling, and only those.
+
+| Harness | Skills projection | Instruction bridge | Read |
+| --- | --- | --- | --- |
+| Claude Code | `.claude/skills` | `CLAUDE.md` with `@AGENTS.md` | `references/harnesses/claude-code.md` |
+| Gemini CLI | `.gemini/skills` | `.gemini/settings.json` edit | `references/harnesses/gemini-cli.md` |
+| Codex | none | none | `references/harnesses/codex.md` |
+| Cursor | none | none written; one gap to report | `references/harnesses/cursor.md` |
+| GitHub Copilot CLI | none | none | `references/harnesses/copilot-cli.md` |
+| Devin Desktop | none | none | `references/harnesses/devin-desktop.md` |
+
+`init` writes skills projections only. Every instruction bridge above is manual work in Phase 4.
 
 Work in five phases. Do not skip Phase 3.
 
@@ -43,8 +54,8 @@ One case does need asking even though it only creates a file: a nested `AGENTS.m
 2. Move approved skills and commands to `.agents/skills/<name>/SKILL.md`, preferring `git mv` so history follows. Fix frontmatter per `references/frontmatter.md` — this is where cross-harness portability is won or lost.
 3. Merge approved instruction content into `AGENTS.md`, preserving the author's wording. Append; do not restructure. Replace a harness file with a pointer only where approved. Content only some tasks need belongs in a skill, not in `AGENTS.md`.
 4. Run `npx -y buddy-agent-harness init` at the repository root. It links `.agents/skills` into the harnesses that need it and skips those that read it natively. Add harnesses the user names with `--harness codex,gemini-cli`.
-5. If the command reports a conflict, resolve the named target and retry. Use `--force` only to replace that exact projection; use `--copy` only where links are unavailable.
-6. Apply the instruction bridges `init` does not write. Claude Code reads `CLAUDE.md`, not `AGENTS.md` — create a `CLAUDE.md` containing `@AGENTS.md`. Gemini CLI needs `AGENTS.md` added to `context.fileName` in `.gemini/settings.json`. Both are detailed in the matching `references/<harness>.md`; apply only the ones you enabled. Where nested `AGENTS.md` files exist, write the same stub in each directory holding one — `references/agents-md.md` covers the one case that stops for approval first.
+5. If the command reports a conflict, resolve the named target and retry. Use `--force` only to replace that exact projection; use `--copy` only where links are unavailable — a copy is a snapshot, not a live projection, so say so when you fall back.
+6. Apply the instruction bridges `init` does not write. Claude Code reads `CLAUDE.md`, not `AGENTS.md` — create a `CLAUDE.md` containing `@AGENTS.md`. Gemini CLI needs `AGENTS.md` added to `context.fileName` in `.gemini/settings.json`. Both are detailed in the matching `references/harnesses/<harness>.md`; apply only the ones you enabled. Where nested `AGENTS.md` files exist, write the same stub in each directory holding one — `references/agents-md.md` covers the one case that stops for approval first.
 7. If any bridge now exists, write or restore the non-material region in `AGENTS.md` per `references/agents-md.md`, unless the markers are present and empty. Without it, an agent asked to change a skill edits `.claude/skills/<name>/SKILL.md` — which a link resolves back to canonical, but a copy silently forks. Skip this when every enabled harness reads `.agents/skills/` natively; with no bridge there is nothing to warn about.
 
 ## 5. Verify and report

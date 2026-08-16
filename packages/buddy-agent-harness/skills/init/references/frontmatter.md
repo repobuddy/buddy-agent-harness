@@ -52,7 +52,7 @@ Enforcing `name` == directory name is also worth doing even though it is only a 
 | `model` | Copilot CLI only |
 | hook configuration | Claude Code, Cline, Kiro CLI |
 
-Codex additionally reads an `agents/openai.yaml` **sidecar file** beside `SKILL.md` — not frontmatter. See `codex.md`; never add one unprompted.
+Codex additionally reads an `agents/openai.yaml` **sidecar file** beside `SKILL.md` — not frontmatter. See `harnesses/codex.md`; never add one unprompted.
 
 ## What follows from that
 

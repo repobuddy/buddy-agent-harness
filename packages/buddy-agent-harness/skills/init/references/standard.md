@@ -21,6 +21,6 @@ Optional, only when the repository already has content for them: `.agents/AGENTS
 
 ## Next
 
-Three harnesses need nothing beyond this baseline. Check `harnesses.md` for which need augmentation, then read only the matching `<harness>.md`.
+Three harnesses need nothing beyond this baseline. `SKILL.md` has the table of which need augmentation; read only the matching `harnesses/<harness>.md`.
 
 Background on where these formats come from: [Open Standards](https://repobuddy.github.io/buddy-agent-harness/agent-configuration/open-standards/).

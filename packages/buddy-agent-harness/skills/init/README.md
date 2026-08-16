@@ -18,7 +18,7 @@ npx -y buddy-agent-harness init
 
 Claude Code also reads `CLAUDE.md` rather than `AGENTS.md`, so the skill sets up a `CLAUDE.md` that imports `@AGENTS.md`.
 
-`references/standard.md` defines the baseline every repository gets from the open standards. `references/harnesses.md` routes to a `references/<harness>.md` per harness, covering what each one needs on top of that baseline — and how well-sourced each claim is.
+`references/standard.md` defines the baseline every repository gets from the open standards. `references/harnesses/<harness>.md` covers what each harness needs on top of that baseline — and how well-sourced each claim is. `SKILL.md` routes to them directly.
 
 ## The part that needs care
 
