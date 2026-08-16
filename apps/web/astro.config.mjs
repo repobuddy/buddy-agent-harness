@@ -100,6 +100,7 @@ export default defineConfig({
 					label: 'Reference',
 					items: [
 						{ label: 'Configuration Layout', slug: 'reference/configuration-layout' },
+						{ label: 'Glossary', slug: 'reference/glossary' },
 						{ label: 'CLI Overview', slug: 'cli' },
 						{ label: 'CLI: init', slug: 'cli/init' },
 						{ label: 'Sources & Confidence', slug: 'sources' },
