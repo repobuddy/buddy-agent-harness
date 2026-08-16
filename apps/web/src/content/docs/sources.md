@@ -31,7 +31,7 @@ The harness claims across this site are not equally well-sourced, and the differ
 
 The claim that Cursor's Agent mode reads `AGENTS.md` while Chat and Composer do not comes from third-party comparisons rather than Cursor's own documentation.
 
-It is consequential — a repository standardizing on `AGENTS.md` alone would lose instructions in two of three Cursor surfaces — so it is worth verifying against Cursor's documentation before relying on it. See [Cursor](/agent-configuration/harnesses/cursor/).
+It is consequential: a repository standardizing on `AGENTS.md` alone would lose instructions in two of three Cursor surfaces. Verify it against Cursor's documentation before relying on it. See [Cursor](/agent-configuration/harnesses/cursor/).
 
 ## Not established
 
@@ -50,7 +50,7 @@ Both are primary and both are current, so the disagreement is real rather than a
 
 ## Harness settings files are not documented here
 
-This site does not carry a table of per-harness settings files — `.claude/settings.json`, `.cursor/permissions.json`, `~/.codex/config.toml`, and peers — covering tool permissions, hooks, and environment defaults.
+This site does not carry a table of per-harness settings files (`.claude/settings.json`, `.cursor/permissions.json`, `~/.codex/config.toml`, and peers) covering tool permissions, hooks, and environment defaults.
 
 Two reasons. The readily available sourcing for several of those rows is third-party blog posts rather than vendor documentation, and this project does not publish harness claims at that confidence. And settings are outside what initialization touches: only skills are projected, and [tool settings stay canonical](/reference/configuration-layout/#what-stays-canonical).
 

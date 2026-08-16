@@ -13,7 +13,7 @@ The interesting part is instructions.
 
 Cursor reads `AGENTS.md` in **Agent mode only**. Chat and Composer read `.cursorrules` and `.cursor/rules/*.mdc` instead.
 
-If that is right, a repository that consolidates everything into `AGENTS.md` keeps its instructions in Agent mode and loses them in Chat and Composer — two of three surfaces.
+If that is right, a repository that consolidates everything into `AGENTS.md` keeps its instructions in Agent mode and loses them in Chat and Composer, two of three surfaces.
 
 **This claim is contested.** It comes from third-party comparisons, not from Cursor's own documentation. It is consequential enough to be worth verifying against Cursor's documentation before you rely on it either way, and it is stated here as unconfirmed rather than as settled fact. See [Sources & Confidence](/sources/).
 
@@ -27,7 +27,7 @@ The practical position: consolidate instructions into `AGENTS.md`, and leave the
 
 ## Frontmatter
 
-`paths`, `disable-model-invocation`, and legacy `globs` are Cursor-recognized. Other harnesses drop them, so keep load-bearing behavior in the Markdown body — see [Portable Skills](/agent-configuration/portable-skills/).
+`paths`, `disable-model-invocation`, and legacy `globs` are Cursor-recognized. Other harnesses drop them, so keep load-bearing behavior in the Markdown body. See [Portable Skills](/agent-configuration/portable-skills/).
 
 ## Reference
 

@@ -3,7 +3,7 @@ title: Introduction
 description: Keep one repository-owned agent configuration that every coding harness can read.
 ---
 
-Buddy Agent Harness gives a repository one canonical agent configuration — a root `AGENTS.md` and an `.agents/` tree — and bridges the coding harnesses that cannot read it directly.
+Buddy Agent Harness gives a repository one canonical agent configuration (a root `AGENTS.md` and an `.agents/` tree) and bridges the coding harnesses that cannot read it directly.
 
 Use it when a team works with more than one agent and does not want to maintain equivalent instructions in `CLAUDE.md`, `.cursor/rules/`, `.github/copilot-instructions.md`, and a per-harness skills directory at the same time.
 
@@ -27,7 +27,7 @@ This is a consolidation job, not a copy-everywhere job. See [Configuration Layou
 
 ## What it will not do
 
-Buddy Agent Harness does not invent instructions or rewrite a team's policy. It preserves user-authored configuration and projects an artifact only where a documented, safe mapping exists. A setting with no such mapping — MCP servers, subagents, hooks, path-scoped rules — stays canonical rather than being guessed at or converted.
+Buddy Agent Harness does not invent instructions or rewrite a team's policy. It preserves user-authored configuration and projects an artifact only where a documented, safe mapping exists. A setting with no such mapping (MCP servers, subagents, hooks, path-scoped rules) stays canonical rather than being guessed at or converted.
 
 It also stays out of everything that is not local agent configuration: no changes to CI, workflows, repository settings, security scanning, or branch rules.
 
@@ -56,7 +56,7 @@ From the repository root, ask your agent to run the `init` skill:
 Initialize this repository's agent configuration.
 ```
 
-The skill surveys what configuration you already have, proposes a consolidation plan, applies it once you approve, and runs the CLI to create the projections. That is the primary path — start at [Initialize a Repository](/guides/initialize/).
+The skill surveys what configuration you already have, proposes a consolidation plan, applies it once you approve, and runs the CLI to create the projections. That is the primary path. Start at [Initialize a Repository](/guides/initialize/).
 
 The CLI alone handles only the linking step:
 
@@ -68,4 +68,4 @@ Use it directly on a repository that is already consolidated. See the [CLI refer
 
 ## Start small
 
-You do not need to create every configuration artifact before initializing. Start with one repository skill in `.agents/skills/<name>/SKILL.md` and a root `AGENTS.md`. Re-running initialization is idempotent — an existing symlink that already resolves into `.agents/` is left alone.
+You do not need to create every configuration artifact before initializing. Start with one repository skill in `.agents/skills/<name>/SKILL.md` and a root `AGENTS.md`. Re-running initialization is idempotent: an existing symlink that already resolves into `.agents/` is left alone.

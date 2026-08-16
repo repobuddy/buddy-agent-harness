@@ -13,6 +13,6 @@ npx -y buddy-agent-harness init
 
 The CLI is the mechanical half. It creates projections, records the enabled harnesses, and reports conflicts. It does not read your existing `CLAUDE.md`, move skills, merge instructions, or write the instruction bridges.
 
-Use the [`init` skill](/guides/initialize/) when adopting or migrating a repository — that is the whole job, and the CLI is step 4 of it. Use the CLI directly when the repository is already consolidated and you only need the links refreshed or a new harness enabled.
+Use the [`init` skill](/guides/initialize/) when adopting or migrating a repository. That is the whole job, and the CLI is step 4 of it. Use the CLI directly when the repository is already consolidated and you only need the links refreshed or a new harness enabled.
 
 Full flags, output shape, and conflict behavior: [`init`](/cli/init/).

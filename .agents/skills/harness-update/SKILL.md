@@ -62,7 +62,8 @@ A harness fact has many plausible homes, so a partial update is the normal failu
 | `packages/buddy-agent-harness/src/harness-registry/harness-registry.ts` | `harnessRegistry` — names, detection directories, projection targets |
 | `packages/buddy-agent-harness/skills/init/references/harnesses/<harness>.md` | agent instructions for that harness — **instructions only, no rationale** |
 | `packages/buddy-agent-harness/skills/init/SKILL.md` | the routing table |
-| `apps/web/.../reference/harness-support.md` | the support matrix, evidence confidence |
+| `apps/web/.../agent-configuration/harness-differences.md` | the support matrix, evidence confidence |
+| `apps/web/.../reference/glossary.md` | the definition of a harness term, if the change adds or renames one |
 | `apps/web/.../reference/configuration-layout.md` | owns the paths; other pages link here |
 | `README.md`, `packages/*/README.md` | the short summary of who needs a projection |
 

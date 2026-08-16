@@ -1,3 +1,4 @@
+import { unified } from '@astrojs/markdown-remark'
 import starlight from '@astrojs/starlight'
 import { defineConfig } from 'astro/config'
 
@@ -32,7 +33,7 @@ export default defineConfig({
 	site: 'https://repobuddy.github.io',
 	base,
 	markdown: {
-		rehypePlugins: [rehypeBaseLinks],
+		processor: unified({ rehypePlugins: [rehypeBaseLinks] }),
 	},
 	redirects: Object.fromEntries(
 		Object.entries({
@@ -46,6 +47,27 @@ export default defineConfig({
 	integrations: [
 		starlight({
 			title: 'Buddy Agent Harness',
+			favicon: '/favicon.svg',
+			logo: {
+				light: './src/assets/logo.svg',
+				dark: './src/assets/logo.svg',
+			},
+			customCss: ['./src/styles/custom.css'],
+			/*
+			 * `favicon` above sets the SVG. These are the raster fallbacks: Safari
+			 * has no SVG favicon support, and Chrome renders one but is erratic
+			 * about a file this size. A browser picks the first format it knows.
+			 */
+			head: [
+				{
+					tag: 'link',
+					attrs: { rel: 'icon', href: `${base.replace(/\/$/, '')}/favicon-32.png`, sizes: '32x32', type: 'image/png' },
+				},
+				{
+					tag: 'link',
+					attrs: { rel: 'apple-touch-icon', href: `${base.replace(/\/$/, '')}/apple-touch-icon.png`, sizes: '180x180' },
+				},
+			],
 			social: [
 				{
 					icon: 'github',
@@ -73,6 +95,7 @@ export default defineConfig({
 						{ label: 'Instruction Purpose', slug: 'agent-configuration/instruction-purpose' },
 						{ label: 'Instruction Target', slug: 'agent-configuration/instruction-target' },
 						{ label: 'Writing Portable Skills', slug: 'agent-configuration/portable-skills' },
+						{ label: 'Lookup Files', slug: 'agent-configuration/lookup-files' },
 						{
 							label: 'Skills',
 							items: [
@@ -100,6 +123,7 @@ export default defineConfig({
 					label: 'Reference',
 					items: [
 						{ label: 'Configuration Layout', slug: 'reference/configuration-layout' },
+						{ label: 'Glossary', slug: 'reference/glossary' },
 						{ label: 'CLI Overview', slug: 'cli' },
 						{ label: 'CLI: init', slug: 'cli/init' },
 						{ label: 'Sources & Confidence', slug: 'sources' },
