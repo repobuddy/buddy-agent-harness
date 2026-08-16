@@ -1,6 +1,8 @@
 ---
 name: harness-update
 description: "Use when refreshing this repository's harness support data — after a harness-drift issue, when a vendor changes a skills path or instruction file, when adding a harness to the registry, or on requests like \"check if the harness table is still accurate\", \"is Windsurf still right\", or \"update the harness research\"."
+metadata:
+  internal: true
 ---
 
 # Updating harness support data
