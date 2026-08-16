@@ -70,7 +70,20 @@ export default defineConfig({
 					items: [
 						{ label: 'Open Standards', slug: 'agent-configuration/open-standards' },
 						{ label: 'What Belongs in AGENTS.md', slug: 'agent-configuration/instruction-files' },
+						{ label: 'Instruction Purpose', slug: 'agent-configuration/instruction-purpose' },
+						{ label: 'Instruction Target', slug: 'agent-configuration/instruction-target' },
 						{ label: 'Writing Portable Skills', slug: 'agent-configuration/portable-skills' },
+						{
+							label: 'Skills',
+							items: [
+								{ label: 'Kinds of Skill', slug: 'agent-configuration/skills/overview' },
+								{ label: 'Commands', slug: 'agent-configuration/skills/commands' },
+								{ label: 'Direct Invocation Skill', slug: 'agent-configuration/skills/direct-skill' },
+								{ label: 'Gateway Skill', slug: 'agent-configuration/skills/gateway-skill' },
+								{ label: 'Persona', slug: 'agent-configuration/skills/persona' },
+								{ label: 'Responsibility', slug: 'agent-configuration/skills/responsibility' },
+							],
+						},
 						{ label: 'Best Practices', slug: 'agent-configuration/best-practices' },
 						{ label: 'Harness Differences', slug: 'agent-configuration/harness-differences' },
 						{

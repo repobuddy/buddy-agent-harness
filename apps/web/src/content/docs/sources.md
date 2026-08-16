@@ -15,6 +15,13 @@ The harness claims across this site are not equally well-sourced, and the differ
 | Gemini CLI paths and `context.fileName` | Medium | project documentation, partly an issue thread |
 | Cursor's Agent-mode-only `AGENTS.md` support | Medium | secondary comparisons, not primary Cursor documentation |
 | `AGENTS.md` context cost and length guidance | Low | practitioner analysis and reported measurements, no vendor specification |
+| Claude Code skill runtime fields, and their turn-scoping | High | primary vendor documentation |
+| `user-invocable` and `disable-model-invocation` being independent | High | primary vendor documentation, including the vendor's own comparison table |
+| A missing `description` falling back to the body's first paragraph | High | primary vendor documentation |
+| `commands/` being merged into skills rather than deprecated | High | primary vendor documentation |
+| What an agent definition can express that a skill cannot | High | primary vendor documentation |
+| Cursor rule selection via `globs` / `description` / neither | High | primary vendor documentation |
+| Copilot `applyTo` path-specific instructions | High | primary vendor documentation |
 | Nested `AGENTS.md` resolution (nearest-file-wins) | High | agents.md body copy and FAQ, primary |
 | Claude Code concatenating every discovered `CLAUDE.md` | High | Claude Code memory documentation, primary |
 | Nested-resolution semantics beyond precedence | Low | unratified v1.1 proposal, no maintainer response |
@@ -34,6 +41,20 @@ Two claims about instruction files are left unstated rather than guessed:
 - whether Antigravity reads `AGENTS.md`.
 
 Both vendors document skills without addressing repository instructions. Their rows in [Harness Differences](/agent-configuration/harness-differences/) say "not established" for that column rather than assuming either way.
+
+## The two standards disagree about a missing description
+
+Claude Code documents that an omitted `description` "uses the first paragraph of markdown content." The Agent Skills client-implementation guide prescribes the opposite: a missing or empty description means the skill is **skipped**.
+
+Both are primary and both are current, so the disagreement is real rather than a sourcing gap. A skill relying on either behavior is not portable, which is why [Direct Invocation Skill](/agent-configuration/skills/direct-skill/) requires an explicit marker string rather than an absent field.
+
+## Harness settings files are not documented here
+
+This site does not carry a table of per-harness settings files — `.claude/settings.json`, `.cursor/permissions.json`, `~/.codex/config.toml`, and peers — covering tool permissions, hooks, and environment defaults.
+
+Two reasons. The readily available sourcing for several of those rows is third-party blog posts rather than vendor documentation, and this project does not publish harness claims at that confidence. And settings are outside what initialization touches: only skills are projected, and [tool settings stay canonical](/reference/configuration-layout/#what-stays-canonical).
+
+Adding the table is therefore a research task rather than an editing one.
 
 ## Undocumented but verified
 
