@@ -5,6 +5,7 @@ What to look for during the survey, and where each finding belongs.
 | Class | Look for | Disposition |
 | --- | --- | --- |
 | Instructions | `AGENTS.md`, `.agents/AGENTS.md`, `CLAUDE.md`, `.cursorrules`, `.cursor/rules/**`, `.github/copilot-instructions.md`, `.github/instructions/**`, `GEMINI.md`, `.windsurfrules` | consolidate into `AGENTS.md`; confirm before replacing anything |
+| Nested instructions | `**/AGENTS.md` below the root, and any `**/CLAUDE.md` beside one | canonical and scoped — report, never merge upward. Bridging is per directory and per approval; see `agents-md.md` |
 | Skills | `.claude/skills/`, `.cursor/skills/`, `.codex/skills/`, `.github/skills/`, `.windsurf/skills/`, `.gemini/skills/` | move to `.agents/skills/`, fix frontmatter, then link back |
 | Commands | `.claude/commands/*.md`, `.cursor/commands/*.md` | move to `.agents/skills/<name>/SKILL.md`. Claude Code has merged commands into skills, so this follows the harness rather than fighting it |
 | Subagents | `.claude/agents/` | canonical-only — no cross-harness format exists. Report; leave in place |

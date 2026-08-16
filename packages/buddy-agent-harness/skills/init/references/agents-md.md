@@ -17,11 +17,30 @@ Derivation is the greenfield path. Take it only after establishing that no instr
 | `.agents/AGENTS.md` with content | canonical shared instructions, not the root file | leave it alone. Do not derive anything that restates it, and do not merge it upward |
 | a harness instruction file with authored content — `CLAUDE.md`, `.cursorrules`, `.cursor/rules/**`, `.github/copilot-instructions.md`, `.github/instructions/**`, `GEMINI.md`, `.windsurfrules` | existing content | consolidate into `AGENTS.md` preserving the author's wording. Replace the original with a pointer only where approved |
 | `CLAUDE.md` whose whole body is `@AGENTS.md`, or a symlink to `AGENTS.md` | a bridge a previous run created | not content. Skip it — this is what makes re-runs idempotent |
+| a nested `AGENTS.md` — `apps/web/AGENTS.md`, `packages/<name>/AGENTS.md` | canonical instructions scoped to that subtree | leave it alone. Never merge it upward, never derive against it. See below |
 | none of the above | greenfield | derive, then confirm every surviving line |
 
 Both can be true at once: a repository can have a `.cursorrules` to consolidate *and* gaps worth deriving. Consolidate first, then derive only what the consolidated content does not already cover.
 
 Never make a material change to an existing `AGENTS.md`. Never invent policy in either case.
+
+## Nested AGENTS.md
+
+Nested files are part of the format: a subproject may carry its own `AGENTS.md`, and the standard's published rule is that the file closest to the one being edited wins.
+
+`init` never consolidates one upward. Merging a nested file into the root would change which files it applies to, turning subtree-scoped instructions into repository-wide ones. Report each nested file, leave it in place.
+
+Two things do need doing when Claude Code is enabled.
+
+**Bridge every nested file by default.** Claude Code reads `CLAUDE.md`, and the root bridge covers only the root file — instructions in `apps/web/AGENTS.md` reach Codex and Cursor and are invisible to Claude Code until `apps/web/CLAUDE.md` exists. Write one stub per directory holding a nested file, the same way the root stub is written and without asking. A relative `@AGENTS.md` resolves against the file containing the import, so the stub is byte-identical at every level. Report the set; do not enumerate it as a question.
+
+**Stop on a file that contradicts the root.** Bridging does not preserve the standard's nearest-wins rule — `references/claude-code.md` has the model. A nested file that *adds* facts behaves the same everywhere and is safe to bridge unattended. One that *reverses* a root rule — "this package uses vitest, not jest" — is an override for Codex and a contradiction for Claude Code, so bridging it silently hands Claude two incompatible instructions with no rule for choosing.
+
+Read the root file and each nested file before writing stubs. For any nested file that negates, replaces, or narrows a root rule rather than adding to it, ask before bridging that one, and offer the three options: bridge it anyway and accept the ambiguity, reword the nested rule as additive so every harness agrees, or leave it unbridged so Claude Code keeps the root behavior. Bridge the rest without waiting on the answer.
+
+Report the comparison, not just the count. Name each nested file and say it was judged additive. This is the only check standing between a missed contradiction and a silently broken bridge, so it has to be reviewable — "wrote 12 stubs" is not.
+
+Do not resolve it by rewriting the user's nested file. Which option they want is policy.
 
 ## Material and non-material changes
 
@@ -43,11 +62,15 @@ Non-material writes are confined to a managed region so user prose is never touc
 ```markdown
 <!-- buddy-agent-harness:begin -->
 
-Skills are canonical in `.agents/skills/`. Harness directories such as `.claude/skills/`
-are generated bridges — edit the canonical copy, not the bridge.
+Skills are canonical in `.agents/skills/` — create and edit them there.
+`.claude/skills/` is a generated bridge to it; never write to it directly.
+`CLAUDE.md` is a generated pointer to this file. Shared instructions belong
+here; keep only Claude-specific notes there.
 
 <!-- buddy-agent-harness:end -->
 ```
+
+Name the bridges this repository actually has, not the example above. Drop the `CLAUDE.md` line where no stub was written, and the skills line where no skills bridge exists — a warning about a path that does not exist teaches an agent to distrust the rest.
 
 - **Append-only.** Place the region at the end. Never reorder or remove what the user wrote.
 - **Idempotent.** A re-run rewrites the region in place. Two regions is a bug.

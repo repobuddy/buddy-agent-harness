@@ -25,6 +25,12 @@ Claude-specific notes may follow below the import.
 
 `ln -s AGENTS.md CLAUDE.md` also works, but **prefer the import** — on Windows a symlink needs Administrator or Developer Mode.
 
+## Nested instruction files
+
+Claude Code concatenates every `CLAUDE.md` from the filesystem root down to the working directory; the nearest is read last but does not win. The `AGENTS.md` standard says the nearest file wins. Conflicts are undefined here — the docs say Claude may pick one arbitrarily.
+
+So a nested `AGENTS.md` needs its own `CLAUDE.md` stub to be visible at all, and gets additive rather than override semantics once it has one. `references/agents-md.md` has the rule; do not bridge a nested file that reverses a root instruction without saying what will happen.
+
 ## Frontmatter
 
 Claude Code recognizes the most fields (`context: fork`, `agent:`, `disable-model-invocation`, `once`, `${CLAUDE_SKILL_DIR}`). Other harnesses drop them silently.

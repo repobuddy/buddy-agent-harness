@@ -17,13 +17,13 @@ Work in five phases. Do not skip Phase 3.
 
 Locate the Git repository root; the canonical configuration always lives there, including in a monorepo.
 
-Inventory both the canonical surface (`AGENTS.md`, `.agents/AGENTS.md`, `.agents/skills/`) and every pre-existing harness artifact listed in `references/detection.md`. Read what you find. Write nothing yet.
+Inventory both the canonical surface (`AGENTS.md`, `.agents/AGENTS.md`, `.agents/skills/`, and any nested `AGENTS.md` below the root) and every pre-existing harness artifact listed in `references/detection.md`. Read what you find. Write nothing yet.
 
 ## 2. Classify
 
 Sort each finding into exactly one bucket:
 
-- **already canonical** — leave it.
+- **already canonical** — leave it. Nested `AGENTS.md` files belong here: they are scoped instructions, never content to merge upward.
 - **already linked** — a symlink resolving into `.agents/`; skip it. This is what makes re-runs idempotent.
 - **consolidatable** — harness instruction files whose content belongs in `AGENTS.md`.
 - **portable** — skill and command directories that move into `.agents/skills/`.
@@ -33,7 +33,9 @@ Sort each finding into exactly one bucket:
 
 Present the plan before touching anything the user wrote: what will be created, which content moves into `AGENTS.md`, which harness files would become pointers, any frontmatter to be added (show the derived `name` and `description` verbatim), which harnesses will be enabled, and what is being left alone and why.
 
-Get explicit approval before any step that deletes, replaces, or rewrites a user-authored file. Creating a missing directory or a missing `AGENTS.md` needs no approval, and neither does the non-material region in `references/agents-md.md` — report it rather than asking.
+Get explicit approval before any step that deletes, replaces, or rewrites a user-authored file. Creating a missing directory, a missing `AGENTS.md`, or a `CLAUDE.md` bridge stub needs no approval, and neither does the non-material region in `references/agents-md.md` — report these rather than asking.
+
+One case does need asking even though it only creates a file: a nested `AGENTS.md` that reverses a root rule, where bridging it hands Claude Code a contradiction it has no rule for resolving. Raise that file, bridge the others, and keep going.
 
 ## 4. Apply
 
@@ -42,7 +44,7 @@ Get explicit approval before any step that deletes, replaces, or rewrites a user
 3. Merge approved instruction content into `AGENTS.md`, preserving the author's wording. Append; do not restructure. Replace a harness file with a pointer only where approved. Content only some tasks need belongs in a skill, not in `AGENTS.md`.
 4. Run `npx -y buddy-agent-harness init` at the repository root. It links `.agents/skills` into the harnesses that need it and skips those that read it natively. Add harnesses the user names with `--harness codex,gemini-cli`.
 5. If the command reports a conflict, resolve the named target and retry. Use `--force` only to replace that exact projection; use `--copy` only where links are unavailable.
-6. Apply the instruction bridges `init` does not write. Claude Code reads `CLAUDE.md`, not `AGENTS.md` — create a `CLAUDE.md` containing `@AGENTS.md`. Gemini CLI needs `AGENTS.md` added to `context.fileName` in `.gemini/settings.json`. Both are detailed in the matching `references/<harness>.md`; apply only the ones you enabled.
+6. Apply the instruction bridges `init` does not write. Claude Code reads `CLAUDE.md`, not `AGENTS.md` — create a `CLAUDE.md` containing `@AGENTS.md`. Gemini CLI needs `AGENTS.md` added to `context.fileName` in `.gemini/settings.json`. Both are detailed in the matching `references/<harness>.md`; apply only the ones you enabled. Where nested `AGENTS.md` files exist, write the same stub in each directory holding one — `references/agents-md.md` covers the one case that stops for approval first.
 7. If any bridge now exists, write or restore the non-material region in `AGENTS.md` per `references/agents-md.md`, unless the markers are present and empty. Without it, an agent asked to change a skill edits `.claude/skills/<name>/SKILL.md` — which a link resolves back to canonical, but a copy silently forks. Skip this when every enabled harness reads `.agents/skills/` natively; with no bridge there is nothing to warn about.
 
 ## 5. Verify and report
@@ -57,4 +59,6 @@ Confirm each projection resolves into `.agents/skills` and that every migrated `
 - Never convert tool settings between formats without a documented mapping. Unmapped settings stay canonical.
 - Symlinks belong in version control. Leave them tracked; do not add them to `.gitignore`.
 - Only `.agents/skills/` is an established convention. Do not invent `.agents/rules/`, `.agents/commands/`, or `.agents/agents/` and present them as standard.
+- Never merge a nested `AGENTS.md` into the root. Merging changes which files it governs.
+- Do not create `AGENTS.local.md`. The standard has no local-override file — two filenames and two meanings are still under discussion upstream. Personal instructions go in `CLAUDE.local.md`, gitignored, and only Claude Code reads them.
 - Local agent configuration only. Do not change workflows, GitHub Actions, repository settings, security scanning, branch rules, or unrelated project files.
