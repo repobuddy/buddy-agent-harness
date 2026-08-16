@@ -37,7 +37,6 @@
 		"!**/*.{test,spec}.ts",
 		"skills",
 		"plugin.json",
-		".plugin",
 		".claude-plugin",
 		".cursor-plugin",
 		".codex-plugin"

@@ -9,20 +9,12 @@ Initialize or update a consumer repository's standards-based agent configuration
 
 ## Install the plugin
 
-Install the portable plugin and its `init` skill with `npx skills`:
-
-```sh
-npx skills add repobuddy/buddy-agent-harness --plugin
-```
-
-In Claude Code, add the marketplace and install the plugin:
+In Claude Code, add the marketplace and install the plugin and its `init` skill:
 
 ```text
 /plugin marketplace add repobuddy/buddy-agent-harness
 /plugin install buddy-agent-harness@repobuddy
 ```
-
-Other agent clients can install the same repository through their plugin marketplace or use the `npx skills` command above.
 
 ## CLI
 

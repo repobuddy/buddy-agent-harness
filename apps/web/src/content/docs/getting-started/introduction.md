@@ -33,20 +33,12 @@ It also stays out of everything that is not local agent configuration: no change
 
 ## Install
 
-Install the plugin and its `init` skill:
-
-```sh
-npx skills add repobuddy/buddy-agent-harness --plugin
-```
-
-In Claude Code, install it from the Repobuddy marketplace:
+In Claude Code, install the plugin and its `init` skill from the Repobuddy marketplace:
 
 ```text
 /plugin marketplace add repobuddy/buddy-agent-harness
 /plugin install buddy-agent-harness@repobuddy
 ```
-
-Other agent clients can install the same plugin through their own marketplace.
 
 ## Initialize a repository
 
