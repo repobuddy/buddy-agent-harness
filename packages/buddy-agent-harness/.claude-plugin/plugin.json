@@ -5,6 +5,7 @@
 	"author": {
 		"name": "repobuddy"
 	},
+	"homepage": "https://github.com/repobuddy/buddy-agent-harness",
 	"repository": "https://github.com/repobuddy/buddy-agent-harness",
 	"license": "MIT",
 	"keywords": ["agent", "skills", "harness", "claude-code", "codex"],
