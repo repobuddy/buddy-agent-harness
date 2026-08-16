@@ -1,3 +1,4 @@
+import { unified } from '@astrojs/markdown-remark'
 import starlight from '@astrojs/starlight'
 import { defineConfig } from 'astro/config'
 
@@ -32,7 +33,7 @@ export default defineConfig({
 	site: 'https://repobuddy.github.io',
 	base,
 	markdown: {
-		rehypePlugins: [rehypeBaseLinks],
+		processor: unified({ rehypePlugins: [rehypeBaseLinks] }),
 	},
 	redirects: Object.fromEntries(
 		Object.entries({
