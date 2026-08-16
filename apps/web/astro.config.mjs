@@ -47,6 +47,11 @@ export default defineConfig({
 	integrations: [
 		starlight({
 			title: 'Buddy Agent Harness',
+			favicon: '/favicon.svg',
+			logo: {
+				light: './src/assets/logo.svg',
+				dark: './src/assets/logo.svg',
+			},
 			social: [
 				{
 					icon: 'github',
