@@ -50,7 +50,7 @@ The distinction that matters is between **policy** and **fact**. Policy is norma
 
 So the derivation is: read the configuration files, list each candidate fact beside the file it came from, apply the test above, and confirm the survivors before writing. A candidate with no source file is invention. If nothing survives, a heading and one line stating what the repository is, is a complete and honest result.
 
-The `init` skill follows this procedure; it is specified in `skills/init/references/agents-md.md`.
+The `init` skill follows this procedure; it is specified in `skills/init/references/agents-md.md`. For practices that span instructions, skills, and bridges alike, see [Best Practices](/agent-configuration/best-practices/).
 
 ## CLAUDE.md
 

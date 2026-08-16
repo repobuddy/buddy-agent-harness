@@ -48,7 +48,7 @@ Two claims on this site describe upstream work that is proposed rather than adop
 
 Neither has a maintainer resolution. They are recorded because the divergence they describe is real today, not because either outcome is expected. Positions this project has taken on them are tracked in [unsettled upstream questions](https://github.com/repobuddy/buddy-agent-harness/discussions?discussions_q=label%3Aupstream-unsettled).
 
-The specification's file-reference guidance is recorded as `E-STD-06`. Its first sentence reads as a ban on subdirectories and its second glosses it as a limit on reference chains; [Structuring a Skill](/agent-configuration/skill-structure/) takes the second reading, and the layout itself is explicitly unconstrained.
+The specification's file-reference guidance is recorded as `E-STD-06`. Its first sentence reads as a ban on subdirectories and its second glosses it as a limit on reference chains; [Best Practices](/agent-configuration/best-practices/) takes the second reading, and the layout itself is explicitly unconstrained.
 
 ## An unresolved third-party discrepancy
 
