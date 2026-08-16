@@ -5,6 +5,8 @@ description: Which SKILL.md frontmatter survives across harnesses, and which two
 
 Linking a skill into every harness is straightforward. Making it *behave* the same everywhere is not, and this is where the real cost of cross-harness authoring sits.
 
+This page covers frontmatter — what survives the trip between harnesses. For how to split a skill across `SKILL.md` and `references/`, see [Structuring a Skill](/agent-configuration/skill-structure/).
+
 ## Frontmatter is a per-harness superset
 
 The [Agent Skills specification](https://agentskills.io/specification) requires `name` (1–64 characters, lowercase letters, digits, and hyphens, matching the parent directory) and `description` (1–1024 characters). Everything beyond that is a per-harness extension, and each harness silently drops the fields it does not recognize.

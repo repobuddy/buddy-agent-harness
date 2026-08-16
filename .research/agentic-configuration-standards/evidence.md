@@ -260,3 +260,15 @@ Status values: `confirmed`, `contested`, `thin`. Confidence: high / medium / low
 - **Notes**: Verbatim: "In large monorepos, ancestor CLAUDE.md files may contain instructions that aren't relevant to your work. The `claudeMdExcludes` setting lets you skip specific files by path or glob pattern." Patterns match **absolute** paths using glob syntax; also matches `.claude/rules/**` directories. Configurable at any settings layer — user, project, local, or managed policy — and "Arrays merge across layers." Managed policy `CLAUDE.md` cannot be excluded.
 
   It subtracts whole files only, so it cannot express "the nested file wins on conflicts." It is a mitigation for unwanted inheritance, not an implementation of E-STD-03.
+
+## E-STD-06 — The spec caps reference-chain depth, not directory depth
+
+- **Date**: 2026-08-15
+- **Status**: confirmed
+- **Confidence**: high
+- **Source**: Agent Skills Specification — https://agentskills.io/specification — official spec
+- **Notes**: Verbatim, under File references: "When referencing other files in your skill, use relative paths from the skill root... Keep file references one level deep from `SKILL.md`. Avoid deeply nested reference chains."
+
+  The first sentence reads as a ban on subdirectories; the second glosses it as being about **chains** — `SKILL.md` → A → B — not path depth. A file two directories down that `SKILL.md` links to directly is one hop. Layout is explicitly unconstrained: "A skill directory may contain any files and directories beyond the required `SKILL.md`. The conventions below are recommendations," and the canonical tree ends with "Any additional files or directories."
+
+  `skills-ref validate` checks frontmatter and naming only, so neither reading is enforced by tooling.
