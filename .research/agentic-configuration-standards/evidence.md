@@ -272,3 +272,87 @@ Status values: `confirmed`, `contested`, `thin`. Confidence: high / medium / low
   The first sentence reads as a ban on subdirectories; the second glosses it as being about **chains** — `SKILL.md` → A → B — not path depth. A file two directories down that `SKILL.md` links to directly is one hop. Layout is explicitly unconstrained: "A skill directory may contain any files and directories beyond the required `SKILL.md`. The conventions below are recommendations," and the canonical tree ends with "Any additional files or directories."
 
   `skills-ref validate` checks frontmatter and naming only, so neither reading is enforced by tooling.
+
+## E-CC-07 — Claude Code skill frontmatter carries runtime controls, all turn-scoped
+
+- **Date**: 2026-08-15
+- **Status**: confirmed
+- **Confidence**: high
+- **Source**: Claude Code skills documentation — https://code.claude.com/docs/en/skills — primary vendor documentation
+- **Notes**: The frontmatter reference documents runtime fields beyond selection: `allowed-tools`, `disallowed-tools`, `model`, `effort`, `context: fork`, `agent`, `background`, `hooks`, `paths`, `shell`, plus `when_to_use`, `argument-hint`, and `arguments`.
+
+  The scoping is the load-bearing detail, and it is narrower than "while the skill is active". Verbatim on `allowed-tools`: "grants permission for the listed tools during the turn that invokes the skill... The grant clears when you send your next message." On `disallowed-tools`: "The restriction clears when you send your next message." On `model`: "The override applies for the rest of the current turn and is not saved to settings; the session model resumes on your next prompt."
+
+  `allowed-tools` grants and does not fence, verbatim: "It does not restrict which tools are available: every tool remains callable, and your permission settings still govern tools that are not listed."
+
+  Skill content itself persists where permissions do not, verbatim: "the rendered `SKILL.md` content enters the conversation as a single message and stays there for the rest of the session."
+
+## E-CC-08 — `user-invocable` and `disable-model-invocation` are independent axes
+
+- **Date**: 2026-08-15
+- **Status**: confirmed
+- **Confidence**: high
+- **Source**: Claude Code skills documentation — https://code.claude.com/docs/en/skills — primary vendor documentation
+- **Notes**: `disable-model-invocation: true`, verbatim: "prevent Claude from automatically loading this skill... Also prevents the skill from being preloaded into subagents." `user-invocable: false`, verbatim: "Claude Code hides it from the `/` menu and doesn't run it when you type `/name`."
+
+  The page's own comparison table separates them: `disable-model-invocation: true` yields user-invocable yes / model-invocable no, with "Description not in context"; `user-invocable: false` yields user-invocable no / model-invocable yes, with "Description always in context".
+
+  So a visibility flag does not suppress description matching — the description remains the selection basis. This is the primary source for the claim that hiding a skill from the menu is not a way to stop it being auto-selected.
+
+## E-CC-09 — A missing `description` falls back to the body's first paragraph
+
+- **Date**: 2026-08-15
+- **Status**: confirmed
+- **Confidence**: high
+- **Source**: Claude Code skills documentation — https://code.claude.com/docs/en/skills — primary vendor documentation
+- **Notes**: Verbatim on `description`: "If omitted, uses the first paragraph of markdown content."
+
+  Consequence for by-name-only skills: omitting or blanking the description does not make a skill unmatchable on Claude Code — it silently promotes the body's opening prose to the trigger. An explicit minimal marker string is required instead. Note this diverges from the Agent Skills spec's lenient-validation guidance (E-FM-03), where a missing description causes the skill to be **skipped**; the two behaviors are opposite, so a skill relying on either is not portable.
+
+## E-CC-10 — Custom commands are merged into skills, not deprecated
+
+- **Date**: 2026-08-15
+- **Status**: confirmed
+- **Confidence**: high
+- **Source**: Claude Code skills documentation — https://code.claude.com/docs/en/skills — primary vendor documentation
+- **Notes**: Verbatim: "**Custom commands have been merged into skills.** A file at `.claude/commands/deploy.md` and a skill at `.claude/skills/deploy/SKILL.md` both create `/deploy` and work the same way. Your existing `.claude/commands/` files keep working."
+
+  Corrects the common secondary-source claim that `commands/` is deprecated. The documented position is equivalence plus a feature superset on the skill side: "Skills add optional features: a directory for supporting files, frontmatter to control whether you or Claude invokes them, and the ability for Claude to load them automatically when relevant."
+
+## E-CC-11 — Agent definitions hold the controls skills cannot express
+
+- **Date**: 2026-08-15
+- **Status**: confirmed
+- **Confidence**: high
+- **Source**: Claude Code subagents documentation — https://code.claude.com/docs/en/sub-agents — primary vendor documentation
+- **Notes**: Agent frontmatter documents `tools`, `disallowedTools`, `model`, `effort`, `maxTurns`, `skills`, `permissionMode`, `memory`, `mcpServers`, and `isolation`. `tools` closes the set, verbatim: "Tools the subagent can use. Inherits every tool available to subagents if omitted."
+
+  `skills` preloads rather than gates, verbatim: "Skills to preload into the subagent's context at startup. The full skill content is injected, not only the description. Subagents can still invoke unlisted project, user, and plugin skills through the Skill tool."
+
+  The preload restriction, verbatim: "You can't preload skills that set `disable-model-invocation: true`, since preloading draws from the same set of skills Claude can invoke."
+
+  So the honest reasons to reach for an agent definition over a skill are a closed tool allowlist, `permissionMode`, `maxTurns`, `memory`, `mcpServers`, and worktree `isolation` — not a model or effort override, which a skill can set turn-scoped (E-CC-07).
+
+## E-CUR-03 — Cursor rules select by glob, description, or neither
+
+- **Date**: 2026-08-15
+- **Status**: confirmed
+- **Confidence**: high
+- **Source**: Cursor rules documentation — https://cursor.com/docs/context/rules — primary vendor documentation
+- **Notes**: Three frontmatter fields in `.cursor/rules/` decide activation: `alwaysApply` (boolean, applies to every session), `description` (the Agent "reads the description and pulls the rule in when relevant"), and `globs` (auto-attaches when matching files enter context).
+
+  The four documented rule types are combinations: `alwaysApply: true` (other fields ignored); `description` with `alwaysApply: false`; `globs` with `alwaysApply: false`; and neither field set, which is manual-only — "Included only when you `@`-mention the rule in chat."
+
+  This is the primary source for path-glob targeting being a harness-evaluated mechanism rather than a model judgment.
+
+## E-COPILOT-02 — Copilot path-specific instructions use an `applyTo` glob
+
+- **Date**: 2026-08-15
+- **Status**: confirmed
+- **Confidence**: high
+- **Source**: GitHub Copilot — adding repository custom instructions — https://docs.github.com/en/copilot/how-tos/configure-custom-instructions/add-repository-instructions — primary vendor documentation
+- **Notes**: Verbatim: "At the start of the file, create a frontmatter block containing the `applyTo` keyword. Use glob syntax to specify what files or directories the instructions apply to." Files are `NAME.instructions.md` within or below `.github/instructions`.
+
+  Documented examples: `applyTo: "app/models/**/*.rb"`, and comma-separated multiple patterns `applyTo: "**/*.ts,**/*.tsx"`.
+
+  Together with E-CUR-03 this establishes that two major harnesses offer harness-evaluated path targeting for instructions, while neither offers it for `AGENTS.md` itself.
