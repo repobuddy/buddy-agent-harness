@@ -14,7 +14,7 @@ export const initCommand: cli.Command = command({
 			type: z.optional(z.string()),
 		},
 		harness: {
-			description: 'Comma-separated harnesses to enable in addition to Claude Code and Cursor, e.g. codex,windsurf.',
+			description: 'Comma-separated harnesses to enable in addition to Claude Code and Cursor, e.g. codex,gemini-cli.',
 			type: z.optional(z.string()),
 		},
 		copy: {
