@@ -392,3 +392,11 @@ Status values: `confirmed`, `contested`, `thin`. Confidence: high / medium / low
 - **Notes**: The word "argument" does not appear, nor "parameter", nor any placeholder syntax. The frontmatter table stops at six fields: `name`, `description`, `license`, `compatibility`, `metadata`, `allowed-tools`. On the body the spec says only "There are no format restrictions."
 
   So there is no cross-harness contract for parameterizing a skill, and none of the harnesses can be made to agree on one. A skill that must take arguments everywhere has to read them out of the invocation in prose, which is the one mechanism every harness shares — the model reads the body either way.
+
+## E-CC-13 — A plugin's npm dependencies are installed for an npm source, not a git source
+
+- **Date**: 2026-08
+- **Status**: thin
+- **Confidence**: low
+- **Source**: direct observation of a local Claude Code install (`~/.claude/plugins/`), 2026-08-17. No vendor documentation found for plugin dependency installation.
+- **Notes**: `installed_plugins.json` records `gitCommitSha` for git-sourced plugins and none for npm-sourced ones. A shared `~/.claude/plugins/npm-cache/package.json` lists npm-sourced plugins as dependencies (`cyber-sdd`), and those plugins' cache directories carry a populated `node_modules` (`gherkin-cli`, `@cucumber/*`, `commander`). Running an npm-sourced plugin's own script succeeded: `node ~/.claude/plugins/cache/cyberplace/sdd/0.0.0/skills/discover-specs/scripts/discover-specs.mts --root .` exited 0. A git-sourced plugin (`repobuddy/buddy-agent-harness/0.2.0`, carrying `src/` and `coverage/`, which its npm `files` list excludes) failed on a missing transitive dependency: `Cannot find package 'js-yaml' imported from .../node_modules/clibuilder/esm/config.js`. Single machine, single point in time; treat the mechanism as observed rather than specified.

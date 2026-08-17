@@ -36,11 +36,11 @@ const packageRoot = dirname(dirname(dirname(fileURLToPath(import.meta.url))))
 
 This is ordinary Node resolution rather than a harness feature. `import.meta.url` is the script's own URL, and a bare `import 'some-package'` from that file resolves through the `node_modules` above it. Neither depends on which harness invoked the script, or on any harness at all.
 
-So the script reaches the package it shipped in, while the working directory stays the repository under inspection. Both halves matter: one locates the code, the other is what the command reads.
+So the script reaches the package it shipped in, while the working directory stays the repository under inspection. Both halves matter, and they are separate.
 
 ## Name the skill directory with a placeholder
 
-The invocation still needs a path, and a relative path will not do, because the working directory is the repository.
+The invocation still needs a path. A relative one will not do, because the working directory is the repository.
 
 Write the skill's own directory as a placeholder and let the agent substitute it:
 
@@ -50,9 +50,9 @@ node "<skill>/scripts/doctor.mjs"
 
 State in the body that `<skill>` is the skill's own directory. An agent knows where it read the file from, so this resolves in practice.
 
-Know its limit, though. Substituting the placeholder is model behavior, not a guarantee like `import.meta.url`, and it varies by harness and by model. That is the failure the `npx` fallback below covers.
+It has a limit. Substituting the placeholder is model behavior rather than a guarantee like `import.meta.url`, and it varies by harness and by model. That is the failure the `npx` fallback below covers.
 
-Do not reach for `${CLAUDE_SKILL_DIR}` instead. It expands on Claude Code and stays literal on the page everywhere else, the same trap as a bare `$ARGUMENTS`. See [Writing Portable Skills](/agent-configuration/portable-skills/#arguments-do-not-survive-the-trip).
+Do not reach for `${CLAUDE_SKILL_DIR}`. It expands on Claude Code and stays literal on the page everywhere else, the same trap as a bare `$ARGUMENTS`. See [Writing Portable Skills](/agent-configuration/portable-skills/#arguments-do-not-survive-the-trip).
 
 ## Dependencies decide how you distribute
 
