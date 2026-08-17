@@ -5,7 +5,7 @@ description: What the doctor skill checks, how an agent reads the report, and th
 
 The `doctor` skill checks whether the skill bridges in a repository still resolve into `.agents/skills`. A bridge that has stopped resolving is silent: the harness finds nothing and loads zero project skills, with no warning anywhere. Reach for this skill when that has happened, or before you conclude a skill is broken.
 
-It is read-only from end to end. The skill runs one command, reads the report, and runs the repair the report names.
+The command it runs writes nothing. A repair does write, so the skill names the `init` command it is about to run and runs that as a separate step.
 
 ## Run it
 
@@ -21,21 +21,21 @@ Its one action is to run `buddy-agent-harness doctor` and act on the report. If 
 
 ## What it checks
 
-Every bridge [`init`](/skills/init/) would create for this repository, derived from the same registry, so the two cannot describe different bridge sets.
+It checks every bridge [`init`](/skills/init/) would create for this repository. Both read the same registry, so the two cannot describe different bridge sets.
 
 For each one the report gives a `kind` (what is on disk now) and a `status` (whether it works). A `findings` entry explains each problem and a `help` entry names the exact command that repairs it. Run the command from `help`, then run `doctor` again.
 
 A healthy repository says so outright instead of printing an empty section, so an agent does not re-run with other flags to check whether "nothing" meant "nothing wrong".
 
-The report is TOON by default, which is what the agent parses. Ask for `--format text` when you want to read it over its shoulder.
+The report is TOON by default, which is what the agent parses. Ask for `--format text` when you want to read it yourself.
 
 Statuses, findings, and their repairs are tabulated in the [CLI reference](/cli/doctor/). The skill body carries the same table, generated from the source the command prints from, so the guidance an agent follows cannot drift from what the command reports.
 
 ## The failure it was built for
 
-A committed symlink such as `.claude/skills` → `../.agents/skills` degrades on a native Windows checkout, and it degrades quietly. Git for Windows gates symlink creation with `core.symlinks`, which its installer leaves off. With that setting off git does not error: it writes the symlink out as a regular file whose contents are the target path.
+A committed symlink such as `.claude/skills` → `../.agents/skills` breaks on a native Windows checkout, where git writes it out as a regular file instead. That is the `degraded` status, and the [CLI reference](/cli/doctor/#why-it-exists) explains why git does it silently.
 
-That is the `degraded` status, and the repair is `init --copy --force` rather than recreating the link, because creating a link is the operation that already failed on that machine. See [Harness Differences](/agent-configuration/harness-differences/) for which harnesses need a bridge at all.
+The repair there is `init --copy --force` rather than recreating the link. Creating a link is the operation that already failed on that machine.
 
 ## What it will not do
 

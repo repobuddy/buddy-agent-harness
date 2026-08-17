@@ -31,6 +31,8 @@ Each entry gives the short definition and links to the page that owns the topic.
 
 **bridge**: the harness-specific edit that lets a harness reach `AGENTS.md` when it cannot read that file directly. Two exist: the Claude Code `CLAUDE.md` import and the Gemini CLI `context.fileName` setting. The CLI writes neither, because both need judgment about user-authored content. The [`init` skill](/skills/init/) handles them.
 
+**skill bridge**: whatever points a harness at `.agents/skills`, whether a symlink or a copy. This is the sense the `doctor` command prints, where each row of its `bridges` list is one harness path it checked. A working skill bridge is a projection; the word covers the broken states too, which is why the diagnostic uses it. See [`doctor`](/cli/doctor/).
+
 **enabled vs. projected**: enabling a harness states what the repository supports; projecting writes a link. For a native harness the two differ, so the CLI result separates `native` from `linked`. See [Harness Differences](/agent-configuration/harness-differences/#enabled-is-not-the-same-as-projected).
 
 ## Skills
