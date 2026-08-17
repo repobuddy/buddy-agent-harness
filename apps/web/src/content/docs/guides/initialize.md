@@ -7,7 +7,13 @@ The `init` skill is the primary way to adopt canonical agent configuration. It i
 
 ## Run it
 
-Ask your agent, from the repository root:
+In Claude Code, invoke the skill directly:
+
+```text
+/buddy-agent-harness:init
+```
+
+Any agent that reads `.agents/skills/` can also be asked in prose, from the repository root:
 
 ```text
 Initialize this repository's agent configuration.
