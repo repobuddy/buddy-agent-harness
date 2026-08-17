@@ -38,19 +38,19 @@ This is ordinary Node resolution rather than a harness feature. `import.meta.url
 
 So the script reaches the package it shipped in, while the working directory stays the repository under inspection. Both halves matter, and they are separate.
 
-## Name the skill directory with a placeholder
+## Write the path as the skill sees it
 
-The invocation still needs a path. A relative one will not do, because the working directory is the repository.
-
-Write the skill's own directory as a placeholder and let the agent substitute it:
+Name the script relative to the skill directory:
 
 ```sh
-node "<skill>/scripts/doctor.mjs"
+node scripts/doctor.mjs
 ```
 
-State in the body that `<skill>` is the skill's own directory. An agent knows where it read the file from, so this resolves in practice.
+An agent knows which directory it read the `SKILL.md` from, and resolves the path against it. Say so in the body, since the working directory is the repository rather than the skill.
 
-It has a limit. Substituting the placeholder is model behavior rather than a guarantee like `import.meta.url`, and it varies by harness and by model. That is the failure the `npx` fallback below covers.
+Keep `node` in front. A launcher written by a build step ships without an executable bit, and a shebang does nothing on Windows, so naming the file alone would not run it.
+
+This step has a limit worth stating. Resolving the path is model behavior rather than a guarantee like `import.meta.url`, and it varies by harness and by model. That is one of the two failures the `npx` fallback below covers.
 
 Do not reach for `${CLAUDE_SKILL_DIR}`. It expands on Claude Code and stays literal on the page everywhere else, the same trap as a bare `$ARGUMENTS`. See [Writing Portable Skills](/agent-configuration/portable-skills/#arguments-do-not-survive-the-trip).
 
@@ -73,7 +73,11 @@ Document a fallback anyway, for a skill that might be installed either way or in
 npx -y <package>@^<version> <command>
 ```
 
-Pin it. An unpinned `npx` resolves whatever the registry calls latest, while the skill describes the flags and output of the version it shipped with. Pinning costs nothing: `npx` checks the local `node_modules` and any global install before it reaches the network, so the pinned form still runs a local copy that satisfies the range.
+Pin it. An unpinned `npx` resolves whatever the registry calls latest, while the skill describes the flags and output of the version it shipped with. Pinning costs little: `npx` checks the local `node_modules` before it reaches the network, so the pinned form still runs a local copy that satisfies the range. It will not use a global install, which is one reason a runner such as `upx` exists.
+
+Regenerate the pin at release, or it rots. A skill generated at one version keeps naming that version until something rewrites it, and the fallback then documents a CLI nobody ships any more.
+
+For the runner words themselves, and what each costs per call, see [npx and upx](https://cyberuni.github.io/universal-plugin/concepts/npx-and-upx/) in the universal-plugin documentation.
 
 :::note[Single-sourced]
 That an npm-sourced plugin has its dependencies installed while a git-sourced one does not is observed behavior, recorded in [Sources & Confidence](/sources/) at low confidence. The advice stands either way: a script with dependencies wants the npm route, because that is the route carrying a dependency tree at all. The Node resolution this page relies on is not in question.

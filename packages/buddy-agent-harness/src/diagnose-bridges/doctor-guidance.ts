@@ -53,11 +53,13 @@ export const skillInvocation = (version: string) => `npx -y ${commandInvocation}
 export const launcherFor = (subcommand: string) => `scripts/${subcommand}.mjs`
 
 /**
- * How a skill names its launcher. `<skill>` is the skill's own directory, substituted by the agent
- * reading the file, because the working directory is the repository under inspection rather than
- * the skill.
+ * How a skill names its launcher: the path as the skill sees it, resolved by the agent against the
+ * directory it read the `SKILL.md` from.
+ *
+ * `node` stays in front. The launcher ships without an executable bit, and its shebang does nothing
+ * on Windows, so naming the file alone would not run it.
  */
-export const launcherInvocation = (subcommand: string) => `node "<skill>/${launcherFor(subcommand)}"`
+export const launcherInvocation = (subcommand: string) => `node ${launcherFor(subcommand)}`
 
 /**
  * The launcher written into a skill's `scripts/` directory. It resolves the CLI from its own
@@ -187,7 +189,7 @@ Diagnose it:
 ${launcherInvocation('doctor')}
 \`\`\`
 
-\`<skill>\` is this skill's own directory. The launcher runs the CLI that shipped beside it against the current working directory, so nothing is downloaded. Fall back to \`${skillInvocation(version)} doctor\` when that path cannot be resolved, or when the plugin was installed from git rather than npm and its dependencies were never installed.
+That path is relative to this skill's own directory. The launcher runs the CLI that shipped beside it against the current working directory, so nothing is downloaded. Fall back to \`${skillInvocation(version)} doctor\` when the launcher cannot be resolved or run, which is the case when the plugin was installed from git rather than npm and its dependencies were never installed.
 
 The command is read-only. It never repairs anything, so it is safe to run at any point, including from a session-start hook.
 
