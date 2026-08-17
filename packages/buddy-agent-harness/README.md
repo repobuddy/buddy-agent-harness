@@ -27,3 +27,11 @@ npx -y buddy-agent-harness init
 The repository root's `AGENTS.md` and `.agents/` tree are canonical: `.agents/AGENTS.md` holds shared behavior, `.agents/skills/**/SKILL.md` holds capabilities, and separately named files hold tool settings. The active harness is enabled by default; explicit user preferences add others. The command preserves user-authored configuration and projects only supported mappings; it records nothing on disk.
 
 Use `buddy-agent-harness init --help` to see `--root`, `--copy`, `--force`, and `--format`.
+
+`doctor` is the read-only counterpart. It reports whether the bridges `init` created still resolve after a clone — the common failure being a Windows checkout with `core.symlinks=false`, where git writes a committed symlink out as a regular file and the harness silently loads no skills:
+
+```sh
+npx -y buddy-agent-harness doctor
+```
+
+It never repairs anything and always exits `0`; each finding names the `init` command that fixes it.

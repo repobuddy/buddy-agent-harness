@@ -1,4 +1,14 @@
-import { activate, harnessCommand, harnessRegistry, initCommand, initializeHarnesses } from 'buddy-agent-harness'
+import {
+	activate,
+	diagnoseBridges,
+	doctorCommand,
+	doctorRepairs,
+	harnessCommand,
+	harnessRegistry,
+	initCommand,
+	initializeHarnesses,
+	renderDoctorSkill,
+} from 'buddy-agent-harness'
 import { expectTypeOf, it } from 'vitest'
 
 it('exports the harness plugin surface from its built package', () => {
@@ -7,4 +17,8 @@ it('exports the harness plugin surface from its built package', () => {
 	expectTypeOf(harnessRegistry).toMatchTypeOf<readonly unknown[]>()
 	expectTypeOf(initializeHarnesses).toBeFunction()
 	expectTypeOf(initCommand).toBeObject()
+	expectTypeOf(diagnoseBridges).toBeFunction()
+	expectTypeOf(doctorCommand).toBeObject()
+	expectTypeOf(doctorRepairs).toMatchTypeOf<readonly unknown[]>()
+	expectTypeOf(renderDoctorSkill).toBeFunction()
 })

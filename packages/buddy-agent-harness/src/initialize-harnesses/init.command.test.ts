@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { doctorCommand } from '../diagnose-bridges/doctor.command.ts'
 import { activate, harnessCommand, initCommand } from './init.command.ts'
 import { initializeHarnesses } from './initialize-harnesses.ts'
 
@@ -67,7 +68,7 @@ describe('init command', () => {
 
 	it('reports invalid formats and initialization failures', () => {
 		run({ format: 'yaml', root: '/workspace' })
-		expect(stderr).toHaveBeenCalledWith('error: --format must be toon or json.\n')
+		expect(stderr).toHaveBeenCalledWith('error: --format must be toon, json, or text.\n')
 		expect(process.exitCode).toBe(1)
 
 		stderr.mockClear()
@@ -110,6 +111,6 @@ describe('init command', () => {
 		activate({ addCommand })
 
 		expect(addCommand).toHaveBeenCalledWith(harnessCommand)
-		expect(harnessCommand.commands).toEqual([initCommand])
+		expect(harnessCommand.commands).toEqual([initCommand, doctorCommand])
 	})
 })

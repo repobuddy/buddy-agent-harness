@@ -4,7 +4,7 @@ description: 'CLI reference for buddy-agent-harness init: flags, output, and con
 ---
 
 ```sh
-buddy-agent-harness init [--root <directory>] [--harness <names>] [--copy] [--force] [--format toon|json]
+buddy-agent-harness init [--root <directory>] [--harness <names>] [--copy] [--force] [--format toon|json|text]
 ```
 
 The CLI performs the linking step only. Consolidating existing configuration and writing the instruction bridges is the [`init` skill](/guides/initialize/)'s job, because both need judgment about user-authored content. Run the CLI directly on a repository that is already consolidated.
@@ -17,7 +17,7 @@ The CLI performs the linking step only. Consolidating existing configuration and
 | `--harness <names>` | Comma-separated harnesses to enable in addition to Claude Code and Cursor, such as `codex,windsurf`. |
 | `--copy` | Copy the canonical skills directory when links are unavailable. |
 | `--force` | Replace a conflicting target after the command has identified it. |
-| `--format toon\|json` | Choose token-efficient TOON output (default) or JSON. |
+| `--format toon\|json\|text` | Choose token-efficient TOON output (default), JSON, or a human-readable text report. |
 
 ## Output
 

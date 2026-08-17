@@ -1,6 +1,7 @@
 import { cli } from 'clibuilder'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { main } from './cli.ts'
+import { doctorCommand } from './diagnose-bridges/doctor.command.ts'
 import * as publicApi from './index.ts'
 import { activate, initCommand } from './initialize-harnesses/init.command.ts'
 
@@ -25,20 +26,23 @@ afterEach(() => {
 describe('CLI and public entry point', () => {
 	it('exports the plugin API and parses the command line', async () => {
 		const parse = vi.fn(async () => undefined)
-		const command = vi.fn(() => ({ parse }))
+		const command: ReturnType<typeof vi.fn> = vi.fn(() => ({ command, parse }))
 		mockedCli.mockReturnValue({ command } as never)
 
 		await main()
 
 		expect(publicApi.activate).toBe(activate)
 		expect(publicApi.initCommand).toBe(initCommand)
+		expect(publicApi.doctorCommand).toBe(doctorCommand)
 		expect(command).toHaveBeenCalledWith(initCommand)
+		expect(command).toHaveBeenCalledWith(doctorCommand)
 		expect(parse).toHaveBeenCalledWith(process.argv)
 	})
 
 	it('reports Error and non-Error command-line failures', async () => {
 		const parse = vi.fn(async () => Promise.reject(new Error('bad options')))
-		mockedCli.mockReturnValue({ command: vi.fn(() => ({ parse })) } as never)
+		const command: ReturnType<typeof vi.fn> = vi.fn(() => ({ command, parse }))
+		mockedCli.mockReturnValue({ command } as never)
 
 		await main()
 

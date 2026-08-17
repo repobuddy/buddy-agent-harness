@@ -1,12 +1,9 @@
-import { encode } from '@toon-format/toon'
 import type { cli } from 'clibuilder'
 import { command, z } from 'clibuilder'
+import { parseFormat, writeResult } from '../command-output/command-output.ts'
+import { doctorCommand } from '../diagnose-bridges/doctor.command.ts'
 import { type HarnessName, harnessRegistry } from '../harness-registry/harness-registry.ts'
 import { initializeHarnesses } from './initialize-harnesses.ts'
-
-function write(value: object, format: 'json' | 'toon' | undefined): void {
-	process.stdout.write(`${format === 'json' ? JSON.stringify(value) : encode(value)}\n`)
-}
 
 export const initCommand: cli.Command = command({
 	name: 'init',
@@ -29,15 +26,14 @@ export const initCommand: cli.Command = command({
 			type: z.optional(z.boolean()),
 		},
 		format: {
-			description: 'Output format: toon (default) or json.',
+			description: 'Output format: toon (default), json, or text for a human-readable report.',
 			type: z.optional(z.string()),
 			default: 'toon',
 		},
 	},
 	run(args) {
 		try {
-			const format = args.format
-			if (format !== 'toon' && format !== 'json') throw new Error('--format must be toon or json.')
+			const format = parseFormat(args.format)
 			const requested = args.harness
 				?.split(',')
 				.map((name) => name.trim())
@@ -49,7 +45,7 @@ export const initCommand: cli.Command = command({
 						.map((harness) => harness.name)
 						.join(', ')}.`,
 				)
-			write(
+			writeResult(
 				initializeHarnesses({
 					root: args.root ?? process.cwd(),
 					...(requested?.length ? { harnesses: requested as HarnessName[] } : {}),
@@ -68,7 +64,7 @@ export const initCommand: cli.Command = command({
 export const harnessCommand: cli.Command = command({
 	name: 'harness',
 	description: 'Commands for configuring agent harness compatibility.',
-	commands: [initCommand],
+	commands: [initCommand, doctorCommand],
 })
 
 export function activate({ addCommand }: { addCommand(command: typeof harnessCommand): void }): void {
