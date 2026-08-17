@@ -42,6 +42,7 @@ export default defineConfig({
 			'/concepts/harness-selection': '/agent-configuration/harness-differences/',
 			'/reference/standards': '/agent-configuration/open-standards/',
 			'/reference/harness-support': '/agent-configuration/harness-differences/',
+			'/guides/initialize': '/skills/init/',
 		}).map(([from, to]) => [from, base.replace(/\/$/, '') + to]),
 	),
 	integrations: [
@@ -81,11 +82,16 @@ export default defineConfig({
 					items: [{ label: 'Introduction', slug: 'getting-started/introduction' }],
 				},
 				{
-					label: 'Guides',
+					label: 'Skills',
 					items: [
-						{ label: 'Initialize a Repository', slug: 'guides/initialize' },
-						{ label: 'Migrating Existing Configuration', slug: 'guides/migrating' },
+						{ label: 'Overview', slug: 'skills' },
+						{ label: 'Skill: init', slug: 'skills/init' },
+						{ label: 'Skill: doctor', slug: 'skills/doctor' },
 					],
+				},
+				{
+					label: 'Guides',
+					items: [{ label: 'Migrating Existing Configuration', slug: 'guides/migrating' }],
 				},
 				{
 					label: 'Agent Configuration',

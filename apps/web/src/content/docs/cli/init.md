@@ -7,7 +7,7 @@ description: 'CLI reference for buddy-agent-harness init: flags, output, and con
 buddy-agent-harness init [--root <directory>] [--harness <names>] [--copy] [--force] [--format toon|json|text]
 ```
 
-The CLI performs the linking step only. Consolidating existing configuration and writing the instruction bridges is the [`init` skill](/guides/initialize/)'s job, because both need judgment about user-authored content. Run the CLI directly on a repository that is already consolidated.
+The CLI performs the linking step only. Consolidating existing configuration and writing the instruction bridges is the [`init` skill](/skills/init/)'s job, because both need judgment about user-authored content. Run the CLI directly on a repository that is already consolidated.
 
 ## Options
 

@@ -61,7 +61,7 @@ Neither has a safe project-scope detection marker. Antigravity documents no proj
 
 Enabling a harness is a statement about what the repository supports. For the five native harnesses above, no files are written at all. The CLI result separates `native` from `linked` so it is clear what actually changed on disk.
 
-Which harnesses get enabled, and why a detected directory does not by itself mean you want that harness maintained, is covered in [Initialize a Repository](/guides/initialize/#which-harnesses-get-enabled).
+Which harnesses get enabled, and why a detected directory does not by itself mean you want that harness maintained, is covered in [Skill: init](/skills/init/#which-harnesses-get-enabled).
 
 ## Harnesses supported by `npx skills`
 

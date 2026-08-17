@@ -1,5 +1,5 @@
 ---
-title: Initialize a Repository
+title: 'Skill: init'
 description: What the init skill does, what it asks you to approve, and what it leaves alone.
 ---
 
@@ -98,3 +98,5 @@ There is no way to disable a harness, and enabling one is not the same as writin
 ## Re-running
 
 Re-run after adding or changing a skill only if you need a new harness enabled. A directory-level symlink is live: a skill added to `.agents/skills/` afterwards appears in every enabled harness with no further action. A `--copy` fallback is a snapshot instead, and does need a re-run.
+
+A projection can also stop resolving later, most often on a clone that could not create the symlink. The [`doctor` skill](/skills/doctor/) is what reports that.

@@ -14,8 +14,14 @@ npx -y buddy-agent-harness doctor
 
 The CLI is the mechanical half. It creates projections, records the enabled harnesses, and reports conflicts. It does not read your existing `CLAUDE.md`, move skills, merge instructions, or write the instruction bridges.
 
-Use the [`init` skill](/guides/initialize/) when adopting or migrating a repository. That is the whole job, and the CLI is step 4 of it. Use the CLI directly when the repository is already consolidated and you only need the links refreshed or a new harness enabled.
+Use the [`init` skill](/skills/init/) when adopting or migrating a repository. That is the whole job, and the CLI is step 4 of it. Use the CLI directly when the repository is already consolidated and you only need the links refreshed or a new harness enabled.
 
-`doctor` is the read-only half of the same picture. It writes nothing and always exits `0`; each finding names the `init` command that repairs it. Reach for it when a harness loads no project skills, most often after a clone on Windows.
+`doctor` is the read-only half of the same picture. It writes nothing and always exits `0`; each finding names the `init` command that repairs it. Reach for it when a harness loads no project skills, most often after a clone on Windows. The [`doctor` skill](/skills/doctor/) wraps the same command for an agent.
+
+Both commands print TOON by default and accept `--format text` for a report a person can read:
+
+```sh
+npx -y buddy-agent-harness doctor --format text
+```
 
 Full flags, output shape, and conflict behavior: [`init`](/cli/init/) and [`doctor`](/cli/doctor/).

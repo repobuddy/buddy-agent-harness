@@ -35,17 +35,23 @@ In Claude Code, add the marketplace and install the plugin:
 
 ## Use it
 
-Ask your agent to initialize the repository, and it runs the [`init` skill](/guides/initialize/): survey, classify, confirm, apply, verify. Nothing you authored changes before you approve the plan.
+Ask your agent to initialize the repository, and it runs the [`init` skill](/skills/init/): survey, classify, confirm, apply, verify. Nothing you authored changes before you approve the plan.
 
-For a repository that is already consolidated, run the [CLI](/cli/init/) directly:
+When a harness later loads no project skills, the [`doctor` skill](/skills/doctor/) says which bridge stopped resolving and names the command that repairs it.
+
+Both commands also run straight from npm, on a repository that is already consolidated:
 
 ```sh
 npx -y buddy-agent-harness init
+npx -y buddy-agent-harness doctor --format text
 ```
+
+The default output is TOON, for an agent to parse. `--format text` prints the same report for a person.
 
 ## Where to go next
 
-- [Initialize a Repository](/guides/initialize/): the skill, phase by phase.
+- [Skills](/skills/): `init` and `doctor`, and when to run the CLI instead.
+- [Skill: init](/skills/init/): the five phases, and what you approve.
 - [Migrating Existing Configuration](/guides/migrating/): `CLAUDE.md`, `.cursor/rules/`, existing skills.
 - [Open Standards](/agent-configuration/open-standards/): `AGENTS.md`, Agent Skills, and how much authority `.agents/skills/` has.
 - [Harness Differences](/agent-configuration/harness-differences/): who reads what, and who needs a bridge.

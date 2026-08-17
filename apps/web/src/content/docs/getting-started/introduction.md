@@ -54,7 +54,7 @@ Any agent that reads `.agents/skills/` can be asked in prose instead:
 Initialize this repository's agent configuration.
 ```
 
-The skill surveys what configuration you already have, proposes a consolidation plan, applies it once you approve, and runs the CLI to create the projections. That is the primary path. Start at [Initialize a Repository](/guides/initialize/).
+The skill surveys what configuration you already have, proposes a consolidation plan, applies it once you approve, and runs the CLI to create the projections. That is the primary path. Start at [Skill: init](/skills/init/).
 
 The CLI alone handles only the linking step:
 
@@ -63,6 +63,20 @@ npx -y buddy-agent-harness init
 ```
 
 Use it directly on a repository that is already consolidated. See the [CLI reference](/cli/init/).
+
+## Check the bridges
+
+A link that a clone failed to create is silent: the harness finds no directory and loads zero project skills. The `doctor` skill and its command report that, and repair nothing:
+
+```text
+/buddy-agent-harness:doctor
+```
+
+```sh
+npx -y buddy-agent-harness doctor --format text
+```
+
+Both commands default to TOON output, which is compact for an agent to parse; `--format text` prints an aligned report for a person. See [Skill: doctor](/skills/doctor/) and the [CLI reference](/cli/doctor/).
 
 ## Start small
 
