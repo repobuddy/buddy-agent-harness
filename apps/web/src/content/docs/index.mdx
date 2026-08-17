@@ -39,14 +39,14 @@ Ask your agent to initialize the repository, and it runs the [`init` skill](/ski
 
 When a harness later loads no project skills, the [`doctor` skill](/skills/doctor/) says which bridge stopped resolving and names the command that repairs it.
 
-Both commands also run straight from npm, on a repository that is already consolidated:
+Behind each skill is a command, and the commands are an npm package the plugin is not a prerequisite for. Run `init` yourself on a repository that is already consolidated, and `doctor` on any clone at all:
 
 ```sh
 npx -y buddy-agent-harness init
 npx -y buddy-agent-harness doctor --format text
 ```
 
-The default output is TOON, for an agent to parse. `--format text` prints the same report for a person.
+Both print TOON by default, for an agent to parse. `--format text` prints the same report for a person.
 
 ## Where to go next
 

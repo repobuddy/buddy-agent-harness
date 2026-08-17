@@ -29,19 +29,6 @@ Both skills come with it:
 /buddy-agent-harness:doctor
 ```
 
-## Or skip the install
+## The commands behind them
 
-Both commands run from npm without installing anything, and each skill runs the matching command as its own last step:
-
-```sh
-npx -y buddy-agent-harness init
-npx -y buddy-agent-harness doctor
-```
-
-The default output is TOON, compact for an agent to parse and awkward for a person to read. Add `--format text` for an aligned report:
-
-```sh
-npx -y buddy-agent-harness doctor --format text
-```
-
-`init` accepts the same flag. Full options are in the [CLI reference](/cli/).
+Each skill ends by running the matching command, `buddy-agent-harness init` or `buddy-agent-harness doctor`. Those are an npm package rather than part of the plugin, so they run on their own without it. `doctor` in particular is worth having on a repository you only cloned: see the [CLI reference](/cli/).

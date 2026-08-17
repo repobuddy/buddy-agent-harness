@@ -17,17 +17,7 @@ In Claude Code:
 
 The skill also loads on its own when an agent hits the symptom, so "my skills are missing after cloning this repo" is enough to reach it.
 
-Without the plugin, run the command directly:
-
-```sh
-npx -y buddy-agent-harness doctor
-```
-
-The default output is TOON, which is what an agent parses. Add `--format text` to read it yourself:
-
-```sh
-npx -y buddy-agent-harness doctor --format text
-```
+Its one action is to run `buddy-agent-harness doctor` and act on the report. If you would rather run that yourself, the plugin is not a prerequisite: see the [CLI reference](/cli/doctor/#no-install-needed).
 
 ## What it checks
 
@@ -36,6 +26,8 @@ Every bridge [`init`](/skills/init/) would create for this repository, derived f
 For each one the report gives a `kind` (what is on disk now) and a `status` (whether it works). A `findings` entry explains each problem and a `help` entry names the exact command that repairs it. Run the command from `help`, then run `doctor` again.
 
 A healthy repository says so outright instead of printing an empty section, so an agent does not re-run with other flags to check whether "nothing" meant "nothing wrong".
+
+The report is TOON by default, which is what the agent parses. Ask for `--format text` when you want to read it over its shoulder.
 
 Statuses, findings, and their repairs are tabulated in the [CLI reference](/cli/doctor/). The skill body carries the same table, generated from the source the command prints from, so the guidance an agent follows cannot drift from what the command reports.
 

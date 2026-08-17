@@ -66,17 +66,21 @@ Use it directly on a repository that is already consolidated. See the [CLI refer
 
 ## Check the bridges
 
-A link that a clone failed to create is silent: the harness finds no directory and loads zero project skills. The `doctor` skill and its command report that, and repair nothing:
+A link that a clone failed to create is silent: the harness finds no directory and loads zero project skills. Nothing here repairs anything; both halves only report.
+
+Ask the [`doctor` skill](/skills/doctor/), which runs the command and reads the report back to you:
 
 ```text
 /buddy-agent-harness:doctor
 ```
 
+Or run the [command](/cli/doctor/) yourself, on any clone, with the plugin installed or not:
+
 ```sh
 npx -y buddy-agent-harness doctor --format text
 ```
 
-Both commands default to TOON output, which is compact for an agent to parse; `--format text` prints an aligned report for a person. See [Skill: doctor](/skills/doctor/) and the [CLI reference](/cli/doctor/).
+The command prints TOON by default, which is compact for an agent to parse. `--format text` prints an aligned report for a person.
 
 ## Start small
 
