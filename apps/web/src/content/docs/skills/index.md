@@ -15,11 +15,11 @@ Each skill has a CLI command behind it. The skill is the half that needs judgmen
 
 ## Install
 
-In Claude Code, add the marketplace and install the plugin:
+In Claude Code, add the [cyberplace](https://github.com/cyberuni/cyberplace) marketplace and install the plugin:
 
 ```text
-/plugin marketplace add repobuddy/buddy-agent-harness
-/plugin install buddy-agent-harness@repobuddy
+/plugin marketplace add cyberuni/cyberplace
+/plugin install buddy-agent-harness@cyberplace
 ```
 
 Both skills come with it:

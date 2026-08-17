@@ -33,11 +33,11 @@ It also stays out of everything that is not local agent configuration: no change
 
 ## Install
 
-In Claude Code, install the plugin and its `init` skill from the Repobuddy marketplace:
+In Claude Code, install the plugin and its `init` skill from the [cyberplace](https://github.com/cyberuni/cyberplace) marketplace:
 
 ```text
-/plugin marketplace add repobuddy/buddy-agent-harness
-/plugin install buddy-agent-harness@repobuddy
+/plugin marketplace add cyberuni/cyberplace
+/plugin install buddy-agent-harness@cyberplace
 ```
 
 ## Initialize a repository
@@ -56,13 +56,7 @@ Initialize this repository's agent configuration.
 
 The skill surveys what configuration you already have, proposes a consolidation plan, applies it once you approve, and runs the CLI to create the projections. That is the primary path. Start at [Skill: init](/skills/init/).
 
-The CLI alone handles only the linking step:
-
-```sh
-npx -y buddy-agent-harness init
-```
-
-Use it directly on a repository that is already consolidated. See the [CLI reference](/cli/init/).
+The CLI alone handles only the linking step. On a repository that is already consolidated you can run it in a shell by mounting the package on `repobuddy`. See the [CLI reference](/cli/init/).
 
 ## Check the bridges
 
