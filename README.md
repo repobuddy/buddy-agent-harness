@@ -5,7 +5,7 @@
 [![npm](https://img.shields.io/npm/v/buddy-agent-harness)](https://www.npmjs.com/package/buddy-agent-harness)
 [![License](https://img.shields.io/npm/l/buddy-agent-harness)](LICENSE)
 
-Initialize or update a consumer repository's standards-based agent configuration so its instructions, skills, and compatible tool settings work across multiple coding-agent harnesses.
+Initialize or update a consumer repository's standards-based agent configuration so its instructions, skills, and compatible tool settings work across multiple agent harnesses.
 
 ## Install the plugin
 

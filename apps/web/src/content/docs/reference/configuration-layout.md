@@ -3,7 +3,7 @@ title: Configuration Layout
 description: What initialization puts on disk, and why it records nothing else.
 ---
 
-The canonical configuration belongs to the repository, not to a particular coding harness. This page is what ends up on disk: the layout, the projections, and the record of what was enabled.
+The canonical configuration belongs to the repository, not to a particular agent harness. This page is what ends up on disk: the layout, the projections, and the record of what was enabled.
 
 For what the formats themselves are and how much authority they carry, see [Open Standards](/agent-configuration/open-standards/).
 

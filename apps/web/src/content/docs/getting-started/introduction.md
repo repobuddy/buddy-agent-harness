@@ -1,9 +1,9 @@
 ---
 title: Introduction
-description: Keep one repository-owned agent configuration that every coding harness can read.
+description: Keep one repository-owned agent configuration that every agent harness can read.
 ---
 
-Buddy Agent Harness gives a repository one canonical agent configuration (a root `AGENTS.md` and an `.agents/` tree) and bridges the coding harnesses that cannot read it directly.
+Buddy Agent Harness gives a repository one canonical agent configuration (a root `AGENTS.md` and an `.agents/` tree) and bridges the agent harnesses that cannot read it directly.
 
 Use it when a team works with more than one agent and does not want to maintain equivalent instructions in `CLAUDE.md`, `.cursor/rules/`, `.github/copilot-instructions.md`, and a per-harness skills directory at the same time.
 

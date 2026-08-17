@@ -12,7 +12,7 @@ produced-by:
 
 ## What this is
 
-Buddy Agent Harness initializes a repository-local canonical skill directory and links its skills into supported coding-agent harnesses. Its npm package publishes the CLI, plugin metadata, and shipped skills; `.agents/` is excluded by the package allowlist, so this project spec is colocated safely.
+Buddy Agent Harness initializes a repository-local canonical skill directory and links its skills into supported agent harnesses. Its npm package publishes the CLI, plugin metadata, and shipped skills; `.agents/` is excluded by the package allowlist, so this project spec is colocated safely.
 
 ## Placement map — strategy: mirror-source
 
@@ -38,7 +38,7 @@ This project mirrors its source surfaces so a contributor can find a spec beside
 
 | Node | Subject |
 | --- | --- |
-| [`skills/harness-init/`](./skills/harness-init/README.md) | Initialize canonical skills across enabled coding-agent harnesses |
+| [`skills/harness-init/`](./skills/harness-init/README.md) | Initialize canonical skills across enabled agent harnesses |
 | [`cli/`](./cli/README.md) | Expose the package's command-line product surface — stub |
 
 ## Backfill gap

@@ -1,6 +1,6 @@
 ---
 title: Harness Differences
-description: Which coding harnesses read canonical configuration directly, and which need a bridge.
+description: Which agent harnesses read canonical configuration directly, and which need a bridge.
 ---
 
 Support is not a binary label. A harness can read a canonical format natively, need a harness-specific projection, or expose settings that should stay harness-specific. Two questions matter, and they have different answers per harness: does it read `.agents/skills/`, and does it read `AGENTS.md`?

@@ -7,7 +7,7 @@ concept: harness-compatibility
 
 ## What
 
-`harness-init` initializes or updates one consumer repository's standards-based agent configuration so it can be used effectively by multiple coding-agent harnesses. The canonical configuration is the repository root's `AGENTS.md` and `.agents/` tree: shared behavior lives in `.agents/AGENTS.md`, reusable capabilities live in `.agents/skills/**/SKILL.md`, and tool settings remain separately named artifacts. Vendor files are projections of compatible canonical artifacts, not competing sources of truth. The active harness is always enabled; explicit user preferences may add other supported harnesses.
+`harness-init` initializes or updates one consumer repository's standards-based agent configuration so it can be used effectively by multiple agent harnesses. The canonical configuration is the repository root's `AGENTS.md` and `.agents/` tree: shared behavior lives in `.agents/AGENTS.md`, reusable capabilities live in `.agents/skills/**/SKILL.md`, and tool settings remain separately named artifacts. Vendor files are projections of compatible canonical artifacts, not competing sources of truth. The active harness is always enabled; explicit user preferences may add other supported harnesses.
 
 The skill is for local agent-configuration setup only. It preserves user-authored policy and does not invent instructions, rewrite unsupported tool settings, change CI, repository settings, security scanning, branch rules, or unrelated project files.
 
