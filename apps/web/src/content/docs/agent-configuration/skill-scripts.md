@@ -73,7 +73,11 @@ Document a fallback anyway, for a skill that might be installed either way or in
 npx -y <package>@^<version> <command>
 ```
 
-Pin it. An unpinned `npx` resolves whatever the registry calls latest, while the skill describes the flags and output of the version it shipped with. Pinning costs nothing: `npx` checks the local `node_modules` and any global install before it reaches the network, so the pinned form still runs a local copy that satisfies the range.
+Pin it. An unpinned `npx` resolves whatever the registry calls latest, while the skill describes the flags and output of the version it shipped with. Pinning costs little: `npx` checks the local `node_modules` before it reaches the network, so the pinned form still runs a local copy that satisfies the range. It will not use a global install, which is one reason a runner such as `upx` exists.
+
+Regenerate the pin at release, or it rots. A skill generated at one version keeps naming that version until something rewrites it, and the fallback then documents a CLI nobody ships any more.
+
+For the runner words themselves, and what each costs per call, see [npx and upx](https://cyberuni.github.io/universal-plugin/concepts/npx-and-upx/) in the universal-plugin documentation.
 
 :::note[Single-sourced]
 That an npm-sourced plugin has its dependencies installed while a git-sourced one does not is observed behavior, recorded in [Sources & Confidence](/sources/) at low confidence. The advice stands either way: a script with dependencies wants the npm route, because that is the route carrying a dependency tree at all. The Node resolution this page relies on is not in question.
