@@ -19,7 +19,7 @@ By identifying them, we can separate them cleanly to create composable and reusa
 | **Tone**      | a way of sounding                      | Tone, Persona Voice                                          | sound      |
 | **Structure** | a shape the response must take         | Output Shape, Response Format, Length Limits                | format     |
 
-## Reference is material, not citations
+## Reference is ground truth about the project
 
 **Reference** is the ground truth an agent needs to work here at all: what the project contains, how directories are laid out, which stack it runs on, what the domain terms mean. `AGENTS.md`'s Architecture and Key Directories sections are the clearest case: they assert nothing normative, they just tell you where you are.
 
@@ -27,7 +27,7 @@ Reference is also the purpose most often kept when it should be cut. [What Belon
 
 A list of links is not a purpose of its own. A pointer inherits the purpose of whatever it points at: a link to a policy document is delivering policy, a link to a rubric is delivering criteria. Classify the destination, not the hyperlink.
 
-## Criteria and Policy are not the same
+## Policy is complied with, Criteria is scored against
 
 Both are normative, and they get conflated constantly.
 
@@ -36,7 +36,7 @@ Both are normative, and they get conflated constantly.
 
 An agent conforms to a review standard (policy) while grading a submission against a rubric (criteria), both at once, in the same run. If a section tells the reader how to behave, it is a policy. If it tells them how someone else's output will be scored, it is criteria.
 
-## Menu is routing, not scoring
+## Menu picks a path before the work starts
 
 **Menu** and **Criteria** can look alike, since both match a situation against a set of conditions, but they run at different times toward different ends.
 
@@ -64,7 +64,7 @@ A [persona](/agent-configuration/skills/persona/) is usually **not** pure Tone o
 
 Any purpose here can also carry a different value depending on who consumes it. That axis is called Target, and it's independent of Purpose. See [Instruction Target](/agent-configuration/instruction-target/) for the full set of consumers and a worked example of combining purposes.
 
-## Example is a delivery mode, not a purpose
+## An example inherits the purpose it illustrates
 
 An example (a worked instance, a few-shot demonstration, a sample passing or failing case) is tempting to add as its own purpose. It isn't one: an example always illustrates one of the purposes above, and inherits that purpose rather than having its own. An example of the steps to follow is Procedure; an example of a passing and a failing case is Criteria; an example of forbidden output is Policy. Classify what the example is an instance *of*, the same way a pointer inherits the purpose of whatever it links to.
 

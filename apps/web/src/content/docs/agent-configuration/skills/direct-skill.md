@@ -67,7 +67,7 @@ Quote the value. A description containing an unquoted colon is invalid YAML that
 
 All Direct Invocation skills share this same description; they are distinguished by `name`, which is how callers address them. Identity moves to the body and the README. What the skill is, who calls it, and what it returns is documentation a caller reads after loading it by name, not selection criteria a model reads before.
 
-`user-invocable: false` alone does not enforce unmatchability. It hides the skill from the `/` menu while leaving its description in context and fully model-invocable. See [Selection and Visibility are not the same question](/agent-configuration/skills/overview/#selection-and-visibility-are-not-the-same-question).
+`user-invocable: false` alone does not enforce unmatchability. It hides the skill from the `/` menu while leaving its description in context and fully model-invocable. See [Selection finds the skill, Visibility lists it](/agent-configuration/skills/overview/#selection-finds-the-skill-visibility-lists-it).
 
 ## Skills that are not meant to run alone
 

@@ -3,7 +3,7 @@ title: Migrating Existing Configuration
 description: Consolidate CLAUDE.md, .cursor/rules, and per-harness skill directories into one canonical source.
 ---
 
-Most repositories do not start empty. They have a `CLAUDE.md`, a `.cursor/rules/` tree, a `.claude/skills/` directory, or all three. Migration is the part of [initialization](/guides/initialize/) that needs judgment, which is why the skill handles it and the CLI does not.
+Most repositories do not start empty. They have a `CLAUDE.md`, a `.cursor/rules/` tree, a `.claude/skills/` directory, or all three. Migration is the part of [initialization](/skills/init/) that needs judgment, which is why the skill handles it and the CLI does not.
 
 ## What gets found, and where it goes
 

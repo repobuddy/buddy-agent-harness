@@ -47,7 +47,7 @@ A command's whole point is that auto-invocation is suppressed, which is what mak
 
 What marks a gateway is what it does when it **cannot** infer intent. It asks, rather than guessing or failing.
 
-With enough detail in the request, it routes directly. With none, it presents its operation menu and waits. That menu is a closed set, a [Menu purpose](/agent-configuration/instruction-purpose/#menu-is-routing-not-scoring) rather than criteria, and keeping it closed is what makes the gateway's behavior predictable across the many ways a user might phrase the same request.
+With enough detail in the request, it routes directly. With none, it presents its operation menu and waits. That menu is a closed set, a [Menu purpose](/agent-configuration/instruction-purpose/#menu-picks-a-path-before-the-work-starts) rather than criteria, and keeping it closed is what makes the gateway's behavior predictable across the many ways a user might phrase the same request.
 
 ## A portability note
 
