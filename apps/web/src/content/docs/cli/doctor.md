@@ -9,6 +9,18 @@ buddy-agent-harness doctor [--root <directory>] [--harness <names>] [--format to
 
 `doctor` reports whether the skill bridges [`init`](/cli/init/) creates still resolve into `.agents/skills`. It is read-only: it never creates, moves, or repairs anything, so it is safe to run at any point, including from a session-start hook.
 
+## No install needed
+
+Nothing has to be installed to diagnose a repository. Run it from npm in the repository root:
+
+```sh
+npx -y buddy-agent-harness doctor --format text
+```
+
+That is the whole dependency: one npx invocation, on a repository you cloned rather than one you set up. The plugin and its [`doctor` skill](/skills/doctor/) add an agent that runs this for you and reads the report, not a capability the command lacks.
+
+Drop `--format text` and you get [TOON](#output), the default. Keep it and you get [an aligned report](#--format-text) for a person.
+
 ## Why it exists
 
 A committed directory symlink such as `.claude/skills` → `../.agents/skills` degrades badly on a native Windows checkout, and it degrades silently.
