@@ -50,9 +50,16 @@ Enforcing `name` == directory name is also worth doing even though it is only a 
 | `disable-model-invocation` | Claude Code, Cursor |
 | `paths`, legacy `globs` | Cursor only |
 | `model` | Copilot CLI only |
+| `argument-hint`, `arguments` | Claude Code only |
 | hook configuration | Claude Code, Cline, Kiro CLI |
 
 Codex additionally reads an `agents/openai.yaml` **sidecar file** beside `SKILL.md` — not frontmatter. See `harnesses/codex.md`; never add one unprompted.
+
+## Arguments are the one field group that fails loudly
+
+Most harness-specific fields are dropped in silence. `argument-hint` and `arguments` are the exception: they are Claude Code extensions, and the spec's own distribution paths — claude.ai uploads, the Skills API, and `package_skill.py` — reject any field outside `name`, `description`, `license`, `compatibility`, `metadata`, and `allowed-tools` with a hard error rather than ignoring it.
+
+So a skill that takes arguments and also ships through claude.ai cannot use the fields at all. A skill distributed only through a plugin can. Either way the behavior belongs in the body, because no harness but Claude Code substitutes anything: Claude Code appends what the caller typed as `ARGUMENTS: <value>` when the body has no `$ARGUMENTS`, Codex has no argument mechanism for skills, and the spec defines none. A body that says how to read the invocation works on all of them; a `$ARGUMENTS` placeholder resolves on one and stays literal on the rest.
 
 ## What follows from that
 

@@ -10,11 +10,7 @@ It detects agent configuration you already have — instruction files, skills, c
 
 ## Why the projection step is small
 
-Codex, Cursor, GitHub Copilot CLI, and Devin Desktop read `.agents/skills/` natively, so they need nothing. Only Claude Code and Gemini CLI need a link:
-
-```sh
-npx -y buddy-agent-harness init
-```
+Codex, Cursor, GitHub Copilot CLI, and Devin Desktop read `.agents/skills/` natively, so they need nothing. Only Claude Code and Gemini CLI need a link, which the skill creates by running the `init` command in Phase 4.
 
 Claude Code also reads `CLAUDE.md` rather than `AGENTS.md`, so the skill sets up a `CLAUDE.md` that imports `@AGENTS.md`.
 

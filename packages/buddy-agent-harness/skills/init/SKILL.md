@@ -1,6 +1,7 @@
 ---
 name: init
 description: Use this skill when initializing, adopting, or migrating a repository's agent configuration to the open AGENTS.md and Agent Skills standards, so one canonical source works across Claude Code, Codex, Cursor, Copilot CLI, and other coding-agent harnesses.
+argument-hint: '[--root <dir>] [--harness <names>] [--copy] [--force]'
 ---
 
 # Harness Init
@@ -21,6 +22,17 @@ Most of the field already reads `.agents/skills/` natively: Codex, Cursor, GitHu
 | Devin Desktop | none | none | `references/harnesses/devin-desktop.md` |
 
 `init` writes skills projections only. Every instruction bridge above is manual work in Phase 4.
+
+## Arguments
+
+An invocation may carry the command's own flags, most often when `doctor` hands back a repair: `/buddy-agent-harness:init --copy --force`.
+
+Read them from the invocation itself rather than from a placeholder. Claude Code appends what the caller typed as `ARGUMENTS: <value>`, and Codex substitutes nothing at all, so on every harness the flags arrive as text you can read. Writing `$ARGUMENTS` into this body would resolve on Claude Code and stay literal everywhere else.
+
+- `--root`, `--harness`, `--copy`, `--force`, and `--format` pass through to the command in Phase 4.
+- Prose carries the same weight: "links are unavailable here" means `--copy`, and "replace the bridge" means `--force`.
+- An argument never skips a phase. `--force` still needs the Phase 3 approval, and the survey still runs first.
+- Say what you did not recognize and carry on. Never guess at a flag.
 
 Work in five phases. Do not skip Phase 3.
 

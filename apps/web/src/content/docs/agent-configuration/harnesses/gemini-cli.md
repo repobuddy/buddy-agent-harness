@@ -5,11 +5,7 @@ description: Gemini CLI reads .agents/skills at user scope only, and needs AGENT
 
 Gemini CLI reads `.agents/skills` at **user scope only** (`~/.agents/skills`). At project scope it reads `.gemini/skills/` and nothing else. Both bridges are required.
 
-Do not enable Gemini CLI speculatively. Unlike Cursor, enabling it writes a real directory and symlink, so it is enabled only via `--harness gemini-cli` or a pre-existing `.gemini/` directory.
-
-```sh
-buddy-agent-harness init --harness gemini-cli
-```
+Do not enable Gemini CLI speculatively. Unlike Cursor, enabling it writes a real directory and symlink, so it is enabled only via `init --harness gemini-cli` or a pre-existing `.gemini/` directory.
 
 ## Bridge 1: skills
 

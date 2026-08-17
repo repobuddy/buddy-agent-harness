@@ -61,8 +61,10 @@ export const initCommand: cli.Command = command({
 	},
 })
 
+// Named for the package rather than shortened to `harness`: `repobuddy` mounts every plugin into one
+// command namespace, where `harness` is generic enough to collide with another plugin's.
 export const harnessCommand: cli.Command = command({
-	name: 'harness',
+	name: 'agent-harness',
 	description: 'Commands for configuring agent harness compatibility.',
 	commands: [initCommand, doctorCommand],
 })

@@ -26,11 +26,11 @@ It never invents policy, never rewrites your instructions, and leaves anything w
 
 ## Install
 
-In Claude Code, add the marketplace and install the plugin:
+In Claude Code, add the [cyberplace](https://github.com/cyberuni/cyberplace) marketplace and install the plugin:
 
 ```text
-/plugin marketplace add repobuddy/buddy-agent-harness
-/plugin install buddy-agent-harness@repobuddy
+/plugin marketplace add cyberuni/cyberplace
+/plugin install buddy-agent-harness@cyberplace
 ```
 
 ## Use it
@@ -39,14 +39,13 @@ Ask your agent to initialize the repository, and it runs the [`init` skill](/ski
 
 When a harness later loads no project skills, the [`doctor` skill](/skills/doctor/) says which bridge stopped resolving and names the command that repairs it.
 
-Behind each skill is a command, and the commands are an npm package the plugin is not a prerequisite for. Run `init` yourself on a repository that is already consolidated, and `doctor` on any clone at all:
+Behind each skill is a command, and the commands are an npm package the plugin is not a prerequisite for. `doctor` runs on any clone at all:
 
 ```sh
-npx -y buddy-agent-harness init
 npx -y buddy-agent-harness doctor --format text
 ```
 
-Both print TOON by default, for an agent to parse. `--format text` prints the same report for a person.
+It prints TOON by default, for an agent to parse. `--format text` prints the same report for a person.
 
 ## Where to go next
 

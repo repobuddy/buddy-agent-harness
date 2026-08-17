@@ -4,7 +4,7 @@ Report whether the harness skill bridges in a repository still resolve into `.ag
 
 ## What it does
 
-`init` points every harness that cannot read `.agents/skills` at that directory, normally with a directory-level symlink. `doctor` re-checks each of those bridges after the fact and names the exact command that repairs whatever it finds.
+`init` points every harness that cannot read `.agents/skills` at that directory, normally with a directory-level symlink. `doctor` re-checks each of those bridges after the fact and names the repair for whatever it finds. The command names an `init` invocation for a person at a shell; the skill hands the same repair to the `init` skill, because rebuilding a bridge can move skills a user wrote.
 
 ```sh
 npx -y buddy-agent-harness doctor

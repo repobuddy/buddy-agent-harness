@@ -356,3 +356,39 @@ Status values: `confirmed`, `contested`, `thin`. Confidence: high / medium / low
   Documented examples: `applyTo: "app/models/**/*.rb"`, and comma-separated multiple patterns `applyTo: "**/*.ts,**/*.tsx"`.
 
   Together with E-CUR-03 this establishes that two major harnesses offer harness-evaluated path targeting for instructions, while neither offers it for `AGENTS.md` itself.
+
+## E-CC-12 — Claude Code skills take arguments, through fields the spec does not allow
+
+- **Date**: 2026-08-16
+- **Status**: confirmed
+- **Confidence**: high
+- **Source**: Claude Code skills documentation — https://code.claude.com/docs/en/skills — primary vendor documentation
+- **Notes**: Two frontmatter fields, verbatim: `argument-hint` is a "Hint shown during autocomplete to indicate expected arguments. Example: `[issue-number]` or `[filename] [format]`." `arguments` holds "Named positional arguments for `$name` substitution in the skill content. Accepts a space-separated string or a YAML list. Names map to argument positions in order."
+
+  Four substitutions reach the body: `$ARGUMENTS` for everything passed, `$ARGUMENTS[N]` by 0-based index, `$N` as its shorthand, and `$name` from the `arguments` list. The fallback is the load-bearing part, verbatim: "If `$ARGUMENTS` is not present in the content, arguments are appended as `ARGUMENTS: <value>`." So a skill that declares nothing still sees what the caller typed.
+
+  Both fields are Claude Code only. The distribution table limits claude.ai uploads, the Skills API, and `package_skill.py` to `name`, `description`, `license`, `compatibility`, `metadata`, and `allowed-tools`, and the failure is hard rather than lenient, verbatim: "If you include any field the spec doesn't allow, packaging or upload fails with a hard error instead of ignoring the field" — the quoted error names `argument-hint` specifically.
+
+  This is the primary source for arguments being usable in a plugin skill but unusable in a skill that also ships through claude.ai.
+
+## E-CODEX-02 — Codex skills have no argument mechanism; only deprecated custom prompts do
+
+- **Date**: 2026-08-16
+- **Status**: confirmed
+- **Confidence**: high
+- **Source**: OpenAI Codex — https://learn.chatgpt.com/docs/build-skills and https://learn.chatgpt.com/docs/custom-prompts (both redirected from developers.openai.com/codex/) — primary vendor documentation
+- **Notes**: The skills page documents no argument passing and no placeholder syntax. The `agents/openai.yaml` sidecar carries display, policy, and dependency fields only — `interface.display_name`, `short_description`, `icon_small`, `icon_large`, `brand_color`, `default_prompt`; `policy.allow_implicit_invocation`; `dependencies.tools`. `default_prompt` is an "Optional surrounding prompt", a fixed wrapper rather than a template.
+
+  Placeholders exist in the separate custom-prompts feature (`~/.codex/prompts/*.md`), verbatim: "$1 through $9 expand from space-separated arguments you provide after the command. $ARGUMENTS includes them all." That feature also has its own `argument-hint` frontmatter field. It is on the way out, verbatim: "Custom prompts are deprecated. Use skills for reusable instructions that Codex can invoke explicitly or implicitly."
+
+  Whether skills inherit the syntax is not stated either way. Absence from the page that supersedes custom prompts is the only signal, so treat "Codex skills substitute nothing" as the safe assumption rather than a documented guarantee.
+
+## E-STD-07 — The Agent Skills specification has no argument concept
+
+- **Date**: 2026-08-16
+- **Status**: confirmed
+- **Confidence**: high
+- **Source**: Agent Skills Specification — https://agentskills.io/specification — official spec
+- **Notes**: The word "argument" does not appear, nor "parameter", nor any placeholder syntax. The frontmatter table stops at six fields: `name`, `description`, `license`, `compatibility`, `metadata`, `allowed-tools`. On the body the spec says only "There are no format restrictions."
+
+  So there is no cross-harness contract for parameterizing a skill, and none of the harnesses can be made to agree on one. A skill that must take arguments everywhere has to read them out of the invocation in prose, which is the one mechanism every harness shares — the model reads the body either way.

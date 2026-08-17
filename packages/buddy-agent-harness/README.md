@@ -9,26 +9,22 @@ An agent plugin and CLI for initializing or updating a consumer repository's sta
 
 ## Install the plugin
 
-In Claude Code, add the marketplace and install the plugin and its `init` skill:
+In Claude Code, add the [cyberplace](https://github.com/cyberuni/cyberplace) marketplace and install the plugin and its `init` skill:
 
 ```text
-/plugin marketplace add repobuddy/buddy-agent-harness
-/plugin install buddy-agent-harness@repobuddy
+/plugin marketplace add cyberuni/cyberplace
+/plugin install buddy-agent-harness@cyberplace
 ```
 
 ## CLI
 
-Run the CLI without a global installation:
-
-```sh
-npx -y buddy-agent-harness init
-```
+`init` runs behind the `init` skill, which sorts the configuration you already wrote before the command links anything. Install the package alongside `repobuddy` to mount both commands on `buddy`, as `buddy agent-harness doctor` and `buddy agent-harness init`.
 
 The repository root's `AGENTS.md` and `.agents/` tree are canonical: `.agents/AGENTS.md` holds shared behavior, `.agents/skills/**/SKILL.md` holds capabilities, and separately named files hold tool settings. The active harness is enabled by default; explicit user preferences add others. The command preserves user-authored configuration and projects only supported mappings; it records nothing on disk.
 
-Use `buddy-agent-harness init --help` to see `--root`, `--copy`, `--force`, and `--format`.
+`init` takes `--root`, `--copy`, `--force`, and `--format`; `--help` lists them.
 
-`doctor` is the read-only counterpart. It reports whether the bridges `init` created still resolve after a clone — the common failure being a Windows checkout with `core.symlinks=false`, where git writes a committed symlink out as a regular file and the harness silently loads no skills:
+`doctor` is the read-only counterpart, and the one command worth running without any of the above. It reports whether the bridges `init` created still resolve after a clone — the common failure being a Windows checkout with `core.symlinks=false`, where git writes a committed symlink out as a regular file and the harness silently loads no skills:
 
 ```sh
 npx -y buddy-agent-harness doctor

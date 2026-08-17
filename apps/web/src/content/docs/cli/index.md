@@ -5,10 +5,13 @@ description: The buddy-agent-harness command line, and when to use it instead of
 
 `buddy-agent-harness` provides two commands. `init` links the canonical `.agents/skills` directory into the harnesses that cannot read it directly; `doctor` reports whether those links still resolve.
 
+`doctor` is the one you run on its own:
+
 ```sh
-npx -y buddy-agent-harness init
 npx -y buddy-agent-harness doctor
 ```
+
+`init` runs behind the [`init` skill](/skills/init/). Installing the package alongside `repobuddy` mounts both commands on `buddy`, as `buddy agent-harness doctor` and `buddy agent-harness init`.
 
 ## Skill or CLI?
 

@@ -36,6 +36,7 @@ So a nested `AGENTS.md` needs its own `CLAUDE.md` stub to be visible at all, and
 Claude Code recognizes the most fields (`context: fork`, `agent:`, `disable-model-invocation`, `once`, `${CLAUDE_SKILL_DIR}`). Other harnesses drop them silently.
 
 - Restate anything load-bearing in the Markdown body.
+- `argument-hint` and `arguments` are Claude Code's argument fields, and the only ones that fail loudly elsewhere: claude.ai uploads and the Skills API reject them outright. Claude Code appends what the caller typed as `ARGUMENTS: <value>` when the body has no `$ARGUMENTS`, so a skill reads its arguments without either field. See `frontmatter.md`.
 - **Enforce `name` equal to the directory name.** Claude Code treats `name` as a display label only and resolves the command from the directory name; matching them removes the discrepancy.
 
 ## Leave alone — canonical-only

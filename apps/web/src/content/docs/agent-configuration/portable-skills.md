@@ -20,12 +20,23 @@ The [Agent Skills specification](https://agentskills.io/specification) requires 
 | `disable-model-invocation` | Claude Code, Cursor | those two |
 | `paths`, legacy `globs` | Cursor | Cursor only |
 | `model` | Copilot CLI | Copilot CLI only |
+| `argument-hint`, `arguments` | Claude Code | Claude Code only |
 
 Two consequences follow.
 
 Claude Code has the largest field surface, so a skill authored there and shared everywhere carries fields other harnesses parse and discard. That is a small, unavoidable context cost.
 
 More importantly, **behavior encoded only in a harness-specific field disappears on every harness that drops it**. Anything that must hold everywhere belongs in the Markdown body, which is the one part every harness reads. Treat harness-specific frontmatter as an optimization over instructions that already work without it.
+
+## Arguments do not survive the trip
+
+A skill that takes arguments is the sharpest case of that rule, because no two harnesses agree on the mechanism.
+
+The specification has none: the word "argument" does not appear in it. Claude Code has the fullest support — `argument-hint` for autocomplete, `arguments` for named positional values, and `$ARGUMENTS`, `$ARGUMENTS[N]`, `$N`, and `$name` substitutions in the body. Codex skills have nothing; the `$1`–`$9` placeholders in its docs belong to custom prompts, which OpenAI deprecated in favor of skills.
+
+These two fields are also the exception to fields being dropped in silence. Uploading a skill to claude.ai, the Skills API, or packaging it with `package_skill.py` accepts only the six specification fields and fails with a hard error on anything else, naming `argument-hint` in the documented example. A skill distributed through a plugin can use them; a skill that also ships through claude.ai cannot.
+
+What works everywhere is a body that says how to read the invocation. Claude Code appends what the caller typed as `ARGUMENTS: <value>` whenever the body has no `$ARGUMENTS`, so the text arrives without any frontmatter at all — and on a harness that substitutes nothing, the model still reads the words the caller used. A literal `$ARGUMENTS` in the body does the opposite: it resolves on Claude Code and stays on the page everywhere else.
 
 ## The Codex sidecar is a separate file
 
