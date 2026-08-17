@@ -19,6 +19,8 @@ The skill also loads on its own when an agent hits the symptom, so "my skills ar
 
 Its one action is to run `buddy-agent-harness doctor` and act on the report. If you would rather run that yourself, the plugin is not a prerequisite: see the [CLI reference](/cli/doctor/#no-install-needed).
 
+The skill runs the copy of the CLI that shipped with it, through a launcher in its own `scripts/` directory, so an installed plugin downloads nothing. It falls back to `npx` pinned to the version it shipped with, which covers a plugin installed from git rather than npm, where the CLI's dependencies were never installed.
+
 ## What it checks
 
 It checks every bridge [`init`](/skills/init/) would create for this repository. Both read the same registry, so the two cannot describe different bridge sets.

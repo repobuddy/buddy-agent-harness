@@ -46,8 +46,8 @@
 		"coverage": "vitest run --coverage",
 		"dev": "node bin/buddy-agent-harness.mjs",
 		"prepack": "pnpm build",
-		"skill:doctor": "tsx scripts/generate-doctor-skill.ts",
-		"skill:doctor:check": "tsx scripts/generate-doctor-skill.ts --check",
+		"skill:gen": "tsx scripts/generate-skills.ts",
+		"skill:gen:check": "tsx scripts/generate-skills.ts --check",
 		"test": "vitest run",
 		"test:dist": "tsc --noEmit -p tsconfig.dist.json && vitest run --config vitest.dist.config.ts",
 		"typecheck": "tsc --noEmit"

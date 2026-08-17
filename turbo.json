@@ -7,9 +7,9 @@
 		"test": { "dependsOn": ["^build", "build"] },
 		"test:dist": { "dependsOn": ["build"] },
 		"typecheck": { "dependsOn": ["^build"] },
-		"skill:doctor:check": { "cache": false },
+		"skill:gen:check": { "cache": false },
 		"verify": {
-			"dependsOn": ["//#check", "build", "typecheck", "test", "test:dist", "skill:doctor:check"]
+			"dependsOn": ["//#check", "build", "typecheck", "test", "test:dist", "skill:gen:check"]
 		}
 	}
 }
