@@ -1,6 +1,6 @@
 ---
 name: init
-description: Use this skill when initializing, adopting, or migrating a repository's agent configuration to the open AGENTS.md and Agent Skills standards, so one canonical source works across Claude Code, Codex, Cursor, Copilot CLI, and other coding-agent harnesses.
+description: Use this skill when initializing, adopting, or migrating a repository's agent configuration to the open AGENTS.md and Agent Skills standards, so one canonical source works across Claude Code, Codex, Cursor, Copilot CLI, and other agent harnesses.
 argument-hint: '[--root <dir>] [--harness <names>] [--copy] [--force]'
 ---
 
