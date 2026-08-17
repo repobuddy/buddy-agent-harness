@@ -1,5 +1,5 @@
 ---
-title: init
+title: 'CLI: init'
 description: 'CLI reference for buddy-agent-harness init: flags, output, and conflict behavior.'
 ---
 
@@ -43,4 +43,4 @@ A projection is a single directory-level symlink from the harness path to `.agen
 
 The command checks every target before changing any of them. Without `--force`, conflicts stop the command and leave all targets unchanged. A target that appears during a failed link attempt is preserved rather than overwritten.
 
-A pre-existing harness skills directory containing real skills is a conflict by design. Move those skills into `.agents/skills/` first (see [Migrating Existing Configuration](/guides/migrating/)) rather than discarding them with `--force`.
+A pre-existing harness skills directory containing real skills is a conflict by design. Move those skills into `.agents/skills/` first (see [Migrating Existing Configuration](/getting-started/migrating/)) rather than discarding them with `--force`.

@@ -43,6 +43,7 @@ export default defineConfig({
 			'/reference/standards': '/agent-configuration/open-standards/',
 			'/reference/harness-support': '/agent-configuration/harness-differences/',
 			'/guides/initialize': '/skills/init/',
+			'/guides/migrating': '/getting-started/migrating/',
 		}).map(([from, to]) => [from, base.replace(/\/$/, '') + to]),
 	),
 	integrations: [
@@ -79,19 +80,26 @@ export default defineConfig({
 			sidebar: [
 				{
 					label: 'Getting Started',
-					items: [{ label: 'Introduction', slug: 'getting-started/introduction' }],
+					items: [
+						{ label: 'Introduction', slug: 'getting-started/introduction' },
+						{ label: 'Migrating Existing Configuration', slug: 'getting-started/migrating' },
+					],
 				},
 				{
 					label: 'Skills',
 					items: [
 						{ label: 'Overview', slug: 'skills' },
-						{ label: 'Skill: init', slug: 'skills/init' },
-						{ label: 'Skill: doctor', slug: 'skills/doctor' },
+						{ label: 'init', slug: 'skills/init' },
+						{ label: 'doctor', slug: 'skills/doctor' },
 					],
 				},
 				{
-					label: 'Guides',
-					items: [{ label: 'Migrating Existing Configuration', slug: 'guides/migrating' }],
+					label: 'CLI',
+					items: [
+						{ label: 'Overview', slug: 'cli' },
+						{ label: 'init', slug: 'cli/init' },
+						{ label: 'doctor', slug: 'cli/doctor' },
+					],
 				},
 				{
 					label: 'Agent Configuration',
@@ -103,7 +111,7 @@ export default defineConfig({
 						{ label: 'Writing Portable Skills', slug: 'agent-configuration/portable-skills' },
 						{ label: 'Lookup Files', slug: 'agent-configuration/lookup-files' },
 						{
-							label: 'Skills',
+							label: 'Skill Design',
 							items: [
 								{ label: 'Kinds of Skill', slug: 'agent-configuration/skills/overview' },
 								{ label: 'Commands', slug: 'agent-configuration/skills/commands' },
@@ -130,9 +138,6 @@ export default defineConfig({
 					items: [
 						{ label: 'Configuration Layout', slug: 'reference/configuration-layout' },
 						{ label: 'Glossary', slug: 'reference/glossary' },
-						{ label: 'CLI Overview', slug: 'cli' },
-						{ label: 'CLI: init', slug: 'cli/init' },
-						{ label: 'CLI: doctor', slug: 'cli/doctor' },
 						{ label: 'Sources & Confidence', slug: 'sources' },
 					],
 				},

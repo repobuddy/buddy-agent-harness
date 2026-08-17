@@ -29,7 +29,7 @@ The skill inventories two surfaces and writes nothing.
 
 The **canonical surface**: `AGENTS.md`, `.agents/AGENTS.md`, `.agents/skills/`.
 
-The **existing harness surface**: instruction files, skill directories, commands, subagents, rules, MCP servers, and hooks across every supported harness. See [Migrating Existing Configuration](/guides/migrating/) for the full detection table.
+The **existing harness surface**: instruction files, skill directories, commands, subagents, rules, MCP servers, and hooks across every supported harness. See [Migrating Existing Configuration](/getting-started/migrating/) for the full detection table.
 
 For each finding it records which of three states it is in: a real user-authored file, a symlink already resolving into `.agents/` (a previous run), or something occupying a projection target that is neither (a conflict).
 

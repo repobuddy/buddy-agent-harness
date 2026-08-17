@@ -1,5 +1,5 @@
 ---
-title: doctor
+title: 'CLI: doctor'
 description: 'CLI reference for buddy-agent-harness doctor: flags, statuses, findings, and why it never repairs.'
 ---
 
