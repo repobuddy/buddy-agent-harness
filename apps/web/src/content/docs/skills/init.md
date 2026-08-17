@@ -73,6 +73,8 @@ Explicit approval is required before any step that deletes, replaces, or rewrite
 
 Each projection is checked to resolve into `.agents/skills`, and every migrated `SKILL.md` is checked to parse with valid frontmatter. The report states what was created, consolidated, linked, and left canonical-only.
 
+The run ends by asking whether to run [`enhance`](/skills/enhance/), which offers guidance your `AGENTS.md` does not have. Decline and nothing more happens. That offer is the only opinion `init` carries, and even it is a question.
+
 ## Rules the skill follows
 
 These hold regardless of what you ask for mid-run:
