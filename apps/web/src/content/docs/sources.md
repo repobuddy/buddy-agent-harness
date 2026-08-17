@@ -20,6 +20,8 @@ The harness claims across this site are not equally well-sourced, and the differ
 | A missing `description` falling back to the body's first paragraph | High | primary vendor documentation |
 | `commands/` being merged into skills rather than deprecated | High | primary vendor documentation |
 | What an agent definition can express that a skill cannot | High | primary vendor documentation |
+| Claude Code skill arguments, and the fields the spec rejects | High | primary vendor documentation |
+| Codex skills having no argument mechanism | High | absence from the vendor page that supersedes custom prompts |
 | Cursor rule selection via `globs` / `description` / neither | High | primary vendor documentation |
 | Copilot `applyTo` path-specific instructions | High | primary vendor documentation |
 | Nested `AGENTS.md` resolution (nearest-file-wins) | High | agents.md body copy and FAQ, primary |

@@ -21,57 +21,74 @@ export type Repair = {
 	/** What `doctor` prints in the `findings` row for this problem. */
 	detail: string
 	/**
-	 * The command that fixes it. `path` is the repository-relative bridge path; `cli` is how to
-	 * invoke this tool, which differs between the command's own output and the shipped skill.
+	 * The command that fixes it, for `doctor`'s own output. `path` is the repository-relative bridge
+	 * path; `cli` is how to invoke this tool.
 	 */
 	repair(path: string, cli: string): string
+	/**
+	 * What the shipped skill tells an agent to do instead. A repair that rebuilds a bridge delegates
+	 * to the `init` skill rather than calling the `init` command, because rebuilding can move
+	 * user-authored skills and that judgment is the `init` skill's, not `doctor`'s.
+	 */
+	skillRepair(path: string): string
 }
 
 /** How the command names itself. A skill may run without the binary on PATH, so it uses `npx`. */
 export const commandInvocation = 'buddy-agent-harness'
 export const skillInvocation = 'npx -y buddy-agent-harness'
+/** How the skill hands a repair back to `init`. */
+export const initSkillInvocation = '/buddy-agent-harness:init'
 
 export const doctorRepairs: readonly Repair[] = [
 	{
 		problem: 'no-canonical',
 		detail: 'the canonical skill directory does not exist, so no bridge can resolve',
 		repair: (_path, cli) => `${cli} init`,
+		skillRepair: () => `run \`${initSkillInvocation}\`, which creates \`.agents/skills\` and the bridges`,
 	},
 	{
 		problem: 'missing',
 		detail: 'no bridge at this path — the harness sees zero project skills',
 		repair: (_path, cli) => `${cli} init`,
+		skillRepair: () => `run \`${initSkillInvocation}\``,
 	},
 	{
 		problem: 'degraded',
 		detail: 'expected a directory but found a regular file — checkout without core.symlinks',
 		repair: (_path, cli) => `${cli} init --copy --force`,
+		skillRepair: () => `run \`${initSkillInvocation} --copy --force\``,
 	},
 	{
 		problem: 'stale',
 		detail: 'symlink does not resolve to .agents/skills',
 		repair: (_path, cli) => `${cli} init --force`,
+		skillRepair: () => `run \`${initSkillInvocation} --force\``,
 	},
 	{
 		problem: 'diverged-bridge',
 		detail: 'only the bridge changed since the two last agreed — an agent wrote through the copy',
 		repair: (path, cli) =>
 			`replace .agents/skills with ${path} to keep the newer edit and then run ${cli} init --force`,
+		skillRepair: (path) =>
+			`replace .agents/skills with ${path} to keep the newer edit, then run \`${initSkillInvocation} --force\``,
 	},
 	{
 		problem: 'diverged-canonical',
 		detail: 'only .agents/skills changed since the two last agreed — the copy is stale',
 		repair: (_path, cli) => `${cli} init --copy --force`,
+		skillRepair: () => `run \`${initSkillInvocation} --copy --force\``,
 	},
 	{
 		problem: 'diverged-both',
 		detail: 'both sides changed since they last agreed — rebuilding would discard one of them',
 		repair: (path) => `git diff --no-index .agents/skills ${path} and reconcile by hand`,
+		skillRepair: (path) => `run \`git diff --no-index .agents/skills ${path}\` and reconcile by hand`,
 	},
 	{
 		problem: 'diverged-unknown',
 		detail: 'contents differ and no commit where they agreed was found — which side moved is unknown',
 		repair: (path) => `git diff --no-index .agents/skills ${path} and reconcile by hand`,
+		skillRepair: (path) => `run \`git diff --no-index .agents/skills ${path}\` and reconcile by hand`,
 	},
 	{
 		problem: 'unpinned-copy',
@@ -79,6 +96,7 @@ export const doctorRepairs: readonly Repair[] = [
 		// The index entry is the tracked symlink on a Windows checkout but the individual files in a
 		// committed copy, so the paths are read back from git rather than assumed.
 		repair: (path) => `git ls-files -z ${path} | xargs -0 git update-index --skip-worktree`,
+		skillRepair: (path) => `run \`git ls-files -z ${path} | xargs -0 git update-index --skip-worktree\``,
 	},
 ]
 
@@ -103,7 +121,7 @@ export function renderDoctorSkill(): string {
 	// A repair may itself contain a pipe, which would otherwise end the table cell early.
 	const cell = (value: string) => value.replaceAll('|', '\\|')
 	const rows = doctorRepairs
-		.map((entry) => `| \`${entry.problem}\` | ${entry.detail} | \`${cell(entry.repair('<path>', skillInvocation))}\` |`)
+		.map((entry) => `| \`${entry.problem}\` | ${entry.detail} | ${cell(entry.skillRepair('<path>'))} |`)
 		.join('\n')
 
 	return `---
@@ -127,7 +145,9 @@ The command is read-only. It never repairs anything, so it is safe to run at any
 
 ## Reading the report
 
-\`bridges\` lists every bridge \`init\` would create for this repository, each with a \`status\` of \`ok\`, \`missing\`, \`degraded\`, \`stale\`, or \`diverged\`. \`findings\` explains each problem and \`help\` names the exact command that repairs it. Run the command from \`help\`, then re-run \`doctor\`.
+\`bridges\` lists every bridge \`init\` would create for this repository, each with a \`status\` of \`ok\`, \`missing\`, \`degraded\`, \`stale\`, or \`diverged\`. \`findings\` explains each problem and \`help\` names its repair. Apply the repair from the table below, then re-run \`doctor\`.
+
+\`help\` names the \`init\` command for a person at a shell. Do not run it yourself. Rebuilding a bridge can move skills a user wrote, and that judgment belongs to the \`init\` skill — hand the repair to \`${initSkillInvocation}\` instead.
 
 When every bridge resolves, \`findings\` says so outright rather than being empty.
 
@@ -143,7 +163,7 @@ Substitute the reported bridge path for \`<path>\`.
 
 ## The Windows case
 
-The common failure is \`degraded\`. Creating a symlink on Windows needs a privilege most accounts do not have, and Git for Windows gates it separately with \`core.symlinks\`, which its installer leaves off. With \`core.symlinks=false\` git does not error — it writes the symlink out as a regular file whose contents are the target path. \`${skillInvocation} init --copy --force\` rebuilds the bridges as real directories on that machine.
+The common failure is \`degraded\`. Creating a symlink on Windows needs a privilege most accounts do not have, and Git for Windows gates it separately with \`core.symlinks\`, which its installer leaves off. With \`core.symlinks=false\` git does not error — it writes the symlink out as a regular file whose contents are the target path. \`${initSkillInvocation} --copy --force\` rebuilds the bridges as real directories on that machine.
 
 A copy is a snapshot rather than a live projection, and an agent that edits a skill through it writes into the copy instead of into \`.agents/skills\`. That is what the \`diverged\` findings catch.
 

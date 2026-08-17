@@ -8,4 +8,4 @@ Add a read-only `doctor` command and a generated `doctor` skill.
 
 A diverged copy is reported with a direction, computed against the last commit where the two sides agreed, so the report says which side moved rather than only that they differ. A tracked copy is also checked for its `skip-worktree` bit, which some checkout and merge operations clear.
 
-The command writes nothing and exits `0` even with findings; each finding names the exact `init` command that repairs it. `skills/doctor/SKILL.md` is generated from the same guidance the command prints, with `pnpm skill:doctor:check` in `verify` failing when the committed skill goes stale.
+The command writes nothing and exits `0` even with findings; each finding names its repair. The command names an `init` invocation for a person at a shell, while the skill hands the same repair to the `init` skill, because rebuilding a bridge can move skills a user wrote. `skills/doctor/SKILL.md` is generated from the same guidance the command prints, with `pnpm skill:doctor:check` in `verify` failing when the committed skill goes stale.
