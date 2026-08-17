@@ -27,7 +27,7 @@ Claude Code has the largest field surface, so a skill authored there and shared 
 
 More importantly, **behavior encoded only in a harness-specific field disappears on every harness that drops it**. Anything that must hold everywhere belongs in the Markdown body, which is the one part every harness reads. Treat harness-specific frontmatter as an optimization over instructions that already work without it.
 
-## The Codex sidecar is a file, not a field
+## The Codex sidecar is a separate file
 
 Codex reads one thing no other harness does, and it lives beside `SKILL.md` rather than inside its frontmatter:
 

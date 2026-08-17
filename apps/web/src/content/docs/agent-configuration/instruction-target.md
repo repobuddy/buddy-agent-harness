@@ -79,7 +79,7 @@ Every [purpose](/agent-configuration/instruction-purpose/) applies here, not onl
 
 The user can also respond, which no other target can. An instruction here may leave a detail to a later turn. A brief must instead anticipate what would have been asked, because the subagent has no way to ask it.
 
-## Agent: briefs and mail are not interchangeable
+## Agent: a brief sets the mission, mail competes with it
 
 A brief and a piece of mail both read like conversation, but they reach agents in different states. No file path corresponds to either form, so a description or the instruction body has to carry the target.
 

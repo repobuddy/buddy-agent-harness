@@ -57,7 +57,7 @@ Antigravity and VS Code read the canonical directory but are not selectable via 
 
 Neither has a safe project-scope detection marker. Antigravity documents no project harness directory, and VS Code's `.vscode/` indicates the editor rather than skills support. It exists in repositories with no agent configuration at all, so detecting on it would enable a harness almost everywhere. Registering them would add a name to the reported enabled set, write zero files, and introduce a false positive. Documenting them is the useful part.
 
-## Enabled is not the same as projected
+## Enabling states support, projecting writes a link
 
 Enabling a harness is a statement about what the repository supports. For the five native harnesses above, no files are written at all. The CLI result separates `native` from `linked` so it is clear what actually changed on disk.
 

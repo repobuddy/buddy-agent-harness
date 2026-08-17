@@ -31,7 +31,7 @@ A persona is an agent definition file with two layers:
 
 The identity layer shapes behavior through instruction. The capability layer shapes it through enforcement. Only the capability layer genuinely requires an agent definition: a skill can already set `model` and `effort`, and [wanting either is not a reason to reach for a subagent](/agent-configuration/skills/overview/#what-still-requires-an-agent-definition). What a skill cannot do is close the tool set: `tools` is an allowlist, where a skill's `allowed-tools` only grants.
 
-## `skills:` is a preload list, not an access list
+## `skills:` injects content at startup
 
 It injects each named skill's full content into the agent's context at startup. It does not gate what the agent may load later, which stays open through the harness's skill tool unless you remove that tool.
 

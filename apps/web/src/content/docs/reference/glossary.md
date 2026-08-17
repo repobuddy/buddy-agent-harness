@@ -33,7 +33,7 @@ Each entry gives the short definition and links to the page that owns the topic.
 
 **skill bridge**: whatever points a harness at `.agents/skills`, whether a symlink or a copy. This is the sense the `doctor` command prints, where each row of its `bridges` list is one harness path it checked. A working skill bridge is a projection; the word covers the broken states too, which is why the diagnostic uses it. See [`doctor`](/cli/doctor/).
 
-**enabled vs. projected**: enabling a harness states what the repository supports; projecting writes a link. For a native harness the two differ, so the CLI result separates `native` from `linked`. See [Harness Differences](/agent-configuration/harness-differences/#enabled-is-not-the-same-as-projected).
+**enabled vs. projected**: enabling a harness states what the repository supports; projecting writes a link. For a native harness the two differ, so the CLI result separates `native` from `linked`. See [Harness Differences](/agent-configuration/harness-differences/#enabling-states-support-projecting-writes-a-link).
 
 ## Skills
 
