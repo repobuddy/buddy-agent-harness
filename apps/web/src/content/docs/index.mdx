@@ -1,10 +1,10 @@
 ---
 title: One canonical agent configuration
-description: One canonical agent configuration (AGENTS.md and .agents/skills), shared across every coding-agent harness.
+description: One canonical agent configuration (AGENTS.md and .agents/skills), polyfilled for every agent harness.
 template: splash
 hero:
   title: Buddy Agent Harness
-  tagline: One repository-owned agent configuration, readable by every coding harness. An agent skill and a CLI, built on the open AGENTS.md and Agent Skills standards.
+  tagline: Write agent configuration in open standards, polyfilled for every agent harness.
   actions:
     - text: Get started
       link: ./getting-started/introduction/
@@ -20,9 +20,11 @@ hero:
 
 Buddy Agent Harness treats the repository root's `AGENTS.md` and `.agents/` tree as canonical agent configuration: `.agents/AGENTS.md` holds shared behavior, `.agents/skills/**/SKILL.md` holds capabilities, and separately named files hold tool settings.
 
-It consolidates the configuration you already have into that source, then bridges the harnesses that cannot read it. Most need nothing: Codex, Cursor, Copilot CLI, and Devin Desktop read `.agents/skills/` natively. Only [Claude Code](/agent-configuration/harnesses/claude-code/) and [Gemini CLI](/agent-configuration/harnesses/gemini-cli/) need a link.
+It consolidates the configuration you already have into that source, then polyfills the harnesses that cannot read it. Like any polyfill, it writes nothing where support is already native: Codex, Cursor, Copilot CLI, and Devin Desktop read `.agents/skills/` directly. Only [Claude Code](/agent-configuration/harnesses/claude-code/) and [Gemini CLI](/agent-configuration/harnesses/gemini-cli/) need a link.
 
 It never invents policy, never rewrites your instructions, and leaves anything without a documented mapping canonical rather than converting it.
+
+One file per skill across every harness has a cost the linking does not: each harness recognizes a different set of frontmatter fields and drops the rest in silence. Anything that must hold everywhere belongs in the Markdown body, which every harness reads. See [Writing Portable Skills](/agent-configuration/portable-skills/).
 
 ## Install
 
