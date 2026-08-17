@@ -111,6 +111,8 @@ describe('init command', () => {
 		activate({ addCommand })
 
 		expect(addCommand).toHaveBeenCalledWith(harnessCommand)
+		// The mounted name is what consumers type, so it is pinned here rather than left to the object.
+		expect(harnessCommand.name).toBe('agent-harness')
 		expect(harnessCommand.commands).toEqual([initCommand, doctorCommand])
 	})
 })
