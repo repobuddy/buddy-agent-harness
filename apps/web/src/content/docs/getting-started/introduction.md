@@ -42,7 +42,13 @@ In Claude Code, install the plugin and its `init` skill from the Repobuddy marke
 
 ## Initialize a repository
 
-From the repository root, ask your agent to run the `init` skill:
+From the repository root, invoke the `init` skill:
+
+```text
+/buddy-agent-harness:init
+```
+
+Any agent that reads `.agents/skills/` can be asked in prose instead:
 
 ```text
 Initialize this repository's agent configuration.
