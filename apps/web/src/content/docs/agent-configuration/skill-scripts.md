@@ -38,19 +38,19 @@ This is ordinary Node resolution rather than a harness feature. `import.meta.url
 
 So the script reaches the package it shipped in, while the working directory stays the repository under inspection. Both halves matter, and they are separate.
 
-## Name the skill directory with a placeholder
+## Write the path as the skill sees it
 
-The invocation still needs a path. A relative one will not do, because the working directory is the repository.
-
-Write the skill's own directory as a placeholder and let the agent substitute it:
+Name the script relative to the skill directory:
 
 ```sh
-node "<skill>/scripts/doctor.mjs"
+node scripts/doctor.mjs
 ```
 
-State in the body that `<skill>` is the skill's own directory. An agent knows where it read the file from, so this resolves in practice.
+An agent knows which directory it read the `SKILL.md` from, and resolves the path against it. Say so in the body, since the working directory is the repository rather than the skill.
 
-It has a limit. Substituting the placeholder is model behavior rather than a guarantee like `import.meta.url`, and it varies by harness and by model. That is the failure the `npx` fallback below covers.
+Keep `node` in front. A launcher written by a build step ships without an executable bit, and a shebang does nothing on Windows, so naming the file alone would not run it.
+
+This step has a limit worth stating. Resolving the path is model behavior rather than a guarantee like `import.meta.url`, and it varies by harness and by model. That is one of the two failures the `npx` fallback below covers.
 
 Do not reach for `${CLAUDE_SKILL_DIR}`. It expands on Claude Code and stays literal on the page everywhere else, the same trap as a bare `$ARGUMENTS`. See [Writing Portable Skills](/agent-configuration/portable-skills/#arguments-do-not-survive-the-trip).
 
