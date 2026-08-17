@@ -5,7 +5,7 @@ description: Which SKILL.md frontmatter survives across harnesses, and which two
 
 Linking a skill into every harness is straightforward. Making it *behave* the same everywhere is not, and this is where the real cost of cross-harness authoring sits.
 
-This page covers frontmatter: what survives the trip between harnesses. For how to split a skill across `SKILL.md` and `references/`, see [Best Practices](/agent-configuration/best-practices/). For a skill that ships executable code, see [Bundling Scripts with a Skill](/agent-configuration/skill-scripts/).
+This page covers frontmatter: what survives the trip between harnesses. For how to split a skill across `SKILL.md` and `references/`, see [Best Practices](/agent-configuration/best-practices/). For a skill that ships its own script, see [Skill Scripts](/agent-configuration/skill-scripts/).
 
 ## Frontmatter is a per-harness superset
 

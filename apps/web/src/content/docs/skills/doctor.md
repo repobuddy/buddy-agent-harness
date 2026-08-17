@@ -19,7 +19,7 @@ The skill also loads on its own when an agent hits the symptom, so "my skills ar
 
 Its one action is to run `buddy-agent-harness doctor` and act on the report. If you would rather run that yourself, the plugin is not a prerequisite: see the [CLI reference](/cli/doctor/#no-install-needed).
 
-The skill runs the copy of the CLI that shipped with it, through a launcher in its own `scripts/` directory, so an installed plugin downloads nothing. It falls back to `npx` pinned to the version it shipped with, which covers a plugin installed from git rather than npm, where the CLI's dependencies were never installed.
+The skill runs the copy of the CLI that shipped with it, through a launcher in its own `scripts/` directory, so an installed plugin downloads nothing. It falls back to `npx`, pinned to the version it shipped with, when that path cannot be resolved. [Skill Scripts](/agent-configuration/skill-scripts/) covers the pattern, and [Introduction](/getting-started/introduction/#install) covers why the plugin wants an npm-backed install.
 
 ## What it checks
 
