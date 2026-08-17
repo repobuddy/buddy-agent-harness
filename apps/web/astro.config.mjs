@@ -126,6 +126,7 @@ export default defineConfig({
 						{ label: 'Glossary', slug: 'reference/glossary' },
 						{ label: 'CLI Overview', slug: 'cli' },
 						{ label: 'CLI: init', slug: 'cli/init' },
+						{ label: 'CLI: doctor', slug: 'cli/doctor' },
 						{ label: 'Sources & Confidence', slug: 'sources' },
 					],
 				},

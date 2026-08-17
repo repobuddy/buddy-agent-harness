@@ -38,4 +38,6 @@ Codex, Cursor, GitHub Copilot CLI, and Devin Desktop read `.agents/skills/` nati
 
 Use `buddy-agent-harness init --help` to see `--root`, `--harness`, `--copy`, `--force`, and `--format`.
 
+`buddy-agent-harness doctor` is the read-only check that those bridges still resolve after a clone. It reports every bridge with a status, names the `init` command that repairs each finding, and always exits `0` — the diagnosis succeeding is not the same as the repository being healthy. See [`skills/doctor/SKILL.md`](packages/buddy-agent-harness/skills/doctor/SKILL.md).
+
 The `init` skill goes further than the CLI: it surveys agent configuration the repository already has, consolidates it into the canonical source with your approval, and then links. See [`skills/init/SKILL.md`](packages/buddy-agent-harness/skills/init/SKILL.md).

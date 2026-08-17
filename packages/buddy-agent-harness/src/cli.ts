@@ -1,4 +1,5 @@
 import { cli } from 'clibuilder'
+import { doctorCommand } from './diagnose-bridges/doctor.command.ts'
 import { initCommand } from './initialize-harnesses/init.command.ts'
 
 export async function main(): Promise<void> {
@@ -8,7 +9,7 @@ export async function main(): Promise<void> {
 		description: 'Initialize agent harness skill compatibility in consumer repositories.',
 	})
 	try {
-		await app.command(initCommand).parse(process.argv)
+		await app.command(initCommand).command(doctorCommand).parse(process.argv)
 	} catch (error) {
 		process.stdout.write(`error: ${error instanceof Error ? error.message : 'Invalid command.'}\n`)
 		process.exitCode = 2
