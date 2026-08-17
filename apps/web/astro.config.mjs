@@ -109,6 +109,7 @@ export default defineConfig({
 						{ label: 'Instruction Purpose', slug: 'agent-configuration/instruction-purpose' },
 						{ label: 'Instruction Target', slug: 'agent-configuration/instruction-target' },
 						{ label: 'Writing Portable Skills', slug: 'agent-configuration/portable-skills' },
+						{ label: 'Skill Scripts', slug: 'agent-configuration/skill-scripts' },
 						{ label: 'Lookup Files', slug: 'agent-configuration/lookup-files' },
 						{
 							label: 'Skill Design',

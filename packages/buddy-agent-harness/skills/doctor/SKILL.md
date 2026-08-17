@@ -3,7 +3,7 @@ name: doctor
 description: Use this skill when a repository loads no project skills, when skills are missing after a clone, or when checking whether the agent configuration bridges into .claude/skills and the other harness directories still resolve.
 ---
 
-<!-- Generated from src/diagnose-bridges/doctor-guidance.ts by scripts/generate-doctor-skill.ts. Do not edit by hand. -->
+<!-- Generated from src/diagnose-bridges/doctor-guidance.ts by scripts/generate-skills.ts. Do not edit by hand. -->
 
 # Harness Doctor
 
@@ -12,8 +12,10 @@ description: Use this skill when a repository loads no project skills, when skil
 Diagnose it:
 
 ```sh
-npx -y buddy-agent-harness doctor
+node "<skill>/scripts/doctor.mjs"
 ```
+
+`<skill>` is this skill's own directory. The launcher runs the CLI that shipped beside it against the current working directory, so nothing is downloaded. Fall back to `npx -y buddy-agent-harness@^0.3.1 doctor` when that path cannot be resolved, or when the plugin was installed from git rather than npm and its dependencies were never installed.
 
 The command is read-only. It never repairs anything, so it is safe to run at any point, including from a session-start hook.
 

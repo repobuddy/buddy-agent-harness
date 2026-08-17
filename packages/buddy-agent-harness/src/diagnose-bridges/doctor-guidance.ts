@@ -1,7 +1,7 @@
 /**
  * The one place `doctor`'s guidance is written. The command reads `detail` and `repair` to fill its
  * `findings` and `help` sections; `skills/doctor/SKILL.md` is generated from the same table by
- * `scripts/generate-doctor-skill.ts`, so the shipped skill cannot drift from what the command says.
+ * `scripts/generate-skills.ts`, so the shipped skill cannot drift from what the command says.
  */
 
 /** Every way a bridge can fail, in the order `doctor` reports them. */
@@ -33,9 +33,51 @@ export type Repair = {
 	skillRepair(path: string): string
 }
 
-/** How the command names itself. A skill may run without the binary on PATH, so it uses `npx`. */
+/** How the command names itself. */
 export const commandInvocation = 'buddy-agent-harness'
-export const skillInvocation = 'npx -y buddy-agent-harness'
+/**
+ * How a skill invokes the command. A skill may run without the binary on PATH, so it goes through
+ * `npx`, pinned to the caret range of the version that generated the skill.
+ *
+ * The pin is what makes the shipped guidance honest. A skill states the findings and flags of the
+ * version it was generated from, so an unpinned `npx` — which resolves whatever is latest — can
+ * hand an agent a table that does not describe the CLI it just ran. The caret keeps patches
+ * flowing and stops at the next breaking line.
+ */
+export const skillInvocation = (version: string) => `npx -y ${commandInvocation}@^${version}`
+
+/**
+ * The launcher a skill ships, named for the subcommand it runs so a stack trace or a process list
+ * says which one it was. One script per command, beside the `SKILL.md` that documents it.
+ */
+export const launcherFor = (subcommand: string) => `scripts/${subcommand}.mjs`
+
+/**
+ * How a skill names its launcher. `<skill>` is the skill's own directory, substituted by the agent
+ * reading the file, because the working directory is the repository under inspection rather than
+ * the skill.
+ */
+export const launcherInvocation = (subcommand: string) => `node "<skill>/${launcherFor(subcommand)}"`
+
+/**
+ * The launcher written into a skill's `scripts/` directory. It resolves the CLI from its own
+ * location rather than the working directory, so the skill runs the copy it shipped with and
+ * fetches nothing. The repository it inspects is still the working directory, unchanged.
+ */
+export function renderSkillLauncher(subcommand: string): string {
+	return `#!/usr/bin/env node
+// Generated from src/diagnose-bridges/doctor-guidance.ts by scripts/generate-skills.ts. Do not edit by hand.
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+// <package>/skills/<skill>/scripts/${subcommand}.mjs: four levels up is the package root.
+const packageRoot = dirname(dirname(dirname(dirname(fileURLToPath(import.meta.url)))))
+
+process.argv.splice(2, 0, '${subcommand}')
+await import(join(packageRoot, 'bin', '${commandInvocation}.mjs'))
+`
+}
+
 /** How the skill hands a repair back to `init`. */
 export const initSkillInvocation = '/buddy-agent-harness:init'
 
@@ -114,10 +156,14 @@ export const doctorSkill = {
 
 /** Written into the generated skill so a reader knows not to edit it in place. */
 export const generatedSkillWarning =
-	'<!-- Generated from src/diagnose-bridges/doctor-guidance.ts by scripts/generate-doctor-skill.ts. Do not edit by hand. -->'
+	'<!-- Generated from src/diagnose-bridges/doctor-guidance.ts by scripts/generate-skills.ts. Do not edit by hand. -->'
 
-/** The shipped `doctor` skill, rendered from the same table the command prints. */
-export function renderDoctorSkill(): string {
+/**
+ * The shipped `doctor` skill, rendered from the same table the command prints. `version` is the
+ * package version the skill ships with; it pins the `npx` invocation so the table and the CLI that
+ * produced it stay on the same breaking line.
+ */
+export function renderDoctorSkill(version: string): string {
 	// A repair may itself contain a pipe, which would otherwise end the table cell early.
 	const cell = (value: string) => value.replaceAll('|', '\\|')
 	const rows = doctorRepairs
@@ -138,8 +184,10 @@ ${generatedSkillWarning}
 Diagnose it:
 
 \`\`\`sh
-${skillInvocation} doctor
+${launcherInvocation('doctor')}
 \`\`\`
+
+\`<skill>\` is this skill's own directory. The launcher runs the CLI that shipped beside it against the current working directory, so nothing is downloaded. Fall back to \`${skillInvocation(version)} doctor\` when that path cannot be resolved, or when the plugin was installed from git rather than npm and its dependencies were never installed.
 
 The command is read-only. It never repairs anything, so it is safe to run at any point, including from a session-start hook.
 

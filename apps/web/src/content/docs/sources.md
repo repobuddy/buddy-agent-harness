@@ -22,6 +22,7 @@ The harness claims across this site are not equally well-sourced, and the differ
 | What an agent definition can express that a skill cannot | High | primary vendor documentation |
 | Claude Code skill arguments, and the fields the spec rejects | High | primary vendor documentation |
 | Codex skills having no argument mechanism | High | absence from the vendor page that supersedes custom prompts |
+| Plugin dependencies installed for an npm source but not a git source | Low | direct observation of local installs, no vendor specification |
 | Cursor rule selection via `globs` / `description` / neither | High | primary vendor documentation |
 | Copilot `applyTo` path-specific instructions | High | primary vendor documentation |
 | Nested `AGENTS.md` resolution (nearest-file-wins) | High | agents.md body copy and FAQ, primary |

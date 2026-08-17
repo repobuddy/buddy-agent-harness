@@ -40,6 +40,8 @@ In Claude Code, install the plugin and its `init` skill from the [cyberplace](ht
 /plugin install buddy-agent-harness@cyberplace
 ```
 
+Install from the marketplace rather than from a git checkout. The skills run the CLI that ships with the plugin, and that CLI has dependencies, which an npm-backed install brings with it and a git source does not. A git-sourced install still works: both skills fall back to fetching the pinned version with `npx`. See [Skill Scripts](/agent-configuration/skill-scripts/) for the pattern and why the fallback stays.
+
 ## Initialize a repository
 
 From the repository root, invoke the `init` skill:
