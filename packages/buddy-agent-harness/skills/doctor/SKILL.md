@@ -15,7 +15,7 @@ Diagnose it:
 node "<skill>/scripts/doctor.mjs"
 ```
 
-`<skill>` is this skill's own directory. The launcher runs the CLI that shipped beside it against the current working directory, so nothing is downloaded. Fall back to `npx -y buddy-agent-harness@^0.3.1 doctor` when that path cannot be resolved, or when the plugin was installed from git rather than npm and its dependencies were never installed.
+`<skill>` is this skill's own directory. The launcher runs the CLI that shipped beside it against the current working directory, so nothing is downloaded. Fall back to `npx -y buddy-agent-harness@^0.4.0 doctor` when that path cannot be resolved, or when the plugin was installed from git rather than npm and its dependencies were never installed.
 
 The command is read-only. It never repairs anything, so it is safe to run at any point, including from a session-start hook.
 
