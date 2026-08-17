@@ -1,5 +1,5 @@
 ---
-title: doctor
+title: 'CLI: doctor'
 description: 'CLI reference for buddy-agent-harness doctor: flags, statuses, findings, and why it never repairs.'
 ---
 
@@ -9,11 +9,21 @@ buddy-agent-harness doctor [--root <directory>] [--harness <names>] [--format to
 
 `doctor` reports whether the skill bridges [`init`](/cli/init/) creates still resolve into `.agents/skills`. It is read-only: it never creates, moves, or repairs anything, so it is safe to run at any point, including from a session-start hook.
 
+## No install needed
+
+Nothing has to be installed to diagnose a repository. Run it from npm in the repository root:
+
+```sh
+npx -y buddy-agent-harness doctor --format text
+```
+
+That is the whole dependency: one npx invocation, on a repository you cloned rather than one you set up. The plugin and its [`doctor` skill](/skills/doctor/) add an agent that runs this for you and reads the report, not a capability the command lacks.
+
 ## Why it exists
 
 A committed directory symlink such as `.claude/skills` → `../.agents/skills` degrades badly on a native Windows checkout, and it degrades silently.
 
-Creating a symlink on Windows needs `SeCreateSymbolicLinkPrivilege` — Administrator, or Developer Mode. Git for Windows gates it separately with `core.symlinks`, which its installer leaves off by default. With `core.symlinks=false` git does not error: it checks the symlink out as a regular file whose contents are the target path. The harness looks for a directory, finds a file, and loads zero project skills, with no warning anywhere.
+Creating a symlink on Windows needs `SeCreateSymbolicLinkPrivilege`, which means Administrator or Developer Mode. Git for Windows gates it separately with `core.symlinks`, which its installer leaves off by default. With `core.symlinks=false` git does not error: it checks the symlink out as a regular file whose contents are the target path. The harness looks for a directory, finds a file, and loads zero project skills, with no warning anywhere.
 
 `core.symlinks` is per-clone. It is not distributed by `.gitattributes` or by committed config, so it cannot be enforced from the repository. Detection is the only reliable lever, and it is cheap: the path exists but is not a directory.
 
@@ -40,7 +50,7 @@ findings[2]{path,detail}:
 help[2]: Run `buddy-agent-harness init --copy --force`,Run `buddy-agent-harness init`
 ```
 
-`kind` is what is on disk now — `symlink`, `copy`, `file`, or `none` — and `status` is whether it works.
+`kind` is what is on disk now (`symlink`, `copy`, `file`, or `none`), and `status` is whether it works.
 
 | Status | Meaning |
 | --- | --- |
@@ -105,7 +115,7 @@ divergence[1]{path,direction}:
 
 Running `init --copy --force` over a tracked symlink turns the bridge from a symlink blob into a directory of real files, leaving a permanently dirty tree holding something that must never be committed. `git update-index --skip-worktree` is the intended tool for a tracked path deliberately different on one machine.
 
-It is a hint rather than a guarantee — some checkout and merge operations clear it — so `doctor` verifies the bit is still set on a tracked copy rather than assuming it, and reports the path as dirty-and-uncommittable if it has been lost.
+It is a hint rather than a guarantee, because some checkout and merge operations clear it. So `doctor` verifies the bit is still set on a tracked copy rather than assuming it, and reports the path as dirty-and-uncommittable if it has been lost.
 
 ## Exit codes
 
@@ -117,9 +127,13 @@ Every repair is already expressible with existing `init` flags, and each finding
 
 | Finding | Repair |
 | --- | --- |
+| `no-canonical` | `buddy-agent-harness init` |
 | `missing` | `buddy-agent-harness init` |
 | `degraded` | `buddy-agent-harness init --copy --force` |
 | `stale` | `buddy-agent-harness init --force` |
 | `diverged` | Depends on the direction; see above. |
+| `unpinned-copy` | `git ls-files -z <path> \| xargs -0 git update-index --skip-worktree` |
+
+`no-canonical` is the one finding that is not about a bridge: `.agents/skills` itself is absent, so nothing can resolve into it. `unpinned-copy` is the [skip-worktree](#the-skip-worktree-bit) case, and it is reported against a bridge whose status is still `ok`.
 
 A `--fix` flag would reimplement that logic and drift from it. On the Windows case it would likely reimplement it wrongly: the naive repair is to recreate the link, which is precisely the operation that already failed on that machine. `--copy` is the branch that works there. The three-way divergence case has no safe automatic answer at all.

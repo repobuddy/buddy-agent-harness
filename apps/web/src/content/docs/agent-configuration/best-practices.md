@@ -29,7 +29,7 @@ Only the third kind is lossy, and it is the only kind worth counting. This is wh
 
 Prefer mechanical indirection wherever a harness offers it. Where it does not, shorten the chain rather than trusting the link.
 
-## Depth is not the same as distance
+## Count hops, not directory levels
 
 Directory nesting is free. What counts is how many files the agent opens in sequence.
 

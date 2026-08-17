@@ -51,7 +51,7 @@ Every row is a skill. Commands, gateways, and personas are not separate artifact
 
 **Disciplines** are stances that are always on, selected by an event (a session starting, a tool finishing) rather than by a request. A discipline is the one row that usually is *not* a skill in practice: an always-on rule is cheaper as an `AGENTS.md` section, since [that file is already resident](/agent-configuration/instruction-files/) and a skill would have to be re-selected to apply.
 
-### Selection and Visibility are not the same question
+### Selection finds the skill, Visibility lists it
 
 These two get collapsed, and the collapse causes real breakage.
 
@@ -71,7 +71,7 @@ So **a visibility flag must never be read as a selection signal**. If a tool tre
 
 Note also that neither field is portable. Both are Claude Code's, and one of the two is recognized by Cursor. Everywhere else, a skill relying on them is a plain public skill. The description-based approach in [Direct Invocation Skill](/agent-configuration/skills/direct-skill/) is the portable substitute.
 
-## Runtime fields, and why they are not portable
+## Runtime fields stay with the harness that defines them
 
 The three axes above describe *selection*. A second, independent question is what a skill is allowed to change about the run itself once it loads: the model, the effort level, the tool pool, whether it executes inline or in a subagent.
 
@@ -119,7 +119,7 @@ Kind says nothing about where a skill lives. [Configuration Layout](/reference/c
 
 Placement is orthogonal to kind, as are **distribution** (whether the skill ships to other repositories) and **pattern** (the workflow shape of the body: process, tool-based, standard, persona). Every skill has a value on every axis at once. A project-scoped, process-pattern, situational, user-visible skill with an action effect is just "a normal skill". The names on this page only get used when something deviates.
 
-## When a persona is not a skill
+## Persona as a subagent
 
 Persona has a second realization that is *not* a skill, and that is the one usually being contrasted with skills:
 
