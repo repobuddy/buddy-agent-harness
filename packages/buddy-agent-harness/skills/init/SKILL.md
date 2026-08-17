@@ -76,6 +76,8 @@ Confirm each projection resolves into `.agents/skills` and that every migrated `
 
 `init` is not a formatter. If the repository has one, run it over the written files and say so.
 
+Then offer to continue with the `enhance` skill, which proposes guidance the repository is missing rather than consolidating what it has. Ask once and take the answer; `init` writes no instruction content of its own either way, and `enhance` decides for itself whether anything is worth offering.
+
 ## Rules
 
 - Never invent project policy, and never make a material change to a user's `AGENTS.md`. `references/agents-md.md` draws the line: a statement that would stop being true if `init`'s output were removed describes the tool's own artifact and is non-material.
