@@ -14,7 +14,7 @@ The CLI performs the linking step only. Consolidating existing configuration and
 | Option | Meaning |
 | --- | --- |
 | `--root <directory>` | Selects the directory to initialize. The product direction is repository-root-only configuration. |
-| `--harness <names>` | Comma-separated harnesses to enable in addition to Claude Code and Cursor, such as `codex,windsurf`. |
+| `--harness <names>` | Comma-separated harnesses to enable in addition to Claude Code and Cursor, such as `codex,gemini-cli`. |
 | `--copy` | Copy the canonical skills directory when links are unavailable. |
 | `--force` | Replace a conflicting target after the command has identified it. |
 | `--format toon\|json\|text` | Choose token-efficient TOON output (default), JSON, or a human-readable text report. |

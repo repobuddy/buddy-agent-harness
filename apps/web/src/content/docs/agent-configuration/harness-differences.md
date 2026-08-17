@@ -20,6 +20,8 @@ Support is not a binary label. A harness can read a canonical format natively, n
 
 The five harnesses at the top need nothing written for them at all: the canonical directory *is* their directory. The three at the bottom have pages of their own because each has a gap that costs you instructions if you miss it.
 
+Devin Desktop was named Windsurf until the rebrand on 2026-06-02. `--harness windsurf` is still accepted as a deprecated alias, and still writes the legacy `.windsurf/skills` projection because Devin continues to scan that path; [What a projection is](/reference/configuration-layout/#what-a-projection-is) covers how it is reported.
+
 Vendor documentation changes independently. Follow the linked vendor documentation for setup requirements, product editions, and features beyond skills and instructions. The confidence behind each row is recorded in [Sources & Confidence](/sources/).
 
 ## Nested instruction files resolve differently
