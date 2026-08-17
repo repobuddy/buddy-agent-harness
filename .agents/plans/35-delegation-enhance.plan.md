@@ -11,15 +11,15 @@ todos:
   - content: SDD paused by owner; spec drafts preserved to the sibling design file
     status: completed
   - content: Write skills/enhance/SKILL.md and its references
-    status: pending
+    status: completed
   - content: Add the Phase 5 offer to skills/init/SKILL.md
-    status: pending
+    status: completed
   - content: Docs pages for enhance under apps/web, via technical-writer
-    status: pending
+    status: completed
   - content: Changeset
-    status: pending
+    status: completed
   - content: Handoff — PR, merge, rebase, cut next branch
-    status: pending
+    status: completed
 ---
 
 # 35 — Delegation section via a new `enhance` skill
@@ -107,12 +107,14 @@ builder, and architect bars.
 
 ## NEXT
 
-Implement, without the frozen-suite ceremony:
+Nothing. The mission landed.
 
-1. `packages/buddy-agent-harness/skills/enhance/SKILL.md` plus a reference holding the frozen
-   section verbatim.
-2. The Phase 5 offer in `packages/buddy-agent-harness/skills/init/SKILL.md`.
-3. Docs under `apps/web/src/content/docs/skills/`, written to the technical-writer standard.
-4. A changeset.
+`enhance` shipped in #36 with the delegation addition, the `init` hand-off, the docs, and a minor
+changeset; issue #35 closed on merge. The eval harness that settled the wording shipped in #38 as
+the repo-private `eval-delegation` skill, and `cyberuni/cyberplace#493` proposes the generic
+version for ACED.
 
-Then open the PR closing #35, merge, rebase, and cut the branch for PR2 (the eval skill).
+What did **not** land is the spec node. It failed the spec gate twice and was deliberately kept
+out of the corpus; `35-delegation-enhance.design.md` holds the drafted node, both verdicts, and
+the five outstanding blocking findings. Resuming that is a separate mission, and this brief is
+not its handoff — start from the design file.
