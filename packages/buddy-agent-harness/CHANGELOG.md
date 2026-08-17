@@ -1,5 +1,40 @@
 # buddy-agent-harness
 
+## 0.3.0
+
+### Minor Changes
+
+- 46d24e6: Teach the `init` skill to take arguments, so `doctor` can hand it a repair verbatim.
+  
+  `doctor` names repairs like `--copy --force`, and until now the `init` skill had no documented way to receive them. It now reads flags and their prose equivalents out of the invocation, passes them through to the command in Phase 4, and still stops for the Phase 3 approval that `--force` would otherwise skip.
+  
+  The mechanism is deliberately not a placeholder. Claude Code appends what the caller typed as `ARGUMENTS: <value>` whenever the body omits `$ARGUMENTS`, Codex skills have no argument mechanism at all, and the Agent Skills spec defines none — so a body that says how to read the invocation is the only form that works everywhere, while a literal `$ARGUMENTS` would resolve on one harness and stay on the page on the rest.
+  
+  `argument-hint` is added for Claude Code's autocomplete. The new references explain why that field is the exception to harness-specific frontmatter being dropped in silence: claude.ai uploads and the Skills API reject it with a hard error.
+- ee027bb: Add a read-only `doctor` command and a generated `doctor` skill.
+  
+  `doctor` reports whether the skill bridges `init` creates still resolve into `.agents/skills`, deriving the bridge list from the same harness registry `init` projects into. It detects the silent Windows failure — a checkout with `core.symlinks=false` materializes a committed symlink as a regular file holding the target path, and the harness loads zero project skills with no warning — along with missing bridges, symlinks pointing elsewhere, and copies that have drifted from the canonical directory.
+  
+  A diverged copy is reported with a direction, computed against the last commit where the two sides agreed, so the report says which side moved rather than only that they differ. A tracked copy is also checked for its `skip-worktree` bit, which some checkout and merge operations clear.
+  
+  The command writes nothing and exits `0` even with findings; each finding names its repair. The command names an `init` invocation for a person at a shell, while the skill hands the same repair to the `init` skill, because rebuilding a bridge can move skills a user wrote. `skills/doctor/SKILL.md` is generated from the same guidance the command prints, with `pnpm skill:doctor:check` in `verify` failing when the committed skill goes stale.
+- 46d24e6: Mount the plugin's commands as `agent-harness` rather than `harness`.
+  
+  `repobuddy` puts every plugin's commands in one namespace, where `harness` is generic enough for a second plugin to want it. The commands are otherwise unchanged: `buddy agent-harness doctor` and `buddy agent-harness init`.
+  
+  This renames the mount point. A consumer running `buddy harness init` has to update the call; the `npx buddy-agent-harness` invocations are unaffected.
+- e46215a: Add `--format text` to `init` and `doctor`.
+  
+  TOON stays the default because it is what an agent parses. `--format text` renders the same result for a person: scalars as `key: value`, each collection of records as a table with its columns aligned, and lists of names as bullets.
+  
+  `--format` now rejects an unknown value with `--format must be toon, json, or text.`
+
+### Patch Changes
+
+- 2992e06: Use `codex,gemini-cli` as the `init --harness` help example, matching `doctor`.
+  
+  The previous example named `windsurf`, which is a deprecated alias for `devin-desktop`, so the one name the help text taught was the one the result reports back as deprecated.
+
 ## 0.2.0
 
 ### Minor Changes

@@ -1,6 +1,6 @@
 {
 	"name": "buddy-agent-harness",
-	"version": "0.2.0",
+	"version": "0.3.0",
 	"description": "Initialize standards-based agent configuration across coding-agent harnesses",
 	"author": {
 		"name": "repobuddy"
