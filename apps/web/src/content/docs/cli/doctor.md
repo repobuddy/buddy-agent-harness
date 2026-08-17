@@ -4,7 +4,7 @@ description: 'CLI reference for buddy-agent-harness doctor: flags, statuses, fin
 ---
 
 ```sh
-buddy-agent-harness doctor [--root <directory>] [--harness <names>] [--format toon|json]
+buddy-agent-harness doctor [--root <directory>] [--harness <names>] [--format toon|json|text]
 ```
 
 `doctor` reports whether the skill bridges [`init`](/cli/init/) creates still resolve into `.agents/skills`. It is read-only: it never creates, moves, or repairs anything, so it is safe to run at any point, including from a session-start hook.
@@ -23,7 +23,7 @@ Creating a symlink on Windows needs `SeCreateSymbolicLinkPrivilege` — Administ
 | --- | --- |
 | `--root <directory>` | Selects the directory to diagnose. Defaults to the current directory. |
 | `--harness <names>` | Comma-separated harnesses to check in addition to Claude Code and Cursor, such as `codex,gemini-cli`. |
-| `--format toon\|json` | Choose token-efficient TOON output (default) or JSON. |
+| `--format toon\|json\|text` | Choose token-efficient TOON output (default), JSON, or a human-readable text report. |
 
 The bridge list is derived from the same registry `init` projects into, so `doctor` always describes the bridges `init` actually creates rather than a separate list that can drift.
 
@@ -58,6 +58,30 @@ bridges[2]{harness,path,kind,status}:
   gemini-cli,.gemini/skills,symlink,ok
 findings: 0 problems found — all 2 bridges resolve
 ```
+
+### `--format text`
+
+TOON is the default because it is what an agent parses. `--format text` renders the same result for a person, with each collection as an aligned table:
+
+```
+bin: ~/.local/bin/buddy-agent-harness
+
+bridges:
+  harness      path            kind  status
+  claude-code  .claude/skills  file  degraded
+  gemini-cli   .gemini/skills  none  missing
+
+findings:
+  path            detail
+  .claude/skills  expected a directory but found a regular file — checkout without core.symlinks
+  .gemini/skills  no bridge at this path — the harness sees zero project skills
+
+help:
+  - Run `buddy-agent-harness init --copy --force`
+  - Run `buddy-agent-harness init`
+```
+
+`init` accepts the same flag.
 
 ## Divergence
 

@@ -23,6 +23,8 @@ The command is read-only. It never repairs anything, so it is safe to run at any
 
 When every bridge resolves, `findings` says so outright rather than being empty.
 
+The default output is TOON, which is what you parse. Add `--format text` when you need to show the same report to a person, or `--format json`.
+
 ## Findings and their repairs
 
 | Finding | What it means | Repair |

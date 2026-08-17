@@ -52,7 +52,7 @@ export const doctorCommand: cli.Command = command({
 			type: z.optional(z.string()),
 		},
 		format: {
-			description: 'Output format: toon (default) or json.',
+			description: 'Output format: toon (default), json, or text for a human-readable report.',
 			type: z.optional(z.string()),
 			default: 'toon',
 		},

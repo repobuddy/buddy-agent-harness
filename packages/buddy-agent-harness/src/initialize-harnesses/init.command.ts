@@ -26,7 +26,7 @@ export const initCommand: cli.Command = command({
 			type: z.optional(z.boolean()),
 		},
 		format: {
-			description: 'Output format: toon (default) or json.',
+			description: 'Output format: toon (default), json, or text for a human-readable report.',
 			type: z.optional(z.string()),
 			default: 'toon',
 		},

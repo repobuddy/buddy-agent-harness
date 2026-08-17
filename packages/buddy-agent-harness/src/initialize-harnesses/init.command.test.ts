@@ -68,7 +68,7 @@ describe('init command', () => {
 
 	it('reports invalid formats and initialization failures', () => {
 		run({ format: 'yaml', root: '/workspace' })
-		expect(stderr).toHaveBeenCalledWith('error: --format must be toon or json.\n')
+		expect(stderr).toHaveBeenCalledWith('error: --format must be toon, json, or text.\n')
 		expect(process.exitCode).toBe(1)
 
 		stderr.mockClear()

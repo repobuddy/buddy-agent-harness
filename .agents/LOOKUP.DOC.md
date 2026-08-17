@@ -10,7 +10,6 @@ Where to look when writing or checking documentation in this repository. Pointer
 | what the code must do | `packages/*/.agents/spec/` |
 | harness paths and the canonical layout | `apps/web/src/content/docs/reference/configuration-layout.md` |
 | which harness needs a projection or a bridge | `apps/web/src/content/docs/agent-configuration/harness-differences.md` |
-| what a `doctor` finding means and how it is repaired | `packages/buddy-agent-harness/src/diagnose-bridges/doctor-guidance.ts` |
 | a term used on the site | `apps/web/src/content/docs/reference/glossary.md` |
 | a term the spec suite binds | `packages/buddy-agent-harness/.agents/spec/glossary.md` |
 

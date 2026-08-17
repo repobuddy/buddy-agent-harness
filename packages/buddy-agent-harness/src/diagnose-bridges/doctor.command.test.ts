@@ -64,7 +64,7 @@ describe('doctor command', () => {
 
 	it('reports an invalid format, an unsupported harness, and a failed diagnosis', () => {
 		run({ format: 'yaml' })
-		expect(stderr).toHaveBeenCalledWith('error: --format must be toon or json.\n')
+		expect(stderr).toHaveBeenCalledWith('error: --format must be toon, json, or text.\n')
 		expect(process.exitCode).toBe(1)
 
 		process.exitCode = undefined
