@@ -49,10 +49,15 @@ export type Harness = {
 }
 
 /**
- * The two scopes disagree, and a single answer per harness could only record one of them. Gemini CLI
- * is the worked case: `.agents/skills` is a user-scope alias there, while project scope reads
- * `.gemini/skills` and nothing else. So it needs a projection in a repository and none at user scope.
- * Claude Code needs one at both. Codex, Cursor, Copilot CLI, and Devin Desktop need none anywhere.
+ * The two scopes disagree in general, and a single answer per harness could only record one of them:
+ * Copilot CLI is `.github/skills` in a repository and `~/.copilot` for the user. Claude Code is the
+ * only harness that needs a skills projection, and it needs one at both scopes. Codex, Cursor,
+ * Copilot CLI, Gemini CLI, and Devin Desktop read `.agents/skills` themselves and are never
+ * projected into.
+ *
+ * Gemini CLI carried a `.gemini/skills` projection until E-GEM-02: it reads the `.agents/skills`
+ * alias at project scope too, where that alias takes precedence over `.gemini/skills`. It still
+ * needs an instruction bridge, which is a separate axis and unaffected.
  *
  * Instruction bridges are recorded at project scope only. The user-scope equivalents exist, but
  * nothing writes or reads them yet: `init` works inside a repository, and so does `doctor`.
@@ -80,7 +85,6 @@ export const harnessRegistry: readonly Harness[] = [
 		name: 'gemini-cli',
 		project: {
 			detect: '.gemini',
-			skillsDirectory: '.gemini/skills',
 			instructionBridge: { kind: 'settings-entry', path: '.gemini/settings.json', key: 'context.fileName' },
 		},
 		user: { detect: '.gemini' },

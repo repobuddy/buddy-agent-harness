@@ -146,9 +146,17 @@ describe('diagnoseBridges', () => {
 	it('checks every bridge the requested harnesses add', () => {
 		const root = repository()
 
+		const result = diagnoseBridges({ root, harnesses: ['windsurf'], cli })
+
+		expect(result.bridges.map((bridge) => bridge.path)).toEqual(['.claude/skills', '.windsurf/skills'])
+	})
+
+	it('adds no bridge for a harness that reads the canonical directory itself', () => {
+		const root = repository()
+
 		const result = diagnoseBridges({ root, harnesses: ['gemini-cli'], cli })
 
-		expect(result.bridges.map((bridge) => bridge.path)).toEqual(['.claude/skills', '.gemini/skills'])
+		expect(result.bridges.map((bridge) => bridge.path)).toEqual(['.claude/skills'])
 	})
 
 	it('accepts an in-sync copy outside a repository without flagging the skip-worktree bit', () => {

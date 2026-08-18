@@ -21,7 +21,7 @@ repository/
     └── <tool-setting>        # separately named tool configuration
 ```
 
-Harness-specific files are *projections* of that source, never a second source of truth. Most harnesses need no projection at all: Codex, Cursor, GitHub Copilot CLI, and Devin Desktop read `.agents/skills/` natively. Only Claude Code and Gemini CLI read solely their own directory and need a link.
+Harness-specific files are *projections* of that source, never a second source of truth. Most harnesses need no projection at all: Codex, Cursor, GitHub Copilot CLI, Gemini CLI, and Devin Desktop read `.agents/skills/` natively. Only Claude Code reads solely its own directory and needs a link.
 
 This is a consolidation job, not a copy-everywhere job. See [Configuration Layout](/reference/configuration-layout/) for the full layout and [Harness Differences](/agent-configuration/harness-differences/) for who needs what.
 

@@ -5,7 +5,7 @@ description: Which agent harnesses read canonical configuration directly, and wh
 
 Support is not a binary label. A harness can read a canonical format natively, need a harness-specific projection, or expose settings that should stay harness-specific. Two questions matter, and they have different answers per harness: does it read `.agents/skills/`, and does it read `AGENTS.md`?
 
-The first question needs a scope before it has an answer. A harness reads project configuration from the repository and user configuration from the home directory, and the two are decided separately: Gemini CLI reads `.agents/skills/` at user scope and only `.gemini/skills/` inside a repository. So the table below asks about skills twice.
+The first question needs a scope before it has an answer. A harness reads project configuration from the repository and user configuration from the home directory, and the two are decided separately: Antigravity reads `.agents/skills/` in a workspace but keeps its user skills under `~/.gemini/config/skills/`. So the table below asks about skills twice.
 
 ## The two-question table
 
@@ -18,11 +18,11 @@ The first question needs a scope before it has an answer. A harness reads projec
 | [VS Code](https://code.visualstudio.com/docs/agent-customization/agent-skills) | Yes (same path set as Copilot CLI) | Yes (same path set as Copilot CLI) | Yes | Nothing |
 | [Cursor](/agent-configuration/harnesses/cursor/) | Yes (also `.cursor/skills/`) | Yes (also `~/.cursor/skills/`) | Agent mode only | [Attention to the mode split](/agent-configuration/harnesses/cursor/) |
 | [Claude Code](/agent-configuration/harnesses/claude-code/) | **No** | **No** (`~/.claude/skills/`) | **No** | [Skills projection + `CLAUDE.md`](/agent-configuration/harnesses/claude-code/) |
-| [Gemini CLI](/agent-configuration/harnesses/gemini-cli/) | **No** (`.gemini/skills/` only) | Yes (alias for `~/.gemini/skills/`) | Only once configured | [Skills projection + settings edit](/agent-configuration/harnesses/gemini-cli/) |
+| [Gemini CLI](/agent-configuration/harnesses/gemini-cli/) | Yes (alias, takes precedence over `.gemini/skills/`) | Yes (alias for `~/.gemini/skills/`) | Only once configured | [Settings edit](/agent-configuration/harnesses/gemini-cli/) |
 
-The five harnesses at the top need nothing written for them at all: the canonical directory *is* their directory. The three at the bottom have pages of their own because each has a gap that costs you instructions if you miss it.
+Only Claude Code needs a skills projection. Every other harness in the table reads the canonical directory in a repository. The three with pages of their own are there because each has a gap that costs you instructions if you miss it — and Gemini CLI is the case that shows the two questions are independent: it reads the canonical skills directory and still reads no instructions until `context.fileName` says so.
 
-Only the repository column decides whether a projection gets written. The user column is here because the same skills can be installed there and the failure mode is identical, and because a harness answering differently in the two columns — Gemini CLI does — is otherwise invisible. Nothing is written outside the repository.
+Only the repository column decides whether a projection gets written. The user column is here because the same skills can be installed there and the failure mode is identical, and because a harness answering differently in the two columns — Antigravity does — is otherwise invisible. Nothing is written outside the repository.
 
 Devin Desktop was named Windsurf until the rebrand on 2026-06-02. `--harness windsurf` is still accepted as a deprecated alias, and still writes the legacy `.windsurf/skills` projection because Devin continues to scan that path; [What a projection is](/reference/configuration-layout/#what-a-projection-is) covers how it is reported.
 
@@ -66,11 +66,13 @@ The rule that survives both is to treat a user-authored settings file as text to
 
 Confidence for both rows is recorded in [Sources & Confidence](/sources/).
 
-## Two Google products, opposite sides of the line
+## Two Google products, still not one target
 
-Gemini CLI and Antigravity are both Google's, and it is tempting to treat them as one target. They are not.
+Gemini CLI and Antigravity are both Google's, and it is tempting to treat them as one target. They agree in the repository column — both read `.agents/skills/` there and need no projection — and disagree everywhere else.
 
-Antigravity reads `<workspace-root>/.agents/skills/` and needs nothing written for it. Gemini CLI reads `.gemini/skills/` at project scope and needs a projection, because `.agents/skills` is a user-scope alias there only. They also disagree about the user column: Antigravity's global skills live under `~/.gemini/config/`, which belongs to a different product. Enabling one says nothing about the other.
+Antigravity's global skills live under `~/.gemini/config/skills/`, which belongs to a different product, so the canonical user path is Gemini CLI's and not Antigravity's. Gemini CLI is selectable via `--harness` and detected on `.gemini/`; Antigravity documents no project-scope directory and is not registered at all. Gemini CLI needs an instruction bridge; whether Antigravity reads `AGENTS.md` is not established. Enabling one says nothing about the other.
+
+They were on opposite sides of the projection line until 2026-08-18, when Gemini CLI's workspace-scope alias was confirmed against the vendor's source. The pairing is worth keeping as a caution: one brand is not one target.
 
 ## Native harnesses without a registry entry
 

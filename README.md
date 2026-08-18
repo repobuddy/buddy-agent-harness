@@ -38,7 +38,7 @@ Then run `buddy agent-harness doctor`. `repobuddy` deliberately loads plugins de
 
 The canonical configuration is the repository root's `AGENTS.md` and `.agents/` tree: `.agents/AGENTS.md` holds shared behavior, `.agents/skills/**/SKILL.md` holds capabilities, and separately named files hold tool settings.
 
-Codex, Cursor, GitHub Copilot CLI, and Devin Desktop read `.agents/skills/` natively, so nothing is written for them. Claude Code and Gemini CLI get a directory-level symlink to it. Claude Code and Cursor are always enabled; a detected harness directory or `--harness codex,gemini-cli` adds others. The command preserves user-authored configuration and reports TOON by default; it records nothing on disk.
+Codex, Cursor, GitHub Copilot CLI, Gemini CLI, and Devin Desktop read `.agents/skills/` natively, so nothing is written for them. Claude Code gets a directory-level symlink to it. Claude Code and Cursor are always enabled; a detected harness directory or `--harness codex,gemini-cli` adds others. The command preserves user-authored configuration and reports TOON by default; it records nothing on disk.
 
 `init` takes `--root`, `--harness`, `--copy`, `--force`, and `--format`; `--help` lists them.
 

@@ -33,7 +33,7 @@ A projection is a single directory-level symlink from a harness path to `.agents
 
 Because the link is at the directory level, a skill added to `.agents/skills/` later appears in every enabled harness with no further action. Where symlinks are unavailable the initializer copies instead. A copy is a snapshot rather than a live projection, so it needs a re-run to pick up changes.
 
-Only [Claude Code](/agent-configuration/harnesses/claude-code/) and [Gemini CLI](/agent-configuration/harnesses/gemini-cli/) need one. Every other supported harness reads `.agents/skills/` directly, so the canonical directory *is* the harness directory and nothing is written. [Harness Differences](/agent-configuration/harness-differences/) has the full table.
+Only [Claude Code](/agent-configuration/harnesses/claude-code/) needs one. Every other supported harness reads `.agents/skills/` directly, so the canonical directory *is* the harness directory and nothing is written. [Harness Differences](/agent-configuration/harness-differences/) has the full table.
 
 `windsurf` remains accepted as a deprecated alias for `devin-desktop`. It still creates the legacy `.windsurf/skills` projection, which Devin continues to scan, so existing repositories keep working. New repositories should use `devin-desktop`, which needs no projection at all. Any enabled deprecated name is reported in the result's `deprecated` field.
 

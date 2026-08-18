@@ -109,11 +109,29 @@ Status values: `confirmed`, `contested`, `thin`. Confidence: high / medium / low
 
 ## E-GEM-01 — Gemini CLI paths and configurable context filename
 
+**Superseded by E-GEM-02 (2026-08-18) on the project-scope skills path only.** The instruction-file findings below still hold; do not cite the skills paths.
+
 - **Date**: 2026-08
 - **Status**: confirmed
 - **Confidence**: medium
 - **Source**: gemini-cli docs — https://github.com/google-gemini/gemini-cli/blob/main/docs/cli/skills.md, geminicli.com/docs/cli/gemini-md/, issue #12345
 - **Notes**: Project skills at `.gemini/skills/<name>/SKILL.md`; user skills at `~/.gemini/skills/` or the `~/.agents/skills/` alias. Instructions default to `GEMINI.md`; `settings.json` `context.fileName` accepts an array such as `["AGENTS.md", "CONTEXT.md", "GEMINI.md"]`. AGENTS.md not in the default list (issue #12345 open).
+
+## E-GEM-02 — Gemini CLI reads `.agents/skills` at project scope too
+
+- **Date**: 2026-08-18
+- **Status**: confirmed
+- **Confidence**: high
+- **Source**: gemini-cli source — https://github.com/google-gemini/gemini-cli/blob/main/packages/core/src/config/storage.ts and .../packages/core/src/skills/skillManager.ts — the vendor's own discovery code; gemini-cli docs — https://github.com/google-gemini/gemini-cli/blob/main/docs/cli/skills.md
+- **Notes**: `storage.ts` line 26 defines `AGENTS_DIR_NAME = '.agents'`. `getProjectAgentSkillsDir()` returns `<targetDir>/.agents/skills`; `getUserAgentSkillsDir()` returns `~/.agents/skills`. `skillManager.ts` `discoverSkills()` loads four tiers in precedence order and calls both aliases: step 3.1 *"User agent skills alias (.agents/skills)"* and step 4.1 *"Workspace agent skills alias (.agents/skills)"*.
+
+  The docs agree: *"Workspace skills: Located in `.gemini/skills/` or the `.agents/skills/` alias"*, and *"Within the same tier (user or workspace), the `.agents/skills/` alias takes precedence over the `.gemini/skills/` directory."* `docs/cli/skills.md` has said this since 2026-04-30.
+
+  **This supersedes E-GEM-01's project-scope path claim.** Gemini CLI is a native `.agents/skills` reader at **both** scopes, so the `.gemini/skills` projection is redundant, not load-bearing. E-GEM-01's instruction findings are untouched: Gemini CLI still defaults to `GEMINI.md` and still needs `context.fileName` to include `AGENTS.md`, so the **instruction bridge remains required**. The two axes move independently, and this finding moves only the skills axis.
+
+  **Caveat**: workspace-tier discovery is skipped when the folder is not trusted (`skillManager.ts`: *"Workspace skills disabled because folder is not trusted"*). That gate applies to `.gemini/skills` identically, so it does not favour keeping the projection.
+
+  Upstream `vercel-labs/skills` reached the same conclusion independently — its `gemini-cli` entry now carries `skillsDir: '.agents/skills'` — but it is corroboration here, not the source.
 
 ## E-WS-01 — Windsurf skills support is not primary-sourced
 
@@ -171,7 +189,7 @@ Status values: `confirmed`, `contested`, `thin`. Confidence: high / medium / low
 - **Source**: Antigravity docs — https://antigravity.google/docs/skills — official docs
 - **Notes**: Workspace scope `<workspace-root>/.agents/skills/<skill-folder>/`. Global scope `~/.gemini/config/skills/<skill-folder>/`. Docs state: *"Antigravity now defaults to .agents/skills, but still maintains backward support for .agent/skills"* (note the singular `.agent`). `SKILL.md` required.
 
-  **Antigravity is native — no projection needed.** Note the contrast with Gemini CLI: both are Google products, but Gemini CLI reads only `.gemini/skills/` at project scope and *does* need a projection. They are not interchangeable and must stay separate registry entries.
+  **Antigravity is native — no projection needed.** Note the contrast with Gemini CLI: both are Google products, but Gemini CLI reads only `.gemini/skills/` at project scope and *does* need a projection. They are not interchangeable and must stay separate registry entries. *[Superseded in part by E-GEM-02 (2026-08-18): Gemini CLI reads the `.agents/skills` alias at project scope as well and needs no projection. The two products still differ at user scope, in detection, and on instructions, so the separate-entries conclusion stands.]*
 
   **No project-scope vendor directory is documented**, so there is no reliable detection marker; the global path lives under `~/.gemini/config/`, which belongs to a different product.
 

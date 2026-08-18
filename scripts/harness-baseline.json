@@ -1,6 +1,6 @@
 {
 	"source": "https://raw.githubusercontent.com/vercel-labs/skills/main/src/agents.ts",
-	"reviewed": "2026-08-15",
+	"reviewed": "2026-08-18",
 	"agents": {
 		"aider-desk": ".aider-desk/skills",
 		"amp": ".agents/skills",

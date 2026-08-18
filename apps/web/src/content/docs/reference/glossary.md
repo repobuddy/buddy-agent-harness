@@ -29,7 +29,7 @@ Each entry gives the short definition and links to the page that owns the topic.
 
 **polyfill**: the umbrella for whatever makes canonical configuration reach a harness that cannot read it, covering both a projection and a bridge. As with a browser polyfill, nothing is written for a harness that already reads the canonical format. The homepage uses this word; the rest of the documentation names the specific mechanism.
 
-**projection**: a directory-level symlink from a harness path to `.agents/skills`, such as `.claude/skills → ../.agents/skills`. Only Claude Code and Gemini CLI need one. Where symlinks are unavailable the initializer copies instead, which is a snapshot rather than a live projection.
+**projection**: a directory-level symlink from a harness path to `.agents/skills`, such as `.claude/skills → ../.agents/skills`. Only Claude Code needs one. Where symlinks are unavailable the initializer copies instead, which is a snapshot rather than a live projection.
 
 **bridge**: the harness-specific edit that lets a harness reach `AGENTS.md` when it cannot read that file directly. Two exist: the Claude Code `CLAUDE.md` import and the Gemini CLI `context.fileName` setting. The CLI writes neither, because both need judgment about user-authored content. The [`init` skill](/skills/init/) handles them.
 

@@ -1,18 +1,14 @@
 # Gemini CLI
 
-Reads `.agents/skills` at **user scope only**. At project scope it reads `.gemini/skills/` and nothing else, so **both bridges are required**.
+Reads `.agents/skills` at both scopes, so **skills need no bridge**. It does not read `AGENTS.md`, so **the instruction bridge is required**.
 
-Do not enable Gemini CLI speculatively — unlike Cursor, enabling it writes a real directory and symlink. Enable it only via `--harness gemini-cli` or a pre-existing `.gemini/` directory.
+## Skills — nothing to write
 
-## Bridge 1 — skills
+`.agents/skills` is read directly at project scope, where the alias takes precedence over `.gemini/skills/`. `init` writes no skills bridge for Gemini CLI.
 
-`buddy-agent-harness init` creates this when `gemini-cli` is enabled:
+An existing `.gemini/skills` symlink still resolves — that path is still scanned. Leave it; removing it is not part of enabling this harness.
 
-```
-.gemini/skills → ../.agents/skills
-```
-
-## Bridge 2 — instructions
+## Instructions — required
 
 `init` does **not** do this, and it cannot be a link. Add `AGENTS.md` to `context.fileName` in `.gemini/settings.json`:
 

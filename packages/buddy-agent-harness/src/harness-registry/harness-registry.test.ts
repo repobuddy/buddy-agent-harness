@@ -11,11 +11,19 @@ function entry(name: HarnessName) {
 }
 
 describe('harnessRegistry', () => {
-	it('records Gemini CLI as needing a projection in a repository and none at user scope', () => {
+	it('records Gemini CLI as reading the canonical directory at both scopes', () => {
 		const gemini = entry('gemini-cli')
 
-		expect(gemini.project.skillsDirectory).toBe('.gemini/skills')
+		expect(gemini.project.skillsDirectory).toBeUndefined()
 		expect(gemini.user?.skillsDirectory).toBeUndefined()
+	})
+
+	it('leaves Claude Code as the only harness projected into', () => {
+		const projected = harnessRegistry
+			.filter((harness) => !harness.deprecated && harness.project.skillsDirectory)
+			.map((harness) => harness.name)
+
+		expect(projected).toEqual(['claude-code'])
 	})
 
 	it('records Claude Code as needing a projection at both scopes', () => {
