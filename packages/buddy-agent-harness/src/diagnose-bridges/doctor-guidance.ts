@@ -179,6 +179,9 @@ export const bridgeRepairs: readonly Repair[] = [
 	{
 		problem: 'diverged-bridge',
 		detail: 'only the bridge changed since the two last agreed — an agent wrote through the copy',
+		// No command, unlike `diverged-canonical`, and the asymmetry is real: `init` only ever builds a
+		// bridge *from* the canonical directory, so no flag promotes the bridge's newer content back
+		// into it. Deciding to keep that side is the caller's, and the rebuild is what follows.
 		repair: (path, cli) => ({
 			command: '',
 			instruction: `replace .agents/skills with ${path} to keep the newer edit, then run \`${cli} init --force\``,

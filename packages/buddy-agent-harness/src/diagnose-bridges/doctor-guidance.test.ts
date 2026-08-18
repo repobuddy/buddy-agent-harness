@@ -4,6 +4,7 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import {
+	bridgeRepairs,
 	doctorRepairs,
 	instructionRepairs,
 	launcherFor,
@@ -44,13 +45,13 @@ describe('doctor guidance', () => {
 	// nothing — so it stays inside the prose. A caller that executes every `command` it is handed and
 	// nothing else therefore never rebuilds a diverged bridge over the side holding the newer edit.
 	it('offers no command for a repair no single invocation completes', () => {
-		const judgment = ['diverged-bridge', 'diverged-both', 'diverged-unknown'] as const
+		// Asserted as a closed set rather than spot-checked, so a bridge problem added later that no
+		// single invocation repairs has to be listed here deliberately instead of passing unnoticed.
+		const judgment = bridgeRepairs.filter((entry) => entry.repair('<path>', 'bah').command === '')
 
-		for (const problem of judgment) {
-			const repair = repairFor(problem).repair('<path>', 'bah')
-
-			expect(repair.command, problem).toBe('')
-			expect(repair.instruction, problem).not.toBe('')
+		expect(judgment.map((entry) => entry.problem)).toEqual(['diverged-bridge', 'diverged-both', 'diverged-unknown'])
+		for (const entry of judgment) {
+			expect(entry.repair('<path>', 'bah').instruction, entry.problem).not.toBe('')
 		}
 		expect(repairFor('diverged-both').repair('<path>', 'bah').instruction).toContain('git diff --no-index')
 	})
