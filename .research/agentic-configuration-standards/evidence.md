@@ -400,3 +400,25 @@ Status values: `confirmed`, `contested`, `thin`. Confidence: high / medium / low
 - **Confidence**: low
 - **Source**: direct observation of a local Claude Code install (`~/.claude/plugins/`), 2026-08-17. No vendor documentation found for plugin dependency installation.
 - **Notes**: `installed_plugins.json` records `gitCommitSha` for git-sourced plugins and none for npm-sourced ones. A shared `~/.claude/plugins/npm-cache/package.json` lists npm-sourced plugins as dependencies (`cyber-sdd`), and those plugins' cache directories carry a populated `node_modules` (`gherkin-cli`, `@cucumber/*`, `commander`). Running an npm-sourced plugin's own script succeeded: `node ~/.claude/plugins/cache/cyberplace/sdd/0.0.0/skills/discover-specs/scripts/discover-specs.mts --root .` exited 0. A git-sourced plugin (`repobuddy/buddy-agent-harness/0.2.0`, carrying `src/` and `coverage/`, which its npm `files` list excludes) failed on a missing transitive dependency: `Cannot find package 'js-yaml' imported from .../node_modules/clibuilder/esm/config.js`. Single machine, single point in time; treat the mechanism as observed rather than specified.
+
+## E-JSON-01 — Gemini CLI accepts comments in `settings.json`
+
+- **Date**: 2026-08-18
+- **Status**: confirmed
+- **Confidence**: high
+- **Source**: gemini-cli source — https://github.com/google-gemini/gemini-cli/blob/main/packages/cli/src/config/settings.ts — vendor's own loader
+- **Notes**: Line 25 imports `strip-json-comments`; line 785 parses a settings file as `JSON.parse(stripJsonComments(content))`. Comments are stripped before parsing, so a `.gemini/settings.json` carrying `//` or `/* */` comments loads normally and a user may legitimately have written them.
+
+  The consequence is for anything editing that file. Reading it with `JSON.parse`, mutating the object, and serializing it back deletes every comment silently, and reorders keys and reindents besides. A targeted edit to the one array (`context.fileName`) is the only form that preserves what the loader tolerates. A programmatic version of that edit needs a comment-preserving editor, such as `jsonc-parser`'s `modify` plus `applyEdits`, rather than `JSON.parse`.
+
+## E-JSON-02 — Claude Code's `settings.json` is strict JSON, and an invalid file is rejected whole
+
+- **Date**: 2026-08-18
+- **Status**: confirmed
+- **Confidence**: high
+- **Source**: Claude Code settings documentation — https://code.claude.com/docs/en/settings — primary vendor documentation; plus anthropics/claude-code issue #17968 (open, 2026-01-13) requesting JSONC support, and #29370 (closed 2026-02-27 as a duplicate of it)
+- **Notes**: The settings page states of validation, verbatim: "This tolerance applies only to managed settings. User, project, and local settings files remain strict: a file that fails validation is rejected as a whole and reported." JSON itself has no comment syntax, so a comment fails the parse and takes the whole file with it — not the one entry it annotates.
+
+  That comments are not supported today is corroborated by the standing feature requests for them: #17968 asks for a `settings.jsonc` format, and #29370 asks for `//` and `/* */` to be stripped before parsing "the same format VS Code uses". A closed-as-duplicate request and an open one both presuppose the current parser rejects them.
+
+  This is the exact inverse of E-JSON-01, and the pair is why the rule for a user-authored settings file is stated in general form: amend it in place rather than round-tripping it, and never add a comment to a file whose harness has not documented tolerating one.

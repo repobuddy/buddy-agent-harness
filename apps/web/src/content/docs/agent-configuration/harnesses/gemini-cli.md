@@ -33,6 +33,7 @@ When the settings file already exists:
 
 - It is user-authored, so approval comes first.
 - Add to the array; do not replace it. Preserve every surrounding setting.
+- Comments are legal in this file, and a parse-and-rewrite deletes them. Edit the array in place, keeping key order and indentation. See [JSON configuration disagrees about comments](/agent-configuration/harness-differences/#json-configuration-disagrees-about-comments).
 - Keep `GEMINI.md` in the list if the repository still has one.
 
 ## Not the same as Antigravity

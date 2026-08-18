@@ -13,6 +13,7 @@ The harness claims across this site are not equally well-sourced, and the differ
 | Devin Desktop skill paths and the rebrand | High | official vendor announcement and documentation |
 | Antigravity and VS Code skill paths | High / Medium | primary vendor documentation |
 | Gemini CLI paths and `context.fileName` | Medium | project documentation, partly an issue thread |
+| JSON comment tolerance in `.gemini/settings.json` and `.claude/settings.json` | High | the Gemini CLI loader source, and Claude Code documentation plus an open request for JSONC support |
 | Cursor's Agent-mode-only `AGENTS.md` support | Medium | secondary comparisons, not primary Cursor documentation |
 | `AGENTS.md` context cost and length guidance | Low | practitioner analysis and reported measurements, no vendor specification |
 | Claude Code skill runtime fields, and their turn-scoping | High | primary vendor documentation |

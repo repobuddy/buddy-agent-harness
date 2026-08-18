@@ -82,6 +82,7 @@ Then offer to continue with the `enhance` skill, which proposes guidance the rep
 
 - Never invent project policy, and never make a material change to a user's `AGENTS.md`. `references/agents-md.md` draws the line: a statement that would stop being true if `init`'s output were removed describes the tool's own artifact and is non-material.
 - Never convert tool settings between formats without a documented mapping. Unmapped settings stay canonical.
+- Edit a user-authored settings file in place: change the one key or array element you came for and leave the rest byte-identical, including key order, indentation, and comments. Harnesses disagree about whether a JSON settings file may hold comments, so reading one with `JSON.parse` and writing the object back either deletes what the author wrote or produces a file the harness rejects. The matching `references/harnesses/<harness>.md` says which case a file is.
 - Symlinks belong in version control. Leave them tracked; do not add them to `.gitignore`.
 - Only `.agents/skills/` is an established convention. Do not invent `.agents/rules/`, `.agents/commands/`, or `.agents/agents/` and present them as standard.
 - Never merge a nested `AGENTS.md` into the root. Merging changes which files it governs.

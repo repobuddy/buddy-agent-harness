@@ -47,6 +47,21 @@ Claude Code's `claudeMdExcludes` setting can drop unwanted ancestor files, but i
 
 Because the standard's own semantics are unratified, treat this divergence as a moving target rather than a stable difference. Confidence is recorded in [Sources & Confidence](/sources/).
 
+## JSON configuration disagrees about comments
+
+Two harnesses keep project-scope configuration in a file named `settings.json`, and they disagree about what that name allows.
+
+| File | Comments | What a comment does |
+| --- | --- | --- |
+| `.gemini/settings.json` | Legal | The loader strips them before parsing, so a user's file may legitimately carry them |
+| `.claude/settings.json` | Rejected | The file fails to parse, and a settings file that fails validation is rejected as a whole rather than in part |
+
+Both halves matter when something edits one of these files for you. On the Gemini CLI side, the obvious implementation — read the file, `JSON.parse` it, add the entry, write the object back — is silent data loss: every comment the author wrote disappears, along with their key order and indentation. Edit the one array in place instead. On the Claude Code side the failure is the reverse and louder: a comment added to annotate a permission or hook entry invalidates the entire file.
+
+The rule that survives both is to treat a user-authored settings file as text to amend rather than an object to round-trip. [Skill: init](/skills/init/#rules-the-skill-follows) states it as a rule for that reason.
+
+Confidence for both rows is recorded in [Sources & Confidence](/sources/).
+
 ## Two Google products, opposite sides of the line
 
 Gemini CLI and Antigravity are both Google's, and it is tempting to treat them as one target. They are not.

@@ -65,6 +65,8 @@ These are reported and left in place, because no safe cross-harness mapping exis
 - hook blocks in `.claude/settings.json` (event names differ by case across harnesses)
 - MCP server definitions
 
+`.claude/settings.json` is strict JSON: a comment in it is a parse error, and the file is then rejected as a whole. This is the opposite of Gemini CLI's settings file, where comments are legal and a rewrite destroys them. See [JSON configuration disagrees about comments](/agent-configuration/harness-differences/#json-configuration-disagrees-about-comments).
+
 ## Reference
 
 - [Claude Code: skills](https://code.claude.com/docs/en/skills)

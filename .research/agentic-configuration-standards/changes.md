@@ -1,5 +1,19 @@
 # Changes — Agentic Configuration Standards
 
+## 2026-08-18 — JSON settings files disagree about comments
+
+**What changed**: Established that `.gemini/settings.json` legally carries comments and `.claude/settings.json` legally cannot.
+
+**Why**: `skills/init/references/harnesses/gemini-cli.md` tells the agent to edit `.gemini/settings.json` and "preserve surrounding settings" without saying how, and the obvious `JSON.parse`-and-rewrite silently deletes a user's comments (issue #43).
+
+**Material conclusions**:
+
+- Gemini CLI strips comments before parsing, so a user's settings file may hold them and a whole-file rewrite destroys them. The edit has to be targeted at the `context.fileName` array, preserving key order and indentation.
+- Claude Code's parser is strict and rejects an invalid settings file as a whole, so nothing may add a comment there to annotate a permission or hook entry.
+- The failure recurs anywhere a user-authored config is edited, so the rule belongs in `init`'s general rules rather than repeated per harness.
+
+**Triggering evidence**: E-JSON-01, E-JSON-02.
+
 ## 2026-08-14 — Antigravity, VS Code, and the `npx skills` agent list
 
 **What changed**: E-AG-01, E-VSC-01, and E-ECO-02 added.

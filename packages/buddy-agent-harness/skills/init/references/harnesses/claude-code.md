@@ -47,6 +47,8 @@ Report these and do not convert them:
 - hook blocks in `.claude/settings.json` — event names differ by case across harnesses
 - MCP server definitions
 
+`.claude/settings.json` is strict JSON, the opposite of Gemini CLI's settings file: a comment is a parse error, and a settings file that fails to parse is rejected whole rather than in part. Never add one, and never offer one as a way to annotate a permission or hook entry.
+
 ## Commands
 
 `.claude/commands/*.md` are **portable** — migrate to `.agents/skills/<name>/SKILL.md`. Claude Code has merged commands into skills, so this follows the harness rather than fighting it.
