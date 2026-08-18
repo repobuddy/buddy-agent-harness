@@ -22,5 +22,8 @@ asks for everything.
 `detail`. Route on `problem`: `detail` is prose meant to be read, and improving its wording must
 not change what a caller does.
 
+`BridgeFinding` gains a required `problem` field. Reading one is unaffected; code that
+*constructs* one needs the new field. This is the breaking edge of the release.
+
 New exports: `diagnoseConfiguration`, and the types `ConfigurationFinding`,
 `DiagnoseConfigurationOptions`, `ConfigurationFault`, and `ConfigurationProblem`.

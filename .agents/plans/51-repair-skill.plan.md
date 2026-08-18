@@ -130,13 +130,16 @@ carry. Fixed at the source by emitting `problem`, which also removes the need fo
 a hand-copy of the fault split. Commission a seam pass whenever one CR touches two nodes; two
 independent verdicts cannot see the contract between them.
 
-## Follow-ups
+## Follow-ups — filed, not left here
 
-- Backfill the `doctor` command's **bridge-resolution** half. It predates the spec corpus and is
-  still unspecified, which is why `cli/` remains a stub rather than a descriptive index.
-- `.agents/spec/workflows/` is an empty stub, and the `doctor` → `repair` flow is the project's
-  first genuine cross-surface flow. It is specified today as a contract paragraph in the `repair`
-  node; a `workflows/` node is the declared home if a second such flow appears.
+Both are tracked as issues rather than as notes in this brief, because a note in a brief that is
+retired at the end of the mission is a record nobody reads again.
+
+- **#57** — `doctor`'s `help` wraps every repair in `Run \`…\``, including the repairs that are
+  prose instructions rather than commands. Pre-existing for `diverged-both`; far more visible now
+  that four findings carry no runnable command at all.
+- **#58** — backfill the spec for `doctor`'s bridge-resolution and instruction-bridge halves, and
+  give the `doctor` → `repair` cross-surface flow a home. `cli/` stays a stub until then.
 
 ## Rebase onto a moved main
 
