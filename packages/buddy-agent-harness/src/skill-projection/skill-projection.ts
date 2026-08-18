@@ -42,10 +42,10 @@ export type ProjectSkillsOptions = {
  */
 export function projectSkills({ root, canonicalSkills, harnesses, copy, force }: ProjectSkillsOptions): HarnessName[] {
 	const projections = harnesses
-		.filter((harness) => harness.skillsDirectory)
+		.filter((harness) => harness.project.skillsDirectory)
 		.map((harness) => ({
 			harness,
-			target: join(root, harness.skillsDirectory as string),
+			target: join(root, harness.project.skillsDirectory as string),
 		}))
 
 	const conflicts = projections

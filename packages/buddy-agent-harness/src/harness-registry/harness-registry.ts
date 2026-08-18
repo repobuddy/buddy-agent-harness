@@ -10,21 +10,42 @@ export type HarnessName =
 	| 'devin-desktop'
 	| 'windsurf'
 
+/** The two scopes a harness reads configuration at. Their roots differ; their shape does not. */
+export type HarnessScopeName = 'project' | 'user'
+
 /**
- * `skillsDirectory` is the projection target a harness needs to see `.agents/skills`.
- * A harness that reads `.agents/skills` natively has none, and is never projected into.
+ * What one harness does at one scope. Paths are relative to that scope's root: the repository root
+ * at project scope, the user's home directory at user scope.
+ *
+ * `detect` is the directory whose presence means this harness is configured at this scope — a
+ * different question per scope, which is why it is recorded per scope rather than once.
+ *
+ * `skillsDirectory` is the projection target the harness needs to see `.agents/skills` at this
+ * scope. A harness that reads `.agents/skills` natively there has none, and is never projected into.
  */
-export type Harness = {
-	name: HarnessName
+export type HarnessScope = {
 	detect: string
 	skillsDirectory?: string
+}
+
+export type Harness = {
+	name: HarnessName
+	/** What this harness does inside a repository. `init` and `doctor` act only here. */
+	project: HarnessScope
+	/**
+	 * What this harness does for the user, outside any repository. Absent when no user-scope path is
+	 * primary-sourced — Devin documents none. Described and diagnosable; never written to.
+	 */
+	user?: HarnessScope
 	/** Set when this name has been superseded; the value is the name that replaces it. */
 	deprecated?: HarnessName
 }
 
 /**
- * Codex, Cursor, Copilot CLI, and Devin Desktop read `.agents/skills` directly, so they need no
- * projection. Only Claude Code and Gemini CLI read solely their own directory.
+ * The two scopes disagree, and a single answer per harness could only record one of them. Gemini CLI
+ * is the worked case: `.agents/skills` is a user-scope alias there, while project scope reads
+ * `.gemini/skills` and nothing else. So it needs a projection in a repository and none at user scope.
+ * Claude Code needs one at both. Codex, Cursor, Copilot CLI, and Devin Desktop need none anywhere.
  *
  * `windsurf` is the former name of Devin Desktop, rebranded 2026-06-02. It is retained as a
  * deprecated alias: Devin still scans the legacy `.windsurf/skills` path, so its projection keeps
@@ -33,13 +54,25 @@ export type Harness = {
  * See `.research/agentic-configuration-standards/` for the per-harness sources.
  */
 export const harnessRegistry: readonly Harness[] = [
-	{ name: 'claude-code', detect: '.claude', skillsDirectory: '.claude/skills' },
-	{ name: 'cursor', detect: '.cursor' },
-	{ name: 'codex', detect: '.codex' },
-	{ name: 'copilot-cli', detect: '.github/skills' },
-	{ name: 'gemini-cli', detect: '.gemini', skillsDirectory: '.gemini/skills' },
-	{ name: 'devin-desktop', detect: '.devin' },
-	{ name: 'windsurf', detect: '.windsurf', skillsDirectory: '.windsurf/skills', deprecated: 'devin-desktop' },
+	{
+		name: 'claude-code',
+		project: { detect: '.claude', skillsDirectory: '.claude/skills' },
+		user: { detect: '.claude', skillsDirectory: '.claude/skills' },
+	},
+	{ name: 'cursor', project: { detect: '.cursor' }, user: { detect: '.cursor' } },
+	{ name: 'codex', project: { detect: '.codex' }, user: { detect: '.codex' } },
+	{ name: 'copilot-cli', project: { detect: '.github/skills' }, user: { detect: '.copilot' } },
+	{
+		name: 'gemini-cli',
+		project: { detect: '.gemini', skillsDirectory: '.gemini/skills' },
+		user: { detect: '.gemini' },
+	},
+	{ name: 'devin-desktop', project: { detect: '.devin' } },
+	{
+		name: 'windsurf',
+		project: { detect: '.windsurf', skillsDirectory: '.windsurf/skills' },
+		deprecated: 'devin-desktop',
+	},
 ]
 
 /** Enabled whether or not the repository already contains their directories. */
@@ -56,5 +89,7 @@ function directoryExists(path: string): boolean {
 /** The default harnesses, plus the preferred ones, plus every harness whose directory is present. */
 export function selectHarnesses(root: string, preferred: readonly HarnessName[]): Harness[] {
 	const enabled = new Set<HarnessName>([...defaultHarnesses, ...preferred])
-	return harnessRegistry.filter((harness) => enabled.has(harness.name) || directoryExists(join(root, harness.detect)))
+	return harnessRegistry.filter(
+		(harness) => enabled.has(harness.name) || directoryExists(join(root, harness.project.detect)),
+	)
 }

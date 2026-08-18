@@ -33,7 +33,7 @@ export function initializeHarnesses({
 	return {
 		root,
 		harnesses: harnesses.map((harness) => harness.name),
-		native: harnesses.filter((harness) => !harness.skillsDirectory).map((harness) => harness.name),
+		native: harnesses.filter((harness) => !harness.project.skillsDirectory).map((harness) => harness.name),
 		linked,
 		deprecated: harnesses
 			.filter((harness) => harness.deprecated)
