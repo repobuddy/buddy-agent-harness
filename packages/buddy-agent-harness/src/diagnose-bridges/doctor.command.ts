@@ -9,6 +9,7 @@ import { commandInvocation } from './doctor-guidance.ts'
 type DoctorReport = {
 	bin: string
 	bridges: DiagnoseResult['bridges']
+	instructions: DiagnoseResult['instructions']
 	divergence?: DiagnoseResult['divergence']
 	/** The repair is lifted out into `help`, so a finding row stays to the diagnosis itself. */
 	findings: Omit<DiagnoseResult['findings'][number], 'repair'>[] | string
@@ -20,11 +21,14 @@ type DoctorReport = {
  * flags to confirm that an empty section really meant "nothing wrong".
  */
 export function buildReport(bin: string, result: DiagnoseResult): DoctorReport {
+	// Both sections are bridges, so the healthy line counts them together rather than making a reader
+	// add up two numbers to learn that nothing is wrong.
 	if (!result.findings.length) {
-		const count = result.bridges.length
+		const count = result.bridges.length + result.instructions.length
 		return {
 			bin,
 			bridges: result.bridges,
+			instructions: result.instructions,
 			findings:
 				count === 1 ? '0 problems found — the 1 bridge resolves' : `0 problems found — all ${count} bridges resolve`,
 		}
@@ -33,6 +37,7 @@ export function buildReport(bin: string, result: DiagnoseResult): DoctorReport {
 	return {
 		bin,
 		bridges: result.bridges,
+		instructions: result.instructions,
 		...(result.divergence.length ? { divergence: result.divergence } : {}),
 		findings: result.findings.map(({ path, detail }) => ({ path, detail })),
 		help: [...new Set(result.findings.map((finding) => `Run \`${finding.repair}\``))],
@@ -41,7 +46,8 @@ export function buildReport(bin: string, result: DiagnoseResult): DoctorReport {
 
 export const doctorCommand: cli.Command = command({
 	name: 'doctor',
-	description: 'Report whether the harness skill bridges in this repository still resolve. Read-only.',
+	description:
+		"Report whether this repository's harness bridges still resolve — skills into .agents/skills, instructions into AGENTS.md. Read-only.",
 	options: {
 		root: {
 			description: 'Repository or package directory. Defaults to the current directory.',

@@ -1,9 +1,9 @@
 ---
 title: 'Skill: doctor'
-description: What the doctor skill checks, how an agent reads the report, and the repairs it refuses to automate.
+description: What the doctor skill checks, including the instruction bridges, how an agent reads the report, and the repairs it refuses to automate.
 ---
 
-The `doctor` skill checks whether the skill bridges in a repository still resolve into `.agents/skills`. A bridge that has stopped resolving is silent: the harness finds nothing and loads zero project skills, with no warning anywhere. Reach for this skill when that has happened, or before you conclude a skill is broken.
+The `doctor` skill checks whether a repository's harness bridges still resolve — its skills into `.agents/skills`, and its instructions into `AGENTS.md`. A bridge that has stopped resolving is silent: the harness finds nothing and loads zero project skills, or reads none of the repository's instructions, with no warning anywhere. Reach for this skill when either has happened, or before you conclude a skill or an instruction is being ignored.
 
 The command it runs writes nothing. A repair does write, so the skill names the `init` command it is about to run and runs that as a separate step.
 
@@ -15,7 +15,7 @@ In Claude Code:
 /buddy-agent-harness:doctor
 ```
 
-The skill also loads on its own when an agent hits the symptom, so "my skills are missing after cloning this repo" is enough to reach it.
+The skill also loads on its own when an agent hits the symptom, so "my skills are missing after cloning this repo" or "Claude is ignoring our AGENTS.md" is enough to reach it.
 
 Its one action is to run `buddy-agent-harness doctor` and act on the report. If you would rather run that yourself, the plugin is not a prerequisite: see the [CLI reference](/cli/doctor/#no-install-needed).
 
@@ -25,7 +25,11 @@ The skill runs the copy of the CLI that shipped with it, through a launcher in i
 
 It checks every bridge [`init`](/skills/init/) would create for this repository. Both read the same registry, so the two cannot describe different bridge sets.
 
-For each one the report gives a `kind` (what is on disk now) and a `status` (whether it works). A `findings` entry explains each problem and a `help` entry names the exact command that repairs it. Run the command from `help`, then run `doctor` again.
+The report has two of them. `bridges` covers the skills projections into `.agents/skills`; `instructions` covers the files that let a harness read `AGENTS.md` — a `CLAUDE.md` holding `@AGENTS.md`, one beside every nested `AGENTS.md`, and the `context.fileName` entry in `.gemini/settings.json`. They are separate sections because their statuses and their repairs have nothing in common; the [CLI reference](/cli/doctor/#instruction-bridges) has the reasoning.
+
+For each one the report gives a `kind` (what is on disk now) and a `status` (whether it works). A `findings` entry explains each problem and a `help` entry names its repair. Run what `help` names, then run `doctor` again.
+
+Every instruction repair is `/buddy-agent-harness:init` rather than a command. Those files carry prose someone wrote, and restoring a bridge without discarding what displaced it is the `init` skill's judgment.
 
 A healthy repository says so outright instead of printing an empty section, so an agent does not re-run with other flags to check whether "nothing" meant "nothing wrong".
 
@@ -46,5 +50,6 @@ There is no `--fix`, and the skill does not invent one. Three rules hold whateve
 - Never repair a `diverged-both` or `diverged-unknown` bridge by re-running `init`. Both sides moved, so rebuilding discards one of the edits. Reconcile the two directories first.
 - Edit skills at `.agents/skills/<name>/SKILL.md`. Editing through a bridge is only safe when that bridge is a symlink, because a copy takes the write and keeps it.
 - Never add a bridge to `.gitignore`. An untracked bridge swallows a real edit silently.
+- Never repair an `unbridged` instruction file by replacing it. Something displaced the import, and it may be the only copy of that content.
 
 Because it writes nothing and always exits `0`, the command is safe to wire into a session-start hook. Why the exit code stays `0`, and why divergence gets a direction rather than a diff, are covered in the [CLI reference](/cli/doctor/).

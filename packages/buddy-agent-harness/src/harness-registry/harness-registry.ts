@@ -1,5 +1,6 @@
 import { lstatSync } from 'node:fs'
 import { join } from 'node:path'
+import type { InstructionBridge } from './instruction-bridge.ts'
 
 export type HarnessName =
 	| 'claude-code'
@@ -22,10 +23,16 @@ export type HarnessScopeName = 'project' | 'user'
  *
  * `skillsDirectory` is the projection target the harness needs to see `.agents/skills` at this
  * scope. A harness that reads `.agents/skills` natively there has none, and is never projected into.
+ *
+ * `instructionBridge` is the same question for `AGENTS.md`: what the harness needs at this scope in
+ * order to read it. It belongs per scope for the same reason `skillsDirectory` does — the file
+ * differs. Unlike `skillsDirectory`, the `init` command does not write it; the `init` skill does. It
+ * is recorded here to be diagnosed and gated per harness, not to be projected.
  */
 export type HarnessScope = {
 	detect: string
 	skillsDirectory?: string
+	instructionBridge?: InstructionBridge
 }
 
 export type Harness = {
@@ -47,6 +54,9 @@ export type Harness = {
  * `.gemini/skills` and nothing else. So it needs a projection in a repository and none at user scope.
  * Claude Code needs one at both. Codex, Cursor, Copilot CLI, and Devin Desktop need none anywhere.
  *
+ * Instruction bridges are recorded at project scope only. The user-scope equivalents exist, but
+ * nothing writes or reads them yet: `init` works inside a repository, and so does `doctor`.
+ *
  * `windsurf` is the former name of Devin Desktop, rebranded 2026-06-02. It is retained as a
  * deprecated alias: Devin still scans the legacy `.windsurf/skills` path, so its projection keeps
  * working, but new repositories should enable `devin-desktop` and have nothing written for them.
@@ -56,7 +66,11 @@ export type Harness = {
 export const harnessRegistry: readonly Harness[] = [
 	{
 		name: 'claude-code',
-		project: { detect: '.claude', skillsDirectory: '.claude/skills' },
+		project: {
+			detect: '.claude',
+			skillsDirectory: '.claude/skills',
+			instructionBridge: { kind: 'import', path: 'CLAUDE.md' },
+		},
 		user: { detect: '.claude', skillsDirectory: '.claude/skills' },
 	},
 	{ name: 'cursor', project: { detect: '.cursor' }, user: { detect: '.cursor' } },
@@ -64,7 +78,11 @@ export const harnessRegistry: readonly Harness[] = [
 	{ name: 'copilot-cli', project: { detect: '.github/skills' }, user: { detect: '.copilot' } },
 	{
 		name: 'gemini-cli',
-		project: { detect: '.gemini', skillsDirectory: '.gemini/skills' },
+		project: {
+			detect: '.gemini',
+			skillsDirectory: '.gemini/skills',
+			instructionBridge: { kind: 'settings-entry', path: '.gemini/settings.json', key: 'context.fileName' },
+		},
 		user: { detect: '.gemini' },
 	},
 	{ name: 'devin-desktop', project: { detect: '.devin' } },

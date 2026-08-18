@@ -8,12 +8,25 @@ export type {
 	DivergenceReport,
 } from './diagnose-bridges/diagnose-bridges.ts'
 export { diagnoseBridges } from './diagnose-bridges/diagnose-bridges.ts'
+export type {
+	InstructionKind,
+	InstructionReport,
+	InstructionStatus,
+} from './diagnose-bridges/diagnose-instructions.ts'
+export { diagnoseInstructions } from './diagnose-bridges/diagnose-instructions.ts'
 export { doctorCommand } from './diagnose-bridges/doctor.command.ts'
-export type { BridgeProblem, Repair } from './diagnose-bridges/doctor-guidance.ts'
-export { doctorRepairs, doctorSkill, renderDoctorSkill } from './diagnose-bridges/doctor-guidance.ts'
+export type { BridgeProblem, DoctorProblem, InstructionProblem, Repair } from './diagnose-bridges/doctor-guidance.ts'
+export {
+	bridgeRepairs,
+	doctorRepairs,
+	doctorSkill,
+	instructionRepairs,
+	renderDoctorSkill,
+} from './diagnose-bridges/doctor-guidance.ts'
 export type { DivergenceDirection } from './diagnose-bridges/git-bridge-state.ts'
 export type { Harness, HarnessName, HarnessScope, HarnessScopeName } from './harness-registry/harness-registry.ts'
 export { harnessRegistry } from './harness-registry/harness-registry.ts'
+export type { InstructionBridge } from './harness-registry/instruction-bridge.ts'
 export { activate, harnessCommand, initCommand } from './initialize-harnesses/init.command.ts'
 export type { InitializeOptions, InitializeResult } from './initialize-harnesses/initialize-harnesses.ts'
 export { initializeHarnesses } from './initialize-harnesses/initialize-harnesses.ts'
