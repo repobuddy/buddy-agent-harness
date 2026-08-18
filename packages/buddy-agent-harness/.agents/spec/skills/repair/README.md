@@ -11,20 +11,20 @@ concept: harness-compatibility
 
 The three other shipped skills each refuse this work by design. `init` consolidates what a repository has and invents nothing, so it never clobbers a file the user wrote. `enhance` offers guidance the repository is **missing**. `doctor` never writes, which is what makes it safe to run from a session-start hook. Configuration that is present but wrong therefore has no home: not missing, so `enhance` will not offer it; user-authored, so `init` will not rewrite it.
 
-**Detection has one home.** Every check lives in the `doctor` command, and `repair` reads its findings. That is what lets the finding set grow without touching this skill, and what stops two detectors drifting apart — the same reason `doctor` refuses to carry repairs.
+**Detection has one home** — `../../workflows/detect-and-repair/` owns that property and the reasoning behind it. What it means here: every check lives in the `doctor` command, and this skill adds none.
 
-The contract between them is narrow and worth stating, because it bounds what this node may assume. Per finding, `doctor` supplies a **`problem`** name, a **`path`**, and a **`detail`** in prose, plus a **repair** that names the skill owning it. `repair` routes on `problem` and on that named skill — never on `detail`, whose wording must stay free to improve.
+The contract between them is stated once, at `../../workflows/detect-and-repair/`, which owns the seam rather than either side of it. What it binds on this node: `repair` routes on the `problem` name and on the skill the repair names — never on `detail`, whose wording must stay free to improve.
 
 Everything else it needs — the file's current text, the before-and-after it shows, whether more than one correction is valid — it derives by reading the named path and consulting `references/classes.md`. `doctor` never enumerates correction options, so no scenario here may assume it did.
 
-`repair` acts only where correctness is the **tooling's** to decide — a harness name the registry retired, an instruction file that does not reach `AGENTS.md`, a skill a harness will not load. It never corrects what the repository **means**. The line is the discriminator `init` already applies (`../../../skills/init/references/agents-md.md`): a statement that would stop being true if the tool's output were removed describes the tool's own artifact and is **non-material**. `repair` corrects non-material configuration and reports material wrongness without offering to write it.
+`repair` acts only where correctness is the **tooling's** to decide — a harness name the registry retired, an instruction file that does not reach `AGENTS.md`, a skill a harness will not load. It never corrects what the repository **means**. The line is the discriminator `init` already applies (`../../../../skills/init/references/agents-md.md`): a statement that would stop being true if the tool's output were removed describes the tool's own artifact and is **non-material**. `repair` corrects non-material configuration and reports material wrongness without offering to write it.
 
 Every correction is **offered with its before and after, and written only on approval** — the same shape `enhance` uses, for the same reason: the file belongs to the user.
 
 **Non-goals**
 
 - **Detecting.** Not this node's. A check written here would be a second home for one already in the command.
-- **Any bridge, of either kind.** A skills projection that is missing, degraded, stale, or diverged is `init`'s repair. So is an **instruction bridge** that was never completed: `init` writes the `AGENTS.md` import and the Gemini `context.fileName` entry itself, and writes the `CLAUDE.md` stub *without* asking, where every correction here needs approval. One write cannot have two homes and two contradictory approval rules, so `repair` hands every bridge finding on.
+- **Any bridge, of either kind.** Every bridge finding is handed on, whoever owns it. Most are `init`'s: `init` writes the `AGENTS.md` import and the Gemini `context.fileName` entry itself, and writes the `CLAUDE.md` stub *without* asking, where every correction here needs approval — one write cannot have two homes and two contradictory approval rules. A few name no owner at all and are work for a person; those are handed on too, and named as needing a hand rather than a skill.
 - **Adding what is absent.** A repository with no canonical configuration is `init`'s; guidance the repository lacks is `enhance`'s.
 - **Correcting project policy.** `repair` never rewrites a statement about how the repository is worked in, even a false one.
 - **Deciding activation.** Which of the four skills a request routes to is co-owned — the `description` prose this node holds, the harness that matches it, and the sibling descriptions it competes with. That is not this node's to freeze. What this node owns is its **remit**: what it does with a finding `doctor` handed it.
@@ -33,7 +33,7 @@ Every correction is **offered with its before and after, and written only on app
 
 - **canonical configuration** — the root `AGENTS.md` and the `.agents/` tree; the one source every harness is pointed at.
 - **bridge** — what a harness that cannot read `.agents/` is given instead: a skills projection (`.claude/skills`) or an instruction bridge (`CLAUDE.md`, `.gemini/settings.json`).
-- **bridge finding** — a `doctor` finding about a bridge, whether it has stopped resolving or was never completed. **Always repaired by `init`**, which is what writes every bridge in the first place.
+- **bridge finding** — a `doctor` finding about a bridge, whether it has stopped resolving or was never completed. **Never repaired here.** Its owner is whatever its repair names — usually `init`, sometimes nobody; see `../../workflows/detect-and-repair/`.
 - **configuration finding** — a `doctor` finding that configuration around the bridges is present and wrong. Repaired here.
 - **material** — content that stays true whether or not this tool ever ran. Material content is the user's; `repair` reports it and writes none of it.
 
@@ -85,7 +85,7 @@ flowchart TD
   A[Run the doctor command] --> B{Any finding?}
   B -->|no| C[Report that doctor ran clean]
   B -->|yes| D{Finding is a bridge finding?}
-  D -->|yes| E[Report it and hand it to init]
+  D -->|yes| E[Report it and hand it to the owner its repair names]
   D -->|no| F{Correction would be material?}
   F -->|yes| G[Report the wrongness and offer no write]
   F -->|no| H{More than one valid correction?}
@@ -118,7 +118,7 @@ Detection is the command's, so a run holds no state of its own and there is no f
 | A | any | `runs the doctor command rather than detecting anything itself` |
 | B→C | doctor reports zero problems | `reports that doctor ran clean and stops` |
 | D→E | doctor reports a degraded bridge | `hands a bridge finding to init and writes nothing` |
-| D→E | doctor reports a diverged bridge on both sides | `hands a two-sided divergence to init rather than picking a side` |
+| D→E | doctor reports a diverged bridge on both sides | `hands a two-sided divergence on without picking a side` |
 | D→E | doctor reports an instruction bridge that names AGENTS.md nowhere | `hands an unbridged instruction file to init rather than adding the import` |
 | F→G | doctor reports an unloadable-skill finding with no description to quote | `reports a missing description rather than inventing one` |
 | H→I | doctor reports an unread-local-override finding | `presents the options and leaves the choice to the owner` |
@@ -138,4 +138,4 @@ Detection is the command's, so a run holds no state of its own and there is no f
 
 ## References
 
-- `../../../skills/init/references/frontmatter.md` backs the `unloadable-skill` corrections: of the frontmatter problems a harness can meet, only unparseable YAML and a missing `description` make it skip the skill, which is why a mismatched `name` is neither reported nor corrected.
+- `../../../../skills/init/references/frontmatter.md` backs the `unloadable-skill` corrections: of the frontmatter problems a harness can meet, only unparseable YAML and a missing `description` make it skip the skill, which is why a mismatched `name` is neither reported nor corrected.

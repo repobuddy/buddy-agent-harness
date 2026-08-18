@@ -1,10 +1,26 @@
----
-spec-type: behavioral
-concept: command-interface
----
-
 # CLI
 
-## Use Cases
+> Descriptive index — the package's command-line product surface.
 
-Backfill pending from the command-line entrypoint, plugin command, and CLI tests.
+The package publishes one binary with two commands: `init`, which writes a repository's canonical configuration and the bridges into it, and `doctor`, which reports what is wrong with what is already there.
+
+`doctor` is the larger surface, and it is **one command reporting three families of fault through one output shape**. The families are independent — each check answers a different question about the same repository, and a single run reports as many as it finds, across all three. The shape they share is a node of its own, because a field added to the report belongs to every family at once and to none of them in particular.
+
+| Node | Subject |
+| --- | --- |
+| [`bridge-resolution/`](./bridge-resolution/README.md) | Whether every skills bridge still resolves into `.agents/skills` |
+| [`instruction-bridges/`](./instruction-bridges/README.md) | Whether every enabled harness can still read `AGENTS.md` |
+| [`configuration-diagnosis/`](./configuration-diagnosis/README.md) | Whether the configuration around those bridges is present and wrong |
+| [`diagnosis-report/`](./diagnosis-report/README.md) | The one output shape all three families are reported through |
+
+The cross-surface flow these findings feed — one surface detects, another repairs — is at [`../workflows/detect-and-repair/`](../workflows/detect-and-repair/README.md).
+
+## Backfill gap
+
+Two parts of this surface have no node yet, and neither is a stub of an existing one.
+
+**The shared output layer** — the TOON/JSON/text encoder and its aligned text rendering, at `../../../src/command-output/`. Both commands write through it, so it belongs to neither alone. `diagnosis-report/` specifies which formats `doctor` accepts; how a report becomes those bytes is unowned.
+
+**The `init` skill's write behavior** — what it consolidates, what it declines to invent, and the fact that it writes the `CLAUDE.md` import stub and the Gemini `context.fileName` entry itself. [`../skills/harness-init/`](../skills/harness-init/README.md) specifies the **`init` command**: its options, its formats, and its error behavior. The skill that every instruction-bridge repair is routed to is a different subject, and it has no node.
+
+**The entry-point contract** — how the package is called and what it answers with. It belongs at `cli/entry-point/` when it is written. It is a contract worth stating rather than a formality, because the surface serves two consumers that want different things: one wants exactly what the command **prints**, and one wants the **data** the command printed it from. The published exports serve the second. Note the two are not symmetrical today: the diagnosis functions return the findings, and the report the command prints is assembled on top of them, so "the data behind the report" is available and "the report as data" is not.

@@ -26,7 +26,7 @@ Feature: Repair agent configuration that doctor reported as wrong
     And `.claude/skills` is unchanged
 
   @behavior
-  Scenario: hands a two-sided divergence to init rather than picking a side
+  Scenario: hands a two-sided divergence on without picking a side
     Given a `doctor` report carrying a `diverged-both` finding for `.claude/skills`
     When the agent runs the `repair` skill
     Then the report hands that finding on without naming a side to keep

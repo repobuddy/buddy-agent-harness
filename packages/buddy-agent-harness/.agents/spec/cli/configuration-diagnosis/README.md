@@ -11,15 +11,16 @@ The `doctor` command's second half: reporting agent configuration that is **pres
 
 `doctor` already answers "does this bridge still resolve into `.agents/skills`?" This capability answers a different question about the same repository — "is the configuration around those bridges still right?" A retired harness name, an instruction file that never reaches `AGENTS.md`, a bridge the repository git-ignores, a local-override file no harness reads, a skill whose frontmatter makes every harness skip it. Each of these resolves fine, and each is still wrong.
 
-It exists so that **detection has one home**. The `repair` skill corrects these faults and does not look for them; the command reports them and does not correct them. Keeping the two apart is what preserves `doctor`'s read-only property as the finding set grows, and what stops a second detector drifting from this one.
+It exists so that **detection has one home** — the property is `../../workflows/detect-and-repair/`'s, which owns the seam between the surface that finds and the surfaces that write.
 
-Every fault here repairs through `repair`. That is what separates this capability from its two siblings: a bridge that does not resolve and an instruction file that names `AGENTS.md` nowhere both repair through **`init`**, which writes those bridges in the first place. Detection is shared; repair ownership is not, and the finding's repair names the owner so no caller has to classify one.
+What separates this capability from its two siblings is that every fault here repairs through **`repair`**, uniformly. Neither sibling family is uniform in the same way, and the mapping is the seam node's to state.
 
 **Non-goals**
 
 - **Repairing.** The command never writes. Each finding carries the repair as text, for a person at a shell or for the `repair` skill to act on.
 - **Offering a command for a fault here.** Every fault in this family is present-and-wrong configuration a person authored, so correcting one is judgment. None of them carries a runnable command, and inventing one would be worse than carrying none.
-- **Bridge resolution.** Whether a bridge resolves is the sibling capability's, already shipped. Backfilling *its* spec is not this node's — see Backfill note.
+- **Bridge resolution.** Whether a bridge resolves is the sibling capability's, at `../bridge-resolution/`; whether a harness can read `AGENTS.md` is `../instruction-bridges/`.
+- **The shape of the report.** Which sections exist and what a finding row carries is `../diagnosis-report/`.
 - **Judging content.** Whether an instruction is *good* is nobody's business here. Every fault below is decidable by reading the file, never by weighing what it says.
 - **Reporting absence.** Configuration that does not exist is `init`'s to create. Every fault here is something present.
 
@@ -51,7 +52,7 @@ Every fault here repairs through `repair`. That is what separates this capabilit
 
 | Entry point | Trigger | Inputs | Outcome |
 | --- | --- | --- | --- |
-| `buddy-agent-harness doctor` | a caller asks what is wrong with this repository's agent configuration | the repository root | every configuration fault reported alongside the bridge findings, each carrying its `problem` name, its `path`, a `detail` in prose, and a repair whose instruction names the skill that owns it |
+| `buddy-agent-harness doctor` | a caller asks what is wrong with this repository's agent configuration | the repository root | every configuration fault reported alongside the bridge findings, each carrying its `problem` name, its `path`, and a `detail` in prose, with a repair whose instruction names the skill that owns it |
 
 **Surface**
 
@@ -59,7 +60,7 @@ This capability adds **no new option**, and deliberately ignores one the sibling
 
 It does **not** honor `--harness`. Every check here requires a projection to exist on disk, and a projection cannot exist without its harness's own detection directory — which already selects that harness. A preference could therefore never add a finding, so accepting one would be surface that does nothing. `--harness` still binds the sibling bridge capability, where preferring an absent harness legitimately produces a `missing` finding.
 
-A fault is never reported without the repair that resolves it, so the two may not be separated. Every finding also carries its **`problem` name** in the emitted report, not only in the internal result: a caller routes on that name, and leaving it out would force it to match against `detail` prose that exists to be read rather than parsed.
+A fault is never reported without the repair that resolves it, and every finding carries its **`problem` name** in the emitted report rather than only in the internal result. Both are cross-family properties of the seam, stated once at `../../workflows/detect-and-repair/` rather than restated per family.
 
 The repair is **two fields, not a sentence**, for the same reason the `problem` name is a field: the caller has to route, and routing on prose is guessing. What it routes on here is whether it may act — an empty **command** means the correction is judgment, and the caller hands the finding to the skill named in the **instruction** rather than assembling something to run. Every fault in this family has an empty command, so this capability's whole contribution to `help` is instructions; the sibling bridge capability is where a real invocation appears. Nothing wraps an instruction: it reads as an imperative on its own, and a `Run` in front of one that was never a command is what this replaced.
 
@@ -83,7 +84,7 @@ flowchart TD
   F -->|no| H
   G --> H{A canonical SKILL.md has a frontmatter fault?}
   H -->|yes| I[Report unloadable-skill]
-  H -->|no| J[Emit every finding with its name, path, detail, and repair]
+  H -->|no| J[Emit every finding with its name, path, and detail]
   I --> J
 ```
 
@@ -98,7 +99,7 @@ Each check is independent, so one run reports as many faults as it finds, across
 | A→J | configuration is current | `reports nothing for a repository whose configuration is current` |
 | B→C | a superseded name has a projection | `reports a projection under a harness name that has been superseded` |
 | B→D | a superseded name has a detection directory but no projection | `leaves a superseded harness alone when it has no projection on disk` |
-| D→E | a rule on the bridge's parent directory | `reports a bridge a gitignore rule on its parent directory swallows` |
+| D→E | a rule on the bridge's parent directory | `reports a bridge a .gitignore rule on its parent directory swallows` |
 | D→F | the bridge is tracked | `leaves a tracked bridge alone` |
 | D→F | the repository is not a git repository | `reports nothing outside a git repository, where no rule can be read` |
 | F→G | an AGENTS.local.md exists | `reports an AGENTS.local.md, which no harness reads` |
@@ -109,12 +110,10 @@ Each check is independent, so one run reports as many faults as it finds, across
 | H→I | no frontmatter block | `reports a skill with no frontmatter block at all` |
 | H→J | a name that mismatches its directory | `leaves a name that does not match its directory alone` |
 | H→J | a non-SKILL.md file under the canonical directory | `ignores files under the canonical directory that are not a SKILL.md` |
-| →J | any reported fault | `names each fault in the report so a caller routes without reading prose` |
-| →J | every reported fault, checked for detail and instruction | `carries the repair for every finding it reports` |
-| →J | one fault of each of the four families | `offers no runnable command for any of the four faults, because correcting one is judgment` |
+| →J | one fault of each of the four kinds | `offers no runnable command for any of the four faults, because correcting one is judgment` |
 | →J | the repair text on a reported fault | `carries each repair as a bare imperative, with nothing wrapping it` |
 | →J | faults from three different families are present at once | `reports every fault it finds in one pass, across families` |
 
 ## References
 
-- `../../../skills/init/references/frontmatter.md` backs the `unloadable-skill` fault set: of the frontmatter problems a harness can meet, only unparseable YAML and a missing `description` cause it to skip the skill. A mismatched or over-long `name` is a warning and still loads, which is why neither is reported.
+- `../../../../skills/init/references/frontmatter.md` backs the `unloadable-skill` fault set: of the frontmatter problems a harness can meet, only unparseable YAML and a missing `description` cause it to skip the skill. A mismatched or over-long `name` is a warning and still loads, which is why neither is reported.
