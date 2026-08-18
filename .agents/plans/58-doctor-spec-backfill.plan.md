@@ -17,9 +17,9 @@ todos:
   - content: Promote cli/ to a descriptive index over its children
     status: completed
   - content: Spec gate, including a seam pass over the nodes together
-    status: pending
+    status: in_progress
   - content: Deliver — a verification per frozen scenario; add tests where none exists
-    status: pending
+    status: completed
   - content: Impl gate
     status: pending
   - content: pnpm verify (coverage gated at 100%), changeset if packages/ changed
@@ -77,6 +77,10 @@ implementation wins and the disagreement is reported.
 
 ## NEXT
 
-Spec gate: cold spec-judge plus a seam pass over the nodes together. Then rebase onto #57 once
-`bah-57-help` merges, and respec `cli/diagnosis-report/`'s `help` scenarios against
-`help[N]{command,instruction}`.
+Spec gate round two is running. Then rebase onto PR #60 once it merges, and respec
+`cli/diagnosis-report/`'s `help` scenarios against `help[N]{command,instruction}` — binding
+the four properties operator ruled in: `command` non-empty means safe to run verbatim,
+`command` empty means judgment, every finding carries a non-empty `instruction`, and the
+data-loss guard that keeps `diverged-both` and `diverged-unknown` command-less.
+
+Then PR against main linking #58, CI, merge.
