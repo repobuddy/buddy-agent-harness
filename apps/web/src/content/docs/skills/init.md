@@ -81,6 +81,7 @@ These hold regardless of what you ask for mid-run:
 
 - Never invent project policy, and never rewrite your `AGENTS.md`.
 - Never convert tool settings between formats without a documented mapping. Unmapped settings stay canonical.
+- A user-authored settings file is amended in place, never round-tripped through `JSON.parse`. Key order, indentation, and comments survive the edit, because [harnesses disagree about whether comments are allowed](/agent-configuration/harness-differences/#json-configuration-disagrees-about-comments).
 - Symlinks belong in version control. They stay tracked and are not added to `.gitignore`.
 - Only `.agents/skills/` is an established convention. `.agents/rules/`, `.agents/commands/`, and `.agents/agents/` are not invented and presented as standard.
 - Local agent configuration only: no workflows, Actions, repository settings, security scanning, branch rules, or unrelated project files.
