@@ -110,7 +110,7 @@ Each check is independent, so one run reports as many faults as it finds, across
 | H→J | a name that mismatches its directory | `leaves a name that does not match its directory alone` |
 | H→J | a non-SKILL.md file under the canonical directory | `ignores files under the canonical directory that are not a SKILL.md` |
 | →J | any reported fault | `names each fault in the report so a caller routes without reading prose` |
-| →J | any | `carries the repair for every finding it reports` |
+| →J | every reported fault, checked for detail and instruction | `carries the repair for every finding it reports` |
 | →J | one fault of each of the four families | `offers no runnable command for any of the four faults, because correcting one is judgment` |
 | →J | the repair text on a reported fault | `carries each repair as a bare imperative, with nothing wrapping it` |
 | →J | faults from three different families are present at once | `reports every fault it finds in one pass, across families` |

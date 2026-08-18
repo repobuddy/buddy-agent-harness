@@ -103,7 +103,11 @@ Feature: Report agent configuration that is present and wrong
 
   @behavior
   Scenario: carries the repair for every finding it reports
-    Given a repository holding an `AGENTS.local.md` carrying two setup notes
+    Given a git repository with a `.windsurf/skills` projection of `.agents/skills`
+    And a `.claude/skills` projection of `.agents/skills`
+    And a `.gitignore` containing the line `.claude/`
+    And an `AGENTS.local.md` carrying two setup notes
+    And a canonical skill whose frontmatter carries a `name` and no `description`
     When the command diagnoses the configuration
     Then every fault it reports carries a non-empty detail
     And every fault it reports carries a repair instruction that is not empty
@@ -123,7 +127,7 @@ Feature: Report agent configuration that is present and wrong
   Scenario: carries each repair as a bare imperative, with nothing wrapping it
     Given a repository holding an `AGENTS.local.md` carrying two setup notes
     When the command diagnoses the configuration
-    Then the repair instruction begins with the verb that corrects the fault
+    Then the repair instruction begins with an imperative verb
     And no `Run` wrapper precedes it
     And it names the skill that owns the correction
 

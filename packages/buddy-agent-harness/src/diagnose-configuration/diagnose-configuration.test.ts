@@ -159,13 +159,25 @@ describe('diagnoseConfiguration', () => {
 		})
 	})
 
+	// Universal over the family, so the fixture has to span the family: a fault whose detail or
+	// instruction came out empty would otherwise hide behind the one fault a narrower fixture reports.
 	it('carries the repair for every finding it reports', () => {
-		const root = repository()
+		const root = gitRepository()
+		link(root, '.windsurf/skills')
+		link(root, '.claude/skills')
+		write(root, '.gitignore', '.claude/\n')
 		write(root, 'AGENTS.local.md', '# Personal\n')
+		write(root, '.agents/skills/pdf/SKILL.md', '---\nname: pdf\n---\n')
 
-		expect(diagnose(root).every((finding) => finding.repair.instruction.length > 0 && finding.detail.length > 0)).toBe(
-			true,
-		)
+		const findings = diagnose(root)
+
+		expect(findings.map((finding) => finding.problem).sort()).toEqual([
+			'deprecated-harness',
+			'ignored-bridge',
+			'unloadable-skill',
+			'unread-local-override',
+		])
+		expect(findings.every((finding) => finding.repair.instruction.length > 0 && finding.detail.length > 0)).toBe(true)
 	})
 
 	// Every fault here is present-and-wrong configuration a person wrote, so correcting one is a
