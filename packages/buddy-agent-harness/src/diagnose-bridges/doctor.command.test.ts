@@ -1,4 +1,5 @@
 import { homedir } from 'node:os'
+import { encode } from '@toon-format/toon'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { binPath, renderText } from '../command-output/command-output.ts'
 import { type DiagnoseResult, diagnoseBridges } from './diagnose-bridges.ts'
@@ -271,6 +272,27 @@ describe('buildReport', () => {
 		expect(text).toContain('  command   instruction')
 		expect(text).toContain('  bah init  run `bah init`')
 		expect(text).toContain('            move AGENTS.local.md to CLAUDE.local.md')
+	})
+
+	// Both keys on every row: with an optional key the TOON encoder drops the whole array out of
+	// its tabular form into a nested list, which is worse for the consumer the default exists for.
+	it('emits both columns always, so the tabular encoding does not degrade', () => {
+		const report = buildReport('~/bin/bah', {
+			bridges: [],
+			instructions: [],
+			divergence: [],
+			findings: [
+				{
+					path: 'AGENTS.local.md',
+					problem: 'unread-local-override',
+					detail: 'no harness reads this filename',
+					repair: { command: '', instruction: 'move AGENTS.local.md to CLAUDE.local.md' },
+				},
+			],
+		})
+
+		expect(report.help).toEqual([{ command: '', instruction: 'move AGENTS.local.md to CLAUDE.local.md' }])
+		expect(encode(report)).toContain('help[1]{command,instruction}:')
 	})
 
 	it('adds a divergence section only when a bridge has diverged', () => {

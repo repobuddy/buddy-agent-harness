@@ -48,6 +48,42 @@ Feature: Report every doctor finding through one output shape
     And two findings sharing one repair state it once, while both keep their own row
 
   @behavior
+  Scenario: states a repair as a runnable command and a prose instruction
+    Given a repository holding a finding whose repair is a single invocation
+    When the command builds its report
+    Then its `help` entry carries a `command` that runs verbatim and completes the repair
+    And it carries an `instruction` saying the same thing in the imperative
+    And nothing wraps either of them
+
+  @behavior
+  Scenario: leaves the command empty for a repair that is judgment
+    Given a repository holding a finding no single invocation repairs
+    When the command builds its report
+    Then its `help` entry carries an empty `command`
+    And its `instruction` is not empty
+
+  @behavior
+  Scenario: carries an instruction for every repair, and a command only where one completes it
+    Given every problem the command can report
+    When each repair is rendered
+    Then every one carries a non-empty `instruction`
+    And only those a single invocation repairs carry a non-empty `command`
+
+  @behavior
+  Scenario: gives a diverged bridge no command, so executing every command destroys nothing
+    Given the bridge problems whose repair needs a person to choose or reconcile first
+    When each repair is rendered
+    Then none carries a command, though each quotes a runnable invocation in its instruction
+    And a caller that runs every non-empty command and nothing else rebuilds no diverged bridge
+
+  @behavior
+  Scenario: emits both columns always, so the tabular encoding does not degrade
+    Given a repair for which no runnable command exists
+    When the report is encoded in the default format
+    Then the `help` section carries both keys on every row, the absent command as an empty value
+    And the section stays in its tabular form rather than a nested list
+
+  @behavior
   Scenario: adds a divergence section only when a bridge has diverged
     Given a report in which a bridge has diverged
     When the command builds its report

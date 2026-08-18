@@ -19,7 +19,8 @@ That shape had no owner, and the cost was concrete. When a field was added to `f
 
 - **report** — what one `doctor` run writes to stdout: one object, encoded once.
 - **section** — a top-level key of that object: `bin`, `bridges`, `instructions`, `divergence`, `findings`, `help`.
-- **finding row** — one entry in `findings`: a `path`, a `problem` name, and a `detail` in prose.
+- **finding row** — one entry in `findings`: a `path`, a `problem` name, and a `detail` in prose. The repair is not on the row; it is in `help`.
+- **repair** — one entry in `help`: a `command` and an `instruction`. Together they say what fixes a finding and whether a program may do it.
 - **healthy answer** — what `findings` holds when nothing is wrong: a sentence stating the zero with its context, in place of the rows.
 
 **Non-goals**
@@ -69,9 +70,18 @@ That shape had no owner, and the cost was concrete. When a field was added to `f
 
 `findings` holds either the rows or the healthy sentence, never both and never neither.
 
-`help` lifts the repairs out of the finding rows, so a row stays to the diagnosis itself, and **dedupes** on the repair text: several findings often share one repair, and repeating it reads as more work than there is. Two findings whose repairs are identical collapse into one entry **even when their paths differ**, which happens whenever the repair does not name a path — `no-canonical` and `missing` both repair by running `init`, and produce one entry between them.
+`help` lifts the repairs out of the finding rows, so a row stays to the diagnosis itself. Each entry is **two columns**, and the pair is what a consumer branches on:
 
-Every entry in `help` is stated in the same shape, whether or not it is something a consumer can run. That is a **known defect** rather than a decision: a repair that is a reconciliation by hand is presented exactly like a shell invocation, so telling the two apart means reading the prose.
+- **`command`** — a shell invocation that runs verbatim and **completes** the repair. Empty when no single invocation does.
+- **`instruction`** — the same repair in the imperative, self-contained, and **never empty**.
+
+`command` non-empty means *safe to run as given, and running it finishes the job*. `command` empty means *judgment* — act on `instruction`, and never synthesize a command from it.
+
+That is the whole reason the field is split, and it buys a property nothing else does: **a caller that executes every non-empty `command` and nothing else cannot destroy work.** `diverged-both` and `diverged-unknown` carry no command even though the `git diff --no-index` invocation quoted inside their instruction is perfectly runnable, because the diff shows what differs rather than reconciling it; `diverged-bridge` carries none either, because a person must replace one side first. So a bridge whose two sides have both moved is never rebuilt over the side holding the newer edit by a caller doing exactly what the report said it could do.
+
+Both keys are **always emitted**, with `""` rather than an absent key. That is an encoding decision, not a modelling one: with an optional key the TOON encoder degrades the whole array from its tabular form to a nested list, which is worse for exactly the consumer the default format exists for.
+
+`help` **dedupes on the pair**: several findings often share one repair, and repeating it reads as more work than there is. Two findings whose repairs are identical collapse into one entry **even when their paths differ**, which happens whenever neither column names a path.
 
 **Extensions**
 
@@ -90,7 +100,7 @@ flowchart TD
   D --> E{Any finding?}
   E -->|no| F[Set findings to the healthy sentence, counting both bridge sections]
   E -->|yes| G[Set findings to one row per finding: path, problem, detail]
-  G --> H[Lift every repair into help, deduped]
+  G --> H[Lift every repair into help as a command and an instruction, deduped on the pair]
   F --> I[Add divergence only if a bridge diverged]
   H --> I
   I --> J[Encode once in the requested format and write to stdout]
@@ -109,6 +119,11 @@ flowchart TD
 | E→F | nothing wrong | `states the healthy answer outright rather than leaving findings empty` |
 | E→F | one bridge and no instruction bridges | `counts the instruction bridges alongside the skills bridges` |
 | E→G, G→H | findings from more than one family | `moves each repair into help and keeps findings to the diagnosis and its name` |
+| G→H | a repair a single invocation completes | `states a repair as a runnable command and a prose instruction` |
+| G→H | a repair that is judgment | `leaves the command empty for a repair that is judgment` |
+| G→H | every problem the command can report | `carries an instruction for every repair, and a command only where one completes it` |
+| G→H | `diverged-bridge`, `diverged-both`, `diverged-unknown` | `gives a diverged bridge no command, so executing every command destroys nothing` |
+| J | a repair with no runnable command | `emits both columns always, so the tabular encoding does not degrade` |
 | I | a diverged bridge, and a report with none | `adds a divergence section only when a bridge has diverged` |
 | J | each supported format | `encodes the report in the requested format and nothing else` |
 | K | findings and no findings | `exits 0 whether or not it found something` |

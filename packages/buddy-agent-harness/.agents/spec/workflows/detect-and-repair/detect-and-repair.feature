@@ -9,11 +9,11 @@ Feature: Hand every doctor finding to the one surface that repairs it
     Then every problem resolves to exactly one repair
 
   @behavior
-  Scenario: renders every repair twice, once for a shell and once for a skill
+  Scenario: renders every repair twice, and the two disagree about who acts
     Given every problem the command can report
     When each problem's repair is rendered for the command and for the shipped skill
     Then both renderings come from one entry, so they cannot disagree about which problem they repair
-    And only the skill rendering names the surface that owns the repair
+    And a bridge problem a rebuild fixes names the `init` skill for the skill reader and a runnable command for the shell reader
 
   @behavior
   Scenario: carries a repair with every finding it reports

@@ -72,9 +72,11 @@ The contract is **four things per finding**, and a consumer may rely on no other
 
 Every problem the command can report has exactly one repair, and every finding carries it. The two may not be separated: a fault reported without its repair asks a consumer to invent one, which is how a second, drifting classifier gets written.
 
-That one repair is **rendered twice**, for the two consumers, and the renderings differ in exactly the property this seam routes on. The **command** rendering is what `doctor` prints, and it names a shell invocation — `buddy-agent-harness init`. The **skill** rendering is what the shipped `doctor` skill states, and it names a *skill* — `/buddy-agent-harness:init`. Both come from one table entry, so they cannot disagree about which problem they repair; they deliberately disagree about who acts.
+That one repair is **rendered twice**, for the two consumers, and the renderings disagree about who acts. The **command** rendering is what `doctor` prints into `help`; the **skill** rendering is what the shipped `doctor` skill states. Both come from one table entry, so they cannot disagree about which problem they repair.
 
-The consequence is worth stating because it is easy to get backwards: **only the skill rendering names an owner.** A consumer that reads the command's output alone recovers the owner for the instruction family and for nothing else, because those four are the only repairs whose command rendering happens to name a skill. Route on `problem`, which every finding carries, rather than on a skill name in `help`.
+Where they part is the bridge family. The skill rendering sends every bridge problem a rebuild fixes to `/buddy-agent-harness:init`, because a skill must not run `init` itself. The command rendering gives those same problems a **runnable `command`** and names no skill at all, because a caller reading the command's output can simply run it. Neither is wrong; they answer different questions for different readers.
+
+So **an owner is not something a consumer can always read off the report.** In `help`, the instruction names a skill for the eight problems in the instruction and configuration families and for none of the nine bridge problems. Route on `problem`, which every finding carries, rather than on a skill name in `help`.
 
 **Extensions**
 
@@ -111,7 +113,7 @@ Routing reads the `problem` name only. Nothing on this path reads `detail`, and 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
 | B | any | `has one repair for every problem it can report` |
-| B | any | `renders every repair twice, once for a shell and once for a skill` |
+| B | any | `renders every repair twice, and the two disagree about who acts` |
 | B | any | `carries a repair with every finding it reports` |
 | E | any reported fault | `keeps the routable name out of the prose detail` |
 | F→G | a bridge-resolution problem repairable by rebuilding | `sends a bridge finding to the init skill wherever rebuilding is the repair` |
