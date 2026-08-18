@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import {
 	doctorRepairs,
+	instructionRepairs,
 	launcherFor,
 	renderDoctorSkill,
 	renderSkillLauncher,
@@ -18,6 +19,61 @@ const version = JSON.parse(readFileSync(join(packageRoot, 'package.json'), 'utf8
 describe('doctor guidance', () => {
 	it('has one repair for every problem it can report', () => {
 		for (const entry of doctorRepairs) expect(repairFor(entry.problem)).toBe(entry)
+	})
+
+	// The contract `help` is read through: a non-empty `command` runs verbatim and finishes the job,
+	// an empty one means judgment. `instruction` is the half that is always there.
+	it('gives every repair an instruction, and leaves the command optional', () => {
+		for (const entry of doctorRepairs) {
+			const repair = entry.repair('<path>', 'bah')
+
+			expect(repair.instruction, entry.problem).not.toBe('')
+			expect(repair, entry.problem).toHaveProperty('command')
+		}
+	})
+
+	// Nothing wraps a repair. The wrapper this replaced read `Run ` + the repair, which turned an
+	// instruction to a person into an invitation to paste prose into a shell.
+	it('wraps no repair in an imperative it does not carry itself', () => {
+		for (const entry of doctorRepairs) {
+			expect(entry.repair('<path>', 'bah').instruction, entry.problem).not.toMatch(/^Run /)
+		}
+	})
+
+	// The data-loss guard. `git diff --no-index` is perfectly runnable, and running it reconciles
+	// nothing — so it stays inside the prose. A caller that executes every `command` it is handed and
+	// nothing else therefore never rebuilds a diverged bridge over the side holding the newer edit.
+	it('offers no command for a repair no single invocation completes', () => {
+		const judgment = ['diverged-bridge', 'diverged-both', 'diverged-unknown'] as const
+
+		for (const problem of judgment) {
+			const repair = repairFor(problem).repair('<path>', 'bah')
+
+			expect(repair.command, problem).toBe('')
+			expect(repair.instruction, problem).not.toBe('')
+		}
+		expect(repairFor('diverged-both').repair('<path>', 'bah').instruction).toContain('git diff --no-index')
+	})
+
+	// A skill invocation is not a command: nothing in a shell runs `/buddy-agent-harness:init`. Every
+	// instruction-bridge repair is one, which is why none of them offers a command either.
+	it('never offers a skill invocation as a runnable command', () => {
+		for (const entry of doctorRepairs) {
+			expect(entry.repair('<path>', 'bah').command, entry.problem).not.toContain('/buddy-agent-harness:')
+		}
+		for (const entry of instructionRepairs) {
+			expect(entry.repair('<path>', 'bah').command, entry.problem).toBe('')
+		}
+	})
+
+	// A command that is real is always quoted in its own prose, so the two halves never disagree and
+	// a person reading `--format text` sees the same invocation an agent would run.
+	it('quotes every command it offers inside its own instruction', () => {
+		for (const entry of doctorRepairs) {
+			const { command, instruction } = entry.repair('<path>', 'bah')
+
+			if (command) expect(instruction, entry.problem).toContain(`\`${command}\``)
+		}
 	})
 
 	it('renders every repair into the skill, with the path parameterized', () => {

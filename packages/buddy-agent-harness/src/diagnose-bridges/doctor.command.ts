@@ -5,7 +5,7 @@ import { binPath, parseFormat, writeResult } from '../command-output/command-out
 import { type ConfigurationFinding, diagnoseConfiguration } from '../diagnose-configuration/diagnose-configuration.ts'
 import { type HarnessName, harnessRegistry } from '../harness-registry/harness-registry.ts'
 import { type DiagnoseResult, diagnoseBridges } from './diagnose-bridges.ts'
-import { commandInvocation, type DoctorProblem } from './doctor-guidance.ts'
+import { commandInvocation, type DoctorProblem, type RepairAction } from './doctor-guidance.ts'
 import { GitBridgeState } from './git-bridge-state.ts'
 
 type DoctorReport = {
@@ -18,7 +18,15 @@ type DoctorReport = {
 	 * stays on the row: it is how a caller routes without parsing `detail` prose.
 	 */
 	findings: { path: string; problem: DoctorProblem; detail: string }[] | string
-	help?: string[]
+	/**
+	 * One entry per distinct repair. Two fields rather than a sentence, because the caller has to
+	 * tell an executable repair from an instruction, and `RepairAction` is where that lives.
+	 *
+	 * Both keys are always emitted, `command` as an empty string when there is none. An optional key
+	 * would drop the whole array out of TOON's tabular form into the nested list form — worse for
+	 * exactly the consumer the default format exists for.
+	 */
+	help?: RepairAction[]
 }
 
 /**
@@ -50,9 +58,14 @@ export function buildReport(
 		instructions: result.instructions,
 		...(result.divergence.length ? { divergence: result.divergence } : {}),
 		findings: findings.map(({ path, problem, detail }) => ({ path, problem, detail })),
-		// Deduped: several findings often share one repair, and repeating it reads as more work than
-		// there is. Every repair template embeds its own path, so distinct findings cannot collapse.
-		help: [...new Set(findings.map((finding) => `Run \`${finding.repair}\``))],
+		// Deduped on the whole pair: several findings often share one repair, and repeating it reads as
+		// more work than there is. Nothing wraps a repair — a `Run …` around every one of them is what
+		// this report used to do, and most repairs are not commands.
+		help: [
+			...new Map(
+				findings.map((finding) => [`${finding.repair.command}\u0000${finding.repair.instruction}`, finding.repair]),
+			).values(),
+		],
 	}
 }
 

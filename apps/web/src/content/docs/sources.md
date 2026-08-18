@@ -74,6 +74,12 @@ Corrected at [What stays canonical](/reference/configuration-layout/#what-stays-
 
 This page gave two reasons for not documenting harness settings files. The second, that "settings are outside what initialization touches", was false: `init` edits `.gemini/settings.json` to add `AGENTS.md` to `context.fileName`. The sourcing-quality reason was and remains true. The section above now states only that one.
 
+### 2026-08-18 — `help` was said to be pasteable except for the instruction repairs
+
+The `doctor` page said the four instruction repairs "are the one place `help` cannot be pasted into a terminal". That was wrong when it was written. Every `help` line was rendered as ``Run `<repair>` `` whether or not the repair was a command, so a configuration finding published lines like ``Run `remove .windsurf/skills and enable the harness that replaced it` `` — prose wrapped in an imperative to run it. The `diverged-both` repair had the same shape from the start, with half the instruction inside the backticks and half outside.
+
+Corrected at [Output](/cli/doctor/#output), and the behavior changed with it: `help` is now one row per repair with a `command` column and an `instruction` column, and `command` is empty wherever no single invocation completes the repair. A caller no longer has to read the prose to find out whether it may run something. The same page's sample report was also a version behind — it showed `findings` without the `problem` column that finding rows have carried since the configuration checks shipped.
+
 ## Undocumented but verified
 
 Claude Code parses `.claude/settings.json`, `.claude-plugin/plugin.json`, and `.claude-plugin/marketplace.json` as **strict JSON**. Comments and trailing commas are total parse failures, not warnings. The vendor settings page documents five settings filenames and says nothing about comments either way, so this was established against Claude Code 2.1.234 by testing each file with `claude plugin validate` and `claude doctor`. It is verified behavior, not a contract, and could change without notice.

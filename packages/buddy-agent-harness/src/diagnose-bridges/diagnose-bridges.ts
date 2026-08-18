@@ -4,7 +4,7 @@ import { type HarnessName, selectHarnesses } from '../harness-registry/harness-r
 import { linksTo } from '../skill-projection/skill-projection.ts'
 import { diagnoseInstructions, type InstructionReport } from './diagnose-instructions.ts'
 import { filesUnder } from './directory-files.ts'
-import { type BridgeProblem, type DoctorProblem, repairFor } from './doctor-guidance.ts'
+import { type BridgeProblem, type DoctorProblem, type RepairAction, repairFor } from './doctor-guidance.ts'
 import { type DivergenceDirection, GitBridgeState } from './git-bridge-state.ts'
 
 export type BridgeKind = 'symlink' | 'copy' | 'file' | 'none'
@@ -26,8 +26,8 @@ export type BridgeFinding = {
 	 */
 	problem: DoctorProblem
 	detail: string
-	/** The command that repairs this finding, already carrying the bridge path. */
-	repair: string
+	/** What repairs this finding, already carrying the bridge path. Empty `command` means judgment. */
+	repair: RepairAction
 }
 
 export type DivergenceReport = {

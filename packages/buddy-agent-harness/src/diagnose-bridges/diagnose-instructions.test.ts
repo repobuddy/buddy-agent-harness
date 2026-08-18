@@ -79,7 +79,10 @@ describe('the import bridge', () => {
 				path: 'CLAUDE.md',
 				problem: 'instructions-missing',
 				detail: 'no instruction bridge at this path — the harness reads none of AGENTS.md',
-				repair: '/buddy-agent-harness:init',
+				repair: {
+					command: '',
+					instruction: 'hand CLAUDE.md to `/buddy-agent-harness:init`, which writes the bridge into it',
+				},
 			},
 		])
 	})
@@ -93,7 +96,11 @@ describe('the import bridge', () => {
 		expect(findingsOf(root)[0]).toMatchObject({
 			problem: 'instructions-unbridged',
 			detail: 'the file is present but names AGENTS.md nowhere — the harness reads none of it',
-			repair: '/buddy-agent-harness:init',
+			repair: {
+				command: '',
+				instruction:
+					'hand CLAUDE.md to `/buddy-agent-harness:init`, which adds the bridge without discarding what the file already says',
+			},
 		})
 	})
 
@@ -134,7 +141,10 @@ describe('the import bridge', () => {
 				path: 'AGENTS.md',
 				problem: 'no-instructions',
 				detail: 'no AGENTS.md at the repository root, so every instruction bridge points at nothing',
-				repair: '/buddy-agent-harness:init',
+				repair: {
+					command: '',
+					instruction: 'hand this to `/buddy-agent-harness:init`, which derives AGENTS.md and the bridges to it',
+				},
 			},
 		])
 	})
@@ -218,7 +228,8 @@ describe('a harness set with no instruction bridge', () => {
 })
 
 describe('the repair', () => {
-	// A person at a shell cannot rebuild an instruction file, so `help` names the skill instead.
+	// A person at a shell cannot rebuild an instruction file, so the repair names the skill instead —
+	// and, since nothing in a shell runs a skill, offers no command at all.
 	it('is never a command, for any instruction finding', () => {
 		const root = repository()
 		enableGemini(root)
@@ -228,8 +239,9 @@ describe('the repair', () => {
 
 		expect(findings.map((finding) => finding.path)).toEqual(['CLAUDE.md', '.gemini/settings.json'])
 		for (const finding of findings) {
-			expect(finding.repair).toBe(initSkill)
-			expect(finding.repair).not.toContain(cli)
+			expect(finding.repair.command).toBe('')
+			expect(finding.repair.instruction).toContain(initSkill)
+			expect(finding.repair.instruction).not.toContain(`${cli} `)
 		}
 	})
 })

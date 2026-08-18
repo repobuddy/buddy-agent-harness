@@ -18,6 +18,7 @@ Every fault here repairs through `repair`. That is what separates this capabilit
 **Non-goals**
 
 - **Repairing.** The command never writes. Each finding carries the repair as text, for a person at a shell or for the `repair` skill to act on.
+- **Offering a command for a fault here.** Every fault in this family is present-and-wrong configuration a person authored, so correcting one is judgment. None of them carries a runnable command, and inventing one would be worse than carrying none.
 - **Bridge resolution.** Whether a bridge resolves is the sibling capability's, already shipped. Backfilling *its* spec is not this node's — see Backfill note.
 - **Judging content.** Whether an instruction is *good* is nobody's business here. Every fault below is decidable by reading the file, never by weighing what it says.
 - **Reporting absence.** Configuration that does not exist is `init`'s to create. Every fault here is something present.
@@ -26,6 +27,7 @@ Every fault here repairs through `repair`. That is what separates this capabilit
 
 - **configuration fault** — one named way present configuration is wrong: `deprecated-harness`, `ignored-bridge`, `unread-local-override`, `unloadable-skill`.
 - **superseded harness** — a registry name marked as replaced by another.
+- **repair** — what resolves one fault, in two parts: a **command** that runs verbatim and completes it, and an **instruction** in the imperative. The command is empty when no single invocation does the job; the instruction is always there.
 
 ## Use Cases
 
@@ -49,7 +51,7 @@ Every fault here repairs through `repair`. That is what separates this capabilit
 
 | Entry point | Trigger | Inputs | Outcome |
 | --- | --- | --- | --- |
-| `buddy-agent-harness doctor` | a caller asks what is wrong with this repository's agent configuration | the repository root | every configuration fault reported alongside the bridge findings, each carrying its `problem` name, its `path`, a `detail` in prose, and a repair naming the skill that owns it |
+| `buddy-agent-harness doctor` | a caller asks what is wrong with this repository's agent configuration | the repository root | every configuration fault reported alongside the bridge findings, each carrying its `problem` name, its `path`, a `detail` in prose, and a repair whose instruction names the skill that owns it |
 
 **Surface**
 
@@ -58,6 +60,8 @@ This capability adds **no new option**, and deliberately ignores one the sibling
 It does **not** honor `--harness`. Every check here requires a projection to exist on disk, and a projection cannot exist without its harness's own detection directory — which already selects that harness. A preference could therefore never add a finding, so accepting one would be surface that does nothing. `--harness` still binds the sibling bridge capability, where preferring an absent harness legitimately produces a `missing` finding.
 
 A fault is never reported without the repair that resolves it, so the two may not be separated. Every finding also carries its **`problem` name** in the emitted report, not only in the internal result: a caller routes on that name, and leaving it out would force it to match against `detail` prose that exists to be read rather than parsed.
+
+The repair is **two fields, not a sentence**, for the same reason the `problem` name is a field: the caller has to route, and routing on prose is guessing. What it routes on here is whether it may act — an empty **command** means the correction is judgment, and the caller hands the finding to the skill named in the **instruction** rather than assembling something to run. Every fault in this family has an empty command, so this capability's whole contribution to `help` is instructions; the sibling bridge capability is where a real invocation appears. Nothing wraps an instruction: it reads as an imperative on its own, and a `Run` in front of one that was never a command is what this replaced.
 
 **Extensions**
 
@@ -107,6 +111,8 @@ Each check is independent, so one run reports as many faults as it finds, across
 | H→J | a non-SKILL.md file under the canonical directory | `ignores files under the canonical directory that are not a SKILL.md` |
 | →J | any reported fault | `names each fault in the report so a caller routes without reading prose` |
 | →J | any | `carries the repair for every finding it reports` |
+| →J | any reported fault | `offers no runnable command for a fault, because correcting one is judgment` |
+| →J | any reported fault | `carries each repair as a bare imperative, with nothing wrapping it` |
 | →J | faults from three different families are present at once | `reports every fault it finds in one pass, across families` |
 
 ## References

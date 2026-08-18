@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { filesUnder } from '../diagnose-bridges/directory-files.ts'
-import { type ConfigurationProblem, repairFor } from '../diagnose-bridges/doctor-guidance.ts'
+import { type ConfigurationProblem, type RepairAction, repairFor } from '../diagnose-bridges/doctor-guidance.ts'
 import type { GitBridgeState } from '../diagnose-bridges/git-bridge-state.ts'
 import { selectHarnesses } from '../harness-registry/harness-registry.ts'
 
@@ -24,8 +24,8 @@ export type ConfigurationFinding = {
 	path: string
 	problem: ConfigurationProblem
 	detail: string
-	/** What repairs it, already carrying the path. */
-	repair: string
+	/** What repairs it, already carrying the path. Every fault here is judgment, so `command` is empty. */
+	repair: RepairAction
 }
 
 export type DiagnoseConfigurationOptions = {

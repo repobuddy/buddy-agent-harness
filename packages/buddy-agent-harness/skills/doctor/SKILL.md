@@ -25,9 +25,16 @@ The command is read-only. It never repairs anything, so it is safe to run at any
 
 `instructions` lists every instruction bridge into `AGENTS.md`, with a `status` of `ok`, `missing`, `unbridged`, or `unreadable`. They are a separate section because nothing about them is shared: a different `kind`, a different status vocabulary, and a repair that is never a command.
 
-`findings` explains each problem from either section and `help` names its repair. Apply the repair from the tables below, then re-run `doctor`.
+`findings` explains each problem from either section and `help` carries its repair, one row per distinct repair, with two columns:
 
-Do not run an `init` command yourself. Rebuilding a skills bridge can move skills a user wrote, and rewriting an instruction file touches prose a person authored — both are the `init` skill's judgment, so hand the repair to `/buddy-agent-harness:init` instead. A `help` line naming that skill has no shell equivalent at all.
+- `command` — a shell invocation that, run exactly as given, **completes** the repair.
+- `instruction` — the same repair in the imperative, always present and complete on its own.
+
+`command` is empty whenever no single invocation does the job, and that emptiness is the signal: act on `instruction` and do not assemble a command out of it. A runnable invocation quoted *inside* an `instruction` is not the repair either — `diverged-both` names `git diff --no-index` because the diff shows you what differs, not because running it reconciles anything. Apply the repair, then re-run `doctor`.
+
+Nothing in `help` is wrapped. An earlier version prefixed every repair with `Run`, which read as an instruction to paste prose into a shell.
+
+Do not run an `init` command yourself. Rebuilding a skills bridge can move skills a user wrote, and rewriting an instruction file touches prose a person authored — both are the `init` skill's judgment, so hand the repair to `/buddy-agent-harness:init` instead. Every such repair carries an empty `command`: a skill invocation has no shell equivalent at all.
 
 When every bridge resolves, `findings` says so outright rather than being empty.
 

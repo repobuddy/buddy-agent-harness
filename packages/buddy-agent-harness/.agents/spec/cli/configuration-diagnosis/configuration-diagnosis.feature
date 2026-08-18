@@ -105,7 +105,26 @@ Feature: Report agent configuration that is present and wrong
   Scenario: carries the repair for every finding it reports
     Given a repository holding an `AGENTS.local.md` carrying two setup notes
     When the command diagnoses the configuration
-    Then every fault it reports carries a non-empty detail and a non-empty repair
+    Then every fault it reports carries a non-empty detail
+    And every fault it reports carries a repair instruction that is not empty
+
+  @behavior
+  Scenario: offers no runnable command for a fault, because correcting one is judgment
+    Given a git repository with a `.windsurf/skills` projection of `.agents/skills`
+    And an `AGENTS.local.md` carrying two setup notes
+    And a canonical skill whose frontmatter carries a `name` and no `description`
+    When the command diagnoses the configuration
+    Then it reports at least one fault
+    And the runnable command on every fault it reports is empty
+    And a caller that runs every non-empty command it is handed therefore runs nothing here
+
+  @behavior
+  Scenario: carries each repair as a bare imperative, with nothing wrapping it
+    Given a repository holding an `AGENTS.local.md` carrying two setup notes
+    When the command diagnoses the configuration
+    Then the repair instruction reads as an imperative on its own
+    And no wrapper such as `Run` precedes it
+    And it names the skill that owns the correction
 
   @behavior
   Scenario: reports every fault it finds in one pass, across families
