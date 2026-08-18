@@ -110,6 +110,19 @@ describe('diagnoseBridges', () => {
 		expect(result.findings[0]).toMatchObject({ repair: 'bah init --force' })
 	})
 
+	// A link a user wrote by hand, or one Windows wrote as a junction, spells its target differently
+	// from the relative path `init` writes. It still resolves, so it is still a healthy bridge.
+	it('reports a symlink written as an absolute path as resolving', () => {
+		const root = repository()
+		mkdirSync(join(root, '.claude'), { recursive: true })
+		symlinkSync(join(root, '.agents', 'skills'), join(root, '.claude', 'skills'), 'junction')
+
+		const result = diagnoseBridges({ root, cli })
+
+		expect(result.bridges).toEqual([{ harness: 'claude-code', path: '.claude/skills', kind: 'symlink', status: 'ok' }])
+		expect(result.findings).toEqual([])
+	})
+
 	it('reports a correctly named symlink whose target no longer exists', () => {
 		const root = repository()
 		link(root, '.claude/skills')

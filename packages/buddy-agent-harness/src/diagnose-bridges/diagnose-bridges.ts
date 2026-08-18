@@ -1,6 +1,7 @@
-import { lstatSync, readFileSync, readlinkSync, statSync } from 'node:fs'
-import { dirname, join, relative } from 'node:path'
+import { lstatSync, readFileSync, statSync } from 'node:fs'
+import { join } from 'node:path'
 import { type HarnessName, selectHarnesses } from '../harness-registry/harness-registry.ts'
+import { linksTo } from '../skill-projection/skill-projection.ts'
 import { diagnoseInstructions, type InstructionReport } from './diagnose-instructions.ts'
 import { filesUnder } from './directory-files.ts'
 import { type BridgeProblem, type DoctorProblem, repairFor } from './doctor-guidance.ts'
@@ -72,11 +73,6 @@ function isDirectory(path: string): boolean {
 	}
 }
 
-/** The same test `init` uses to decide a projection is already correct, plus that it still resolves. */
-function resolvesToCanonical(target: string, canonical: string): boolean {
-	return readlinkSync(target) === relative(dirname(target), canonical) && isDirectory(target)
-}
-
 function sameContent(left: string, right: string): boolean {
 	const leftFiles = filesUnder(left)
 	const rightFiles = filesUnder(right)
@@ -104,8 +100,10 @@ function inspect(target: string, path: string, canonical: string, git: GitBridge
 		// regular file holding the target path, and the harness silently loads nothing.
 		case 'file':
 			return { kind: 'file', status: 'degraded', problem: 'degraded' }
+		// The very test `init` uses to decide a projection is already correct, so a bridge `init` would
+		// leave alone never reports as one `doctor` wants rebuilt.
 		case 'symlink':
-			return resolvesToCanonical(target, canonical)
+			return linksTo(target, canonical)
 				? { kind: 'symlink', status: 'ok' }
 				: { kind: 'symlink', status: 'stale', problem: 'stale' }
 		default: {
