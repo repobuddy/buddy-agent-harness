@@ -1,5 +1,23 @@
 # Changes — Agentic Configuration Standards
 
+## 2026-08-18 — The registry models user scope as well as project scope
+
+**What changed**: No new vendor research. `Harness` in `src/harness-registry/harness-registry.ts` was re-shaped to hold one record per scope (`project`, optional `user`), so the evidence already on file can be recorded where it applies instead of being collapsed to the project-scope answer and explained in prose.
+
+**Why**: The existing evidence disagrees across scopes and the registry could hold only one answer. E-GEM-01 gives Gemini CLI `.gemini/skills/` at project scope and a `~/.agents/skills/` alias at user scope, so "does it read the canonical directory" is yes at one scope and no at the other. `harness-differences.md` recorded that as the string "User scope only" in a column whose source could not express it.
+
+**Material conclusions**:
+
+- **Two scopes is the shape the convention has.** E-AGT-01's four-cell table is scope × location, so a single path pair per harness cannot be truthful in general — Gemini is the case that already exists, not a special case.
+- **Detection is per scope.** "This harness is configured in this repository" and "this harness is configured for this user" are different questions with different markers: Copilot CLI is `.github/skills` in a repository and `~/.copilot` for the user.
+- **Absent user scope means unsourced, not none.** E-WS-02 states Devin documents no user-scope path, so `devin-desktop` carries no `user` record rather than a guessed one.
+- **Only project scope decides a projection.** `init` and `doctor` still act inside the repository; the user record is describable and diagnosable, not writable.
+- `harness-differences.md` now asks the skills question once per scope, so the Gemini row is a pair of cells rather than a prose exception.
+
+**Triggering evidence**: E-AGT-01, E-GEM-01, E-CC-01, E-COPILOT-01, E-CUR-01, E-CODEX-01, E-WS-02, E-AG-01, E-VSC-01.
+
+**Open**: issue #44 cites an `agent-install` implementation study as E-AI-02 in `.research/agent-install-implementation/`. That topic directory does not exist in this repository, so the two-field prior art it describes is uncited here. Record it, or drop the reference from the issue.
+
 ## 2026-08-18 — JSON settings files disagree about comments
 
 **What changed**: Established that `.gemini/settings.json` legally carries comments and `.claude/settings.json` legally cannot.

@@ -1,6 +1,6 @@
 import { lstatSync, readFileSync, readlinkSync, statSync } from 'node:fs'
 import { dirname, join, relative } from 'node:path'
-import { type Harness, type HarnessName, selectHarnesses } from '../harness-registry/harness-registry.ts'
+import { type HarnessName, selectHarnesses } from '../harness-registry/harness-registry.ts'
 import { filesUnder } from './directory-files.ts'
 import { type BridgeProblem, repairFor } from './doctor-guidance.ts'
 import { type DivergenceDirection, GitBridgeState } from './git-bridge-state.ts'
@@ -119,9 +119,9 @@ function inspect(target: string, path: string, canonical: string, git: GitBridge
 export function diagnoseBridges({ root, harnesses: preferred = [], cli }: DiagnoseOptions): DiagnoseResult {
 	const canonical = join(root, '.agents', 'skills')
 	const git = new GitBridgeState(root)
-	const bridged = selectHarnesses(root, preferred).filter((harness): harness is Harness & { skillsDirectory: string } =>
-		Boolean(harness.skillsDirectory),
-	)
+	const bridged = selectHarnesses(root, preferred)
+		.map((harness) => ({ name: harness.name, skillsDirectory: harness.project.skillsDirectory }))
+		.filter((harness): harness is { name: HarnessName; skillsDirectory: string } => Boolean(harness.skillsDirectory))
 
 	const bridges: BridgeReport[] = []
 	const divergence: DivergenceReport[] = []

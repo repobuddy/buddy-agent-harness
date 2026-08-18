@@ -5,20 +5,24 @@ description: Which agent harnesses read canonical configuration directly, and wh
 
 Support is not a binary label. A harness can read a canonical format natively, need a harness-specific projection, or expose settings that should stay harness-specific. Two questions matter, and they have different answers per harness: does it read `.agents/skills/`, and does it read `AGENTS.md`?
 
+The first question needs a scope before it has an answer. A harness reads project configuration from the repository and user configuration from the home directory, and the two are decided separately: Gemini CLI reads `.agents/skills/` at user scope and only `.gemini/skills/` inside a repository. So the table below asks about skills twice.
+
 ## The two-question table
 
-| Harness | Reads `.agents/skills/` | Reads `AGENTS.md` | Needs |
-| --- | --- | --- | --- |
-| [Codex](https://learn.chatgpt.com/docs/build-skills.md) | Yes (primary path, walks up to the repository root) | Yes | Nothing |
-| [GitHub Copilot](https://docs.github.com/en/copilot/concepts/agents/about-agent-skills) | Yes (also `.github/skills/`, `.claude/skills/`) | Yes | Nothing |
-| [Devin Desktop](https://docs.devin.ai/product-guides/skills) | Yes (first of nine scanned paths, and recommended) | Not established | Nothing |
-| [Antigravity](https://antigravity.google/docs/skills) | Yes (`<workspace-root>/.agents/skills/`) | Not established | Nothing |
-| [VS Code](https://code.visualstudio.com/docs/agent-customization/agent-skills) | Yes (same path set as Copilot CLI) | Yes | Nothing |
-| [Cursor](/agent-configuration/harnesses/cursor/) | Yes (also `.cursor/skills/`) | Agent mode only | [Attention to the mode split](/agent-configuration/harnesses/cursor/) |
-| [Claude Code](/agent-configuration/harnesses/claude-code/) | **No** | **No** | [Skills projection + `CLAUDE.md`](/agent-configuration/harnesses/claude-code/) |
-| [Gemini CLI](/agent-configuration/harnesses/gemini-cli/) | User scope only | Only once configured | [Skills projection + settings edit](/agent-configuration/harnesses/gemini-cli/) |
+| Harness | Reads `.agents/skills/` in a repository | Reads `~/.agents/skills/` | Reads `AGENTS.md` | Needs |
+| --- | --- | --- | --- | --- |
+| [Codex](https://learn.chatgpt.com/docs/build-skills.md) | Yes (primary path, walks up to the repository root) | Yes | Yes | Nothing |
+| [GitHub Copilot](https://docs.github.com/en/copilot/concepts/agents/about-agent-skills) | Yes (also `.github/skills/`, `.claude/skills/`) | Yes (also `~/.copilot/skills/`) | Yes | Nothing |
+| [Devin Desktop](https://docs.devin.ai/product-guides/skills) | Yes (first of nine scanned paths, and recommended) | Not established | Not established | Nothing |
+| [Antigravity](https://antigravity.google/docs/skills) | Yes (`<workspace-root>/.agents/skills/`) | **No** (`~/.gemini/config/skills/`) | Not established | Nothing |
+| [VS Code](https://code.visualstudio.com/docs/agent-customization/agent-skills) | Yes (same path set as Copilot CLI) | Yes (same path set as Copilot CLI) | Yes | Nothing |
+| [Cursor](/agent-configuration/harnesses/cursor/) | Yes (also `.cursor/skills/`) | Yes (also `~/.cursor/skills/`) | Agent mode only | [Attention to the mode split](/agent-configuration/harnesses/cursor/) |
+| [Claude Code](/agent-configuration/harnesses/claude-code/) | **No** | **No** (`~/.claude/skills/`) | **No** | [Skills projection + `CLAUDE.md`](/agent-configuration/harnesses/claude-code/) |
+| [Gemini CLI](/agent-configuration/harnesses/gemini-cli/) | **No** (`.gemini/skills/` only) | Yes (alias for `~/.gemini/skills/`) | Only once configured | [Skills projection + settings edit](/agent-configuration/harnesses/gemini-cli/) |
 
 The five harnesses at the top need nothing written for them at all: the canonical directory *is* their directory. The three at the bottom have pages of their own because each has a gap that costs you instructions if you miss it.
+
+Only the repository column decides whether a projection gets written. The user column is here because the same skills can be installed there and the failure mode is identical, and because a harness answering differently in the two columns — Gemini CLI does — is otherwise invisible. Nothing is written outside the repository.
 
 Devin Desktop was named Windsurf until the rebrand on 2026-06-02. `--harness windsurf` is still accepted as a deprecated alias, and still writes the legacy `.windsurf/skills` projection because Devin continues to scan that path; [What a projection is](/reference/configuration-layout/#what-a-projection-is) covers how it is reported.
 
@@ -66,7 +70,7 @@ Confidence for both rows is recorded in [Sources & Confidence](/sources/).
 
 Gemini CLI and Antigravity are both Google's, and it is tempting to treat them as one target. They are not.
 
-Antigravity reads `<workspace-root>/.agents/skills/` and needs nothing written for it. Gemini CLI reads `.gemini/skills/` at project scope and needs a projection, because `.agents/skills` is a user-scope alias there only. Enabling one says nothing about the other.
+Antigravity reads `<workspace-root>/.agents/skills/` and needs nothing written for it. Gemini CLI reads `.gemini/skills/` at project scope and needs a projection, because `.agents/skills` is a user-scope alias there only. They also disagree about the user column: Antigravity's global skills live under `~/.gemini/config/`, which belongs to a different product. Enabling one says nothing about the other.
 
 ## Native harnesses without a registry entry
 

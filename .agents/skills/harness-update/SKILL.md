@@ -35,11 +35,12 @@ For each harness in question, answer both axes separately. They are independent,
 | Axis | Question | Consequence |
 | --- | --- | --- |
 | Skills | Does it read `.agents/skills/` at **project** scope? | native, or needs a projection |
+| Skills | Does it read `~/.agents/skills/` at **user** scope? | recorded in the registry's `user` entry; never written |
 | Instructions | Does it read `AGENTS.md`? | nothing, or needs a bridge |
 
 Watch for the traps that have already bitten this repository:
 
-- **User scope is not project scope.** Gemini CLI reads `.agents/skills` at user scope while reading `.gemini/skills` at project scope. Only project scope decides a projection.
+- **User scope is not project scope.** Gemini CLI reads `.agents/skills` at user scope while reading `.gemini/skills` at project scope. The registry records both; only project scope decides a projection. Leave `user` off an entry when no vendor path is documented — absent means unsourced, not none.
 - **A vendor may scan many paths.** Devin scans nine. Reading the canonical path among them still makes it native.
 - **Modes differ.** Cursor reads `AGENTS.md` in Agent mode only.
 - **Products under one brand differ.** Gemini CLI and Antigravity are both Google's and sit on opposite sides of the projection line.
@@ -61,7 +62,7 @@ A harness fact has many plausible homes, so a partial update is the normal failu
 
 | Surface | What lives there |
 | --- | --- |
-| `packages/buddy-agent-harness/src/harness-registry/harness-registry.ts` | `harnessRegistry` — names, detection directories, projection targets |
+| `packages/buddy-agent-harness/src/harness-registry/harness-registry.ts` | `harnessRegistry` — names, and per scope (`project`, `user`) the detection directory and projection target |
 | `packages/buddy-agent-harness/skills/init/references/harnesses/<harness>.md` | agent instructions for that harness — **instructions only, no rationale** |
 | `packages/buddy-agent-harness/skills/init/SKILL.md` | the routing table |
 | `apps/web/.../agent-configuration/harness-differences.md` | the support matrix, evidence confidence |
