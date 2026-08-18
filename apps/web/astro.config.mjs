@@ -92,6 +92,7 @@ export default defineConfig({
 						{ label: 'init', slug: 'skills/init' },
 						{ label: 'doctor', slug: 'skills/doctor' },
 						{ label: 'enhance', slug: 'skills/enhance' },
+						{ label: 'repair', slug: 'skills/repair' },
 					],
 				},
 				{

@@ -43,6 +43,12 @@ A committed symlink such as `.claude/skills` → `../.agents/skills` breaks on a
 
 The repair there is `init --copy --force` rather than recreating the link. Creating a link is the operation that already failed on that machine.
 
+## Configuration findings
+
+Beyond the bridges, `doctor` reports configuration that is present and **wrong**: a superseded harness name still projected, a `.gitignore` rule swallowing a bridge, an `AGENTS.local.md` no harness reads, and a skill whose frontmatter makes every harness skip it. Each resolves fine and is still wrong.
+
+Those four go to the [`repair` skill](/skills/repair/), which offers each correction with its before and after and writes only what you approve. Everything else `doctor` finds goes to [`init`](/skills/init/).
+
 ## What it will not do
 
 There is no `--fix`, and the skill does not invent one. Three rules hold whatever you ask for mid-run:

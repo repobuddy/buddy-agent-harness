@@ -51,6 +51,17 @@ export class GitBridgeState {
 	}
 
 	/**
+	 * Whether a `.gitignore` rule matches this path. Asked of git rather than matched against the
+	 * file, so a rule on a parent directory — the common way a bridge gets ignored — is caught.
+	 * Outside a repository nothing is ignored, which is the same "cannot tell" degradation the rest
+	 * of this class uses.
+	 */
+	isIgnored(path: string): boolean {
+		if (this.prefix === undefined) return false
+		return git(this.root, ['check-ignore', '-q', '--', path]) !== undefined
+	}
+
+	/**
 	 * Names the side that moved by finding the newest commit whose two trees agreed, then asking which
 	 * of the working directories still matches it.
 	 */

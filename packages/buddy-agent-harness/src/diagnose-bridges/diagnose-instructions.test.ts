@@ -77,6 +77,7 @@ describe('the import bridge', () => {
 		expect(findingsOf(root)).toEqual([
 			{
 				path: 'CLAUDE.md',
+				problem: 'instructions-missing',
 				detail: 'no instruction bridge at this path — the harness reads none of AGENTS.md',
 				repair: '/buddy-agent-harness:init',
 			},
@@ -90,6 +91,7 @@ describe('the import bridge', () => {
 
 		expect(instructionsOf(root)[0]).toMatchObject({ kind: 'file', status: 'unbridged' })
 		expect(findingsOf(root)[0]).toMatchObject({
+			problem: 'instructions-unbridged',
 			detail: 'the file is present but names AGENTS.md nowhere — the harness reads none of it',
 			repair: '/buddy-agent-harness:init',
 		})
@@ -130,6 +132,7 @@ describe('the import bridge', () => {
 		expect(findingsOf(root)).toEqual([
 			{
 				path: 'AGENTS.md',
+				problem: 'no-instructions',
 				detail: 'no AGENTS.md at the repository root, so every instruction bridge points at nothing',
 				repair: '/buddy-agent-harness:init',
 			},
@@ -197,6 +200,7 @@ describe('the settings-entry bridge', () => {
 		write(root, '.gemini/settings.json', '{ "context": ')
 		expect(instructionsOf(root, ['gemini-cli'])[1]).toMatchObject({ kind: 'file', status: 'unreadable' })
 		expect(findingsOf(root, ['gemini-cli'])[0]).toMatchObject({
+			problem: 'instructions-unreadable',
 			detail: 'the settings file does not parse, so the harness reads none of it',
 		})
 	})

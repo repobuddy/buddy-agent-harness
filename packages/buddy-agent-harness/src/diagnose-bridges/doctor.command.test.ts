@@ -59,7 +59,14 @@ describe('doctor command', () => {
 			bridges: [{ harness: 'claude-code', path: '.claude/skills', kind: 'file', status: 'degraded' }],
 			instructions: [],
 			divergence: [],
-			findings: [{ path: '.claude/skills', detail: 'found a regular file', repair: 'bah init --copy --force' }],
+			findings: [
+				{
+					path: '.claude/skills',
+					problem: 'missing',
+					detail: 'found a regular file',
+					repair: 'bah init --copy --force',
+				},
+			],
 		})
 		run({ format: 'json' })
 		expect(process.exitCode).toBeUndefined()
@@ -92,7 +99,7 @@ describe('buildReport', () => {
 			bin: '~/bin/bah',
 			bridges: healthy.bridges,
 			instructions: [],
-			findings: '0 problems found — the 1 bridge resolves',
+			findings: '0 problems found — the 1 bridge resolves and the configuration around them is current',
 		})
 	})
 
@@ -104,11 +111,11 @@ describe('buildReport', () => {
 		]
 
 		expect(buildReport('~/bin/bah', { ...healthy, bridges })).toMatchObject({
-			findings: '0 problems found — all 3 bridges resolve',
+			findings: '0 problems found — all 3 bridges resolve and the configuration around them is current',
 		})
 	})
 
-	it('moves each repair into help and keeps findings to the diagnosis', () => {
+	it('moves each repair into help and keeps findings to the diagnosis and its name', () => {
 		const report = buildReport('~/bin/bah', {
 			bridges: [
 				{ harness: 'claude-code', path: '.claude/skills', kind: 'none', status: 'missing' },
@@ -117,14 +124,15 @@ describe('buildReport', () => {
 			instructions: [],
 			divergence: [],
 			findings: [
-				{ path: '.claude/skills', detail: 'no bridge at this path', repair: 'bah init' },
-				{ path: '.windsurf/skills', detail: 'no bridge at this path', repair: 'bah init' },
+				{ path: '.claude/skills', problem: 'missing', detail: 'no bridge at this path', repair: 'bah init' },
+				{ path: '.windsurf/skills', problem: 'missing', detail: 'no bridge at this path', repair: 'bah init' },
 			],
 		})
 
+		// `problem` survives into the row so a caller routes on the name rather than on `detail` prose.
 		expect(report.findings).toEqual([
-			{ path: '.claude/skills', detail: 'no bridge at this path' },
-			{ path: '.windsurf/skills', detail: 'no bridge at this path' },
+			{ path: '.claude/skills', problem: 'missing', detail: 'no bridge at this path' },
+			{ path: '.windsurf/skills', problem: 'missing', detail: 'no bridge at this path' },
 		])
 		expect(report.help).toEqual(['Run `bah init`'])
 		expect(report).not.toHaveProperty('divergence')
@@ -135,7 +143,9 @@ describe('buildReport', () => {
 			bridges: [{ harness: 'claude-code', path: '.claude/skills', kind: 'copy', status: 'diverged' }],
 			instructions: [],
 			divergence: [{ path: '.claude/skills', direction: 'bridge' }],
-			findings: [{ path: '.claude/skills', detail: 'only the bridge changed', repair: 'reconcile by hand' }],
+			findings: [
+				{ path: '.claude/skills', problem: 'missing', detail: 'only the bridge changed', repair: 'reconcile by hand' },
+			],
 		})
 
 		expect(report.divergence).toEqual([{ path: '.claude/skills', direction: 'bridge' }])

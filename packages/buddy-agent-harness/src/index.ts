@@ -15,7 +15,14 @@ export type {
 } from './diagnose-bridges/diagnose-instructions.ts'
 export { diagnoseInstructions } from './diagnose-bridges/diagnose-instructions.ts'
 export { doctorCommand } from './diagnose-bridges/doctor.command.ts'
-export type { BridgeProblem, DoctorProblem, InstructionProblem, Repair } from './diagnose-bridges/doctor-guidance.ts'
+export type {
+	BridgeProblem,
+	ConfigurationFault,
+	ConfigurationProblem,
+	DoctorProblem,
+	InstructionProblem,
+	Repair,
+} from './diagnose-bridges/doctor-guidance.ts'
 export {
 	bridgeRepairs,
 	doctorRepairs,

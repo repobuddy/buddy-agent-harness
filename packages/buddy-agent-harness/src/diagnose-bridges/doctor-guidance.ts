@@ -21,14 +21,24 @@ export type BridgeProblem =
  * repair: a skills bridge is rebuilt with `init` flags, and an instruction bridge is a file whose
  * content is the user's, so every repair here goes back to the `init` skill.
  */
+/**
+ * Configuration that is present and **wrong**, as against a bridge that does not resolve. These are
+ * the faults the `repair` skill owns: none is expressible as an `init` flag, because `init`
+ * consolidates and creates but never corrects a file the user already wrote.
+ */
+export type ConfigurationFault = 'deprecated-harness' | 'ignored-bridge' | 'unread-local-override' | 'unloadable-skill'
+
 export type InstructionProblem =
 	| 'no-instructions'
 	| 'instructions-missing'
 	| 'instructions-unbridged'
 	| 'instructions-unreadable'
 
-/** Everything `doctor` can report against, across both sections. */
-export type DoctorProblem = BridgeProblem | InstructionProblem
+/** Everything `doctor` can report against, across all three sections. */
+export type DoctorProblem = BridgeProblem | InstructionProblem | ConfigurationFault
+
+/** Alias kept for callers that name the whole set rather than one section. */
+export type ConfigurationProblem = DoctorProblem
 
 export type Repair = {
 	problem: DoctorProblem
@@ -93,6 +103,13 @@ process.argv.splice(2, 0, '${subcommand}')
 await import(join(packageRoot, 'bin', '${commandInvocation}.mjs'))
 `
 }
+
+/**
+ * How the skill hands a repair to `repair`. Bridge and instruction repairs go to `init`, which
+ * writes both kinds of bridge in the first place; configuration that is present and wrong goes
+ * here, because no `init` flag corrects a file the user already wrote.
+ */
+export const repairSkillInvocation = '/buddy-agent-harness:repair'
 
 /** How the skill hands a repair back to `init`. */
 export const initSkillInvocation = '/buddy-agent-harness:init'
@@ -193,8 +210,40 @@ export const instructionRepairs: readonly Repair[] = [
 	},
 ]
 
-/** Both sections, in the order `doctor` reports them. */
-export const doctorRepairs: readonly Repair[] = [...bridgeRepairs, ...instructionRepairs]
+/**
+ * Configuration that is present and wrong. Detected here like everything else, but repaired by the
+ * `repair` skill rather than by `init` — which is why it is a section of its own.
+ */
+const configurationRepairs: readonly Repair[] = [
+	{
+		problem: 'deprecated-harness',
+		detail:
+			'a projection under a harness name that has been superseded — the replacement reads .agents/skills natively and needs no projection at all',
+		repair: (path) => `remove ${path} and enable the harness that replaced it`,
+		skillRepair: () => `run \`${repairSkillInvocation}\``,
+	},
+	{
+		problem: 'ignored-bridge',
+		detail: 'a .gitignore rule matches this bridge — an untracked bridge swallows a real edit silently',
+		repair: (path) => `narrow or remove the .gitignore rule matching ${path}`,
+		skillRepair: () => `run \`${repairSkillInvocation}\``,
+	},
+	{
+		problem: 'unread-local-override',
+		detail: 'no harness reads this filename, so everything in it is invisible to every agent',
+		repair: (path) => `move ${path} to CLAUDE.local.md, or hand it to init to consolidate`,
+		skillRepair: () => `run \`${repairSkillInvocation}\``,
+	},
+	{
+		problem: 'unloadable-skill',
+		detail: 'frontmatter that does not parse, or no description — either one makes a harness skip the skill outright',
+		repair: (path) => `quote the description in ${path}, or add one`,
+		skillRepair: () => `run \`${repairSkillInvocation}\``,
+	},
+]
+
+/** All three sections, in the order `doctor` reports them. */
+export const doctorRepairs: readonly Repair[] = [...bridgeRepairs, ...instructionRepairs, ...configurationRepairs]
 
 const repairsByProblem = new Map(doctorRepairs.map((entry) => [entry.problem, entry]))
 
@@ -273,6 +322,14 @@ Substitute the reported bridge path for \`<path>\`.
 | Finding | What it means | Repair |
 | --- | --- | --- |
 ${rows(instructionRepairs)}
+
+## Configuration findings and their repairs
+
+The bridges resolve, and the configuration around them is still wrong: a superseded harness name, a git-ignored bridge, a local-override file nothing reads, a skill whose frontmatter makes every harness skip it. None of these is an \`init\` flag — \`init\` consolidates and creates, and will not correct a file the user already wrote. They go to the \`repair\` skill, which offers each correction with its before and after and writes only what is approved.
+
+| Finding | What it means | Repair |
+| --- | --- | --- |
+${rows(configurationRepairs)}
 
 \`unbridged\` is the one to read carefully. The file is there and looks fine, and it names \`AGENTS.md\` nowhere — a \`CLAUDE.md\` someone overwrote with real content, or a \`.gemini/settings.json\` another tool rewrote without \`AGENTS.md\` in \`context.fileName\`. Never fix it by replacing the file: the content that displaced the bridge may be the only copy of something.
 
