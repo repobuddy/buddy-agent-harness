@@ -72,7 +72,7 @@ The skill exposes **no options**. Every write is approval-gated and the reposito
 **Extensions**
 
 - **`doctor` reports nothing wrong.** Say so and stop.
-- **The finding is a bridge finding**, of either kind. Out of remit. Report it and hand it to `init`.
+- **The finding is a bridge finding**, of either kind. Out of remit. Report it and hand it to the owner its repair names — usually `init`, and for a few of them nobody, in which case say it is work for a person.
 - **The correction would invent material content.** A skill with no `description` cannot be given one without asserting what it does. Report it and ask.
 - **More than one valid correction.** Present the options from `references/classes.md`; the choice is the owner's.
 - **The correction is declined.** Write nothing for that finding; keep going with the rest.

@@ -83,7 +83,7 @@ So **an owner is not something a consumer can always read off the report.** In `
 - **A new problem is added to a detecting node.** It joins the table with its own repair, and reaches both consumers without either being edited. That is the property the split exists for.
 - **A finding names no skill.** Both consumers report it and route it nowhere. Inventing an owner for it is the failure mode the explicit naming exists to prevent: for `diverged-both`, the invented owner would be `init`, and rebuilding is precisely what destroys the work.
 - **The detecting surface reports nothing.** The flow ends there. No repairing surface looks for anything itself.
-- **A finding's repair is a matter of judgment rather than an invocation.** It is still stated in full, and it still names no owner. Today the report gives it the same shape as a runnable repair, so a consumer cannot tell the two apart without reading the prose; that is a known defect of the report shape rather than of this seam, and it is `../../cli/diagnosis-report/`'s to carry once fixed.
+- **A finding's repair is a matter of judgment rather than an invocation.** It is still stated in full, and the report says so in the data: the repair's runnable half is empty, which a consumer checks without reading a word of the prose. How that is carried is `../../cli/diagnosis-report/`'s.
 - **A repair is applied and the finding survives the re-run.** The re-run is the proof, and its outcome is reported rather than assumed; the loop belongs to `../../skills/repair/`.
 
 ## Control Flow

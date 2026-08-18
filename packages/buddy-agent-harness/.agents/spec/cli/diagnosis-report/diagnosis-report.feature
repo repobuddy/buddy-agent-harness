@@ -45,7 +45,13 @@ Feature: Report every doctor finding through one output shape
     When the command builds its report
     Then each `findings` row holds a path, a problem name, and a detail, and no repair
     And every repair appears in the `help` section instead
-    And two findings sharing one repair state it once, while both keep their own row
+
+  @behavior
+  Scenario: gives two findings of one problem at two paths their own help entry each
+    Given every problem that can arise at more than one path in a single run
+    When each repair is rendered at two different paths
+    Then the two renderings differ, so the deduplication does not collapse them
+    And the problems reported once per repository rather than per path are the only ones that do not
 
   @behavior
   Scenario: states a repair as a runnable command and a prose instruction

@@ -81,14 +81,16 @@ That is the whole reason the field is split, and it buys a property nothing else
 
 Both keys are **always emitted**, with `""` rather than an absent key. That is an encoding decision, not a modelling one: with an optional key the TOON encoder degrades the whole array from its tabular form to a nested list, which is worse for exactly the consumer the default format exists for.
 
-`help` **dedupes on the pair**: several findings often share one repair, and repeating it reads as more work than there is. Two findings whose repairs are identical collapse into one entry **even when their paths differ**, which happens whenever neither column names a path.
+`help` **dedupes on the pair**. It is a guard rather than a behavior a caller will see: every repair that can arise at more than one path names that path in its `instruction`, so two findings from one run do not produce the same pair. The two that name no path — `no-canonical` and `no-instructions` — are each reported at most once per run, about the repository rather than about a path, so neither can collide with itself either.
+
+The guard is worth keeping because it is the table that makes it unreachable, not the design. A repair template that stopped naming its path would silently start collapsing two distinct faults into one line of advice, and the dedupe is what decides what happens then.
 
 **Extensions**
 
 - **Nothing is wrong.** `findings` holds a sentence stating the count and what it covers, counting the skills bridges and the instruction bridges together — a reader learns nothing is wrong from one number rather than by adding two. The count is worded for one bridge as well as for many.
 - **Findings exist.** The exit code stays **0**. The diagnosis succeeded; a non-zero code reads to an agent as "this command is broken, try something else", which sends it looking for another way to ask instead of at the report it was just handed.
 - **The diagnosis fails, the format is invalid, or a harness is not supported.** The message goes to **stderr** and the exit code is **1**. That is the only thing that distinguishes a broken tool from a broken repository.
-- **Two findings share a repair.** One `help` entry, and the two findings still appear as two rows in `findings`. Nothing is lost: a row is per fault, and `help` is per distinct piece of work.
+- **Two findings report the same problem at two paths.** Two `help` entries, because each repair names its own path. The deduplication is not reached.
 
 ## Control Flow
 
@@ -119,6 +121,7 @@ flowchart TD
 | E→F | nothing wrong | `states the healthy answer outright rather than leaving findings empty` |
 | E→F | one bridge and no instruction bridges | `counts the instruction bridges alongside the skills bridges` |
 | E→G, G→H | findings from more than one family | `moves each repair into help and keeps findings to the diagnosis and its name` |
+| G→H | one problem arising at two paths | `gives two findings of one problem at two paths their own help entry each` |
 | G→H | a repair a single invocation completes | `states a repair as a runnable command and a prose instruction` |
 | G→H | a repair that is judgment | `leaves the command empty for a repair that is judgment` |
 | G→H | every problem the command can report | `carries an instruction for every repair, and a command only where one completes it` |

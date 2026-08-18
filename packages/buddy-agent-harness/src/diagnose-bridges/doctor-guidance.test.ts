@@ -268,3 +268,22 @@ describe('the repair as a command and an instruction', () => {
 		expect(runnable.filter((problem) => needsAPersonFirst.includes(problem))).toEqual([])
 	})
 })
+
+/** Reported once per repository rather than once per path, so neither can recur within a run. */
+const reportedOncePerRepository = ['no-canonical', 'no-instructions']
+
+// The `help` deduplication is a guard, not a behavior a caller sees: every repair that can arise
+// at two paths names its path, so two findings never produce the same pair. Asserted against the
+// real table rather than a fixture, because a hand-built finding can hold any repair at all and so
+// cannot notice a template that stopped naming its path.
+it('gives two findings of one problem at two paths their own help entry each', () => {
+	const collides = doctorRepairs
+		.filter((entry) => {
+			const left = entry.repair('.claude/skills', commandInvocation)
+			const right = entry.repair('.windsurf/skills', commandInvocation)
+			return left.command === right.command && left.instruction === right.instruction
+		})
+		.map((entry) => entry.problem)
+
+	expect(collides).toEqual(reportedOncePerRepository)
+})
