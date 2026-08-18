@@ -117,3 +117,48 @@
 **Corrections applied during research**:
 
 - An earlier reading concluded that symlinking the `.claude/skills` directory itself was unverified and that per-skill symlinks were the only safe path. The maintainer confirmed by empirical test that the directory-level symlink works. Recorded in E-CC-02 as supported-in-practice, unsupported-in-contract.
+
+## 2026-08-18 — Settings and manifest files disagree about comments
+
+**What changed**: E-JSON-01 and E-JSON-02 added.
+
+**Why**: The user asked whether `settings.json`, `marketplace.json`, and `plugin.json` can carry
+comments, having seen that `agent-install` goes to the trouble of preserving them when editing other
+tools' JSON (`.research/agent-install-implementation/`, E-AI-03).
+
+**Material conclusions**:
+
+- **Claude Code is strict everywhere.** Comments break `.claude/settings.json`,
+  `.claude-plugin/plugin.json`, and `.claude-plugin/marketplace.json`, as does a trailing comma. The
+  failure is total for the file, not per-key. This is undocumented — the vendor settings page says
+  nothing either way — so it was established by testing rather than cited.
+- **Gemini CLI is not strict.** It strips comments before parsing `settings.json`.
+- **Consequence for `init`**, which edits `.gemini/settings.json`: that file may carry user comments,
+  and a parse-and-stringify rewrite would delete them without a word. An edit there has to preserve
+  what it does not understand.
+- **Consequence for anything writing Claude Code files**: never add a comment to explain a generated
+  block. There is no comment syntax available; explanation has to live outside the file.
+
+**Triggering evidence**: E-JSON-01, E-JSON-02.
+
+## 2026-08-18 — What MCP actually standardizes
+
+**What changed**: E-MCP-01 and E-MCP-02 added.
+
+**Why**: This project documented in six places that MCP servers have "no safe cross-harness mapping".
+`agent-install` implements that mapping across fourteen hosts (`.research/agent-install-implementation/`,
+E-AI-02), so the claim needed replacing with what is true.
+
+**Material conclusions**:
+
+- **MCP standardizes the protocol and a publishing format. It standardizes no client configuration
+  file.** Each host picks its own path, top-level key, and serialization.
+- **`server.json` does not close that gap and does not try to.** It describes a server for publishing
+  and discovery, not for storage by a client.
+- **So the correct claim is that the mapping is unspecified and lossy, not that it does not exist.**
+  Lossiness is per host and per transport: some hosts accept stdio servers only, others remote only.
+  A converter has to be able to refuse.
+- This separates MCP from subagents, hooks, commands, and output styles, which have no published
+  specification at all. The old wording grouped all five under one reason that only ever fit four.
+
+**Triggering evidence**: E-MCP-01, E-MCP-02, and E-AI-02.
