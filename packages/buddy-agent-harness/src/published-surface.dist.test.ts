@@ -1,6 +1,7 @@
 import {
 	activate,
 	diagnoseBridges,
+	diagnoseMcp,
 	doctorCommand,
 	doctorRepairs,
 	harnessCommand,
@@ -18,6 +19,7 @@ it('exports the harness plugin surface from its built package', () => {
 	expectTypeOf(initializeHarnesses).toBeFunction()
 	expectTypeOf(initCommand).toBeObject()
 	expectTypeOf(diagnoseBridges).toBeFunction()
+	expectTypeOf(diagnoseMcp).toBeFunction()
 	expectTypeOf(doctorCommand).toBeObject()
 	expectTypeOf(doctorRepairs).toMatchTypeOf<readonly unknown[]>()
 	expectTypeOf(renderDoctorSkill).toBeFunction()
