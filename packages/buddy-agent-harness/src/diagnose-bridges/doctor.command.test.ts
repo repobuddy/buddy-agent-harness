@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { renderText } from '../command-output/command-output.ts'
 import { type DiagnoseResult, diagnoseBridges } from './diagnose-bridges.ts'
 import { buildReport, doctorCommand } from './doctor.command.ts'
 
@@ -64,7 +65,7 @@ describe('doctor command', () => {
 					path: '.claude/skills',
 					problem: 'missing',
 					detail: 'found a regular file',
-					repair: 'bah init --copy --force',
+					repair: { command: 'bah init --copy --force', instruction: 'run `bah init --copy --force`' },
 				},
 			],
 		})
@@ -124,8 +125,18 @@ describe('buildReport', () => {
 			instructions: [],
 			divergence: [],
 			findings: [
-				{ path: '.claude/skills', problem: 'missing', detail: 'no bridge at this path', repair: 'bah init' },
-				{ path: '.windsurf/skills', problem: 'missing', detail: 'no bridge at this path', repair: 'bah init' },
+				{
+					path: '.claude/skills',
+					problem: 'missing',
+					detail: 'no bridge at this path',
+					repair: { command: 'bah init', instruction: 'run `bah init` to create the bridge' },
+				},
+				{
+					path: '.windsurf/skills',
+					problem: 'missing',
+					detail: 'no bridge at this path',
+					repair: { command: 'bah init', instruction: 'run `bah init` to create the bridge' },
+				},
 			],
 		})
 
@@ -134,8 +145,108 @@ describe('buildReport', () => {
 			{ path: '.claude/skills', problem: 'missing', detail: 'no bridge at this path' },
 			{ path: '.windsurf/skills', problem: 'missing', detail: 'no bridge at this path' },
 		])
-		expect(report.help).toEqual(['Run `bah init`'])
+		expect(report.help).toEqual([{ command: 'bah init', instruction: 'run `bah init` to create the bridge' }])
 		expect(report).not.toHaveProperty('divergence')
+	})
+
+	// The wrapper this replaced read `Run ` + the repair, so a repair that was an instruction to a
+	// person came out as an invitation to paste prose into a shell.
+	it('wraps no repair, and keeps a judgment repair apart from a runnable one', () => {
+		const report = buildReport('~/bin/bah', {
+			bridges: [{ harness: 'claude-code', path: '.claude/skills', kind: 'copy', status: 'diverged' }],
+			instructions: [],
+			divergence: [{ path: '.claude/skills', direction: 'both' }],
+			findings: [
+				{
+					path: '.claude/skills',
+					problem: 'diverged-both',
+					detail: 'both sides changed',
+					repair: { command: '', instruction: 'reconcile .agents/skills with .claude/skills by hand' },
+				},
+				{
+					path: '.cursor/skills',
+					problem: 'missing',
+					detail: 'no bridge at this path',
+					repair: { command: 'bah init', instruction: 'run `bah init` to create the bridge' },
+				},
+			],
+		})
+
+		expect(report.help).toEqual([
+			{ command: '', instruction: 'reconcile .agents/skills with .claude/skills by hand' },
+			{ command: 'bah init', instruction: 'run `bah init` to create the bridge' },
+		])
+		// Nothing prefixes a repair any more, and both keys are emitted even when there is no command,
+		// so TOON renders `help` as one tabular section rather than degrading to a nested list.
+		expect(report.help?.some((entry) => entry.instruction.startsWith('Run '))).toBe(false)
+		expect(report.help?.every((entry) => 'command' in entry && 'instruction' in entry)).toBe(true)
+	})
+
+	// Two findings can only collapse when both templates ignore the path, which is what makes the
+	// pair — rather than either field alone — the right dedupe key.
+	it('dedupes on the whole repair, not on either field', () => {
+		const report = buildReport('~/bin/bah', {
+			bridges: [],
+			instructions: [],
+			divergence: [],
+			findings: [
+				{
+					path: '.agents/skills',
+					problem: 'no-canonical',
+					detail: 'no canonical directory',
+					repair: { command: 'bah init', instruction: 'run `bah init` to create .agents/skills' },
+				},
+				{
+					path: '.claude/skills',
+					problem: 'missing',
+					detail: 'no bridge at this path',
+					repair: { command: 'bah init', instruction: 'run `bah init` to create the bridge' },
+				},
+				{
+					path: '.cursor/skills',
+					problem: 'missing',
+					detail: 'no bridge at this path',
+					repair: { command: 'bah init', instruction: 'run `bah init` to create the bridge' },
+				},
+			],
+		})
+
+		// The two `missing` findings share a repair and collapse; `no-canonical` shares the command and
+		// survives on its instruction alone.
+		expect(report.help).toEqual([
+			{ command: 'bah init', instruction: 'run `bah init` to create .agents/skills' },
+			{ command: 'bah init', instruction: 'run `bah init` to create the bridge' },
+		])
+	})
+
+	// The person's view of the same two-field repair: an aligned table, and a judgment repair simply
+	// leaves the command column blank rather than saying anything untrue in it.
+	it('renders help as a two-column table for a person, blank where there is no command', () => {
+		const text = renderText(
+			buildReport('~/bin/bah', {
+				bridges: [],
+				instructions: [],
+				divergence: [],
+				findings: [
+					{
+						path: '.claude/skills',
+						problem: 'missing',
+						detail: 'no bridge at this path',
+						repair: { command: 'bah init', instruction: 'run `bah init`' },
+					},
+					{
+						path: 'AGENTS.local.md',
+						problem: 'unread-local-override',
+						detail: 'no harness reads this filename',
+						repair: { command: '', instruction: 'move AGENTS.local.md to CLAUDE.local.md' },
+					},
+				],
+			}),
+		)
+
+		expect(text).toContain('  command   instruction')
+		expect(text).toContain('  bah init  run `bah init`')
+		expect(text).toContain('            move AGENTS.local.md to CLAUDE.local.md')
 	})
 
 	it('adds a divergence section only when a bridge has diverged', () => {
@@ -144,7 +255,12 @@ describe('buildReport', () => {
 			instructions: [],
 			divergence: [{ path: '.claude/skills', direction: 'bridge' }],
 			findings: [
-				{ path: '.claude/skills', problem: 'missing', detail: 'only the bridge changed', repair: 'reconcile by hand' },
+				{
+					path: '.claude/skills',
+					problem: 'missing',
+					detail: 'only the bridge changed',
+					repair: { command: '', instruction: 'reconcile by hand' },
+				},
 			],
 		})
 

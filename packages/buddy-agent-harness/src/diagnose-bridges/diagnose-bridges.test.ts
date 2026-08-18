@@ -81,7 +81,10 @@ describe('diagnoseBridges', () => {
 				path: '.claude/skills',
 				problem: 'degraded',
 				detail: 'expected a directory but found a regular file — checkout without core.symlinks',
-				repair: 'bah init --copy --force',
+				repair: {
+					command: 'bah init --copy --force',
+					instruction: 'run `bah init --copy --force` to rebuild .claude/skills as a real directory',
+				},
 			},
 		])
 	})
@@ -94,7 +97,10 @@ describe('diagnoseBridges', () => {
 		expect(result.bridges).toEqual([
 			{ harness: 'claude-code', path: '.claude/skills', kind: 'none', status: 'missing' },
 		])
-		expect(result.findings[0]).toMatchObject({ path: '.claude/skills', repair: 'bah init' })
+		expect(result.findings[0]).toMatchObject({
+			path: '.claude/skills',
+			repair: { command: 'bah init', instruction: 'run `bah init` to create the bridge at .claude/skills' },
+		})
 	})
 
 	it('reports a symlink pointing somewhere other than the canonical directory', () => {
@@ -107,7 +113,12 @@ describe('diagnoseBridges', () => {
 		expect(result.bridges).toEqual([
 			{ harness: 'claude-code', path: '.claude/skills', kind: 'symlink', status: 'stale' },
 		])
-		expect(result.findings[0]).toMatchObject({ repair: 'bah init --force' })
+		expect(result.findings[0]).toMatchObject({
+			repair: {
+				command: 'bah init --force',
+				instruction: 'run `bah init --force` to repoint .claude/skills at .agents/skills',
+			},
+		})
 	})
 
 	// A link a user wrote by hand, or one Windows wrote as a junction, spells its target differently
@@ -142,7 +153,7 @@ describe('diagnoseBridges', () => {
 			path: '.agents/skills',
 			problem: 'no-canonical',
 			detail: 'the canonical skill directory does not exist, so no bridge can resolve',
-			repair: 'bah init',
+			repair: { command: 'bah init', instruction: 'run `bah init` to create .agents/skills and the bridges into it' },
 		})
 	})
 
@@ -209,7 +220,11 @@ describe('diagnoseBridges', () => {
 				problem: 'unpinned-copy',
 				detail:
 					'tracked copy without the skip-worktree bit — the tree is dirty with content that must not be committed',
-				repair: 'git ls-files -z .claude/skills | xargs -0 git update-index --skip-worktree',
+				repair: {
+					command: 'git ls-files -z .claude/skills | xargs -0 git update-index --skip-worktree',
+					instruction:
+						'run `git ls-files -z .claude/skills | xargs -0 git update-index --skip-worktree` to restore the skip-worktree bit',
+				},
 			},
 		])
 
@@ -234,7 +249,10 @@ describe('diagnoseBridges', () => {
 
 			expect(result.divergence).toEqual([{ path: '.claude/skills', direction: 'bridge' }])
 			expect(result.findings[0]).toMatchObject({
-				repair: 'replace .agents/skills with .claude/skills to keep the newer edit and then run bah init --force',
+				repair: {
+					command: '',
+					instruction: 'replace .agents/skills with .claude/skills to keep the newer edit, then run `bah init --force`',
+				},
 			})
 		})
 
@@ -245,7 +263,12 @@ describe('diagnoseBridges', () => {
 			const result = diagnoseBridges({ root, cli })
 
 			expect(result.divergence).toEqual([{ path: '.claude/skills', direction: 'canonical' }])
-			expect(result.findings[0]).toMatchObject({ repair: 'bah init --copy --force' })
+			expect(result.findings[0]).toMatchObject({
+				repair: {
+					command: 'bah init --copy --force',
+					instruction: 'run `bah init --copy --force` to rebuild .claude/skills from the newer .agents/skills',
+				},
+			})
 		})
 
 		it('refuses to guess when both sides moved', () => {
@@ -259,7 +282,12 @@ describe('diagnoseBridges', () => {
 			expect(result.findings[0]).toMatchObject({
 				problem: 'diverged-both',
 				detail: 'both sides changed since they last agreed — rebuilding would discard one of them',
-				repair: 'git diff --no-index .agents/skills .claude/skills and reconcile by hand',
+				// The diff is a diagnostic, not the repair, so it stays in the prose and offers no command.
+				repair: {
+					command: '',
+					instruction:
+						'reconcile .agents/skills with .claude/skills by hand — rebuilding would discard one of them; `git diff --no-index .agents/skills .claude/skills` shows what differs',
+				},
 			})
 		})
 

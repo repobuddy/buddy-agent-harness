@@ -27,7 +27,7 @@ It checks every bridge [`init`](/skills/init/) would create for this repository.
 
 The report has two of them. `bridges` covers the skills projections into `.agents/skills`; `instructions` covers the files that let a harness read `AGENTS.md` — a `CLAUDE.md` holding `@AGENTS.md`, one beside every nested `AGENTS.md`, and the `context.fileName` entry in `.gemini/settings.json`. They are separate sections because their statuses and their repairs have nothing in common; the [CLI reference](/cli/doctor/#instruction-bridges) has the reasoning.
 
-For each one the report gives a `kind` (what is on disk now) and a `status` (whether it works). A `findings` entry explains each problem and a `help` entry names its repair. Run what `help` names, then run `doctor` again.
+For each one the report gives a `kind` (what is on disk now) and a `status` (whether it works). A `findings` entry explains each problem and a `help` row carries its repair in two columns: a `command` that runs verbatim and completes it, and an `instruction` in the imperative. An empty `command` means no single invocation does the job — act on the instruction. Apply the repair, then run `doctor` again.
 
 Every instruction repair is `/buddy-agent-harness:init` rather than a command. Those files carry prose someone wrote, and restoring a bridge without discarding what displaced it is the `init` skill's judgment.
 

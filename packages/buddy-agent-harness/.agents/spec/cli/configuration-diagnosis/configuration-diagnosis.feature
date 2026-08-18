@@ -103,9 +103,33 @@ Feature: Report agent configuration that is present and wrong
 
   @behavior
   Scenario: carries the repair for every finding it reports
+    Given a git repository with a `.windsurf/skills` projection of `.agents/skills`
+    And a `.claude/skills` projection of `.agents/skills`
+    And a `.gitignore` containing the line `.claude/`
+    And an `AGENTS.local.md` carrying two setup notes
+    And a canonical skill whose frontmatter carries a `name` and no `description`
+    When the command diagnoses the configuration
+    Then every fault it reports carries a non-empty detail
+    And every fault it reports carries a repair instruction that is not empty
+
+  @behavior
+  Scenario: offers no runnable command for any of the four faults, because correcting one is judgment
+    Given a git repository with a `.windsurf/skills` projection of `.agents/skills`
+    And a `.claude/skills` projection of `.agents/skills`
+    And a `.gitignore` containing the line `.claude/`
+    And an `AGENTS.local.md` carrying two setup notes
+    And a canonical skill whose frontmatter carries a `name` and no `description`
+    When the command diagnoses the configuration
+    Then it reports a `deprecated-harness`, an `ignored-bridge`, an `unread-local-override`, and an `unloadable-skill` fault
+    And the runnable command on every one of them is empty
+
+  @behavior
+  Scenario: carries each repair as a bare imperative, with nothing wrapping it
     Given a repository holding an `AGENTS.local.md` carrying two setup notes
     When the command diagnoses the configuration
-    Then every fault it reports carries a non-empty detail and a non-empty repair
+    Then the repair instruction begins with an imperative verb
+    And no `Run` wrapper precedes it
+    And it names the skill that owns the correction
 
   @behavior
   Scenario: reports every fault it finds in one pass, across families

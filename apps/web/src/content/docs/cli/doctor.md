@@ -47,12 +47,19 @@ bridges[2]{harness,path,kind,status}:
 instructions[2]{harness,path,kind,status}:
   claude-code,CLAUDE.md,import,ok
   gemini-cli,.gemini/settings.json,none,missing
-findings[3]{path,detail}:
-  .claude/skills,expected a directory but found a regular file — checkout without core.symlinks
-  .windsurf/skills,no bridge at this path — the harness sees zero project skills
-  .gemini/settings.json,no instruction bridge at this path — the harness reads none of AGENTS.md
-help[3]: Run `buddy-agent-harness init --copy --force`,Run `buddy-agent-harness init`,Run `/buddy-agent-harness:init`
+findings[3]{path,problem,detail}:
+  .claude/skills,degraded,expected a directory but found a regular file — checkout without core.symlinks
+  .windsurf/skills,missing,no bridge at this path — the harness sees zero project skills
+  .gemini/settings.json,instructions-missing,no instruction bridge at this path — the harness reads none of AGENTS.md
+help[3]{command,instruction}:
+  buddy-agent-harness init --copy --force,run `buddy-agent-harness init --copy --force` to rebuild .claude/skills as a real directory
+  buddy-agent-harness init,run `buddy-agent-harness init` to create the bridge at .windsurf/skills
+  "","hand .gemini/settings.json to `/buddy-agent-harness:init`, which writes the bridge into it"
 ```
+
+Each `help` row is one repair, in two columns. `command` is a shell invocation that runs exactly as given and **completes** the repair; `instruction` is the same repair in the imperative. `command` is empty when no single invocation does the job — the third row above, where the repair is the [`init` skill](/skills/init/)'s judgment and nothing in a shell does it.
+
+That emptiness is the whole point of the split: a caller can tell an executable repair from an instruction without parsing prose. A runnable invocation quoted *inside* an `instruction` is not a command either — `diverged-both` names `git diff --no-index` because the diff shows you what differs, not because running it reconciles anything.
 
 `kind` is what is on disk now (`symlink`, `copy`, `file`, or `none`), and `status` is whether it works.
 
@@ -96,15 +103,16 @@ instructions:
   gemini-cli   .gemini/settings.json  none    missing
 
 findings:
-  path                   detail
-  .claude/skills         expected a directory but found a regular file — checkout without core.symlinks
-  .windsurf/skills       no bridge at this path — the harness sees zero project skills
-  .gemini/settings.json  no instruction bridge at this path — the harness reads none of AGENTS.md
+  path                   problem               detail
+  .claude/skills         degraded              expected a directory but found a regular file — checkout without core.symlinks
+  .windsurf/skills       missing               no bridge at this path — the harness sees zero project skills
+  .gemini/settings.json  instructions-missing  no instruction bridge at this path — the harness reads none of AGENTS.md
 
 help:
-  - Run `buddy-agent-harness init --copy --force`
-  - Run `buddy-agent-harness init`
-  - Run `/buddy-agent-harness:init`
+  command                                  instruction
+  buddy-agent-harness init --copy --force  run `buddy-agent-harness init --copy --force` to rebuild .claude/skills as a real directory
+  buddy-agent-harness init                 run `buddy-agent-harness init` to create the bridge at .windsurf/skills
+                                           hand .gemini/settings.json to `/buddy-agent-harness:init`, which writes the bridge into it
 ```
 
 `init` accepts the same flag.
@@ -194,7 +202,7 @@ Each finding row carries three fields: `problem` is its name and the only thing 
 
 ## No `--fix`
 
-Every repair is already expressible with existing `init` flags, and each finding names the exact command:
+Every repair is already expressible with existing `init` flags, and each finding names the exact command — or says plainly, with an empty `command`, that no command does it:
 
 | Finding | Repair |
 | --- | --- |
@@ -211,6 +219,6 @@ Every repair is already expressible with existing `init` flags, and each finding
 
 `no-canonical` is the one finding that is not about a bridge: `.agents/skills` itself is absent, so nothing can resolve into it. `no-instructions` is its counterpart for `AGENTS.md`. `unpinned-copy` is the [skip-worktree](#the-skip-worktree-bit) case, and it is reported against a bridge whose status is still `ok`.
 
-The four instruction repairs name a skill rather than a shell command, because no shell command does the job. They are the one place `help` cannot be pasted into a terminal.
+The four instruction repairs name a skill rather than a shell command, because no shell command does the job. They carry an empty `command` for exactly that reason, so a caller never has to work out which rows it can run.
 
 A `--fix` flag would reimplement that logic and drift from it. On the Windows case it would likely reimplement it wrongly: the naive repair is to recreate the link, which is precisely the operation that already failed on that machine. `--copy` is the branch that works there. The three-way divergence case has no safe automatic answer at all.

@@ -57,7 +57,7 @@ describe('diagnoseConfiguration', () => {
 			const finding = diagnose(root).find((entry) => entry.problem === 'deprecated-harness')
 
 			expect(finding).toMatchObject({ path: '.windsurf/skills' })
-			expect(finding?.repair).toContain('.windsurf/skills')
+			expect(finding?.repair.instruction).toContain('.windsurf/skills')
 		})
 
 		it('leaves a superseded harness alone when it has no projection on disk', () => {
@@ -159,11 +159,63 @@ describe('diagnoseConfiguration', () => {
 		})
 	})
 
+	// Universal over the family, so the fixture has to span the family: a fault whose detail or
+	// instruction came out empty would otherwise hide behind the one fault a narrower fixture reports.
 	it('carries the repair for every finding it reports', () => {
+		const root = gitRepository()
+		link(root, '.windsurf/skills')
+		link(root, '.claude/skills')
+		write(root, '.gitignore', '.claude/\n')
+		write(root, 'AGENTS.local.md', '# Personal\n')
+		write(root, '.agents/skills/pdf/SKILL.md', '---\nname: pdf\n---\n')
+
+		const findings = diagnose(root)
+
+		expect(findings.map((finding) => finding.problem).sort()).toEqual([
+			'deprecated-harness',
+			'ignored-bridge',
+			'unloadable-skill',
+			'unread-local-override',
+		])
+		expect(findings.every((finding) => finding.repair.instruction.length > 0 && finding.detail.length > 0)).toBe(true)
+	})
+
+	// Every fault here is present-and-wrong configuration a person wrote, so correcting one is a
+	// judgment call the `repair` skill offers rather than anything a shell can carry out. A caller
+	// that runs each `command` it is handed must therefore run nothing at all for these.
+	//
+	// All four families are present at once on purpose: the claim is universal over the family, so
+	// exercising three of them would leave the fourth free to grow a command nothing would catch.
+	it('offers no runnable command for any of the four faults, because correcting one is judgment', () => {
+		const root = gitRepository()
+		link(root, '.windsurf/skills')
+		link(root, '.claude/skills')
+		write(root, '.gitignore', '.claude/\n')
+		write(root, 'AGENTS.local.md', '# Personal\n')
+		write(root, '.agents/skills/pdf/SKILL.md', '---\nname: pdf\n---\n')
+
+		const findings = diagnose(root)
+
+		expect(findings.map((finding) => finding.problem).sort()).toEqual([
+			'deprecated-harness',
+			'ignored-bridge',
+			'unloadable-skill',
+			'unread-local-override',
+		])
+		expect(findings.map((finding) => finding.repair.command)).toEqual(findings.map(() => ''))
+	})
+
+	// The wrapper this replaced read `Run ` + the repair, which turned every one of these into an
+	// invitation to paste prose into a shell.
+	it('carries each repair as a bare imperative, with nothing wrapping it', () => {
 		const root = repository()
 		write(root, 'AGENTS.local.md', '# Personal\n')
 
-		expect(diagnose(root).every((finding) => finding.repair.length > 0 && finding.detail.length > 0)).toBe(true)
+		const [finding] = diagnose(root)
+
+		expect(finding?.repair.instruction).toBe(
+			'move AGENTS.local.md to CLAUDE.local.md, or consolidate it into AGENTS.md — `/buddy-agent-harness:repair` offers the correction',
+		)
 	})
 
 	it('reports every fault it finds in one pass, across families', () => {

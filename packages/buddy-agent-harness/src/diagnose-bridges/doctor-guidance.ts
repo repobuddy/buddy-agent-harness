@@ -40,15 +40,39 @@ export type DoctorProblem = BridgeProblem | InstructionProblem | ConfigurationFa
 /** Alias kept for callers that name the whole set rather than one section. */
 export type ConfigurationProblem = DoctorProblem
 
+/**
+ * What resolves one finding, for `doctor`'s own output. Two fields rather than one string, because
+ * the caller `doctor` is written for is an agent parsing TOON, and the question it has to answer is
+ * "can I execute this, or is this judgment I hand to a skill?" A single string leaves that
+ * answerable only by parsing English.
+ *
+ * The contract is exact, and it is what makes the field safe to act on blindly:
+ *
+ * - `command` non-empty — a shell invocation that, run verbatim, **completes** the repair.
+ * - `command` empty — no single invocation does; act on `instruction` and do not synthesize one.
+ *
+ * So a diagnostic worth running is not a `command`. `diverged-both` carries none even though
+ * `git diff --no-index …` is perfectly runnable: the diff shows what differs, it does not reconcile
+ * anything. That is what stops an agent executing every `command` it is handed from rebuilding a
+ * diverged bridge over whichever side holds the newer edit. A skill invocation is not a `command`
+ * either — nothing in a shell runs `/buddy-agent-harness:init`.
+ */
+export type RepairAction = {
+	/** A shell invocation that completes the repair, or empty when none does. */
+	command: string
+	/** The imperative, in prose, always present and complete on its own. */
+	instruction: string
+}
+
 export type Repair = {
 	problem: DoctorProblem
 	/** What `doctor` prints in the `findings` row for this problem. */
 	detail: string
 	/**
-	 * The command that fixes it, for `doctor`'s own output. `path` is the repository-relative bridge
-	 * path; `cli` is how to invoke this tool.
+	 * What fixes it, for `doctor`'s own output. `path` is the repository-relative bridge path; `cli`
+	 * is how to invoke this tool.
 	 */
-	repair(path: string, cli: string): string
+	repair(path: string, cli: string): RepairAction
 	/**
 	 * What the shipped skill tells an agent to do instead. A repair that rebuilds a bridge delegates
 	 * to the `init` skill rather than calling the `init` command, because rebuilding can move
@@ -119,51 +143,77 @@ export const bridgeRepairs: readonly Repair[] = [
 	{
 		problem: 'no-canonical',
 		detail: 'the canonical skill directory does not exist, so no bridge can resolve',
-		repair: (_path, cli) => `${cli} init`,
+		repair: (_path, cli) => ({
+			command: `${cli} init`,
+			instruction: `run \`${cli} init\` to create .agents/skills and the bridges into it`,
+		}),
 		skillRepair: () => `run \`${initSkillInvocation}\`, which creates \`.agents/skills\` and the bridges`,
 	},
 	{
 		problem: 'missing',
 		detail: 'no bridge at this path — the harness sees zero project skills',
-		repair: (_path, cli) => `${cli} init`,
+		repair: (path, cli) => ({
+			command: `${cli} init`,
+			instruction: `run \`${cli} init\` to create the bridge at ${path}`,
+		}),
 		skillRepair: () => `run \`${initSkillInvocation}\``,
 	},
 	{
 		problem: 'degraded',
 		detail: 'expected a directory but found a regular file — checkout without core.symlinks',
-		repair: (_path, cli) => `${cli} init --copy --force`,
+		repair: (path, cli) => ({
+			command: `${cli} init --copy --force`,
+			instruction: `run \`${cli} init --copy --force\` to rebuild ${path} as a real directory`,
+		}),
 		skillRepair: () => `run \`${initSkillInvocation} --copy --force\``,
 	},
 	{
 		problem: 'stale',
 		detail: 'symlink does not resolve to .agents/skills',
-		repair: (_path, cli) => `${cli} init --force`,
+		repair: (path, cli) => ({
+			command: `${cli} init --force`,
+			instruction: `run \`${cli} init --force\` to repoint ${path} at .agents/skills`,
+		}),
 		skillRepair: () => `run \`${initSkillInvocation} --force\``,
 	},
 	{
 		problem: 'diverged-bridge',
 		detail: 'only the bridge changed since the two last agreed — an agent wrote through the copy',
-		repair: (path, cli) =>
-			`replace .agents/skills with ${path} to keep the newer edit and then run ${cli} init --force`,
+		// No command, unlike `diverged-canonical`, and the asymmetry is real: `init` only ever builds a
+		// bridge *from* the canonical directory, so no flag promotes the bridge's newer content back
+		// into it. Deciding to keep that side is the caller's, and the rebuild is what follows.
+		repair: (path, cli) => ({
+			command: '',
+			instruction: `replace .agents/skills with ${path} to keep the newer edit, then run \`${cli} init --force\``,
+		}),
 		skillRepair: (path) =>
 			`replace .agents/skills with ${path} to keep the newer edit, then run \`${initSkillInvocation} --force\``,
 	},
 	{
 		problem: 'diverged-canonical',
 		detail: 'only .agents/skills changed since the two last agreed — the copy is stale',
-		repair: (_path, cli) => `${cli} init --copy --force`,
+		repair: (path, cli) => ({
+			command: `${cli} init --copy --force`,
+			instruction: `run \`${cli} init --copy --force\` to rebuild ${path} from the newer .agents/skills`,
+		}),
 		skillRepair: () => `run \`${initSkillInvocation} --copy --force\``,
 	},
 	{
 		problem: 'diverged-both',
 		detail: 'both sides changed since they last agreed — rebuilding would discard one of them',
-		repair: (path) => `git diff --no-index .agents/skills ${path} and reconcile by hand`,
+		repair: (path) => ({
+			command: '',
+			instruction: `reconcile .agents/skills with ${path} by hand — rebuilding would discard one of them; \`git diff --no-index .agents/skills ${path}\` shows what differs`,
+		}),
 		skillRepair: (path) => `run \`git diff --no-index .agents/skills ${path}\` and reconcile by hand`,
 	},
 	{
 		problem: 'diverged-unknown',
 		detail: 'contents differ and no commit where they agreed was found — which side moved is unknown',
-		repair: (path) => `git diff --no-index .agents/skills ${path} and reconcile by hand`,
+		repair: (path) => ({
+			command: '',
+			instruction: `reconcile .agents/skills with ${path} by hand — which side moved is unknown; \`git diff --no-index .agents/skills ${path}\` shows what differs`,
+		}),
 		skillRepair: (path) => `run \`git diff --no-index .agents/skills ${path}\` and reconcile by hand`,
 	},
 	{
@@ -171,7 +221,10 @@ export const bridgeRepairs: readonly Repair[] = [
 		detail: 'tracked copy without the skip-worktree bit — the tree is dirty with content that must not be committed',
 		// The index entry is the tracked symlink on a Windows checkout but the individual files in a
 		// committed copy, so the paths are read back from git rather than assumed.
-		repair: (path) => `git ls-files -z ${path} | xargs -0 git update-index --skip-worktree`,
+		repair: (path) => ({
+			command: `git ls-files -z ${path} | xargs -0 git update-index --skip-worktree`,
+			instruction: `run \`git ls-files -z ${path} | xargs -0 git update-index --skip-worktree\` to restore the skip-worktree bit`,
+		}),
 		skillRepair: (path) => `run \`git ls-files -z ${path} | xargs -0 git update-index --skip-worktree\``,
 	},
 ]
@@ -186,26 +239,38 @@ export const instructionRepairs: readonly Repair[] = [
 	{
 		problem: 'no-instructions',
 		detail: 'no AGENTS.md at the repository root, so every instruction bridge points at nothing',
-		repair: () => initSkillInvocation,
+		repair: () => ({
+			command: '',
+			instruction: `hand this to \`${initSkillInvocation}\`, which derives AGENTS.md and the bridges to it`,
+		}),
 		skillRepair: () => `run \`${initSkillInvocation}\`, which derives AGENTS.md and the bridges to it`,
 	},
 	{
 		problem: 'instructions-missing',
 		detail: 'no instruction bridge at this path — the harness reads none of AGENTS.md',
-		repair: () => initSkillInvocation,
+		repair: (path) => ({
+			command: '',
+			instruction: `hand ${path} to \`${initSkillInvocation}\`, which writes the bridge into it`,
+		}),
 		skillRepair: () => `run \`${initSkillInvocation}\``,
 	},
 	{
 		problem: 'instructions-unbridged',
 		detail: 'the file is present but names AGENTS.md nowhere — the harness reads none of it',
-		repair: () => initSkillInvocation,
+		repair: (path) => ({
+			command: '',
+			instruction: `hand ${path} to \`${initSkillInvocation}\`, which adds the bridge without discarding what the file already says`,
+		}),
 		skillRepair: () =>
 			`run \`${initSkillInvocation}\`, which adds the bridge without discarding what the file already says`,
 	},
 	{
 		problem: 'instructions-unreadable',
 		detail: 'the settings file does not parse, so the harness reads none of it',
-		repair: () => initSkillInvocation,
+		repair: (path) => ({
+			command: '',
+			instruction: `fix the JSON in ${path} by hand, then hand it to \`${initSkillInvocation}\``,
+		}),
 		skillRepair: () => `fix the JSON by hand, then run \`${initSkillInvocation}\``,
 	},
 ]
@@ -219,25 +284,37 @@ const configurationRepairs: readonly Repair[] = [
 		problem: 'deprecated-harness',
 		detail:
 			'a projection under a harness name that has been superseded — the replacement reads .agents/skills natively and needs no projection at all',
-		repair: (path) => `remove ${path} and enable the harness that replaced it`,
+		repair: (path) => ({
+			command: '',
+			instruction: `remove ${path} and enable the harness that replaced it — \`${repairSkillInvocation}\` offers the correction`,
+		}),
 		skillRepair: () => `run \`${repairSkillInvocation}\``,
 	},
 	{
 		problem: 'ignored-bridge',
 		detail: 'a .gitignore rule matches this bridge — an untracked bridge swallows a real edit silently',
-		repair: (path) => `narrow or remove the .gitignore rule matching ${path}`,
+		repair: (path) => ({
+			command: '',
+			instruction: `narrow or remove the .gitignore rule matching ${path} — \`${repairSkillInvocation}\` offers the correction`,
+		}),
 		skillRepair: () => `run \`${repairSkillInvocation}\``,
 	},
 	{
 		problem: 'unread-local-override',
 		detail: 'no harness reads this filename, so everything in it is invisible to every agent',
-		repair: (path) => `move ${path} to CLAUDE.local.md, or hand it to init to consolidate`,
+		repair: (path) => ({
+			command: '',
+			instruction: `move ${path} to CLAUDE.local.md, or consolidate it into AGENTS.md — \`${repairSkillInvocation}\` offers the correction`,
+		}),
 		skillRepair: () => `run \`${repairSkillInvocation}\``,
 	},
 	{
 		problem: 'unloadable-skill',
 		detail: 'frontmatter that does not parse, or no description — either one makes a harness skip the skill outright',
-		repair: (path) => `quote the description in ${path}, or add one`,
+		repair: (path) => ({
+			command: '',
+			instruction: `quote the description in ${path}, or add one — \`${repairSkillInvocation}\` offers the correction`,
+		}),
 		skillRepair: () => `run \`${repairSkillInvocation}\``,
 	},
 ]
@@ -301,9 +378,16 @@ The command is read-only. It never repairs anything, so it is safe to run at any
 
 \`instructions\` lists every instruction bridge into \`AGENTS.md\`, with a \`status\` of \`ok\`, \`missing\`, \`unbridged\`, or \`unreadable\`. They are a separate section because nothing about them is shared: a different \`kind\`, a different status vocabulary, and a repair that is never a command.
 
-\`findings\` explains each problem from either section and \`help\` names its repair. Apply the repair from the tables below, then re-run \`doctor\`.
+\`findings\` explains each problem from either section and \`help\` carries its repair, one row per distinct repair, with two columns:
 
-Do not run an \`init\` command yourself. Rebuilding a skills bridge can move skills a user wrote, and rewriting an instruction file touches prose a person authored — both are the \`init\` skill's judgment, so hand the repair to \`${initSkillInvocation}\` instead. A \`help\` line naming that skill has no shell equivalent at all.
+- \`command\` — a shell invocation that, run exactly as given, **completes** the repair.
+- \`instruction\` — the same repair in the imperative, always present and complete on its own.
+
+\`command\` is empty whenever no single invocation does the job, and that emptiness is the signal: act on \`instruction\` and do not assemble a command out of it. A runnable invocation quoted *inside* an \`instruction\` is not the repair either — \`diverged-both\` names \`git diff --no-index\` because the diff shows you what differs, not because running it reconciles anything. Apply the repair, then re-run \`doctor\`.
+
+Nothing in \`help\` is wrapped. An earlier version prefixed every repair with \`Run\`, which read as an instruction to paste prose into a shell.
+
+Do not run an \`init\` command yourself. Rebuilding a skills bridge can move skills a user wrote, and rewriting an instruction file touches prose a person authored — both are the \`init\` skill's judgment, so hand the repair to \`${initSkillInvocation}\` instead. Every such repair carries an empty \`command\`: a skill invocation has no shell equivalent at all.
 
 When every bridge resolves, \`findings\` says so outright rather than being empty.
 
