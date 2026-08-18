@@ -65,7 +65,7 @@ The set checked is narrower than the selected set: only harnesses the registry r
 **Extensions**
 
 - **No harness in the selected set needs an instruction bridge.** Nothing is reported at all — **not even a missing `AGENTS.md`**. Every other harness reads `AGENTS.md` where it lies, so its absence in that repository is one `init` has not run in, not a broken bridge, and reporting it would name a fault nothing is suffering.
-- **There is no root `AGENTS.md`, and something does bridge into it.** Reported **once**, as `no-instructions`, because every bridge then points at nothing.
+- **There is no root `AGENTS.md`, and something does bridge into it.** Reported **once**, as `no-instructions`, because every bridge then points at nothing. The bridges themselves are still judged on their own terms: a settings entry naming `AGENTS.md` is a claim about which file to read, and it stays `ok` whether or not that file exists. An import bridge cannot reach the same state, because it is checked per directory holding an `AGENTS.md` and a missing root file means no root bridge is checked at all.
 - **A settings file does not parse.** `unreadable`. Nothing is inferred from a file whose contents could not be read, and the repair fixes the JSON first.
 - **A settings file is absent, or holds the key with the wrong value.** Absent reads as `missing`; present without `AGENTS.md` in the array reads as `unbridged`. Neither throws.
 - **A nested `AGENTS.md` under a dot-directory or `node_modules`.** Not bridged. `.agents/AGENTS.md` is canonical shared instructions rather than subtree-scoped, so bridging it would claim a scope it does not have.
@@ -117,6 +117,7 @@ Each bridge is inspected independently, so one run reports as many faults as it 
 | J→M, J→N | a symlink to `AGENTS.md`, and one pointing elsewhere | `accepts a symlink to AGENTS.md and rejects one pointing elsewhere` |
 | K→N | a bridge file overwritten with real content | `reports a bridge overwritten with real content as unbridged` |
 | K→M | `AGENTS.md` in `context.fileName` beside the harness default | `accepts AGENTS.md in context.fileName beside the harness default` |
+| K→M | a settings entry naming an `AGENTS.md` that is not there | `keeps a settings entry ok when the file it names does not exist` |
 | K→M | a settings file carrying comments | `accepts a settings file carrying comments` |
 | K→N | a settings file rewritten without the entry | `reports a settings file another tool rewrote without the entry` |
 | H→L, H→I | a missing key, a missing file, and unparsable JSON | `reads a missing key, a missing file, and unparsable JSON without throwing` |

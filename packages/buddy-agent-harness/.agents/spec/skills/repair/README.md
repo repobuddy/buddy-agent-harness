@@ -118,11 +118,10 @@ Detection is the command's, so a run holds no state of its own and there is no f
 | A | any | `runs the doctor command rather than detecting anything itself` |
 | B→C | doctor reports zero problems | `reports that doctor ran clean and stops` |
 | D→E | doctor reports a degraded bridge | `hands a bridge finding to init and writes nothing` |
-| D→E | doctor reports a diverged bridge on both sides | `hands a two-sided divergence on without picking a side` |
+| D→E | doctor reports a diverged bridge on both sides | `hands a two-sided divergence on rather than picking a side` |
 | D→E | doctor reports an instruction bridge that names AGENTS.md nowhere | `hands an unbridged instruction file to init rather than adding the import` |
 | F→G | doctor reports an unloadable-skill finding with no description to quote | `reports a missing description rather than inventing one` |
 | H→I | doctor reports an unread-local-override finding | `presents the options and leaves the choice to the owner` |
-
 | H→J | doctor reports an ignored-bridge finding | `presents the correction with its before and after` |
 | K→L | a correction has been presented | `writes nothing when the correction is declined` |
 | K→M | a correction has been presented | `applies the approved correction and leaves the rest of the file unchanged` |

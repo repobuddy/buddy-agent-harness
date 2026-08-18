@@ -78,6 +78,14 @@ Feature: Report whether every enabled harness can still read AGENTS.md
     Then it reports that bridge with kind `settings-entry` and status `ok`
 
   @behavior
+  Scenario: keeps a settings entry ok when the file it names does not exist
+    Given a repository with no root `AGENTS.md`
+    And a settings file whose `context.fileName` array holds `AGENTS.md`
+    When the command diagnoses the instruction bridges
+    Then it reports that bridge with status `ok`
+    And it reports `no-instructions` once for the repository rather than again per bridge
+
+  @behavior
   Scenario: accepts a settings file carrying comments
     Given a settings file carrying line and block comments around a `context.fileName` array holding `AGENTS.md`
     When the command diagnoses the instruction bridges
