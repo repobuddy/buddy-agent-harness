@@ -1,5 +1,25 @@
 # buddy-agent-harness
 
+## 0.6.0
+
+### Minor Changes
+
+- 74a17e8: Stop projecting `.agents/skills` into `.gemini/skills`. Gemini CLI reads the `.agents/skills` alias at project scope as well as user scope, and that alias takes precedence over `.gemini/skills` in each tier — confirmed against the vendor's own discovery code (`packages/core/src/config/storage.ts`, `packages/core/src/skills/skillManager.ts`) and its skills documentation, recorded as E-GEM-02.
+  
+  `init` now writes nothing for `gemini-cli`, and `doctor` no longer reports a `.gemini/skills` bridge for it. Claude Code is the only harness left with a skills projection. Gemini CLI's instruction bridge is unaffected: it still does not read `AGENTS.md`, so `context.fileName` in `.gemini/settings.json` still has to name it.
+  
+  An existing `.gemini/skills` symlink keeps working — that path is still scanned — so nothing has to be removed from a repository that already has one.
+- 1a33cca: Model user scope as well as project scope in the harness registry. `Harness` now carries a `project` record and an optional `user` record, each with its own `detect` directory and optional `skillsDirectory`, so a harness that answers the canonical-directory question differently at each scope can be recorded truthfully — Gemini CLI needs a projection inside a repository and none at user scope. A missing `user` record means no vendor path is documented, as with Devin Desktop.
+  
+  The published `harnessRegistry` entries change shape: read `harness.project.detect` and `harness.project.skillsDirectory` in place of `harness.detect` and `harness.skillsDirectory`. The `Harness`, `HarnessScope`, and `HarnessScopeName` types are now exported. `init` and `doctor` are unchanged and still act only inside the repository.
+- 0ce8068: `doctor` now verifies the instruction bridges as well as the skill bridges. It reports a new `instructions` section covering the root `CLAUDE.md` import, one stub per nested `AGENTS.md`, and the `context.fileName` entry in `.gemini/settings.json`, gated per harness the same way the skill bridges are. Every repair there is `/buddy-agent-harness:init`: those files carry prose someone wrote, so restoring a bridge without discarding what displaced it is the `init` skill's judgment.
+  
+  The harness registry records an `instructionBridge` per harness scope, so the checked set cannot drift from what the `init` skill writes.
+
+### Patch Changes
+
+- 14a925c: `init` now says how to edit a user-authored settings file: amend it in place rather than round-tripping it through `JSON.parse`, keeping key order, indentation, and comments. `.gemini/settings.json` legally carries comments that a whole-file rewrite would silently delete; `.claude/settings.json` rejects them outright, so nothing may add one.
+
 ## 0.5.0
 
 ### Minor Changes
