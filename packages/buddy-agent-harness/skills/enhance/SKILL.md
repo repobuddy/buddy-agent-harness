@@ -38,6 +38,8 @@ Judge by meaning, not by heading or wording. A repository covering delegation un
 
 When in doubt, treat it as covered and say why. A missing offer costs the user nothing; a duplicate section teaches every future agent that this file repeats itself.
 
+**A heading inside a fenced code block is not a heading.** Text between ``` or ~~~ fences is an example of a file, not part of this one, and an addition quoted inside a fence is being shown rather than adopted. This is not hypothetical: every addition here is offered as a fenced block containing its own heading, so a repository documenting this tool — or an `AGENTS.md` that quotes one — carries the exact heading the addition would write, inside a fence, while remaining entirely uncovered. Judge only the prose the agent actually reads as instruction.
+
 ## 4. Offer
 
 Where an addition is uncovered, show its text **verbatim** — the whole thing, not a summary — say where it would go, and ask.
@@ -47,6 +49,8 @@ Do not argue for it past one sentence. The user is reading the actual text; that
 ## 5. Write what was approved
 
 On approval, append the section to the root `AGENTS.md`, outside the managed region, preserving the surrounding file exactly.
+
+Strip the fence when you write. The ``` markers around the addition in its reference file are there so you can see where the text begins and ends; the section goes into `AGENTS.md` as prose, not as a code block.
 
 On a decline, write nothing.
 
