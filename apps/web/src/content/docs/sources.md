@@ -54,15 +54,29 @@ Claude Code documents that an omitted `description` "uses the first paragraph of
 
 Both are primary and both are current, so the disagreement is real rather than a sourcing gap. A skill relying on either behavior is not portable, which is why [Direct Invocation Skill](/agent-configuration/skills/direct-skill/) requires an explicit marker string rather than an absent field.
 
-## Harness settings files are not documented here
+## Harness settings files are documented only where verified
 
-This site does not carry a table of per-harness settings files (`.claude/settings.json`, `.cursor/permissions.json`, `~/.codex/config.toml`, and peers) covering tool permissions, hooks, and environment defaults.
+This site does not carry a table of per-harness settings files (`.claude/settings.json`, `.cursor/permissions.json`, `~/.codex/config.toml`, and peers) covering tool permissions, hooks, and environment defaults. The readily available sourcing for several of those rows is third-party blog posts rather than vendor documentation, and this project does not publish harness claims at that confidence. Adding the table is a research task rather than an editing one.
 
-Two reasons. The readily available sourcing for several of those rows is third-party blog posts rather than vendor documentation, and this project does not publish harness claims at that confidence. And settings are outside what initialization touches: only skills are projected, and [tool settings stay canonical](/reference/configuration-layout/#what-stays-canonical).
+What is documented is what has been verified and what initialization depends on. Settings are not wholly outside `init`'s reach: it edits `.gemini/settings.json` to add `AGENTS.md` to `context.fileName`, which is why [JSON configuration disagrees about comments](/agent-configuration/harness-differences/#json-configuration-disagrees-about-comments) is on the site. That claim was established by testing, and it governs a file `init` writes to.
 
-Adding the table is therefore a research task rather than an editing one.
+## Corrections
+
+A claim that turns out to be wrong is corrected in place and recorded here. The entry stays after the page is fixed, so you can tell whether something you read earlier has since changed.
+
+### 2026-08-18 — MCP was said to have no cross-harness mapping
+
+Six pages and skill files stated that MCP servers stay canonical because "no safe cross-harness mapping exists". That was wrong. One exists and is published, mapping server configuration across fourteen hosts, six config keys, and three file formats.
+
+Corrected at [What stays canonical](/reference/configuration-layout/#what-stays-canonical), which now separates MCP (a published mapping that is not lossless) from custom agents, hooks, and rules (no published specification at all). The other five locations link there instead of restating a reason. What has not changed is the behavior: this project still does not convert MCP configuration.
+
+### 2026-08-18 — Settings files were said to be outside initialization's reach
+
+This page gave two reasons for not documenting harness settings files. The second, that "settings are outside what initialization touches", was false: `init` edits `.gemini/settings.json` to add `AGENTS.md` to `context.fileName`. The sourcing-quality reason was and remains true. The section above now states only that one.
 
 ## Undocumented but verified
+
+Claude Code parses `.claude/settings.json`, `.claude-plugin/plugin.json`, and `.claude-plugin/marketplace.json` as **strict JSON**. Comments and trailing commas are total parse failures, not warnings. The vendor settings page documents five settings filenames and says nothing about comments either way, so this was established against Claude Code 2.1.234 by testing each file with `claude plugin validate` and `claude doctor`. It is verified behavior, not a contract, and could change without notice.
 
 Symlinking the `.claude/skills` **directory itself** is not documented by Claude Code, which documents per-skill symlinks instead. The directory-level link is verified working and preferred because it is live, but it is supported in practice rather than guaranteed by contract. Per-skill links remain the documented fallback.
 
