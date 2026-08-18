@@ -167,6 +167,8 @@ describe('buildReport', () => {
 			{ path: '.claude/skills', problem: 'missing', detail: 'no bridge at this path' },
 			{ path: '.windsurf/skills', problem: 'missing', detail: 'no bridge at this path' },
 		])
+		// Deduped on the pair, so two findings about two different paths share one entry while
+		// keeping a row each.
 		expect(report.help).toEqual([{ command: 'bah init', instruction: 'run `bah init` to create the bridge' }])
 		expect(report).not.toHaveProperty('divergence')
 	})
@@ -287,5 +289,7 @@ describe('buildReport', () => {
 		})
 
 		expect(report.divergence).toEqual([{ path: '.claude/skills', direction: 'bridge' }])
+		// `help` is conditional too: absent, not empty, when there is nothing to repair.
+		expect(buildReport('~/bin/bah', healthy)).not.toHaveProperty('help')
 	})
 })

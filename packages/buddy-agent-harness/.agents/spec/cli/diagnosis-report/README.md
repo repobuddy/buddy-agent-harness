@@ -65,18 +65,20 @@ That shape had no owner, and the cost was concrete. When a field was added to `f
 
 `bridges` and `instructions` are two sections rather than one. They share no `kind` and no `status` vocabulary, and merging them would force a consumer to know which vocabulary applied before it could read a row.
 
-`divergence` appears **only when a bridge has diverged**. It is the one section that is conditional, because it answers a question that has no meaning otherwise.
+`divergence` and `help` are the two **conditional** sections: `divergence` is present only when a bridge has diverged, and `help` only when something is wrong. Each answers a question that has no meaning otherwise, and a consumer branches on the section being **absent** rather than empty.
 
 `findings` holds either the rows or the healthy sentence, never both and never neither.
 
-`help` lifts the repairs out of the finding rows, so a row stays to the diagnosis itself, and **dedupes**: several findings often share one repair, and repeating it reads as more work than there is.
+`help` lifts the repairs out of the finding rows, so a row stays to the diagnosis itself, and **dedupes** on the repair text: several findings often share one repair, and repeating it reads as more work than there is. Two findings whose repairs are identical collapse into one entry **even when their paths differ**, which happens whenever the repair does not name a path — `no-canonical` and `missing` both repair by running `init`, and produce one entry between them.
+
+Every entry in `help` is stated in the same shape, whether or not it is something a consumer can run. That is a **known defect** rather than a decision: a repair that is a reconciliation by hand is presented exactly like a shell invocation, so telling the two apart means reading the prose.
 
 **Extensions**
 
 - **Nothing is wrong.** `findings` holds a sentence stating the count and what it covers, counting the skills bridges and the instruction bridges together — a reader learns nothing is wrong from one number rather than by adding two. The count is worded for one bridge as well as for many.
 - **Findings exist.** The exit code stays **0**. The diagnosis succeeded; a non-zero code reads to an agent as "this command is broken, try something else", which sends it looking for another way to ask instead of at the report it was just handed.
 - **The diagnosis fails, the format is invalid, or a harness is not supported.** The message goes to **stderr** and the exit code is **1**. That is the only thing that distinguishes a broken tool from a broken repository.
-- **Two findings share a repair.** One `help` entry. Every repair embeds its own path, so two findings about different paths cannot collapse into one.
+- **Two findings share a repair.** One `help` entry, and the two findings still appear as two rows in `findings`. Nothing is lost: a row is per fault, and `help` is per distinct piece of work.
 
 ## Control Flow
 

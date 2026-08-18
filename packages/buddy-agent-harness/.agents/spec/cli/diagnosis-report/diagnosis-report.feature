@@ -45,7 +45,7 @@ Feature: Report every doctor finding through one output shape
     When the command builds its report
     Then each `findings` row holds a path, a problem name, and a detail, and no repair
     And every repair appears in the `help` section instead
-    And two findings sharing one repair state it once
+    And two findings sharing one repair state it once, while both keep their own row
 
   @behavior
   Scenario: adds a divergence section only when a bridge has diverged
@@ -53,6 +53,7 @@ Feature: Report every doctor finding through one output shape
     When the command builds its report
     Then it holds a `divergence` section naming that bridge and its direction
     And a report with no diverged bridge holds no `divergence` section at all
+    And a report with nothing wrong holds no `help` section at all
 
   @behavior
   Scenario: encodes the report in the requested format and nothing else
