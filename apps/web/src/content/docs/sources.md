@@ -3,7 +3,7 @@ title: Sources & Confidence
 description: How well-sourced each harness claim is, and which ones are not established.
 ---
 
-The harness claims across this site are not equally well-sourced, and the difference matters when you are deciding how much to rely on one. Supporting evidence is recorded in `.research/agentic-configuration-standards/` in the repository.
+The harness claims across this site are not equally well-sourced, and the difference matters when you are deciding how much to rely on one. Supporting evidence is recorded in `.research/agentic-configuration-standards/` and `.research/mcp-canonical-location/` in the repository.
 
 | Claim | Confidence | Basis |
 | --- | --- | --- |
@@ -32,6 +32,9 @@ The harness claims across this site are not equally well-sourced, and the differ
 | Nested-resolution semantics beyond precedence | Low | unratified v1.1 proposal, no maintainer response |
 | A standard local-override file (`AGENTS.local.md`) | Low | absent from the standard; three open issues, two candidate names |
 | MCP configuration having a cross-harness mapping that is not lossless | High | primary vendor documentation per host, plus inspection of the published `agent-install` registry |
+| Per-harness project-scope MCP files, keys, and formats | High | primary vendor documentation per host |
+| No standard naming an MCP configuration location | High | the MCP specification's silence, plus the open standards-track proposals themselves |
+| The `.agents/mcp.json` proposal being unaffiliated and unadopted | Medium | the draft's own site; nothing establishes that anyone reads it |
 
 ## Cursor's mode split is not confirmed
 
