@@ -6,7 +6,7 @@ Give a repository one canonical agent configuration — a root `AGENTS.md` and a
 
 The skill runs a five-phase workflow: survey the repository, classify what it finds, confirm the plan with you, apply it, then verify.
 
-It detects agent configuration you already have — instruction files, skills, commands, subagents, rules, MCP servers, hooks — and either consolidates it into the canonical source, links it back out, or reports it as canonical-only where no safe cross-harness mapping exists. It never removes or rewrites a file you authored without asking first.
+It detects agent configuration you already have — instruction files, skills, commands, subagents, rules, MCP servers, hooks — and either consolidates it into the canonical source, links it back out, or reports it as canonical-only where converting it would mean inventing configuration you did not write. It never removes or rewrites a file you authored without asking first.
 
 ## Why the projection step is small
 

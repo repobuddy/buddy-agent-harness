@@ -59,11 +59,13 @@ Two rules follow:
 
 ## Left canonical-only
 
-These are reported and left in place, because no safe cross-harness mapping exists:
+These are reported and left in place:
 
-- `.claude/agents/` (subagents), `.claude/rules/`, `.claude/output-styles/`
-- hook blocks in `.claude/settings.json` (event names differ by case across harnesses)
-- MCP server definitions
+- `.claude/agents/` (subagents), `.claude/rules/`, `.claude/output-styles/` — no cross-harness format exists to convert them into
+- hook blocks in `.claude/settings.json` — event names differ by case across harnesses
+- MCP server definitions in `.mcp.json` and `.claude/settings.json` — a cross-harness mapping does exist, but it is lossy
+
+[What stays canonical](/reference/configuration-layout/#what-stays-canonical) has the reasoning for each.
 
 `.claude/settings.json` is strict JSON: a comment in it is a parse error, and the file is then rejected as a whole. This is the opposite of Gemini CLI's settings file, where comments are legal and a rewrite destroys them. See [JSON configuration disagrees about comments](/agent-configuration/harness-differences/#json-configuration-disagrees-about-comments).
 

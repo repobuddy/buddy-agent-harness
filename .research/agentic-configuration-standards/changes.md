@@ -16,6 +16,24 @@
 
 **Triggering evidence**: E-GEM-02, E-GEM-01 (superseded in part), E-WS-02 (the redundant-but-functional precedent).
 
+## 2026-08-18 — MCP has a cross-harness mapping, and it is not lossless
+
+**What changed**: Established that a published cross-harness MCP mapping exists, so the project's stated reason for leaving MCP alone ("no safe cross-harness mapping exists") is false as written. Replaced it with the reason that survives the evidence.
+
+**Why**: Issue #41. The claim had seven homes and was inherited by every page that linked to `configuration-layout.md#what-stays-canonical`. It also sourced itself to an `.research/agent-install-implementation/` topic that does not exist in this repository, so nothing here could check it.
+
+**Material conclusions**:
+
+- **A mapping exists.** `agent-install@0.0.8` maps MCP server config across fourteen hosts, six config keys, and three serialization formats. The impossibility claim is refuted.
+- **It is not lossless, and the loss is per host and per transport.** Claude Desktop's config file carries stdio servers only — a remote server is added through the Connectors UI, so it has no representation in the file a converter would write. Refusal has to be per individual server, not per host.
+- **Conversion invents values.** Writing into Goose emits `description`, `enabled`, and `timeout`; writing into Zed emits `source: "custom"`. `init`'s safety property is that it invents nothing, and a conforming converter cannot hold it. That, not impossibility, is why `init` still leaves MCP alone.
+- **Only MCP's row was wrong.** Subagents, hooks, rules, commands, and output styles have no published specification at all, which `persona.md` already states. The corrected wording splits MCP out of that list rather than weakening the sentence for all five.
+- **Two of the issue's per-host claims did not survive verification.** Zed accepts stdio and remote alike (E-MCP-04), and Codex's `CODEX_HOME` support is implementation behavior with no vendor page behind it (E-MCP-02). Neither is restated in the docs.
+
+**Triggering evidence**: E-MCP-01, E-MCP-02, E-MCP-03, E-MCP-04, E-MCP-05.
+
+**Open**: whether `doctor` should report MCP configuration that exists for one harness and not another. Recommended in issue #41 and not implemented here; reporting is inside `doctor`'s remit as a diagnosis, but it needs its own detection evidence per harness before it can be accurate.
+
 ## 2026-08-18 — The registry models user scope as well as project scope
 
 **What changed**: No new vendor research. `Harness` in `src/harness-registry/harness-registry.ts` was re-shaped to hold one record per scope (`project`, optional `user`), so the evidence already on file can be recorded where it applies instead of being collapsed to the project-scope answer and explained in prose.

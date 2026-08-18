@@ -49,6 +49,15 @@ The command's own output is the report. Read it, or re-run the command. It is id
 
 ## What stays canonical
 
-Only skills are projected. MCP servers, custom agents, hooks, and path-scoped rules have no safe cross-harness mapping, so they stay canonical and are reported rather than converted. See [Open Standards](/agent-configuration/open-standards/#what-the-standards-do-not-cover).
+Only skills are projected. Everything else is reported and left in place — but for two different reasons, and MCP is the odd one out.
+
+Custom agents, hooks, and path-scoped rules have no open specification, so there is no format to convert them into. See [Open Standards](/agent-configuration/open-standards/#what-the-standards-do-not-cover).
+
+MCP servers do have one. A cross-harness mapping exists and is published: [`agent-install`](https://www.npmjs.com/package/agent-install) (0.0.8) maps server configuration across fourteen hosts, six config keys, and three file formats. What it is not is lossless, and the loss is per host and per transport rather than general:
+
+- Claude Desktop's `claude_desktop_config.json` accepts stdio servers only. A remote server is added through its Connectors interface instead, so it has no representation in that file at all, and a converter has to refuse that one server rather than write a broken entry.
+- Writing a server into Goose fills in `description`, `enabled`, and `timeout`; writing one into Zed fills in `source`. None of those values comes from the source configuration.
+
+So MCP is reported rather than converted because conversion would have to invent values you did not write, and initialization invents nothing. It is a policy, not an impossibility: if that changes, [say so](https://github.com/repobuddy/buddy-agent-harness/issues).
 
 Repository instructions are the middle case. `AGENTS.md` is canonical, but the two harnesses that cannot read it need a bridge the CLI does not write, because both need judgment about user-authored content: the [Claude Code](/agent-configuration/harnesses/claude-code/) `CLAUDE.md` import and the [Gemini CLI](/agent-configuration/harnesses/gemini-cli/) `context.fileName` edit. The [`init` skill](/skills/init/) handles both.

@@ -13,7 +13,7 @@ What is "the open standard" for agentic repository configuration? Specifically:
 
 **In**: repository-scope agent configuration — instruction files, skill discovery paths, `SKILL.md` frontmatter, and the `.agents/` convention. Harnesses: Claude Code, Codex, Cursor, GitHub Copilot CLI, Gemini CLI, Windsurf.
 
-**Out**: plugin bundle manifests (`.claude-plugin/plugin.json` and peers) — covered by prior research in the `universal-plugin` project (`plugin-schema`, `open-plugin-spec-comparison`, `hook-event-survey`, `plugin-consumption-leveling`). MCP protocol internals. Hook event semantics beyond noting they diverge.
+**Out**: plugin bundle manifests (`.claude-plugin/plugin.json` and peers) — covered by prior research in the `universal-plugin` project (`plugin-schema`, `open-plugin-spec-comparison`, `hook-event-survey`, `plugin-consumption-leveling`). MCP protocol internals — but *where MCP server configuration lives and what shape it takes per harness* is in, because it decides whether `init` may convert it. Hook event semantics beyond noting they diverge.
 
 ## Source angles
 

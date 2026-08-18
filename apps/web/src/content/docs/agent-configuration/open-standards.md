@@ -47,7 +47,9 @@ So the chain of authority is documentation, then reference implementation, then 
 
 ## What the standards do not cover
 
-MCP servers, custom agents, hooks, and harness-specific settings are useful agent configuration, but neither format above covers them. They stay canonical until a documented, safe mapping exists for the target harness.
+Custom agents, hooks, and harness-specific settings are useful agent configuration, but neither format above covers them, and no other published specification does either. They stay canonical because there is nothing to convert them into.
+
+MCP is the exception, and it is left canonical by choice rather than by necessity: the protocol is published and a cross-harness config mapping exists, but conversion is lossy. [What stays canonical](/reference/configuration-layout/#what-stays-canonical) has the reasoning.
 
 **Personal, uncommitted instructions** are the other gap, and a more surprising one. Claude Code has `CLAUDE.local.md`, a gitignored counterpart that loads alongside `CLAUDE.md` and holds machine-specific preferences. `AGENTS.md` has no published equivalent, so consolidating onto it costs you that capability everywhere except Claude Code.
 
