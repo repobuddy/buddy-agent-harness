@@ -39,12 +39,12 @@ describe('initializeHarnesses', () => {
 
 		expect(result).toMatchObject({
 			harnesses: ['claude-code', 'cursor', 'codex', 'copilot-cli', 'gemini-cli', 'windsurf'],
-			native: ['cursor', 'codex', 'copilot-cli'],
-			linked: ['claude-code', 'gemini-cli', 'windsurf'],
+			native: ['cursor', 'codex', 'copilot-cli', 'gemini-cli'],
+			linked: ['claude-code', 'windsurf'],
 		})
-		for (const target of ['.claude/skills', '.gemini/skills', '.windsurf/skills'])
+		for (const target of ['.claude/skills', '.windsurf/skills'])
 			expect(lstatSync(join(root, target)).isSymbolicLink()).toBe(true)
-		expect(existsSync(join(root, '.codex', 'skills'))).toBe(false)
+		for (const untouched of ['.codex/skills', '.gemini/skills']) expect(existsSync(join(root, untouched))).toBe(false)
 	})
 
 	it('enables an explicitly requested harness that the repository does not already contain', () => {

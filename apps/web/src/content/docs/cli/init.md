@@ -35,7 +35,7 @@ Nothing is written to record the run. The enabled set is derived from detection 
 
 ## Projections
 
-A projection is a single directory-level symlink from the harness path to `.agents/skills`, so a skill added later appears in every enabled harness without re-running the command. Only Claude Code and Gemini CLI need one; see [Harness Differences](/agent-configuration/harness-differences/) for the per-harness paths.
+A projection is a single directory-level symlink from the harness path to `.agents/skills`, so a skill added later appears in every enabled harness without re-running the command. Only Claude Code needs one; see [Harness Differences](/agent-configuration/harness-differences/) for the per-harness paths.
 
 `--copy` is reserved for environments where links are unavailable. A copy is a snapshot rather than a live projection, so it needs a re-run after every skill change.
 

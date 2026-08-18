@@ -8,14 +8,16 @@ argument-hint: '[--root <dir>] [--harness <names>] [--copy] [--force]'
 
 Give the repository one canonical agent configuration — a root `AGENTS.md` and an `.agents/` tree — then bridge the harnesses that cannot read it directly.
 
-Most of the field already reads `.agents/skills/` natively: Codex, Cursor, GitHub Copilot CLI, and Devin Desktop need no projection at all. Only Claude Code and Gemini CLI read solely their own directory and need a link. Keep that asymmetry in mind — this is a consolidation job, not a copy-everywhere job.
+Most of the field already reads `.agents/skills/` natively: Codex, Cursor, GitHub Copilot CLI, Gemini CLI, and Devin Desktop need no projection at all. Only Claude Code reads solely its own directory and needs a link. Keep that asymmetry in mind — this is a consolidation job, not a copy-everywhere job.
+
+Skills and instructions are separate questions. Gemini CLI reads the canonical skills directory and still does not read `AGENTS.md`, so it needs an instruction bridge and no skills projection.
 
 `references/standard.md` defines the baseline every repository gets. Read the file below for each harness you are enabling, and only those.
 
 | Harness | Skills projection | Instruction bridge | Read |
 | --- | --- | --- | --- |
 | Claude Code | `.claude/skills` | `CLAUDE.md` with `@AGENTS.md` | `references/harnesses/claude-code.md` |
-| Gemini CLI | `.gemini/skills` | `.gemini/settings.json` edit | `references/harnesses/gemini-cli.md` |
+| Gemini CLI | none | `.gemini/settings.json` edit | `references/harnesses/gemini-cli.md` |
 | Codex | none | none | `references/harnesses/codex.md` |
 | Cursor | none | none written; one gap to report | `references/harnesses/cursor.md` |
 | GitHub Copilot CLI | none | none | `references/harnesses/copilot-cli.md` |

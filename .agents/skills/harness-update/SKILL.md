@@ -40,10 +40,11 @@ For each harness in question, answer both axes separately. They are independent,
 
 Watch for the traps that have already bitten this repository:
 
-- **User scope is not project scope.** Gemini CLI reads `.agents/skills` at user scope while reading `.gemini/skills` at project scope. The registry records both; only project scope decides a projection. Leave `user` off an entry when no vendor path is documented — absent means unsourced, not none.
+- **User scope is not project scope.** Antigravity reads `.agents/skills` in a workspace while keeping user skills under `~/.gemini/config/skills/`. The registry records both; only project scope decides a projection. Leave `user` off an entry when no vendor path is documented — absent means unsourced, not none.
 - **A vendor may scan many paths.** Devin scans nine. Reading the canonical path among them still makes it native.
 - **Modes differ.** Cursor reads `AGENTS.md` in Agent mode only.
-- **Products under one brand differ.** Gemini CLI and Antigravity are both Google's and sit on opposite sides of the projection line.
+- **Products under one brand differ.** Gemini CLI and Antigravity are both Google's, and they disagree about the user path, detection, and instructions.
+- **A vendor answer is not settled because it is written down here.** E-GEM-01 recorded Gemini CLI as reading only `.gemini/skills` in a repository; the vendor's own discovery code had read the `.agents/skills` alias at workspace scope for months, and the projection built on that reading was redundant the whole time (E-GEM-02). Read the vendor's source, not only its prose, when a path claim decides whether files get written.
 - **Rebrands.** Windsurf became Devin Desktop, and the change altered behavior, not just the name.
 
 Trace every claim to primary vendor documentation. A blog post, an aggregator, or another skill is corroboration, never the source. When a claim cannot be sourced, record less rather than guessing.

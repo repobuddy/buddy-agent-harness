@@ -32,7 +32,7 @@ Creating a symlink on Windows needs `SeCreateSymbolicLinkPrivilege`, which means
 | Option | Meaning |
 | --- | --- |
 | `--root <directory>` | Selects the directory to diagnose. Defaults to the current directory. |
-| `--harness <names>` | Comma-separated harnesses to check in addition to Claude Code and Cursor, such as `codex,gemini-cli`. |
+| `--harness <names>` | Comma-separated harnesses to check in addition to Claude Code and Cursor, such as `codex,windsurf`. |
 | `--format toon\|json\|text` | Choose token-efficient TOON output (default), JSON, or a human-readable text report. |
 
 The bridge list is derived from the same registry `init` projects into, so `doctor` always describes the bridges `init` actually creates rather than a separate list that can drift.
@@ -43,13 +43,13 @@ The bridge list is derived from the same registry `init` projects into, so `doct
 bin: ~/.local/bin/buddy-agent-harness
 bridges[2]{harness,path,kind,status}:
   claude-code,.claude/skills,file,degraded
-  gemini-cli,.gemini/skills,none,missing
+  windsurf,.windsurf/skills,none,missing
 instructions[2]{harness,path,kind,status}:
   claude-code,CLAUDE.md,import,ok
   gemini-cli,.gemini/settings.json,none,missing
 findings[3]{path,detail}:
   .claude/skills,expected a directory but found a regular file — checkout without core.symlinks
-  .gemini/skills,no bridge at this path — the harness sees zero project skills
+  .windsurf/skills,no bridge at this path — the harness sees zero project skills
   .gemini/settings.json,no instruction bridge at this path — the harness reads none of AGENTS.md
 help[3]: Run `buddy-agent-harness init --copy --force`,Run `buddy-agent-harness init`,Run `/buddy-agent-harness:init`
 ```
@@ -69,7 +69,7 @@ A healthy repository says so outright rather than printing an empty section, so 
 ```
 bridges[2]{harness,path,kind,status}:
   claude-code,.claude/skills,symlink,ok
-  gemini-cli,.gemini/skills,symlink,ok
+  windsurf,.windsurf/skills,symlink,ok
 instructions[2]{harness,path,kind,status}:
   claude-code,CLAUDE.md,import,ok
   gemini-cli,.gemini/settings.json,settings-entry,ok
@@ -86,9 +86,9 @@ TOON is the default because it is what an agent parses. `--format text` renders 
 bin: ~/.local/bin/buddy-agent-harness
 
 bridges:
-  harness      path            kind  status
-  claude-code  .claude/skills  file  degraded
-  gemini-cli   .gemini/skills  none  missing
+  harness      path              kind  status
+  claude-code  .claude/skills    file  degraded
+  windsurf     .windsurf/skills  none  missing
 
 instructions:
   harness      path                   kind    status
@@ -98,7 +98,7 @@ instructions:
 findings:
   path                   detail
   .claude/skills         expected a directory but found a regular file — checkout without core.symlinks
-  .gemini/skills         no bridge at this path — the harness sees zero project skills
+  .windsurf/skills       no bridge at this path — the harness sees zero project skills
   .gemini/settings.json  no instruction bridge at this path — the harness reads none of AGENTS.md
 
 help:

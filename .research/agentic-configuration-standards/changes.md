@@ -1,5 +1,21 @@
 # Changes — Agentic Configuration Standards
 
+## 2026-08-18 — Gemini CLI reads the canonical path at project scope, so its projection is redundant
+
+**What changed**: E-GEM-02 added, superseding E-GEM-01's project-scope skills path. Gemini CLI discovers skills from `.agents/skills/` at **workspace scope as well as user scope**, with the alias taking precedence over `.gemini/skills/` in each tier. Verified in the vendor's own discovery code, not only its prose.
+
+**Why**: The weekly drift check (issue #40) flagged that upstream `vercel-labs/skills` now classifies `gemini-cli` as canonical-reading while we still project into `.gemini/skills`. Upstream is a tripwire, so the finding was taken to the vendor.
+
+**Material conclusions**:
+
+- **Gemini CLI needs no skills projection at either scope.** `.gemini/skills` moves out of the registry's project record. Claude Code is now the only harness in the registry that needs a skills projection anywhere.
+- **The per-scope split introduced days earlier did not answer this finding — it recorded the wrong answer more precisely.** E-GEM-01 was incomplete about workspace scope, and re-shaping the registry around it preserved that error in a new shape. A scope split is a place to put evidence, not a substitute for re-checking it.
+- **The instruction bridge is unaffected.** Gemini CLI still defaults to `GEMINI.md`, so `context.fileName` must still list `AGENTS.md` (E-GEM-01). Gemini stops being a skills-projection target while remaining an instruction-bridge target — the clearest case yet that the two axes are independent.
+- **An existing `.gemini/skills` bridge keeps working**, exactly as `.windsurf/skills` does for Devin: still scanned, now redundant. Nothing has to be torn out of a repository that already has one.
+- **`scripts/harness-drift.mjs` had gone blind.** Its `parseLocal` matched `name` and `skillsDirectory` on one line, which the per-scope reshape (PR #46) broke: it silently dropped every multi-line entry — `claude-code`, `gemini-cli`, `windsurf` — and reported "No drift" while this finding stood. A detector that fails open is worse than none, because a clean run is read as evidence. It now parses per-scope entries and asserts it can see every registry name.
+
+**Triggering evidence**: E-GEM-02, E-GEM-01 (superseded in part), E-WS-02 (the redundant-but-functional precedent).
+
 ## 2026-08-18 — The registry models user scope as well as project scope
 
 **What changed**: No new vendor research. `Harness` in `src/harness-registry/harness-registry.ts` was re-shaped to hold one record per scope (`project`, optional `user`), so the evidence already on file can be recorded where it applies instead of being collapsed to the project-scope answer and explained in prose.

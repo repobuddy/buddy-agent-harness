@@ -52,19 +52,46 @@ export function parseUpstream(source) {
 	return agents
 }
 
-/** Parse this repository's harness registry out of its TypeScript source. */
+/**
+ * Parse this repository's harness registry out of its TypeScript source.
+ *
+ * An entry spans as many lines as it needs and holds one record per scope, so this reads whole
+ * entries rather than lines: everything from one `name:` up to the next one. Only the `project`
+ * scope is compared — upstream's `skillsDir` is a project-scope path, and only project scope
+ * decides whether we write a projection.
+ *
+ * A line-scoped reader lived here until the registry grew scopes, and it went silent rather than
+ * wrong: multi-line entries matched nothing, so the harnesses most likely to drift dropped out of
+ * the comparison and the run reported clean. Hence `assertParsed` below.
+ */
 export function parseLocal(source) {
-	const harnesses = []
-	for (const line of source.split('\n')) {
-		const name = line.match(/\{\s*name:\s*'([^']+)'/)
-		if (!name) continue
-		harnesses.push({
-			name: name[1],
-			skillsDirectory: line.match(/skillsDirectory:\s*'([^']+)'/)?.[1] ?? null,
-			deprecated: line.match(/deprecated:\s*'([^']+)'/)?.[1] ?? null,
-		})
-	}
-	return harnesses
+	const body = source.slice(source.indexOf('harnessRegistry'))
+	const starts = [...body.matchAll(/\bname:\s*'([^']+)'/g)]
+	return starts.map((start, index) => {
+		const entry = body.slice(start.index, starts[index + 1]?.index ?? body.length)
+		const project = entry.match(/project:\s*\{([^}]*)\}/)?.[1] ?? null
+		return {
+			name: start[1],
+			detect: project?.match(/detect:\s*'([^']+)'/)?.[1] ?? null,
+			skillsDirectory: project?.match(/skillsDirectory:\s*'([^']+)'/)?.[1] ?? null,
+			deprecated: entry.match(/deprecated:\s*'([^']+)'/)?.[1] ?? null,
+		}
+	})
+}
+
+/**
+ * Fail loudly when the registry's shape outruns the parser. Every harness has a project scope and
+ * every project scope has a `detect`, so a missing one means this script is reading a shape it does
+ * not understand — and a comparison it cannot make must not be reported as agreement.
+ */
+export function assertParsed(local, source) {
+	const declared = (source.match(/^\t\| '[^']+'$/gm) ?? []).length
+	const blind = local.filter((harness) => harness.detect === null).map((harness) => harness.name)
+	if (blind.length) return `could not read the project scope of: ${blind.join(', ')}`
+	if (local.length === 0) return 'parsed zero harnesses'
+	if (declared && local.length !== declared)
+		return `parsed ${local.length} harnesses but HarnessName declares ${declared}`
+	return null
 }
 
 /**
@@ -148,7 +175,14 @@ async function main() {
 		return
 	}
 
-	const local = parseLocal(readFileSync(registryPath, 'utf8'))
+	const registrySource = readFileSync(registryPath, 'utf8')
+	const local = parseLocal(registrySource)
+	const unreadable = assertParsed(local, registrySource)
+	if (unreadable) {
+		process.stderr.write(`error: could not parse the harness registry: ${unreadable}.\n`)
+		process.exit(2)
+	}
+
 	const findings = compare({ upstream, local, baseline })
 	const universal = Object.values(upstream).filter((dir) => dir === CANONICAL).length
 

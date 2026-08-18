@@ -100,7 +100,7 @@ describe('buildReport', () => {
 	it('counts the instruction bridges alongside the skills bridges', () => {
 		const bridges: DiagnoseResult['bridges'] = [
 			...healthy.bridges,
-			{ harness: 'gemini-cli', path: '.gemini/skills', kind: 'symlink', status: 'ok' },
+			{ harness: 'windsurf', path: '.windsurf/skills', kind: 'symlink', status: 'ok' },
 		]
 
 		expect(buildReport('~/bin/bah', { ...healthy, bridges })).toMatchObject({
@@ -112,19 +112,19 @@ describe('buildReport', () => {
 		const report = buildReport('~/bin/bah', {
 			bridges: [
 				{ harness: 'claude-code', path: '.claude/skills', kind: 'none', status: 'missing' },
-				{ harness: 'gemini-cli', path: '.gemini/skills', kind: 'none', status: 'missing' },
+				{ harness: 'windsurf', path: '.windsurf/skills', kind: 'none', status: 'missing' },
 			],
 			instructions: [],
 			divergence: [],
 			findings: [
 				{ path: '.claude/skills', detail: 'no bridge at this path', repair: 'bah init' },
-				{ path: '.gemini/skills', detail: 'no bridge at this path', repair: 'bah init' },
+				{ path: '.windsurf/skills', detail: 'no bridge at this path', repair: 'bah init' },
 			],
 		})
 
 		expect(report.findings).toEqual([
 			{ path: '.claude/skills', detail: 'no bridge at this path' },
-			{ path: '.gemini/skills', detail: 'no bridge at this path' },
+			{ path: '.windsurf/skills', detail: 'no bridge at this path' },
 		])
 		expect(report.help).toEqual(['Run `bah init`'])
 		expect(report).not.toHaveProperty('divergence')

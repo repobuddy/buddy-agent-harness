@@ -16,7 +16,7 @@ What is "the open standard" for agentic repository configuration, where does the
 2. **Agent Skills (agentskills.io)** — capability packages. Published by Anthropic as an open standard on 2025-12-18, governance since moved to AAIF. Defines `SKILL.md` frontmatter and directory contents. **Explicitly does not define where skills live.**
 3. **`.agents/` — a convention, not a spec.** It fills the gap the Agent Skills spec deliberately leaves open.
 
-**The single most consequential finding for this project: `.agents/skills/` is a native read path for Codex, Cursor, GitHub Copilot CLI, and (at user scope) Gemini CLI. Claude Code is the sole Tier-1 harness that does not read it.**
+**The single most consequential finding for this project: `.agents/skills/` is a native read path for Codex, Cursor, GitHub Copilot CLI, and — at both scopes, per E-GEM-02 — Gemini CLI. Claude Code is the sole Tier-1 harness that does not read it.**
 
 This inverts the product's framing. `.agents/` is not a canonical source that must be *projected everywhere*. It is a directly-supported path for most of the field, and the projection problem reduces to Claude Code plus a small tail.
 
@@ -41,7 +41,7 @@ Lineage: **spec defines what is inside a skill → client-implementation guide p
 | **Codex** | ✅ primary | `$CWD/.agents/skills`, `$CWD/../.agents/skills`, `$REPO_ROOT/.agents/skills` | `$HOME/.agents/skills`, `/etc/codex/skills` |
 | **Copilot CLI** | ✅ | `.github/skills`, `.claude/skills`, `.agents/skills` | `~/.copilot/skills`, `~/.agents/skills` |
 | **Cursor** | ✅ | `.agents/skills`, `.cursor/skills`; compat reads `.claude/skills`, `.codex/skills` | `~/.agents/skills`, `~/.cursor/skills` |
-| **Gemini CLI** | partial | `.gemini/skills/` | `~/.gemini/skills`, `~/.agents/skills` alias |
+| **Gemini CLI** | ✅ alias, takes precedence | `.agents/skills/` alias, `.gemini/skills/` | `~/.gemini/skills`, `~/.agents/skills` alias |
 | **Claude Code** | ❌ | `.claude/skills/` only; walks up to repo root, nested dirs load lazily | `~/.claude/skills/` |
 | **Windsurf** | ❌ | `.windsurf/skills/` | `~/.codeium/windsurf/skills/` |
 
