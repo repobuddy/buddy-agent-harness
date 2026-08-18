@@ -79,6 +79,7 @@ describe('diagnoseBridges', () => {
 		expect(result.findings).toEqual([
 			{
 				path: '.claude/skills',
+				problem: 'degraded',
 				detail: 'expected a directory but found a regular file — checkout without core.symlinks',
 				repair: 'bah init --copy --force',
 			},
@@ -126,6 +127,7 @@ describe('diagnoseBridges', () => {
 
 		expect(result.findings[0]).toEqual({
 			path: '.agents/skills',
+			problem: 'no-canonical',
 			detail: 'the canonical skill directory does not exist, so no bridge can resolve',
 			repair: 'bah init',
 		})
@@ -191,6 +193,7 @@ describe('diagnoseBridges', () => {
 		expect(diagnoseBridges({ root, cli }).findings).toEqual([
 			{
 				path: '.claude/skills',
+				problem: 'unpinned-copy',
 				detail:
 					'tracked copy without the skip-worktree bit — the tree is dirty with content that must not be committed',
 				repair: 'git ls-files -z .claude/skills | xargs -0 git update-index --skip-worktree',
@@ -241,6 +244,7 @@ describe('diagnoseBridges', () => {
 
 			expect(result.divergence).toEqual([{ path: '.claude/skills', direction: 'both' }])
 			expect(result.findings[0]).toMatchObject({
+				problem: 'diverged-both',
 				detail: 'both sides changed since they last agreed — rebuilding would discard one of them',
 				repair: 'git diff --no-index .agents/skills .claude/skills and reconcile by hand',
 			})
@@ -254,6 +258,7 @@ describe('diagnoseBridges', () => {
 
 			expect(result.divergence).toEqual([{ path: '.claude/skills', direction: 'unknown' }])
 			expect(result.findings[0]).toMatchObject({
+				problem: 'diverged-unknown',
 				detail: 'contents differ and no commit where they agreed was found — which side moved is unknown',
 			})
 		})

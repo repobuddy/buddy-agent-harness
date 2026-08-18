@@ -1,9 +1,9 @@
 ---
 title: Skills
-description: The three skills the plugin ships, init, doctor and enhance, and when to run the CLI instead.
+description: The four skills the plugin ships, init, doctor, enhance and repair, and when to run the CLI instead.
 ---
 
-The plugin ships three skills. [`init`](/skills/init/) gives a repository one canonical agent configuration and bridges the harnesses that cannot read it. [`doctor`](/skills/doctor/) reports whether those bridges still resolve. [`enhance`](/skills/enhance/) offers guidance the repository does not have yet.
+The plugin ships four skills. [`init`](/skills/init/) gives a repository one canonical agent configuration and bridges the harnesses that cannot read it. [`doctor`](/skills/doctor/) reports whether those bridges still resolve. [`enhance`](/skills/enhance/) offers guidance the repository does not have yet. [`repair`](/skills/repair/) corrects configuration that is present and wrong.
 
 `init` and `doctor` each have a CLI command behind them. The skill is the half that needs judgment about files you wrote; the command is the mechanical half. `enhance` has no command, because there is no mechanical half to hand off.
 
@@ -12,9 +12,10 @@ The plugin ships three skills. [`init`](/skills/init/) gives a repository one ca
 | the [`init` skill](/skills/init/) | adopting or migrating a repository, where existing `CLAUDE.md`, rules, and skill directories have to be sorted first |
 | the [`doctor` skill](/skills/doctor/) | a harness loads no project skills, most often after a clone on Windows |
 | the [`enhance` skill](/skills/enhance/) | the repository has an `AGENTS.md` and you want the sections it is missing offered to you |
+| the [`repair` skill](/skills/repair/) | the configuration is there but wrong — a retired harness name, a git-ignored bridge, an `AGENTS.local.md` nothing reads |
 | the [CLI](/cli/) | the repository is already consolidated, or you want the report in a script |
 
-`init` consolidates what you already have; `enhance` proposes what you do not. Keeping them apart is what lets `init` stay safe to run on any repository and carry no opinions.
+`init` consolidates what you already have; `enhance` proposes what you do not; `repair` corrects what is there and wrong. Keeping them apart is what lets `init` stay safe to run on any repository and carry no opinions.
 
 ## Install
 
@@ -25,12 +26,13 @@ In Claude Code, add the [cyberplace](https://github.com/cyberuni/cyberplace) mar
 /plugin install buddy-agent-harness@cyberplace
 ```
 
-All three come with it:
+All four come with it:
 
 ```text
 /buddy-agent-harness:init
 /buddy-agent-harness:doctor
 /buddy-agent-harness:enhance
+/buddy-agent-harness:repair
 ```
 
 ## The commands behind them

@@ -2,17 +2,22 @@ import { homedir } from 'node:os'
 import type { cli } from 'clibuilder'
 import { command, z } from 'clibuilder'
 import { binPath, parseFormat, writeResult } from '../command-output/command-output.ts'
+import { type ConfigurationFinding, diagnoseConfiguration } from '../diagnose-configuration/diagnose-configuration.ts'
 import { type HarnessName, harnessRegistry } from '../harness-registry/harness-registry.ts'
 import { type DiagnoseResult, diagnoseBridges } from './diagnose-bridges.ts'
-import { commandInvocation } from './doctor-guidance.ts'
+import { commandInvocation, type DoctorProblem } from './doctor-guidance.ts'
+import { GitBridgeState } from './git-bridge-state.ts'
 
 type DoctorReport = {
 	bin: string
 	bridges: DiagnoseResult['bridges']
 	instructions: DiagnoseResult['instructions']
 	divergence?: DiagnoseResult['divergence']
-	/** The repair is lifted out into `help`, so a finding row stays to the diagnosis itself. */
-	findings: Omit<DiagnoseResult['findings'][number], 'repair'>[] | string
+	/**
+	 * The repair is lifted out into `help`, so a finding row stays to the diagnosis itself. `problem`
+	 * stays on the row: it is how a caller routes without parsing `detail` prose.
+	 */
+	findings: { path: string; problem: DoctorProblem; detail: string }[] | string
 	help?: string[]
 }
 
@@ -20,17 +25,22 @@ type DoctorReport = {
  * AXI §5: the healthy answer states the zero with context, so an agent does not re-run with other
  * flags to confirm that an empty section really meant "nothing wrong".
  */
-export function buildReport(bin: string, result: DiagnoseResult): DoctorReport {
+export function buildReport(
+	bin: string,
+	result: DiagnoseResult,
+	configuration: ConfigurationFinding[] = [],
+): DoctorReport {
+	const findings = [...result.findings, ...configuration]
 	// Both sections are bridges, so the healthy line counts them together rather than making a reader
 	// add up two numbers to learn that nothing is wrong.
-	if (!result.findings.length) {
+	if (!findings.length) {
 		const count = result.bridges.length + result.instructions.length
+		const bridges = count === 1 ? 'the 1 bridge resolves' : `all ${count} bridges resolve`
 		return {
 			bin,
 			bridges: result.bridges,
 			instructions: result.instructions,
-			findings:
-				count === 1 ? '0 problems found — the 1 bridge resolves' : `0 problems found — all ${count} bridges resolve`,
+			findings: `0 problems found — ${bridges} and the configuration around them is current`,
 		}
 	}
 
@@ -39,8 +49,10 @@ export function buildReport(bin: string, result: DiagnoseResult): DoctorReport {
 		bridges: result.bridges,
 		instructions: result.instructions,
 		...(result.divergence.length ? { divergence: result.divergence } : {}),
-		findings: result.findings.map(({ path, detail }) => ({ path, detail })),
-		help: [...new Set(result.findings.map((finding) => `Run \`${finding.repair}\``))],
+		findings: findings.map(({ path, problem, detail }) => ({ path, problem, detail })),
+		// Deduped: several findings often share one repair, and repeating it reads as more work than
+		// there is. Every repair template embeds its own path, so distinct findings cannot collapse.
+		help: [...new Set(findings.map((finding) => `Run \`${finding.repair}\``))],
 	}
 }
 
@@ -77,14 +89,16 @@ export const doctorCommand: cli.Command = command({
 						.map((harness) => harness.name)
 						.join(', ')}.`,
 				)
+			const root = args.root ?? process.cwd()
 			const result = diagnoseBridges({
-				root: args.root ?? process.cwd(),
+				root,
 				...(requested?.length ? { harnesses: requested as HarnessName[] } : {}),
 				cli: commandInvocation,
 			})
+			const configuration = diagnoseConfiguration({ root, git: new GitBridgeState(root), cli: commandInvocation })
 			// Exit stays 0 even with findings: the diagnosis succeeded, and a non-zero code reads to an
 			// agent as "this command is broken, try something else".
-			writeResult(buildReport(binPath(homedir(), process.argv[1]), result), format)
+			writeResult(buildReport(binPath(homedir(), process.argv[1]), result, configuration), format)
 		} catch (error) {
 			process.stderr.write(`error: ${error instanceof Error ? error.message : 'Harness diagnosis failed.'}\n`)
 			process.exitCode = 1

@@ -3,7 +3,7 @@ import { dirname, join, relative } from 'node:path'
 import { type HarnessName, selectHarnesses } from '../harness-registry/harness-registry.ts'
 import { diagnoseInstructions, type InstructionReport } from './diagnose-instructions.ts'
 import { filesUnder } from './directory-files.ts'
-import { type BridgeProblem, repairFor } from './doctor-guidance.ts'
+import { type BridgeProblem, type DoctorProblem, repairFor } from './doctor-guidance.ts'
 import { type DivergenceDirection, GitBridgeState } from './git-bridge-state.ts'
 
 export type BridgeKind = 'symlink' | 'copy' | 'file' | 'none'
@@ -19,6 +19,11 @@ export type BridgeReport = {
 
 export type BridgeFinding = {
 	path: string
+	/**
+	 * Which problem this is. Emitted so a caller routes on a name rather than by matching `detail`
+	 * prose, which would break the moment the wording is improved.
+	 */
+	problem: DoctorProblem
 	detail: string
 	/** The command that repairs this finding, already carrying the bridge path. */
 	repair: string
@@ -136,7 +141,7 @@ export function diagnoseBridges({ root, harnesses: preferred = [], cli }: Diagno
 
 	if (!isDirectory(canonical)) {
 		const { detail, repair } = repairFor('no-canonical')
-		findings.push({ path: canonicalPath, detail, repair: repair(canonicalPath, cli) })
+		findings.push({ path: canonicalPath, problem: 'no-canonical', detail, repair: repair(canonicalPath, cli) })
 	}
 
 	for (const harness of bridged) {
@@ -146,7 +151,7 @@ export function diagnoseBridges({ root, harnesses: preferred = [], cli }: Diagno
 		if (inspection.direction) divergence.push({ path, direction: inspection.direction })
 		if (inspection.problem) {
 			const { detail, repair } = repairFor(inspection.problem)
-			findings.push({ path, detail, repair: repair(path, cli) })
+			findings.push({ path, problem: inspection.problem, detail, repair: repair(path, cli) })
 		}
 	}
 

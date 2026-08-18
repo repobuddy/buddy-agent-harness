@@ -122,7 +122,12 @@ export function diagnoseInstructions(
 	// lies, so its absence is a repository that has not run `init` rather than a broken bridge.
 	if (!agentsFileDirectories(root).includes('')) {
 		const { detail, repair } = repairFor('no-instructions')
-		findings.push({ path: canonicalInstructions, detail, repair: repair(canonicalInstructions, cli) })
+		findings.push({
+			path: canonicalInstructions,
+			problem: 'no-instructions',
+			detail,
+			repair: repair(canonicalInstructions, cli),
+		})
 	}
 
 	for (const { name, bridge } of bridged) {
@@ -131,7 +136,7 @@ export function diagnoseInstructions(
 			instructions.push({ harness: name, path, kind: inspection.kind, status: inspection.status })
 			if (inspection.problem) {
 				const { detail, repair } = repairFor(inspection.problem)
-				findings.push({ path, detail, repair: repair(path, cli) })
+				findings.push({ path, problem: inspection.problem, detail, repair: repair(path, cli) })
 			}
 		}
 	}

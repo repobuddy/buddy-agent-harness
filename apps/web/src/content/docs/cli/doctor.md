@@ -171,6 +171,23 @@ Running `init --copy --force` over a tracked symlink turns the bridge from a sym
 
 It is a hint rather than a guarantee, because some checkout and merge operations clear it. So `doctor` verifies the bit is still set on a tracked copy rather than assuming it, and reports the path as dirty-and-uncommittable if it has been lost.
 
+## Configuration findings
+
+Alongside the bridge and instruction sections, `doctor` reports configuration that is present and **wrong**. None of these is a resolution problem — every one resolves fine.
+
+| Finding | What is wrong |
+| --- | --- |
+| `deprecated-harness` | a skills projection under a harness name that has been superseded. The replacement reads `.agents/skills` natively, so the correction removes the projection rather than renaming it |
+| `ignored-bridge` | a `.gitignore` rule matches a bridge, usually a blanket `.claude/`. Asked of `git check-ignore`, so a rule on a parent directory is caught |
+| `unread-local-override` | an `AGENTS.local.md`. No harness reads that filename, so its content is invisible |
+| `unloadable-skill` | frontmatter that does not parse, or no `description` — the two faults that make a harness skip a skill outright. A `name` that mismatches its directory is only a warning, so it is deliberately not reported |
+
+These four repair through the [`repair` skill](/skills/repair/), which offers each correction with its before and after and writes only what you approve.
+
+Each finding row carries three fields: `problem` is its name and the only thing a program should branch on, `path` is what it is about, and `detail` is prose for a person. Route on `problem`, never on `detail` — the prose is meant to be read, and improving its wording must not change what a caller does.
+
+`--harness` does not affect these checks. Every one requires a projection to exist on disk, and a projection cannot exist without its harness's own directory, which selects that harness already.
+
 ## Exit codes
 
 `doctor` exits `0` even when it has findings. The diagnosis succeeded, and a non-zero code reads to an agent as "this command is broken, try something else." A `--strict` flag for CI, the one caller that genuinely wants a failing process, is not implemented yet.

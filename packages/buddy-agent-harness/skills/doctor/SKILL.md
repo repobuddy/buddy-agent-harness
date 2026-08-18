@@ -58,6 +58,17 @@ Substitute the reported bridge path for `<path>`.
 | `instructions-unbridged` | the file is present but names AGENTS.md nowhere — the harness reads none of it | run `/buddy-agent-harness:init`, which adds the bridge without discarding what the file already says |
 | `instructions-unreadable` | the settings file does not parse, so the harness reads none of it | fix the JSON by hand, then run `/buddy-agent-harness:init` |
 
+## Configuration findings and their repairs
+
+The bridges resolve, and the configuration around them is still wrong: a superseded harness name, a git-ignored bridge, a local-override file nothing reads, a skill whose frontmatter makes every harness skip it. None of these is an `init` flag — `init` consolidates and creates, and will not correct a file the user already wrote. They go to the `repair` skill, which offers each correction with its before and after and writes only what is approved.
+
+| Finding | What it means | Repair |
+| --- | --- | --- |
+| `deprecated-harness` | a projection under a harness name that has been superseded — the replacement reads .agents/skills natively and needs no projection at all | run `/buddy-agent-harness:repair` |
+| `ignored-bridge` | a .gitignore rule matches this bridge — an untracked bridge swallows a real edit silently | run `/buddy-agent-harness:repair` |
+| `unread-local-override` | no harness reads this filename, so everything in it is invisible to every agent | run `/buddy-agent-harness:repair` |
+| `unloadable-skill` | frontmatter that does not parse, or no description — either one makes a harness skip the skill outright | run `/buddy-agent-harness:repair` |
+
 `unbridged` is the one to read carefully. The file is there and looks fine, and it names `AGENTS.md` nowhere — a `CLAUDE.md` someone overwrote with real content, or a `.gemini/settings.json` another tool rewrote without `AGENTS.md` in `context.fileName`. Never fix it by replacing the file: the content that displaced the bridge may be the only copy of something.
 
 An instruction bridge is reported per file, so a monorepo gets one row per `AGENTS.md` in the tree. Each nested `AGENTS.md` needs its own stub — an import bridges the file beside it and nothing deeper.
