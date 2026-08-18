@@ -27,7 +27,7 @@ Every fault here repairs through `repair`. That is what separates this capabilit
 
 - **configuration fault** — one named way present configuration is wrong: `deprecated-harness`, `ignored-bridge`, `unread-local-override`, `unloadable-skill`.
 - **superseded harness** — a registry name marked as replaced by another.
-- **repair** — what resolves one fault, in two parts: a **command** that runs verbatim and completes it, and an **instruction** in the imperative. The command is empty when no single invocation does the job; the instruction is always there.
+- **repair** — what resolves one fault *of this family*, in two parts: a **command** that runs verbatim and completes it, and an **instruction** in the imperative. Here the command is always empty, because every correction in this family is judgment. The two-field shape itself is shared with the other finding families and is not this node's to define.
 
 ## Use Cases
 
@@ -111,8 +111,8 @@ Each check is independent, so one run reports as many faults as it finds, across
 | H→J | a non-SKILL.md file under the canonical directory | `ignores files under the canonical directory that are not a SKILL.md` |
 | →J | any reported fault | `names each fault in the report so a caller routes without reading prose` |
 | →J | any | `carries the repair for every finding it reports` |
-| →J | any reported fault | `offers no runnable command for a fault, because correcting one is judgment` |
-| →J | any reported fault | `carries each repair as a bare imperative, with nothing wrapping it` |
+| →J | one fault of each of the four families | `offers no runnable command for any of the four faults, because correcting one is judgment` |
+| →J | the repair text on a reported fault | `carries each repair as a bare imperative, with nothing wrapping it` |
 | →J | faults from three different families are present at once | `reports every fault it finds in one pass, across families` |
 
 ## References

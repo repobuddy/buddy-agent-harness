@@ -171,15 +171,25 @@ describe('diagnoseConfiguration', () => {
 	// Every fault here is present-and-wrong configuration a person wrote, so correcting one is a
 	// judgment call the `repair` skill offers rather than anything a shell can carry out. A caller
 	// that runs each `command` it is handed must therefore run nothing at all for these.
-	it('offers no runnable command for a fault, because correcting one is judgment', () => {
+	//
+	// All four families are present at once on purpose: the claim is universal over the family, so
+	// exercising three of them would leave the fourth free to grow a command nothing would catch.
+	it('offers no runnable command for any of the four faults, because correcting one is judgment', () => {
 		const root = gitRepository()
 		link(root, '.windsurf/skills')
+		link(root, '.claude/skills')
+		write(root, '.gitignore', '.claude/\n')
 		write(root, 'AGENTS.local.md', '# Personal\n')
 		write(root, '.agents/skills/pdf/SKILL.md', '---\nname: pdf\n---\n')
 
 		const findings = diagnose(root)
 
-		expect(findings.length).toBeGreaterThan(0)
+		expect(findings.map((finding) => finding.problem).sort()).toEqual([
+			'deprecated-harness',
+			'ignored-bridge',
+			'unloadable-skill',
+			'unread-local-override',
+		])
 		expect(findings.map((finding) => finding.repair.command)).toEqual(findings.map(() => ''))
 	})
 
