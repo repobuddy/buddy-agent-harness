@@ -4,7 +4,7 @@
  * `scripts/generate-skills.ts`, so the shipped skill cannot drift from what the command says.
  */
 
-/** Every way a bridge can fail, in the order `doctor` reports them. */
+/** Every way a skills bridge can fail, in the order `doctor` reports them. */
 export type BridgeProblem =
 	| 'no-canonical'
 	| 'missing'
@@ -16,8 +16,22 @@ export type BridgeProblem =
 	| 'diverged-unknown'
 	| 'unpinned-copy'
 
+/**
+ * Every way an instruction bridge can fail. Separate from `BridgeProblem` because the two share no
+ * repair: a skills bridge is rebuilt with `init` flags, and an instruction bridge is a file whose
+ * content is the user's, so every repair here goes back to the `init` skill.
+ */
+export type InstructionProblem =
+	| 'no-instructions'
+	| 'instructions-missing'
+	| 'instructions-unbridged'
+	| 'instructions-unreadable'
+
+/** Everything `doctor` can report against, across both sections. */
+export type DoctorProblem = BridgeProblem | InstructionProblem
+
 export type Repair = {
-	problem: BridgeProblem
+	problem: DoctorProblem
 	/** What `doctor` prints in the `findings` row for this problem. */
 	detail: string
 	/**
@@ -83,7 +97,8 @@ await import(join(packageRoot, 'bin', '${commandInvocation}.mjs'))
 /** How the skill hands a repair back to `init`. */
 export const initSkillInvocation = '/buddy-agent-harness:init'
 
-export const doctorRepairs: readonly Repair[] = [
+/** The skills bridges, reported in `bridges`. */
+export const bridgeRepairs: readonly Repair[] = [
 	{
 		problem: 'no-canonical',
 		detail: 'the canonical skill directory does not exist, so no bridge can resolve',
@@ -144,16 +159,53 @@ export const doctorRepairs: readonly Repair[] = [
 	},
 ]
 
+/**
+ * The instruction bridges, reported in `instructions`. Every repair is the `init` skill: these are
+ * files a person wrote, or files carrying content beside the bridge, and deciding what to preserve
+ * while restoring the bridge is judgment no flag carries. `repair` therefore names the skill in
+ * both places rather than pretending a shell command exists.
+ */
+export const instructionRepairs: readonly Repair[] = [
+	{
+		problem: 'no-instructions',
+		detail: 'no AGENTS.md at the repository root, so every instruction bridge points at nothing',
+		repair: () => initSkillInvocation,
+		skillRepair: () => `run \`${initSkillInvocation}\`, which derives AGENTS.md and the bridges to it`,
+	},
+	{
+		problem: 'instructions-missing',
+		detail: 'no instruction bridge at this path — the harness reads none of AGENTS.md',
+		repair: () => initSkillInvocation,
+		skillRepair: () => `run \`${initSkillInvocation}\``,
+	},
+	{
+		problem: 'instructions-unbridged',
+		detail: 'the file is present but names AGENTS.md nowhere — the harness reads none of it',
+		repair: () => initSkillInvocation,
+		skillRepair: () =>
+			`run \`${initSkillInvocation}\`, which adds the bridge without discarding what the file already says`,
+	},
+	{
+		problem: 'instructions-unreadable',
+		detail: 'the settings file does not parse, so the harness reads none of it',
+		repair: () => initSkillInvocation,
+		skillRepair: () => `fix the JSON by hand, then run \`${initSkillInvocation}\``,
+	},
+]
+
+/** Both sections, in the order `doctor` reports them. */
+export const doctorRepairs: readonly Repair[] = [...bridgeRepairs, ...instructionRepairs]
+
 const repairsByProblem = new Map(doctorRepairs.map((entry) => [entry.problem, entry]))
 
-export function repairFor(problem: BridgeProblem): Repair {
+export function repairFor(problem: DoctorProblem): Repair {
 	return repairsByProblem.get(problem) as Repair
 }
 
 export const doctorSkill = {
 	name: 'doctor',
 	description:
-		'Use this skill when a repository loads no project skills, when skills are missing after a clone, or when checking whether the agent configuration bridges into .claude/skills and the other harness directories still resolve.',
+		'Use this skill when a repository loads no project skills, when skills are missing after a clone, when a harness appears to be ignoring AGENTS.md, or when checking whether the agent configuration bridges into .claude/skills, CLAUDE.md, and the other harness files still resolve.',
 } as const
 
 /** Written into the generated skill so a reader knows not to edit it in place. */
@@ -168,9 +220,10 @@ export const generatedSkillWarning =
 export function renderDoctorSkill(version: string): string {
 	// A repair may itself contain a pipe, which would otherwise end the table cell early.
 	const cell = (value: string) => value.replaceAll('|', '\\|')
-	const rows = doctorRepairs
-		.map((entry) => `| \`${entry.problem}\` | ${entry.detail} | ${cell(entry.skillRepair('<path>'))} |`)
-		.join('\n')
+	const rows = (repairs: readonly Repair[]) =>
+		repairs
+			.map((entry) => `| \`${entry.problem}\` | ${entry.detail} | ${cell(entry.skillRepair('<path>'))} |`)
+			.join('\n')
 
 	return `---
 name: ${doctorSkill.name}
@@ -181,7 +234,7 @@ ${generatedSkillWarning}
 
 # Harness Doctor
 
-\`.agents/skills\` is the canonical skill directory. Harnesses that cannot read it — Claude Code and Gemini CLI — get a bridge pointing at it, normally a directory symlink. A bridge that stops resolving is silent: the harness finds nothing and loads zero project skills, with no warning anywhere.
+A repository keeps one canonical configuration: \`.agents/skills\` for its skills and \`AGENTS.md\` for its instructions. Harnesses that cannot read those — Claude Code and Gemini CLI — get bridges pointing at them. A bridge that stops resolving is silent: the harness finds nothing and loads zero project skills, with no warning anywhere. An instruction bridge fails the same way and costs more, because the harness then reads none of the repository's instructions at all.
 
 Diagnose it:
 
@@ -195,21 +248,35 @@ The command is read-only. It never repairs anything, so it is safe to run at any
 
 ## Reading the report
 
-\`bridges\` lists every bridge \`init\` would create for this repository, each with a \`status\` of \`ok\`, \`missing\`, \`degraded\`, \`stale\`, or \`diverged\`. \`findings\` explains each problem and \`help\` names its repair. Apply the repair from the table below, then re-run \`doctor\`.
+\`bridges\` lists every skills bridge \`init\` would create for this repository, each with a \`status\` of \`ok\`, \`missing\`, \`degraded\`, \`stale\`, or \`diverged\`.
 
-\`help\` names the \`init\` command for a person at a shell. Do not run it yourself. Rebuilding a bridge can move skills a user wrote, and that judgment belongs to the \`init\` skill — hand the repair to \`${initSkillInvocation}\` instead.
+\`instructions\` lists every instruction bridge into \`AGENTS.md\`, with a \`status\` of \`ok\`, \`missing\`, \`unbridged\`, or \`unreadable\`. They are a separate section because nothing about them is shared: a different \`kind\`, a different status vocabulary, and a repair that is never a command.
+
+\`findings\` explains each problem from either section and \`help\` names its repair. Apply the repair from the tables below, then re-run \`doctor\`.
+
+Do not run an \`init\` command yourself. Rebuilding a skills bridge can move skills a user wrote, and rewriting an instruction file touches prose a person authored — both are the \`init\` skill's judgment, so hand the repair to \`${initSkillInvocation}\` instead. A \`help\` line naming that skill has no shell equivalent at all.
 
 When every bridge resolves, \`findings\` says so outright rather than being empty.
 
 The default output is TOON, which is what you parse. Add \`--format text\` when you need to show the same report to a person, or \`--format json\`.
 
-## Findings and their repairs
+## Skills bridge findings
 
 | Finding | What it means | Repair |
 | --- | --- | --- |
-${rows}
+${rows(bridgeRepairs)}
 
 Substitute the reported bridge path for \`<path>\`.
+
+## Instruction bridge findings
+
+| Finding | What it means | Repair |
+| --- | --- | --- |
+${rows(instructionRepairs)}
+
+\`unbridged\` is the one to read carefully. The file is there and looks fine, and it names \`AGENTS.md\` nowhere — a \`CLAUDE.md\` someone overwrote with real content, or a \`.gemini/settings.json\` another tool rewrote without \`AGENTS.md\` in \`context.fileName\`. Never fix it by replacing the file: the content that displaced the bridge may be the only copy of something.
+
+An instruction bridge is reported per file, so a monorepo gets one row per \`AGENTS.md\` in the tree. Each nested \`AGENTS.md\` needs its own stub — an import bridges the file beside it and nothing deeper.
 
 ## The Windows case
 
@@ -222,5 +289,6 @@ A copy is a snapshot rather than a live projection, and an agent that edits a sk
 - Never repair a \`diverged-both\` or \`diverged-unknown\` bridge by re-running \`init\`. Rebuilding overwrites whichever side holds the newer edit. Reconcile the two directories first.
 - Edit skills at \`.agents/skills/<name>/SKILL.md\`. Editing through a bridge is only safe when that bridge is a symlink.
 - Do not add bridges to \`.gitignore\`. An untracked bridge swallows a real edit silently.
+- Write instructions in \`AGENTS.md\`, never in \`CLAUDE.md\`. A bridge file holds the import and any harness-specific notes; content written there reaches one harness and drifts from the canonical file.
 `
 }

@@ -1,6 +1,7 @@
 import { lstatSync, readFileSync, readlinkSync, statSync } from 'node:fs'
 import { dirname, join, relative } from 'node:path'
 import { type HarnessName, selectHarnesses } from '../harness-registry/harness-registry.ts'
+import { diagnoseInstructions, type InstructionReport } from './diagnose-instructions.ts'
 import { filesUnder } from './directory-files.ts'
 import { type BridgeProblem, repairFor } from './doctor-guidance.ts'
 import { type DivergenceDirection, GitBridgeState } from './git-bridge-state.ts'
@@ -37,6 +38,11 @@ export type DiagnoseOptions = {
 
 export type DiagnoseResult = {
 	bridges: BridgeReport[]
+	/**
+	 * The instruction bridges into `AGENTS.md`, kept out of `bridges` on purpose: a different `kind`
+	 * and `status` vocabulary, and a repair that is the `init` skill rather than a command.
+	 */
+	instructions: InstructionReport[]
 	divergence: DivergenceReport[]
 	findings: BridgeFinding[]
 }
@@ -112,14 +118,15 @@ function inspect(target: string, path: string, canonical: string, git: GitBridge
 }
 
 /**
- * Reports whether every bridge `init` would create for this repository still resolves into
- * `.agents/skills`. Read-only: nothing is created, moved, or repaired, so the caller decides what
- * to run from the repair each finding carries.
+ * Reports whether every bridge this repository needs still resolves: the skills bridges into
+ * `.agents/skills`, and the instruction bridges into `AGENTS.md`. Read-only: nothing is created,
+ * moved, or repaired, so the caller decides what to run from the repair each finding carries.
  */
 export function diagnoseBridges({ root, harnesses: preferred = [], cli }: DiagnoseOptions): DiagnoseResult {
 	const canonical = join(root, '.agents', 'skills')
 	const git = new GitBridgeState(root)
-	const bridged = selectHarnesses(root, preferred)
+	const selected = selectHarnesses(root, preferred)
+	const bridged = selected
 		.map((harness) => ({ name: harness.name, skillsDirectory: harness.project.skillsDirectory }))
 		.filter((harness): harness is { name: HarnessName; skillsDirectory: string } => Boolean(harness.skillsDirectory))
 
@@ -143,5 +150,8 @@ export function diagnoseBridges({ root, harnesses: preferred = [], cli }: Diagno
 		}
 	}
 
-	return { bridges, divergence, findings }
+	const instructions = diagnoseInstructions(root, selected, cli)
+	findings.push(...instructions.findings)
+
+	return { bridges, instructions: instructions.instructions, divergence, findings }
 }

@@ -7,9 +7,12 @@ import { diagnoseBridges } from './diagnose-bridges.ts'
 
 const cli = 'bah'
 
+/** Canonical on both axes: `.agents/skills` for skills, `AGENTS.md` bridged into `CLAUDE.md`. */
 function repository(): string {
 	const root = mkdtempSync(join(tmpdir(), 'buddy-agent-harness-doctor-'))
 	writeSkill(join(root, '.agents', 'skills'), '# Review')
+	writeFileSync(join(root, 'AGENTS.md'), '# Instructions\n')
+	writeFileSync(join(root, 'CLAUDE.md'), '@AGENTS.md\n')
 	return root
 }
 
@@ -56,6 +59,7 @@ describe('diagnoseBridges', () => {
 
 		expect(result).toEqual({
 			bridges: [{ harness: 'claude-code', path: '.claude/skills', kind: 'symlink', status: 'ok' }],
+			instructions: [{ harness: 'claude-code', path: 'CLAUDE.md', kind: 'import', status: 'ok' }],
 			divergence: [],
 			findings: [],
 		})
@@ -134,7 +138,9 @@ describe('diagnoseBridges', () => {
 		const result = diagnoseBridges({ root, cli })
 
 		expect(result.bridges[0]).toMatchObject({ kind: 'copy', status: 'diverged' })
-		expect(result.findings.map((finding) => finding.path)).toEqual(['.agents/skills', '.claude/skills'])
+		// Skills first, then instructions, each section led by the canonical target it resolves into.
+		// No `CLAUDE.md` row follows: with no AGENTS.md anywhere there is nothing for one to import.
+		expect(result.findings.map((finding) => finding.path)).toEqual(['.agents/skills', '.claude/skills', 'AGENTS.md'])
 	})
 
 	it('checks every bridge the requested harnesses add', () => {
