@@ -2,7 +2,9 @@ import { mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'node
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
+import { harnessRegistry } from '../harness-registry/harness-registry.ts'
 import { diagnoseBridges } from './diagnose-bridges.ts'
+import { diagnoseInstructions } from './diagnose-instructions.ts'
 
 const cli = 'bah'
 const initSkill = '/buddy-agent-harness:init'
@@ -197,6 +199,17 @@ describe('the settings-entry bridge', () => {
 		expect(findingsOf(root, ['gemini-cli'])[0]).toMatchObject({
 			detail: 'the settings file does not parse, so the harness reads none of it',
 		})
+	})
+})
+
+describe('a harness set with no instruction bridge', () => {
+	// Codex and Cursor read `AGENTS.md` where it lies, so its absence is not a broken bridge and
+	// there is nothing to report against them either way.
+	it('reports nothing at all, not even a missing AGENTS.md', () => {
+		const root = repository()
+		const native = harnessRegistry.filter((harness) => harness.name === 'codex' || harness.name === 'cursor')
+
+		expect(diagnoseInstructions(root, native, cli)).toEqual({ instructions: [], findings: [] })
 	})
 })
 
