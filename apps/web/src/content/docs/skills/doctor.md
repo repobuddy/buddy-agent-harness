@@ -49,6 +49,10 @@ Beyond the bridges, `doctor` reports configuration that is present and **wrong**
 
 Those four go to the [`repair` skill](/skills/repair/), which offers each correction with its before and after and writes only what you approve. Everything else `doctor` finds goes to [`init`](/skills/init/).
 
+## MCP findings
+
+Where the repository keeps a [golden MCP server set](/agent-configuration/mcp-servers/), the command also reports how each harness's own MCP config has drifted from it, and it reports a literal credential in any MCP file whether or not a golden set exists. Every `mcp-*` repair is carried in the finding itself, and none of them is automated: the command detects, and the skill acts on the report the same way it does everywhere else. Two rules bind the skill here — never merge a `mcp-diverged-both` conflict automatically, and never read a reported secret's value back into the conversation; the report deliberately does not contain it. [MCP Servers](/agent-configuration/mcp-servers/) is the home for the golden set, the per-harness files, and the findings.
+
 ## What it will not do
 
 There is no `--fix`, and the skill does not invent one. Three rules hold whatever you ask for mid-run:

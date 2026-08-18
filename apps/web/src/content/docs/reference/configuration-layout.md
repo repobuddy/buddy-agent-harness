@@ -60,4 +60,6 @@ MCP servers do have one. A cross-harness mapping exists and is published: [`agen
 
 So MCP is reported rather than converted because conversion would have to invent values you did not write, and initialization invents nothing. It is a policy, not an impossibility: if that changes, [say so](https://github.com/repobuddy/buddy-agent-harness/issues).
 
+That reasoning holds for `init`, and there is now a way around it that keeps it true: a [golden MCP server set](/agent-configuration/mcp-servers/) the user authors at `.agents/buddy-agent-harness/mcp.toml`, holding each server in the superset of fields the hosts accept. A field the user filled in is transcription rather than invention, so where that file exists, `doctor` compares it against each harness's own MCP config and reports drift both ways. Nothing writes yet, and `init` still invents nothing.
+
 Repository instructions are the middle case. `AGENTS.md` is canonical, but the two harnesses that cannot read it need a bridge the CLI does not write, because both need judgment about user-authored content: the [Claude Code](/agent-configuration/harnesses/claude-code/) `CLAUDE.md` import and the [Gemini CLI](/agent-configuration/harnesses/gemini-cli/) `context.fileName` edit. The [`init` skill](/skills/init/) handles both.
