@@ -77,10 +77,6 @@ implementation wins and the disagreement is reported.
 
 ## NEXT
 
-Spec gate round two is running. Then rebase onto PR #60 once it merges, and respec
-`cli/diagnosis-report/`'s `help` scenarios against `help[N]{command,instruction}` — binding
-the four properties operator ruled in: `command` non-empty means safe to run verbatim,
-`command` empty means judgment, every finding carries a non-empty `instruction`, and the
-data-loss guard that keeps `diverged-both` and `diverged-unknown` command-less.
-
-Then PR against main linking #58, CI, merge.
+Rebased onto #60; `cli/diagnosis-report/` now specifies `help[N]{command,instruction}` and
+binds all four properties operator ruled in. Spec gate round two is regrading the rebased
+tree. Then PR against main linking #58, CI, merge.
