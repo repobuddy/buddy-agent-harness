@@ -11,7 +11,7 @@ The contract between the surface that **finds** wrong agent configuration and th
 
 `doctor` is a read-only CLI command. `init` and `repair` are skills that write. Neither half works alone: a detector that cannot hand its findings on is a report nobody acts on, and a repairer that detects for itself is a second detector free to drift from the first. What makes the pair work is the narrow thing passed between them, and until now that was written as a paragraph inside one of the two nodes — which is the wrong home the moment a second cross-surface flow appears.
 
-This node owns **the seam and nothing else**. What each finding means is the detecting node's (`../../cli/bridge-resolution/`, `../../cli/instruction-bridges/`, `../../cli/configuration-diagnosis/`). What a repairing skill does once it holds a finding is that skill's (`../../skills/repair/`). What lives here is what crosses: the fields a consumer may rely on, which surface owns which family, and the two properties that keep the split honest.
+This node owns **the seam and nothing else**. What each finding means is the detecting node's (`../../cli/bridge-resolution/`, `../../cli/instruction-bridges/`, `../../cli/configuration-diagnosis/`). What a repairing skill does once it holds a finding is that skill's (`../../skills/repair/`). What lives here is what crosses: the fields a consumer may rely on, which surface owns each repair, and the properties that keep the split honest.
 
 **Detection has exactly one home.** Every check lives in the `doctor` command. That is what lets the finding set grow without touching a skill, and it is why `doctor` refuses to carry repairs: the moment it writes, it stops being safe to run from a session-start hook, and the hook is the only thing that notices a broken bridge before a person does.
 
@@ -29,8 +29,8 @@ So a consumer's question is not "which of the two skills?" but "does this findin
 - **finding** — one reported fault, carrying a `problem` name, a `path`, a `detail` in prose, and a repair.
 - **detecting surface** — the `doctor` command. The only place a check lives.
 - **repairing surface** — the `init` skill or the `repair` skill. The only places a write happens.
-- **family** — which of the three detecting nodes a `problem` belongs to. It determines the owner, and nothing else about the finding.
-- **routable field** — a field a consumer may branch on: `problem`, `path`, and the named owner. `detail` is not one.
+- **family** — which of the three detecting nodes a `problem` belongs to. It is uniform in the owner for two of the three, and says nothing else about the finding.
+- **routable field** — a field a consumer may branch on. There is exactly one: `problem`. `path` is an input to the repair rather than something to branch on, and `detail` is prose.
 
 **Non-goals**
 
@@ -46,7 +46,7 @@ So a consumer's question is not "which of the two skills?" but "does this findin
 
 - **`doctor` skill** — reads the report and routes each finding to the skill that owns it. The consumer this contract is written for.
 - **`repair` skill** — acts on the findings it owns and hands on the ones it does not.
-- **`init` skill** — owns every bridge and instruction repair.
+- **`init` skill** — owns every instruction repair, and every bridge repair that rebuilding fixes.
 - **person at a shell** — the consumer who routes by reading rather than by parsing, and for whom the repair must still be an instruction they can follow.
 - **session-start hook** — never routes anything, and is the reason the detecting surface must stay read-only.
 
@@ -54,9 +54,9 @@ So a consumer's question is not "which of the two skills?" but "does this findin
 
 | Actor | Goal | Entry point |
 | --- | --- | --- |
-| `doctor` skill | send every finding to the one surface that repairs it | the `problem` name and the named owner |
+| `doctor` skill | send every finding to the surface that repairs it, or to a person where none does | the `problem` name |
 | `repair` skill | tell a finding it owns from one it must hand on, without inspecting the repository | the `problem` name |
-| `init` skill | receive every bridge and instruction finding, and no other | the repair each finding carries |
+| `init` skill | receive the findings rebuilding repairs, and no other | the repair each finding carries |
 | person at a shell | know what to do about a fault without running anything else | the repair each finding carries |
 | session-start hook | run the detecting surface with no risk of a write | `buddy-agent-harness doctor` |
 
@@ -64,7 +64,7 @@ So a consumer's question is not "which of the two skills?" but "does this findin
 
 | Entry point | Trigger | Inputs | Outcome |
 | --- | --- | --- | --- |
-| `buddy-agent-harness doctor`, read by a repairing skill | a skill is asked to correct configuration and needs to know what is wrong | the repository root | every fault reported once, each naming the surface that owns its repair |
+| `buddy-agent-harness doctor`, read by a repairing skill | a skill is asked to correct configuration and needs to know what is wrong | the repository root | every fault reported once, each carrying the repair that resolves it |
 
 **Surface**
 
