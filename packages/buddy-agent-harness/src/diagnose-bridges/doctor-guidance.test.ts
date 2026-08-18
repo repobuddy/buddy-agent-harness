@@ -5,12 +5,15 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import {
 	bridgeRepairs,
+	commandInvocation,
 	doctorRepairs,
+	initSkillInvocation,
 	instructionRepairs,
 	launcherFor,
 	renderDoctorSkill,
 	renderSkillLauncher,
 	repairFor,
+	repairSkillInvocation,
 	skillInvocation,
 } from './doctor-guidance.ts'
 
@@ -128,5 +131,81 @@ describe('skill launcher', () => {
 		})
 
 		expect(() => JSON.parse(stdout)).not.toThrow()
+	})
+})
+
+/** The configuration faults, which the module keeps private: everything in neither other family. */
+const configurationRepairs = doctorRepairs.filter(
+	(entry) => !bridgeRepairs.includes(entry) && !instructionRepairs.includes(entry),
+)
+
+/** The bridge problems a rebuilt bridge fixes — every one but the three that need a hand. */
+const byHand = ['diverged-both', 'diverged-unknown', 'unpinned-copy']
+
+describe('the detect-and-repair seam', () => {
+	// One entry, two renderings: what the command prints names a shell invocation, what the shipped
+	// skill states names a skill. They cannot disagree about which problem they repair, and they
+	// deliberately disagree about who acts — which is why only one of them names an owner.
+	it('renders every repair twice, once for a shell and once for a skill', () => {
+		for (const entry of doctorRepairs) {
+			expect(repairFor(entry.problem)).toBe(entry)
+			expect(entry.skillRepair('<path>')).not.toBe(entry.repair('<path>', commandInvocation))
+		}
+
+		const missing = repairFor('missing')
+		expect(missing.repair('<path>', commandInvocation)).toBe(`${commandInvocation} init`)
+		expect(missing.skillRepair('<path>')).toContain(initSkillInvocation)
+
+		// Only the skill rendering names an owner: the command rendering for this same problem is a
+		// binary invocation, so a caller reading the command's output alone recovers no owner.
+		expect(missing.repair('<path>', commandInvocation)).not.toContain(initSkillInvocation)
+	})
+
+	it('carries a repair with every finding it reports', () => {
+		for (const entry of doctorRepairs) {
+			expect(entry.detail).not.toBe('')
+			expect(entry.repair('.claude/skills', 'bah')).not.toBe('')
+			expect(entry.skillRepair('.claude/skills')).not.toBe('')
+		}
+	})
+
+	it('sends a bridge finding to the init skill wherever rebuilding is the repair', () => {
+		for (const entry of bridgeRepairs.filter((repair) => !byHand.includes(repair.problem)))
+			expect(entry.skillRepair('<path>')).toContain(initSkillInvocation)
+	})
+
+	// Rebuilding is what destroys the work here, so no skill is named at all — an invented owner
+	// would be `init`, which is the one thing that must not run.
+	it('names no skill for a finding that rebuilding would not repair', () => {
+		for (const entry of bridgeRepairs.filter((repair) => byHand.includes(repair.problem))) {
+			const skillRepair = entry.skillRepair('<path>')
+			expect(skillRepair).not.toContain(initSkillInvocation)
+			expect(skillRepair).not.toContain(repairSkillInvocation)
+			expect(skillRepair).toContain('git ')
+		}
+	})
+
+	it('sends every instruction finding to the init skill', () => {
+		for (const entry of instructionRepairs) expect(entry.skillRepair('<path>')).toContain(initSkillInvocation)
+	})
+
+	it('sends every configuration finding to the repair skill', () => {
+		expect(configurationRepairs.length).toBeGreaterThan(0)
+		for (const entry of configurationRepairs) expect(entry.skillRepair('<path>')).toContain(repairSkillInvocation)
+	})
+
+	// The name is what a consumer routes on, so it must not have to be recovered from the prose.
+	it('keeps the routable name out of the prose detail', () => {
+		for (const entry of doctorRepairs) expect(entry.detail).not.toContain(entry.problem)
+	})
+
+	// One repair per problem, never a set to choose from. Where more than one correction is valid,
+	// the options come from the repairing skill's own reference, not from the report.
+	it('states exactly one repair per problem, never a set to choose between', () => {
+		for (const entry of doctorRepairs) {
+			expect(repairFor(entry.problem)).toBe(entry)
+			expect(typeof entry.repair('.claude/skills', 'bah')).toBe('string')
+			expect(typeof entry.skillRepair('.claude/skills')).toBe('string')
+		}
 	})
 })

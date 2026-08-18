@@ -68,7 +68,7 @@ describe('the import bridge', () => {
 		expect(instructionsOf(root)[0]).toMatchObject({ kind: 'symlink', status: 'unbridged' })
 	})
 
-	it('reports a missing bridge and hands the repair to the init skill', () => {
+	it('reports a missing instruction bridge', () => {
 		const root = repository()
 
 		expect(instructionsOf(root)).toEqual([

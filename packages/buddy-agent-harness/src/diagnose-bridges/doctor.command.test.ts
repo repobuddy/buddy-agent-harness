@@ -1,5 +1,6 @@
+import { homedir } from 'node:os'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { renderText } from '../command-output/command-output.ts'
+import { binPath, renderText } from '../command-output/command-output.ts'
 import { type DiagnoseResult, diagnoseBridges } from './diagnose-bridges.ts'
 import { buildReport, doctorCommand } from './doctor.command.ts'
 
@@ -71,6 +72,27 @@ describe('doctor command', () => {
 		})
 		run({ format: 'json' })
 		expect(process.exitCode).toBeUndefined()
+	})
+
+	// The default is TOON, so nothing else confirms the command honors what it was asked for.
+	it('encodes the report in the requested format and nothing else', () => {
+		run({ format: 'json' })
+		expect(stdout).toHaveBeenCalledWith(expect.stringContaining('"bridges":['))
+
+		stdout.mockClear()
+		run({ format: 'text' })
+		expect(stdout).toHaveBeenCalledWith(expect.stringContaining('bridges:'))
+		expect(stdout).not.toHaveBeenCalledWith(expect.stringContaining('"bridges":['))
+	})
+
+	// A report a caller cannot trace back to the binary that wrote it cannot be reproduced, and the
+	// home directory is collapsed so the path is publishable.
+	it('names the executable that produced the report, with the home directory collapsed', () => {
+		run({ format: 'json' })
+
+		const bin = binPath(homedir(), process.argv[1])
+		expect(bin).not.toContain(homedir())
+		expect(stdout).toHaveBeenCalledWith(expect.stringContaining(`"bin":${JSON.stringify(bin)}`))
 	})
 
 	it('reports an invalid format, an unsupported harness, and a failed diagnosis', () => {
