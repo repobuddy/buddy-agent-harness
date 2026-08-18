@@ -440,3 +440,62 @@ Status values: `confirmed`, `contested`, `thin`. Confidence: high / medium / low
   That comments are not supported today is corroborated by the standing feature requests for them: #17968 asks for a `settings.jsonc` format, and #29370 asks for `//` and `/* */` to be stripped before parsing "the same format VS Code uses". A closed-as-duplicate request and an open one both presuppose the current parser rejects them.
 
   This is the exact inverse of E-JSON-01, and the pair is why the rule for a user-authored settings file is stated in general form: amend it in place rather than round-tripping it, and never add a comment to a file whose harness has not documented tolerating one.
+
+## E-MCP-01 — A cross-harness MCP mapping exists and is published
+
+- **Date**: 2026-08-18
+- **Status**: confirmed
+- **Confidence**: high
+- **Source**: `agent-install@0.0.8` on npm — direct inspection of the published tarball (`dist/mcp-D24Z3PhI.js`), 2026-08-18. Package description: "Install SKILL.md files, MCP servers, and AGENTS.md guidance for any coding agent."
+- **Notes**: The `mcpAgents` registry holds fourteen host entries: `antigravity`, `cline`, `cline-cli`, `claude-code`, `claude-desktop`, `codex`, `cursor`, `gemini-cli`, `goose`, `github-copilot-cli`, `mcporter`, `opencode`, `vscode`, `zed`. Each carries `globalConfigPath`, `projectConfigPath`, `configKey`, `format`, `supportedTransports`, and optionally `transformConfig` and `unsupportedTransportMessage`.
+
+  Six distinct config keys across three serialization formats: `mcpServers` (nine hosts, JSONC), `mcp_servers` (Codex, TOML), `servers` (VS Code, JSONC), `mcp` (opencode, JSONC), `context_servers` (Zed, JSONC), `extensions` (Goose, YAML).
+
+  So the flat claim "no cross-harness mapping exists" is refuted: one is written down, published, and covers more hosts than this project supports. What follows from the rest of this section is that the mapping is not lossless.
+
+## E-MCP-02 — The config key and file format differ per host, and vendors say so
+
+- **Date**: 2026-08-18
+- **Status**: confirmed
+- **Confidence**: high
+- **Source**: OpenAI Codex — https://learn.chatgpt.com/docs/extend/mcp?surface=cli; GitHub Docs — https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-mcp-servers; Zed — https://zed.dev/docs/ai/mcp; Goose — https://goose-docs.ai/docs/guides/config-files/ — all primary vendor documentation (`goose-docs.ai` is the canonical Goose site since the project moved from Block to the Agentic AI Foundation; the old `block.github.io/goose` paths 404)
+- **Notes**: Verified independently of E-MCP-01, one vendor page per host:
+
+  - **Codex**: `[mcp_servers.<server-name>]` in `config.toml`, at `~/.codex/config.toml` or a project-scoped `.codex/config.toml`. The page does not mention `CODEX_HOME`; `agent-install` honors it, so treat the environment variable as implementation behavior rather than documented behavior.
+  - **Copilot CLI**: `mcpServers` in `~/.copilot/mcp-config.json`, relocatable with `COPILOT_HOME`. The page states directly that the `.vscode/mcp.json` file "is not read by Copilot CLI. It uses the unsupported top-level key `servers`."
+  - **Zed**: `context_servers` in `settings.json`.
+  - **Goose**: `extensions` in `config.yaml`, at `~/.config/goose/config.yaml` on macOS and Linux and `%APPDATA%\Block\goose\config\config.yaml` on Windows.
+
+  The Copilot CLI line is the strongest single item here: a vendor stating that two MCP files which can sit in the same repository are mutually unreadable. Divergence is documented, not incidental.
+
+## E-MCP-03 — Transport support is where a converter has to be able to decline
+
+- **Date**: 2026-08-18
+- **Status**: confirmed
+- **Confidence**: high
+- **Source**: Model Context Protocol docs — https://modelcontextprotocol.io/docs/develop/connect-local-servers and https://modelcontextprotocol.io/docs/develop/connect-remote-servers — primary; corroborated by `agent-install@0.0.8` inspection
+- **Notes**: Claude Desktop's `claude_desktop_config.json` carries `command`/`args`/`env` entries only. Remote servers are not added to that file at all — they are added through Settings → Connectors as Custom Connectors, by URL. `agent-install` records the same restriction as the only transport limit in its registry (`supportedTransports: ["stdio"]`, with the message "Claude Desktop currently supports only stdio MCP servers. Use a package name or command instead of a URL.").
+
+  A remote server therefore has no representation in the file a converter would write. Refusing is the correct behavior, and it depends on the transport of the individual server, not on the host alone.
+
+## E-MCP-04 — Zed is not remote-only, contrary to issue #41
+
+- **Date**: 2026-08-18
+- **Status**: confirmed
+- **Confidence**: high
+- **Source**: Zed — https://zed.dev/docs/ai/mcp — primary vendor documentation; plus `agent-install@0.0.8` inspection
+- **Notes**: Zed's documented `context_servers` example carries both a `command`/`args`/`env` entry and a `url`/`headers` entry side by side, so it accepts stdio and remote servers alike. `agent-install@0.0.8` agrees: the `zed` entry is `supportedTransports: ALL_TRANSPORTS`, and its `unsupportedTransportMessage` ("This agent supports only remote MCP servers (HTTP/SSE)") is unreachable because no transport is excluded — a vestigial field, not a live restriction.
+
+  Recorded because issue #41 asserts "Zed accepts remote servers only" and nothing in either source supports it. Claude Desktop (E-MCP-03) is the transport-restricted host in the fourteen, and it is the only one.
+
+## E-MCP-05 — Conversion invents fields the source does not carry
+
+- **Date**: 2026-08-18
+- **Status**: confirmed
+- **Confidence**: high
+- **Source**: `agent-install@0.0.8` transform functions (`transformGooseServerConfig`, `transformZedServerConfig`, `transformVscodeServerConfig`), direct inspection; Goose field list corroborated by https://goose-docs.ai/docs/guides/config-files/
+- **Notes**: Writing a common-form server into Goose emits `description: ""`, `enabled: true`, and `timeout: 300`, and for a remote server `type: "streamable_http"` unless the source said `sse`. Writing into Zed emits `source: "custom"`. None of those values comes from the input; each is a default the converter picks.
+
+  Goose's own docs list `enabled`, `timeout`, `description`, and `bundled` as optional, so the invented values are legal — but they are still values a user did not write, and going back the other way drops them. That is the shape of the lossiness: not a failure to convert, but a conversion that has to guess in one direction and discard in the other.
+
+  This is the finding that bears on `init` rather than on the wording. `init`'s stated safety property is that it invents nothing; a conforming MCP converter cannot hold that property.

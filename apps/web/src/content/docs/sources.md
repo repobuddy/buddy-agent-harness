@@ -31,6 +31,7 @@ The harness claims across this site are not equally well-sourced, and the differ
 | Claude Code concatenating every discovered `CLAUDE.md` | High | Claude Code memory documentation, primary |
 | Nested-resolution semantics beyond precedence | Low | unratified v1.1 proposal, no maintainer response |
 | A standard local-override file (`AGENTS.local.md`) | Low | absent from the standard; three open issues, two candidate names |
+| MCP configuration having a cross-harness mapping that is not lossless | High | primary vendor documentation per host, plus inspection of the published `agent-install` registry |
 
 ## Cursor's mode split is not confirmed
 

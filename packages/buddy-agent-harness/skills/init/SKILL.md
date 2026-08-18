@@ -52,7 +52,7 @@ Sort each finding into exactly one bucket:
 - **already linked** — a symlink resolving into `.agents/`; skip it. This is what makes re-runs idempotent.
 - **consolidatable** — harness instruction files whose content belongs in `AGENTS.md`.
 - **portable** — skill and command directories that move into `.agents/skills/`.
-- **canonical-only** — MCP servers, rules, subagents, hooks, output styles. No safe cross-harness mapping exists, so report them and leave them alone.
+- **canonical-only** — rules, subagents, hooks, output styles, MCP servers. Report them and leave them alone. For the first four there is no cross-harness format to convert into. For MCP there is a mapping, but it is not lossless — some servers cannot be expressed for some hosts, and writing one into another host's format means supplying fields the source never carried. Never convert one.
 
 ## 3. Confirm
 

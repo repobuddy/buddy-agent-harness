@@ -45,7 +45,7 @@ Every finding goes into exactly one bucket:
 | portable | skill and command directories | moved into `.agents/skills/` |
 | canonical-only | MCP servers, rules, subagents, hooks, output styles | reported and left in place |
 
-The canonical-only bucket is the important one. No safe cross-harness mapping exists for those formats, so the skill reports them rather than converting them.
+The canonical-only bucket is the important one. The skill reports those formats rather than converting them: subagents, rules, hooks, and output styles have no cross-harness format to convert into, and MCP servers have one that cannot be applied without inventing values you did not write. [What stays canonical](/reference/configuration-layout/#what-stays-canonical) has the reasoning.
 
 ### 3. Confirm
 

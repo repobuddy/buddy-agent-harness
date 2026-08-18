@@ -10,7 +10,7 @@ What to look for during the survey, and where each finding belongs.
 | Commands | `.claude/commands/*.md`, `.cursor/commands/*.md` | move to `.agents/skills/<name>/SKILL.md`. Claude Code has merged commands into skills, so this follows the harness rather than fighting it |
 | Subagents | `.claude/agents/` | canonical-only — no cross-harness format exists. Report; leave in place |
 | Rules | `.cursor/rules/**.mdc`, `.claude/rules/`, `.windsurf/rules/` | canonical-only — `.mdc` and `.md` are not interchangeable, and path-scoping syntax differs. Report |
-| MCP servers | `.mcp.json`, `.cursor/mcp.json`, `.vscode/mcp.json`, `.claude/settings.json` | canonical-only. Report; never convert between formats |
+| MCP servers | `.mcp.json`, `.cursor/mcp.json`, `.vscode/mcp.json`, `.claude/settings.json` | canonical-only. Report; never convert between formats. A mapping between them exists but is not lossless, and applying it means inventing fields the source did not carry |
 | Hooks, LSP, output styles | hook blocks in settings files, `.claude/output-styles/` | canonical-only. Hook event names differ by case across harnesses, so no safe projection exists. Report |
 
 For every entry, record which of three states it is in:
