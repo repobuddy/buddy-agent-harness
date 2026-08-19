@@ -2,7 +2,7 @@ import { execFileSync } from 'node:child_process'
 import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { GitBridgeState } from '../diagnose-bridges/git-bridge-state.ts'
 import { diagnoseMcp } from './diagnose-mcp.ts'
 import { positionOf } from './mcp-sources.ts'
@@ -235,6 +235,27 @@ describe('diagnoseMcp', () => {
 			write(root, cursor, JSON.stringify({ mcpServers: { linear: { command: 'bunx', args: ['-y', 'linear-mcp'] } } }))
 
 			expect(find(root, 'mcp-diverged-target')?.path).toBe(`${cursor}#servers.linear.command`)
+		})
+
+		// The walk runs once per diverged field and reads the same two files at the same commits every
+		// time. Three targets, five servers, two diverged fields each and fifty commits of history is
+		// three thousand `git show` calls unmemoized — on the command the `doctor` skill advertises as
+		// cheap enough for a session-start hook, for the case that command exists to report.
+		it('reads each file at each commit once, however many fields diverged', () => {
+			const root = gitRepository()
+			write(root, golden, goldenLinear)
+			write(root, cursor, cursorLinear)
+			commit(root, 'agree')
+			write(root, cursor, JSON.stringify({ mcpServers: { linear: { command: 'bunx', args: ['-y', 'other-mcp'] } } }))
+			commit(root, 'target moved')
+			const git = new GitBridgeState(root)
+			const contentAt = vi.spyOn(git, 'contentAt')
+
+			const findings = diagnoseMcp({ root, git, cli })
+
+			expect(findings.map((finding) => finding.problem)).toEqual(['mcp-diverged-target', 'mcp-diverged-target'])
+			const reads = contentAt.mock.calls.map(([commit, path]) => `${commit} ${path}`)
+			expect(reads).toEqual([...new Set(reads)])
 		})
 
 		it('walks past a commit where the golden set did not parse', () => {

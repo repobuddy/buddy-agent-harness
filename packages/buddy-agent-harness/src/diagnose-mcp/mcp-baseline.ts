@@ -2,7 +2,7 @@ import type { GitBridgeState } from '../diagnose-bridges/git-bridge-state.ts'
 import { parseJsonWithComments } from '../diagnose-bridges/json-with-comments.ts'
 import type { McpConfig } from '../harness-registry/mcp-config.ts'
 import { type McpField, type McpServer, sameField } from './mcp-model.ts'
-import { goldenSetPath, parseGoldenSet, parseTarget } from './mcp-sources.ts'
+import { goldenSetPath, type ParsedServers, parseGoldenSet, parseTarget } from './mcp-sources.ts'
 
 /** Which side of a diverged server moved since the two last agreed. */
 export type McpDirection = 'target' | 'golden' | 'both' | 'unknown'
@@ -61,6 +61,19 @@ export type BaselineOptions = {
 export class McpBaseline {
 	constructor(private readonly options: BaselineOptions) {}
 
+	/**
+	 * One parse per commit per file, and one commit walk per target.
+	 *
+	 * `lastAgreed` runs per (config, server, field) that diverges without a projection record, and
+	 * every one of those walks reads the same two files at the same commits. Unmemoized, three
+	 * targets against five servers with two diverged fields each over fifty commits of history is
+	 * three thousand `git show` calls and as many parses — on the command the `doctor` skill says is
+	 * cheap enough for a session-start hook. One instance serves one diagnosis, so the memo lives and
+	 * dies with it and can never answer for a working tree that has moved on.
+	 */
+	private readonly parsed = new Map<string, ParsedServers>()
+	private readonly walked = new Map<string, string[]>()
+
 	directionOf(config: McpConfig, name: string, field: McpField, golden: McpServer, target: McpServer): McpDirection {
 		const base = this.baseFor(config, name, field)
 		if (base === undefined) return 'unknown'
@@ -82,14 +95,31 @@ export class McpBaseline {
 	 * reformatted one of them did not change what it says.
 	 */
 	private lastAgreed(config: McpConfig, name: string, field: McpField): McpServer | undefined {
-		for (const commit of this.options.git.commitsTouching([goldenSetPath, config.path])) {
-			const golden = parseGoldenSet(this.options.git.contentAt(commit, goldenSetPath))
-			const target = parseTarget(config, this.options.git.contentAt(commit, config.path))
+		for (const commit of this.commitsTouching(config)) {
+			const golden = this.parseAt(commit, goldenSetPath, parseGoldenSet)
+			const target = this.parseAt(commit, config.path, (source) => parseTarget(config, source))
 			if (golden.kind !== 'servers' || target.kind !== 'servers') continue
 			const left = golden.servers.get(name)
 			const right = target.servers.get(name)
 			if (left && right && sameField(field, left, right)) return left
 		}
 		return undefined
+	}
+
+	private commitsTouching(config: McpConfig): string[] {
+		const walked = this.walked.get(config.path)
+		if (walked) return walked
+		const commits = this.options.git.commitsTouching([goldenSetPath, config.path])
+		this.walked.set(config.path, commits)
+		return commits
+	}
+
+	private parseAt(commit: string, path: string, parse: (source: string | undefined) => ParsedServers): ParsedServers {
+		const key = `${commit}\u0000${path}`
+		const parsed = this.parsed.get(key)
+		if (parsed) return parsed
+		const result = parse(this.options.git.contentAt(commit, path))
+		this.parsed.set(key, result)
+		return result
 	}
 }
