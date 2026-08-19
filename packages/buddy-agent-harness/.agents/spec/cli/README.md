@@ -13,6 +13,7 @@ The package publishes one binary with two commands: `init`, which writes a repos
 | [`configuration-diagnosis/`](./configuration-diagnosis/README.md) | Whether the configuration around those bridges is present and wrong |
 | [`mcp-diagnosis/`](./mcp-diagnosis/README.md) | Whether the golden MCP server set and the harness copies of it have drifted |
 | [`diagnosis-report/`](./diagnosis-report/README.md) | The one output shape every family is reported through |
+| [`entry-point/`](./entry-point/README.md) | How the package is called, and what it answers with |
 
 The cross-surface flow these findings feed — one surface detects, another repairs — is at [`../workflows/detect-and-repair/`](../workflows/detect-and-repair/README.md).
 
@@ -24,4 +25,4 @@ Two parts of this surface have no node yet, and neither is a stub of an existing
 
 **The `init` skill's write behavior** — what it consolidates, what it declines to invent, and the fact that it writes the `CLAUDE.md` import stub and the Gemini `context.fileName` entry itself. [`../skills/harness-init/`](../skills/harness-init/README.md) specifies the **`init` command**: its options, its formats, and its error behavior. The skill that every instruction-bridge repair is routed to is a different subject, and it has no node.
 
-**The entry-point contract** — how the package is called and what it answers with. It belongs at `cli/entry-point/` when it is written. It is a contract worth stating rather than a formality, because the surface serves two consumers that want different things: one wants exactly what the command **prints**, and one wants the **data** the command printed it from. The published exports serve the second. Note the two are not symmetrical today: the diagnosis functions return the findings, and the report the command prints is assembled on top of them, so "the data behind the report" is available and "the report as data" is not.
+The entry-point contract that was the third gap here is now [`entry-point/`](./entry-point/README.md), and the asymmetry this section recorded is closed: `run(argv)` answers the consumer that wants exactly what the command **prints**, the exported report builder answers the one that wants the **report as data**, and the diagnosis functions still answer the one that wants the findings the report was assembled from.

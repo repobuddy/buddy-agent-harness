@@ -3,7 +3,7 @@ import { encode } from '@toon-format/toon'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { binPath, renderText } from '../command-output/command-output.ts'
 import { type DiagnoseResult, diagnoseBridges } from './diagnose-bridges.ts'
-import { buildReport, doctorCommand } from './doctor.command.ts'
+import { buildDoctorReport, doctorCommand } from './doctor.command.ts'
 
 vi.mock('./diagnose-bridges.ts', () => ({ diagnoseBridges: vi.fn() }))
 
@@ -11,8 +11,8 @@ const mockedDiagnoseBridges = vi.mocked(diagnoseBridges)
 const stderr = vi.spyOn(process.stderr, 'write').mockImplementation(() => true)
 const stdout = vi.spyOn(process.stdout, 'write').mockImplementation(() => true)
 
-function run(args: { format?: string; harness?: string; root?: string }): void {
-	;(doctorCommand as { run(value: typeof args): void }).run(args)
+function run(args: { format?: string; harness?: string; root?: string }): number {
+	return (doctorCommand as { run(value: typeof args): number }).run(args)
 }
 
 const healthy: DiagnoseResult = {
@@ -55,8 +55,7 @@ describe('doctor command', () => {
 
 	// The diagnosis succeeded either way; a non-zero code reads to an agent as a broken command.
 	it('exits 0 whether or not it found something', () => {
-		run({ format: 'json' })
-		expect(process.exitCode).toBeUndefined()
+		expect(run({ format: 'json' })).toBe(0)
 
 		mockedDiagnoseBridges.mockReturnValue({
 			bridges: [{ harness: 'claude-code', path: '.claude/skills', kind: 'file', status: 'degraded' }],
@@ -71,8 +70,7 @@ describe('doctor command', () => {
 				},
 			],
 		})
-		run({ format: 'json' })
-		expect(process.exitCode).toBeUndefined()
+		expect(run({ format: 'json' })).toBe(0)
 	})
 
 	// The default is TOON, so nothing else confirms the command honors what it was asked for.
@@ -96,30 +94,27 @@ describe('doctor command', () => {
 		expect(stdout).toHaveBeenCalledWith(expect.stringContaining(`"bin":${JSON.stringify(bin)}`))
 	})
 
+	// Returned rather than written: a caller that is not the process learns of the failure too.
 	it('reports an invalid format, an unsupported harness, and a failed diagnosis', () => {
-		run({ format: 'yaml' })
+		expect(run({ format: 'yaml' })).toBe(1)
 		expect(stderr).toHaveBeenCalledWith('error: --format must be toon, json, or text.\n')
-		expect(process.exitCode).toBe(1)
 
-		process.exitCode = undefined
-		run({ format: 'json', harness: 'aider' })
+		expect(run({ format: 'json', harness: 'aider' })).toBe(1)
 		expect(stderr).toHaveBeenCalledWith(expect.stringContaining('Unsupported harness: aider'))
-		expect(process.exitCode).toBe(1)
 
 		stderr.mockClear()
-		process.exitCode = undefined
 		mockedDiagnoseBridges.mockImplementationOnce(() => {
 			throw 'unavailable'
 		})
-		run({ format: 'json' })
+		expect(run({ format: 'json' })).toBe(1)
 		expect(stderr).toHaveBeenCalledWith('error: Harness diagnosis failed.\n')
-		expect(process.exitCode).toBe(1)
+		expect(process.exitCode).toBeUndefined()
 	})
 })
 
-describe('buildReport', () => {
+describe('buildDoctorReport', () => {
 	it('states the healthy answer outright rather than leaving findings empty', () => {
-		expect(buildReport('~/bin/bah', { ...healthy, instructions: [] })).toEqual({
+		expect(buildDoctorReport('~/bin/bah', { ...healthy, instructions: [] })).toEqual({
 			bin: '~/bin/bah',
 			bridges: healthy.bridges,
 			instructions: [],
@@ -134,13 +129,13 @@ describe('buildReport', () => {
 			{ harness: 'windsurf', path: '.windsurf/skills', kind: 'symlink', status: 'ok' },
 		]
 
-		expect(buildReport('~/bin/bah', { ...healthy, bridges })).toMatchObject({
+		expect(buildDoctorReport('~/bin/bah', { ...healthy, bridges })).toMatchObject({
 			findings: '0 problems found — all 3 bridges resolve and the configuration around them is current',
 		})
 	})
 
 	it('moves each repair into help and keeps findings to the diagnosis and its name', () => {
-		const report = buildReport('~/bin/bah', {
+		const report = buildDoctorReport('~/bin/bah', {
 			bridges: [
 				{ harness: 'claude-code', path: '.claude/skills', kind: 'none', status: 'missing' },
 				{ harness: 'windsurf', path: '.windsurf/skills', kind: 'none', status: 'missing' },
@@ -177,7 +172,7 @@ describe('buildReport', () => {
 	// The wrapper this replaced read `Run ` + the repair, so a repair that was an instruction to a
 	// person came out as an invitation to paste prose into a shell.
 	it('wraps no repair, and keeps a judgment repair apart from a runnable one', () => {
-		const report = buildReport('~/bin/bah', {
+		const report = buildDoctorReport('~/bin/bah', {
 			bridges: [{ harness: 'claude-code', path: '.claude/skills', kind: 'copy', status: 'diverged' }],
 			instructions: [],
 			divergence: [{ path: '.claude/skills', direction: 'both' }],
@@ -210,7 +205,7 @@ describe('buildReport', () => {
 	// Two findings can only collapse when both templates ignore the path, which is what makes the
 	// pair — rather than either field alone — the right dedupe key.
 	it('dedupes on the whole repair, not on either field', () => {
-		const report = buildReport('~/bin/bah', {
+		const report = buildDoctorReport('~/bin/bah', {
 			bridges: [],
 			instructions: [],
 			divergence: [],
@@ -248,7 +243,7 @@ describe('buildReport', () => {
 	// leaves the command column blank rather than saying anything untrue in it.
 	it('renders help as a two-column table for a person, blank where there is no command', () => {
 		const text = renderText(
-			buildReport('~/bin/bah', {
+			buildDoctorReport('~/bin/bah', {
 				bridges: [],
 				instructions: [],
 				divergence: [],
@@ -277,7 +272,7 @@ describe('buildReport', () => {
 	// Both keys on every row: with an optional key the TOON encoder drops the whole array out of
 	// its tabular form into a nested list, which is worse for the consumer the default exists for.
 	it('emits both columns always, so the tabular encoding does not degrade', () => {
-		const report = buildReport('~/bin/bah', {
+		const report = buildDoctorReport('~/bin/bah', {
 			bridges: [],
 			instructions: [],
 			divergence: [],
@@ -296,7 +291,7 @@ describe('buildReport', () => {
 	})
 
 	it('adds a divergence section only when a bridge has diverged', () => {
-		const report = buildReport('~/bin/bah', {
+		const report = buildDoctorReport('~/bin/bah', {
 			bridges: [{ harness: 'claude-code', path: '.claude/skills', kind: 'copy', status: 'diverged' }],
 			instructions: [],
 			divergence: [{ path: '.claude/skills', direction: 'bridge' }],
@@ -312,6 +307,6 @@ describe('buildReport', () => {
 
 		expect(report.divergence).toEqual([{ path: '.claude/skills', direction: 'bridge' }])
 		// `help` is conditional too: absent, not empty, when there is nothing to repair.
-		expect(buildReport('~/bin/bah', healthy)).not.toHaveProperty('help')
+		expect(buildDoctorReport('~/bin/bah', healthy)).not.toHaveProperty('help')
 	})
 })

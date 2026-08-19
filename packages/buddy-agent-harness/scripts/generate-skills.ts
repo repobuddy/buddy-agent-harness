@@ -43,8 +43,19 @@ function skillPath(skill: string, ...rest: string[]): string {
 
 const targets: { path: string; expected: string | undefined }[] = []
 
-for (const skill of ['doctor', 'init']) {
-	targets.push({ path: skillPath(skill, launcherFor(skill)), expected: renderSkillLauncher(skill) })
+/**
+ * Which subcommand each skill's launcher runs. Keyed by skill rather than assumed equal to it:
+ * `repair` runs `doctor` to find what it repairs, and while that launcher was labelled generated it
+ * was not on this list, so nothing rewrote it and nothing caught it going stale.
+ */
+const launchers: { skill: string; subcommand: string }[] = [
+	{ skill: 'doctor', subcommand: 'doctor' },
+	{ skill: 'init', subcommand: 'init' },
+	{ skill: 'repair', subcommand: 'doctor' },
+]
+
+for (const { skill, subcommand } of launchers) {
+	targets.push({ path: skillPath(skill, launcherFor(subcommand)), expected: renderSkillLauncher(subcommand) })
 }
 
 targets.push({ path: skillPath('doctor', 'SKILL.md'), expected: renderDoctorSkill(version) })
