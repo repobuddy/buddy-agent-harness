@@ -38,7 +38,7 @@ It is a separate node from `../bridge-resolution/` rather than a case of it, and
 - **`doctor` skill** — presents the report and routes each finding to the skill that owns it.
 - **person at a shell** — runs the command when a harness "is ignoring `AGENTS.md`".
 - **session-start hook** — runs the command unattended; affected by the outcome without reading it.
-- **`init` skill** — owns every repair here, and is the reason each finding names a skill rather than a command.
+- **`init` skill** — owns every repair here, and is the reason each finding names a skill rather than a command. What it does on arrival is `../../skills/init/`.
 - **downstream agent** — every later session started in a harness whose bridge is broken. It never invokes the command and is the actor the findings exist for: it silently loads none of the repository's instructions, and the session that suffers it is not the session that broke the bridge.
 
 **Goals, and where each is served**
