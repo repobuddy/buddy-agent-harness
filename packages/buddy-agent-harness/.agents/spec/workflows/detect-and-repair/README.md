@@ -112,16 +112,16 @@ Routing reads the `problem` name only. Nothing on this path reads `detail`, and 
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
-| B | any | `has one repair for every problem it can report` |
-| B | any | `renders every repair twice, and the two disagree about who acts` |
-| B | any | `carries a repair with every finding it reports` |
+| B | the set of problems the command can report | `has one repair for every problem it can report` |
+| B | both renderings of one problem's repair | `renders every repair twice, and the two disagree about who acts` |
+| B | a repository holding a fault from each of the three families | `carries a repair with every finding it reports` |
 | E | any reported fault | `keeps the routable name out of the prose detail` |
 | F→G | a bridge-resolution problem repairable by rebuilding | `sends a bridge finding to the init skill wherever rebuilding is the repair` |
 | F→G | an instruction-bridge problem | `sends every instruction finding to the init skill` |
 | F→H | a configuration fault | `sends every configuration finding to the repair skill` |
 | F→I | `diverged-both`, `diverged-unknown`, `unpinned-copy` | `names no skill for a finding that rebuilding would not repair` |
-| J | any | `never tells the skill to run the init command` |
-| J | any | `never points the skill at a bare binary invocation` |
+| J | a repair the `init` command would satisfy | `never tells the skill to run the init command` |
+| J | a repair naming the binary the command invokes for its own output | `never points the skill at a bare binary invocation` |
 | L | any | `states exactly one repair per problem, never a set to choose between` |
 | barred | any | `writes nothing while detecting, whatever it finds` |
 

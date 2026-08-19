@@ -10,7 +10,7 @@ Feature: Hand every doctor finding to the one surface that repairs it
 
   @behavior
   Scenario: renders every repair twice, and the two disagree about who acts
-    Given every problem the command can report
+    Given both renderings of one problem's repair
     When each problem's repair is rendered for the command and for the shipped skill
     Then both renderings come from one entry, so they cannot disagree about which problem they repair
     And a bridge problem a rebuild fixes names the `init` skill for the skill reader and a runnable command for the shell reader
@@ -54,15 +54,15 @@ Feature: Hand every doctor finding to the one surface that repairs it
 
   @behavior
   Scenario: never tells the skill to run the init command
-    Given every repair the shipped skill states
-    When each is read
-    Then none invokes the `init` command in place of the `init` skill
+    Given a repair the `init` command would satisfy
+    When the shipped skill's rendering of it is read
+    Then it invokes the `init` skill rather than the `init` command
 
   @behavior
   Scenario: never points the skill at a bare binary invocation
-    Given every repair the shipped skill states
-    When each is read
-    Then none names the bare binary the command uses for its own output
+    Given a repair naming the binary the command invokes for its own output
+    When the shipped skill's rendering of it is read
+    Then it reaches the binary through the pinned fallback rather than naming it bare
 
   @behavior
   Scenario: states exactly one repair per problem, never a set to choose between
