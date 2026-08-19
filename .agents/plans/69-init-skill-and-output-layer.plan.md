@@ -5,25 +5,25 @@ project-path: packages/buddy-agent-harness
 status: active
 todos:
   - content: Derive the init skill's write behavior from SKILL.md and its references
-    status: pending
+    status: completed
   - content: Draft skills/init/ node and suite — consolidation, the invention line, the unattended writes
-    status: pending
+    status: completed
   - content: Draft cli/command-output/ node and suite from the encoder and its tests
-    status: pending
+    status: completed
   - content: Point skills/harness-init/ and the seam nodes at the new init-skill node
-    status: pending
+    status: completed
   - content: Spec gate over both nodes together, including the init/repair approval seam
-    status: pending
+    status: completed
   - content: Deliver — bridge every command-output scenario to a test title; inspect the init suite
-    status: pending
+    status: completed
   - content: Impl gate
-    status: pending
+    status: completed
   - content: Remove the two Backfill gap entries from spec.md and cli/README.md
-    status: pending
+    status: completed
   - content: pnpm verify; changeset only if a published file changed
-    status: pending
+    status: completed
   - content: Handoff — PR against main closing #69, CI green
-    status: pending
+    status: completed
 ---
 
 # 69 — the `init` skill's write behavior, and the shared command output layer
@@ -54,6 +54,24 @@ named apart in both nodes so neither restates the other.
 
 **Out of scope:** the CLI entry-point contract (#61, landed at `cli/entry-point/`).
 
-## NEXT
+## Landed
 
-Draft `skills/init/` from the shipped skill, then `cli/command-output/` from the encoder.
+Two behavioral nodes registered — `skills/init/` (37 scenarios) and `cli/command-output/`
+(11) — and the two Backfill gap entries removed from the project spec and the CLI index.
+`skills/harness-init/` now says it is the command, and the three nodes that route instruction
+repairs to the `init` skill link to the node that says what arriving there does.
+
+Every output-layer scenario bridges exact-title to a test that already existed; the one source
+change is a tightened assertion in that test, which the impl-judge proved is what makes the
+"nothing else is written to that stream" clause discriminate. No changeset — nothing published
+changed.
+
+Spec gate passed on round three (governance pre-flight, then two extensions with no path in the
+drawn graph and an element no goal had bought). Impl gate passed on round two.
+
+## Filed rather than fixed
+
+| Issue | What |
+| --- | --- |
+| #79 | the `init` skill never says what a declined step does to the steps already approved, and states the unasked Gemini settings creation only by implication |
+| #80 | `--force` is documented as replacing one projection and replaces every conflicting one |
