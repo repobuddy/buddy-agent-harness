@@ -144,7 +144,8 @@ describe('diagnoseConfiguration', () => {
 			expect(problems(root)).toContain('unloadable-skill')
 		})
 
-		it('leaves a name that does not match its directory alone — the skill still loads', () => {
+		// The skill still loads: a mismatched name is a warning, not a reason to skip it.
+		it('leaves a name that does not match its directory alone', () => {
 			const root = repository()
 			write(root, '.agents/skills/pdf/SKILL.md', '---\nname: something-else\ndescription: Reads PDFs.\n---\n')
 

@@ -5,12 +5,16 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import {
 	bridgeRepairs,
+	commandInvocation,
+	type DoctorProblem,
 	doctorRepairs,
+	initSkillInvocation,
 	instructionRepairs,
 	launcherFor,
 	renderDoctorSkill,
 	renderSkillLauncher,
 	repairFor,
+	repairSkillInvocation,
 	skillInvocation,
 } from './doctor-guidance.ts'
 
@@ -129,4 +133,185 @@ describe('skill launcher', () => {
 
 		expect(() => JSON.parse(stdout)).not.toThrow()
 	})
+})
+
+/**
+ * The two families the module keeps private. Named rather than derived by exclusion: deriving the
+ * configuration family as "everything in neither exported family" silently swallowed the MCP family
+ * the moment it landed, and the guard below is what makes the next one fail loudly instead.
+ */
+const configurationProblems = ['deprecated-harness', 'ignored-bridge', 'unread-local-override', 'unloadable-skill']
+const configurationRepairs = doctorRepairs.filter((entry) => configurationProblems.includes(entry.problem))
+const mcpRepairs = doctorRepairs.filter((entry) => entry.problem.startsWith('mcp-'))
+
+/** The bridge problems a rebuilt bridge fixes — every one but the three that need a hand. */
+const byHand = ['diverged-both', 'diverged-unknown', 'unpinned-copy']
+
+describe('the detect-and-repair seam', () => {
+	// One entry, two renderings, for two readers. A skill must not run `init` itself, so the skill
+	// rendering hands the work to the `init` skill; a caller reading the command's output can just
+	// run the invocation, so the command rendering gives it one and names no skill.
+	it('renders every repair twice, and the two disagree about who acts', () => {
+		for (const entry of doctorRepairs) expect(repairFor(entry.problem)).toBe(entry)
+
+		const missing = repairFor('missing')
+		expect(missing.repair('<path>', commandInvocation).command).toBe(`${commandInvocation} init`)
+		expect(missing.skillRepair('<path>')).toContain(initSkillInvocation)
+
+		// The bridge family is where the two part: no bridge repair names a skill in `help`.
+		for (const entry of bridgeRepairs) {
+			const { command, instruction } = entry.repair('<path>', commandInvocation)
+			expect(`${command}${instruction}`).not.toContain(initSkillInvocation)
+			expect(`${command}${instruction}`).not.toContain(repairSkillInvocation)
+		}
+	})
+
+	it('carries a repair with every finding it reports', () => {
+		for (const entry of doctorRepairs) {
+			expect(entry.detail).not.toBe('')
+			expect(entry.repair('.claude/skills', 'bah').instruction).not.toBe('')
+			expect(entry.skillRepair('.claude/skills')).not.toBe('')
+		}
+	})
+
+	it('sends a bridge finding to the init skill wherever rebuilding is the repair', () => {
+		for (const entry of bridgeRepairs.filter((repair) => !byHand.includes(repair.problem)))
+			expect(entry.skillRepair('<path>')).toContain(initSkillInvocation)
+	})
+
+	// Rebuilding is what destroys the work here, so no skill is named at all — an invented owner
+	// would be `init`, which is the one thing that must not run.
+	it('names no skill for a finding that rebuilding would not repair', () => {
+		for (const entry of bridgeRepairs.filter((repair) => byHand.includes(repair.problem))) {
+			const skillRepair = entry.skillRepair('<path>')
+			expect(skillRepair).not.toContain(initSkillInvocation)
+			expect(skillRepair).not.toContain(repairSkillInvocation)
+			expect(skillRepair).toContain('git ')
+		}
+	})
+
+	it('sends every instruction finding to the init skill', () => {
+		for (const entry of instructionRepairs) expect(entry.skillRepair('<path>')).toContain(initSkillInvocation)
+	})
+
+	it('sends every configuration finding to the repair skill', () => {
+		expect(configurationRepairs).toHaveLength(configurationProblems.length)
+		for (const entry of configurationRepairs) expect(entry.skillRepair('<path>')).toContain(repairSkillInvocation)
+	})
+
+	// Correcting a drifted server set is the user's judgment about which side is right, so no skill
+	// is named in either rendering.
+	it('names no skill for any MCP finding, in either rendering', () => {
+		expect(mcpRepairs.length).toBeGreaterThan(0)
+		for (const entry of mcpRepairs) {
+			const { command, instruction } = entry.repair('<path>', commandInvocation)
+			for (const text of [entry.skillRepair('<path>'), command, instruction]) {
+				expect(text).not.toContain(initSkillInvocation)
+				expect(text).not.toContain(repairSkillInvocation)
+			}
+		}
+	})
+
+	// The families must partition the table. When a fifth arrives this fails, rather than letting an
+	// exclusion-derived family quietly absorb it and assert the wrong owner for every one of its
+	// problems — which is exactly what happened when the MCP family landed.
+	it('accounts for every problem in exactly one family', () => {
+		const families = [bridgeRepairs, instructionRepairs, configurationRepairs, mcpRepairs]
+		const counted = families.flatMap((family) => family.map((entry) => entry.problem))
+
+		expect(new Set(counted).size).toBe(counted.length)
+		expect(counted.sort()).toEqual(doctorRepairs.map((entry) => entry.problem).sort())
+	})
+
+	// The name is what a consumer routes on, so it must not have to be recovered from the prose.
+	it('keeps the routable name out of the prose detail', () => {
+		for (const entry of doctorRepairs) expect(entry.detail).not.toContain(entry.problem)
+	})
+
+	// One repair per problem, never a set to choose from. Where more than one correction is valid,
+	// the options come from the repairing skill's own reference, not from the report.
+	it('states exactly one repair per problem, never a set to choose between', () => {
+		for (const entry of doctorRepairs) {
+			expect(repairFor(entry.problem)).toBe(entry)
+			expect(Object.keys(entry.repair('.claude/skills', 'bah')).sort()).toEqual(['command', 'instruction'])
+			expect(typeof entry.skillRepair('.claude/skills')).toBe('string')
+		}
+	})
+})
+
+/** The bridge problems a person must choose or reconcile through before anything is rebuilt. */
+const needsAPersonFirst = ['diverged-bridge', 'diverged-both', 'diverged-unknown']
+
+describe('the repair as a command and an instruction', () => {
+	it('states a repair as a runnable command and a prose instruction', () => {
+		const { command, instruction } = repairFor('degraded').repair('.claude/skills', commandInvocation)
+
+		expect(command).toBe(`${commandInvocation} init --copy --force`)
+		expect(instruction).toContain(command)
+		expect(instruction).not.toMatch(/^Run `/)
+	})
+
+	it('leaves the command empty for a repair that is judgment', () => {
+		const { command, instruction } = repairFor('unloadable-skill').repair('.agents/skills/x/SKILL.md', 'bah')
+
+		expect(command).toBe('')
+		expect(instruction).not.toBe('')
+	})
+
+	it('carries an instruction for every repair, and a command only where one completes it', () => {
+		const rendered = doctorRepairs.map((entry) => ({
+			problem: entry.problem,
+			...entry.repair('.claude/skills', commandInvocation),
+		}))
+
+		for (const entry of rendered) expect(entry.instruction).not.toBe('')
+		expect(rendered.filter((entry) => entry.command !== '').map((entry) => entry.problem)).toEqual([
+			'no-canonical',
+			'missing',
+			'degraded',
+			'stale',
+			'diverged-canonical',
+			'unpinned-copy',
+		])
+	})
+
+	// The data-loss guard, and the reason the split is worth its cost. Each of these quotes a
+	// genuinely runnable invocation inside its instruction — a diff, or an init after a manual
+	// replace — and carries no command, because running that invocation is not the repair.
+	it('gives a diverged bridge no command, so executing every command destroys nothing', () => {
+		for (const problem of needsAPersonFirst) {
+			const { command, instruction } = repairFor(problem as (typeof needsAPersonFirst)[number] & DoctorProblem).repair(
+				'.claude/skills',
+				commandInvocation,
+			)
+
+			expect(command).toBe('')
+			expect(instruction).toContain('`')
+		}
+
+		const runnable = doctorRepairs
+			.map((entry) => ({ problem: entry.problem, ...entry.repair('.claude/skills', commandInvocation) }))
+			.filter((entry) => entry.command !== '')
+			.map((entry) => entry.problem)
+		expect(runnable.filter((problem) => needsAPersonFirst.includes(problem))).toEqual([])
+	})
+})
+
+/** Reported once per repository rather than once per path, so neither can recur within a run. */
+const reportedOncePerRepository = ['no-canonical', 'no-instructions']
+
+// The `help` deduplication is a guard, not a behavior a caller sees: every repair that can arise
+// at two paths names its path, so two findings never produce the same pair. Asserted against the
+// real table rather than a fixture, because a hand-built finding can hold any repair at all and so
+// cannot notice a template that stopped naming its path.
+it('gives two findings of one problem at two paths their own help entry each', () => {
+	const collides = doctorRepairs
+		.filter((entry) => {
+			const left = entry.repair('.claude/skills', commandInvocation)
+			const right = entry.repair('.windsurf/skills', commandInvocation)
+			return left.command === right.command && left.instruction === right.instruction
+		})
+		.map((entry) => entry.problem)
+
+	expect(collides).toEqual(reportedOncePerRepository)
 })

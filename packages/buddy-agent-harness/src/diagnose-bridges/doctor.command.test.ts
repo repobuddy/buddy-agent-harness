@@ -1,5 +1,7 @@
+import { homedir } from 'node:os'
+import { encode } from '@toon-format/toon'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { renderText } from '../command-output/command-output.ts'
+import { binPath, renderText } from '../command-output/command-output.ts'
 import { type DiagnoseResult, diagnoseBridges } from './diagnose-bridges.ts'
 import { buildReport, doctorCommand } from './doctor.command.ts'
 
@@ -71,6 +73,27 @@ describe('doctor command', () => {
 		})
 		run({ format: 'json' })
 		expect(process.exitCode).toBeUndefined()
+	})
+
+	// The default is TOON, so nothing else confirms the command honors what it was asked for.
+	it('encodes the report in the requested format and nothing else', () => {
+		run({ format: 'json' })
+		expect(stdout).toHaveBeenCalledWith(expect.stringContaining('"bridges":['))
+
+		stdout.mockClear()
+		run({ format: 'text' })
+		expect(stdout).toHaveBeenCalledWith(expect.stringContaining('bridges:'))
+		expect(stdout).not.toHaveBeenCalledWith(expect.stringContaining('"bridges":['))
+	})
+
+	// A report a caller cannot trace back to the binary that wrote it cannot be reproduced, and the
+	// home directory is collapsed so the path is publishable.
+	it('names the executable that produced the report, with the home directory collapsed', () => {
+		run({ format: 'json' })
+
+		const bin = binPath(homedir(), process.argv[1])
+		expect(bin).not.toContain(homedir())
+		expect(stdout).toHaveBeenCalledWith(expect.stringContaining(`"bin":${JSON.stringify(bin)}`))
 	})
 
 	it('reports an invalid format, an unsupported harness, and a failed diagnosis', () => {
@@ -145,6 +168,8 @@ describe('buildReport', () => {
 			{ path: '.claude/skills', problem: 'missing', detail: 'no bridge at this path' },
 			{ path: '.windsurf/skills', problem: 'missing', detail: 'no bridge at this path' },
 		])
+		// Deduped on the pair, so two findings about two different paths share one entry while
+		// keeping a row each.
 		expect(report.help).toEqual([{ command: 'bah init', instruction: 'run `bah init` to create the bridge' }])
 		expect(report).not.toHaveProperty('divergence')
 	})
@@ -249,6 +274,27 @@ describe('buildReport', () => {
 		expect(text).toContain('            move AGENTS.local.md to CLAUDE.local.md')
 	})
 
+	// Both keys on every row: with an optional key the TOON encoder drops the whole array out of
+	// its tabular form into a nested list, which is worse for the consumer the default exists for.
+	it('emits both columns always, so the tabular encoding does not degrade', () => {
+		const report = buildReport('~/bin/bah', {
+			bridges: [],
+			instructions: [],
+			divergence: [],
+			findings: [
+				{
+					path: 'AGENTS.local.md',
+					problem: 'unread-local-override',
+					detail: 'no harness reads this filename',
+					repair: { command: '', instruction: 'move AGENTS.local.md to CLAUDE.local.md' },
+				},
+			],
+		})
+
+		expect(report.help).toEqual([{ command: '', instruction: 'move AGENTS.local.md to CLAUDE.local.md' }])
+		expect(encode(report)).toContain('help[1]{command,instruction}:')
+	})
+
 	it('adds a divergence section only when a bridge has diverged', () => {
 		const report = buildReport('~/bin/bah', {
 			bridges: [{ harness: 'claude-code', path: '.claude/skills', kind: 'copy', status: 'diverged' }],
@@ -265,5 +311,7 @@ describe('buildReport', () => {
 		})
 
 		expect(report.divergence).toEqual([{ path: '.claude/skills', direction: 'bridge' }])
+		// `help` is conditional too: absent, not empty, when there is nothing to repair.
+		expect(buildReport('~/bin/bah', healthy)).not.toHaveProperty('help')
 	})
 })

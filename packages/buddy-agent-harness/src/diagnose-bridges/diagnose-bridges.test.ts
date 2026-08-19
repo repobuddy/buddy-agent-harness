@@ -1,9 +1,11 @@
 import { execFileSync } from 'node:child_process'
-import { mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { describe, expect, it } from 'vitest'
+import { diagnoseConfiguration } from '../diagnose-configuration/diagnose-configuration.ts'
 import { diagnoseBridges } from './diagnose-bridges.ts'
+import { GitBridgeState } from './git-bridge-state.ts'
 
 const cli = 'bah'
 
@@ -89,7 +91,7 @@ describe('diagnoseBridges', () => {
 		])
 	})
 
-	it('reports an absent bridge and points at a plain init', () => {
+	it('reports an absent bridge as missing', () => {
 		const root = repository()
 
 		const result = diagnoseBridges({ root, cli })
@@ -336,11 +338,55 @@ describe('diagnoseBridges', () => {
 			expect(diagnoseBridges({ root, cli }).divergence).toEqual([{ path: '.claude/skills', direction: 'unknown' }])
 		})
 
+		// The section exists so a caller reads which side moved without parsing the repair prose.
+		it('names which side moved for every diverged bridge', () => {
+			const root = committedCopy()
+			writeFileSync(bridgeSkill(root), '# Review through the bridge')
+
+			const diverged = diagnoseBridges({ root, cli })
+
+			expect(diverged.divergence).toEqual([{ path: '.claude/skills', direction: 'bridge' }])
+			expect(diverged.findings).toHaveLength(diverged.divergence.length)
+			expect(diagnoseBridges({ root: repository(), cli }).divergence).toEqual([])
+		})
+
 		it('detects an added file in the bridge as movement on the bridge side', () => {
 			const root = committedCopy()
 			writeFileSync(join(root, '.claude', 'skills', 'review', 'extra.md'), 'extra')
 
 			expect(diagnoseBridges({ root, cli }).divergence).toEqual([{ path: '.claude/skills', direction: 'bridge' }])
 		})
+	})
+})
+
+/** Every file below `root`, with its bytes, so a write of any kind shows as a difference. */
+function snapshot(root: string): Record<string, string> {
+	return Object.fromEntries(
+		readdirSync(root, { recursive: true, withFileTypes: true })
+			.filter((entry) => entry.isFile())
+			.map((entry) => {
+				const path = join(entry.parentPath, entry.name)
+				return [path.slice(root.length), readFileSync(path, 'base64')] as const
+			})
+			.sort(([left], [right]) => left.localeCompare(right)),
+	)
+}
+
+// Read-only is what makes the command safe to run from a session-start hook, and the property is
+// worth asserting rather than inferring from the absence of a write call.
+describe('the detect-and-repair seam', () => {
+	it('writes nothing while detecting, whatever it finds', () => {
+		const root = committedCopy()
+		writeFileSync(bridgeSkill(root), '# Review through the bridge')
+		writeFileSync(join(root, 'AGENTS.local.md'), 'a local note\n')
+		mkdirSync(join(root, '.windsurf', 'skills'), { recursive: true })
+		writeFileSync(join(root, '.windsurf', 'skills', 'kept.md'), 'projected\n')
+		const before = snapshot(root)
+
+		const result = diagnoseBridges({ root, cli })
+		const configuration = diagnoseConfiguration({ root, git: new GitBridgeState(root), cli })
+
+		expect(result.findings.length + configuration.length).toBeGreaterThan(1)
+		expect(snapshot(root)).toEqual(before)
 	})
 })

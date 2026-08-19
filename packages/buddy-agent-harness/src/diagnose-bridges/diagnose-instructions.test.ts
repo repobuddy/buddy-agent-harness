@@ -68,7 +68,7 @@ describe('the import bridge', () => {
 		expect(instructionsOf(root)[0]).toMatchObject({ kind: 'symlink', status: 'unbridged' })
 	})
 
-	it('reports a missing bridge and hands the repair to the init skill', () => {
+	it('reports a missing instruction bridge', () => {
 		const root = repository()
 
 		expect(instructionsOf(root)).toEqual([
@@ -171,6 +171,24 @@ describe('the settings-entry bridge', () => {
 
 		expect(instructionsOf(root, ['gemini-cli'])[1]).toMatchObject({ kind: 'settings-entry', status: 'ok' })
 		expect(findingsOf(root, ['gemini-cli'])).toEqual([])
+	})
+
+	// A settings entry is a claim about which file to read, so it stays `ok` when that file is
+	// absent — the absence is `no-instructions`, reported once for the repository rather than
+	// again per bridge. An import bridge cannot reach this state: it is checked per directory
+	// holding an `AGENTS.md`, so a missing root file means no root bridge is checked at all.
+	it('keeps a settings entry ok when the file it names does not exist', () => {
+		const root = repository()
+		rmSync(join(root, 'AGENTS.md'))
+		enableGemini(root)
+		write(root, '.gemini/settings.json', JSON.stringify({ context: { fileName: ['AGENTS.md'] } }))
+
+		const instructions = instructionsOf(root, ['gemini-cli'])
+
+		expect(instructions).toContainEqual(
+			expect.objectContaining({ path: '.gemini/settings.json', kind: 'settings-entry', status: 'ok' }),
+		)
+		expect(findingsOf(root, ['gemini-cli']).map((finding) => finding.problem)).toEqual(['no-instructions'])
 	})
 
 	// The Gemini loader strips comments before parsing, so a commented file is a working bridge.
