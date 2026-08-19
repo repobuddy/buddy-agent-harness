@@ -11,15 +11,15 @@ todos:
   - content: Revise the skills/repair spec node and its frozen suite (routing on problem, MCP family)
     status: completed
   - content: Spec gate
-    status: pending
+    status: completed
   - content: Rewrite SKILL.md step 2 and the classes.md "Not yours" tail
     status: completed
   - content: Correct the same claim on the docs site page
     status: completed
   - content: Impl gate
-    status: pending
+    status: completed
   - content: Changeset and pnpm verify
-    status: pending
+    status: completed
   - content: Handoff — PR against main closing issue #63
     status: pending
 ---
@@ -79,7 +79,11 @@ It is not what decides ownership.
 
 ## NEXT
 
-Spec gate: cold spec-judge dispatched over the revised node. Then impl gate, changeset, PR.
+Landed. Both gates passed and are self-asserted in the ledger shard; the suite is frozen at
+feature level. What shipped: routing on `problem` via membership in `references/classes.md`, the
+handoff decided by whether a repair names `init` in either form, the MCP family named for the
+first time, three new scenarios, a test pinning the `init`-owned set to the guidance table, and
+the same corrections on the docs page. Four follow-ups recorded in the ledger, none blocking.
 
 ## Evidence — eight blind runs, four text variants
 
@@ -93,9 +97,15 @@ stated rule.
 | shipped | 2/2 | both: nothing covers a repair naming no skill; MCP never mentioned |
 | candidate | 2/2 | none on the routing decision |
 | + matching rule | 2/2 | both: "match by path" ties on two findings at one path |
-| final | 2/2 | none on the routing decision or the pairing |
+| pre-gate | 2/2 | none — but see below |
+| pre-gate, `degraded` added | 0/1 | routed a rebuildable bridge to a person |
+| final, `degraded` added | 2/2 | none on the routing decision or the pairing |
 
-The third row is the method catching this mission's own work: a sentence added here was
-under-determined in the same way the shipped rule was. Re-derived from `doctor.command.ts`,
-which maps `findings` in order through a `Map` keyed on the whole repair pair — so `help`
-follows `findings` order and collapses only a word-for-word identical repair.
+Two of those rows are the method catching this mission's own work. The third row is a sentence
+added here that was under-determined in the same way the shipped rule was. The fifth is the one
+that matters: **the first four rows were clean because the hard case was absent from the
+fixture, not because the rule held.** Every bridge fault in it was `diverged-unknown`, one of the
+three a rebuild would not fix, so no run ever met a bridge repair carrying an `init` command
+line. The impl gate found it by reading the table instead. A fixture that does not carry the
+case cannot report on it, and eight clean runs said nothing about the nine problems they never
+saw.
