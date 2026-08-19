@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process'
-import { readFileSync } from 'node:fs'
+import { globSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
@@ -116,10 +116,44 @@ describe('doctor guidance', () => {
 })
 
 describe('skill launcher', () => {
-	it.each(['doctor', 'init'])('matches the committed launcher for %s', (skill) => {
-		expect(readFileSync(join(packageRoot, 'skills', skill, launcherFor(skill)), 'utf8')).toBe(
-			renderSkillLauncher(skill),
+	// `repair` runs `doctor` to find what it repairs, so its launcher is named for the subcommand
+	// rather than for the skill.
+	it.each([
+		['doctor', 'doctor'],
+		['init', 'init'],
+		['repair', 'doctor'],
+	])('matches the committed launcher for %s', (skill, subcommand) => {
+		expect(readFileSync(join(packageRoot, 'skills', skill, launcherFor(subcommand)), 'utf8')).toBe(
+			renderSkillLauncher(subcommand),
 		)
+	})
+
+	it('builds its argv with the subcommand inserted, mutating nothing', () => {
+		const launcher = renderSkillLauncher('doctor')
+
+		expect(launcher).toContain("[...process.argv.slice(0, 2), 'doctor', ...process.argv.slice(2)]")
+		expect(launcher).not.toContain('process.argv.splice')
+	})
+
+	it('calls the entry point instead of importing the executable for its side effect', () => {
+		const launcher = renderSkillLauncher('doctor')
+
+		expect(launcher).toContain('const { run } = await import(')
+		expect(launcher).not.toContain(`'bin'`)
+	})
+
+	// Every launcher a skill ships is generated from one renderer, so no skill can hand-roll a
+	// second way of reaching the CLI. `repair`'s was labelled generated and was not on the
+	// generator's list, so nothing rewrote it and nothing caught it going stale.
+	it('generates every shipped launcher, so no skill hand-rolls a second call form', () => {
+		const shipped = globSync('skills/*/scripts/*.mjs', { cwd: packageRoot }).sort()
+		const generated = readFileSync(join(packageRoot, 'scripts', 'generate-skills.ts'), 'utf8')
+
+		expect(shipped.length).toBeGreaterThan(0)
+		for (const launcher of shipped) {
+			const [, skill, , file] = launcher.split('/')
+			expect(generated).toContain(`{ skill: '${skill}', subcommand: '${(file as string).replace('.mjs', '')}' }`)
+		}
 	})
 
 	// The point of the launcher: it resolves the CLI from its own location, so it runs from a
