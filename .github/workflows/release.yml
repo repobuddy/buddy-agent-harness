@@ -28,7 +28,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm verify
       - name: Create version pull request or publish packages
-        uses: changesets/action@v2.1.0
+        uses: changesets/action@v2.1.1
         with:
           commit-message: "chore: version packages"
           version-script: pnpm run version
