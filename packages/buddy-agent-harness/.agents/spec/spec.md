@@ -46,6 +46,7 @@ This project mirrors its source surfaces so a contributor can find a spec beside
 | [`cli/configuration-diagnosis/`](./cli/configuration-diagnosis/README.md) | Report agent configuration that is present and wrong |
 | [`cli/mcp-diagnosis/`](./cli/mcp-diagnosis/README.md) | Report drift between a golden MCP server set and the harness copies of it |
 | [`cli/diagnosis-report/`](./cli/diagnosis-report/README.md) | The one output shape every finding family is reported through |
+| [`cli/entry-point/`](./cli/entry-point/README.md) | Reach a command without going through the process |
 | [`workflows/`](./workflows/README.md) | Index over the flows that cross the skill and CLI surfaces |
 | [`workflows/detect-and-repair/`](./workflows/detect-and-repair/README.md) | The contract between `doctor` and the skills that correct what it finds |
 
@@ -53,13 +54,12 @@ This project mirrors its source surfaces so a contributor can find a spec beside
 
 The project implementation predates this SDD spec. `harness-init` was the first backfilled behavioral node.
 
-The `doctor` command is now described in full: every finding family under `cli/`, the output shape they share at `cli/diagnosis-report/`, and the cross-surface flow they feed at `workflows/detect-and-repair/`.
+The `doctor` command is now described in full: every finding family under `cli/`, the output shape they share at `cli/diagnosis-report/`, and the cross-surface flow they feed at `workflows/detect-and-repair/`. How that command is reached at all is at `cli/entry-point/`.
 
 What is still outstanding:
 
 - The **`init` skill's write behavior** — what it consolidates, what it declines to invent, and the bridges it writes without asking. `skills/harness-init/` specifies the `init` **command**; the skill every instruction repair routes to has no node.
 - The **shared command output layer** — the TOON/JSON/text encoder and its text rendering, used by both commands, at `src/command-output/`.
-- The **CLI entry-point contract** — how the package is called and what it answers with. Its home is held open at `cli/entry-point/`.
 - **`tooling/`**, still a reference stub over the build, packaging, and release surfaces.
 - **`skills/enhance/`** and **`skills/doctor/`**, shipped skills with no node of their own; the `doctor` skill's content is generated from the same guidance table the command reports from.
 
