@@ -349,3 +349,38 @@ it('gives two findings of one problem at two paths their own help entry each', (
 
 	expect(collides).toEqual(reportedOncePerRepository)
 })
+
+/**
+ * The ten repairs `init` owns: every instruction bridge, and every skills bridge a rebuild fixes.
+ * The other thirteen name no owner and are work for a person.
+ */
+const initOwned: DoctorProblem[] = [
+	'no-canonical',
+	'missing',
+	'degraded',
+	'stale',
+	'diverged-bridge',
+	'diverged-canonical',
+	'no-instructions',
+	'instructions-missing',
+	'instructions-unbridged',
+	'instructions-unreadable',
+]
+
+// The `repair` skill decides who to hand a finding to by asking whether its repair names `init` at
+// all — the `/buddy-agent-harness:init` skill or a `buddy-agent-harness init` command line, since
+// the command rendering uses the second form for every bridge repair and the first for every
+// instruction repair. That question is only answerable from the report if the two sets coincide
+// exactly, so the shipped guidance is pinned to the table here: a repair that stopped naming `init`
+// would silently reroute its finding to a person, which is the drift this asserts against.
+it('names init in every repair init owns, and in no other', () => {
+	const namesInit = doctorRepairs
+		.filter((entry) => {
+			const { command, instruction } = entry.repair('<path>', commandInvocation)
+			const text = `${command}\n${instruction}`
+			return text.includes(initSkillInvocation) || text.includes(`${commandInvocation} init`)
+		})
+		.map((entry) => entry.problem)
+
+	expect(namesInit).toEqual(initOwned)
+})

@@ -1,3 +1,4 @@
+@frozen
 Feature: Repair agent configuration that doctor reported as wrong
 
   # ── /buddy-agent-harness:repair ──
