@@ -31,6 +31,9 @@ describe('writeResult', () => {
 
 		writeResult({ skills: 1 }, 'text')
 		expect(stdout).toHaveBeenCalledWith('skills: 1\n')
+
+		// Nothing else reaches the stream: one call per write, so a second writer would show up here.
+		expect(stdout).toHaveBeenCalledTimes(3)
 	})
 })
 
