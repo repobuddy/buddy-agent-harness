@@ -40,8 +40,10 @@ Two faults arrive under this name, and only one of them is correctable.
 
 **Stops at.** Everything below the frontmatter. The skill body is the author's. A `name` that mismatches its directory is not reported by `doctor` at all — it is a warning and the skill still loads.
 
-## Not yours: every bridge finding
+## Not yours: every `problem` with no section above
 
-`doctor` also reports skills bridges that no longer resolve and instruction bridges that were never completed. **Every one of those repairs through `init`**, which writes both kinds of bridge in the first place — and writes a `CLAUDE.md` stub without asking, where every correction here needs approval.
+`doctor` reports far more than this file covers: skills bridges that no longer resolve, instruction bridges that were never completed, and drift between the golden MCP server set and a harness's copy of it. None of them has a section here, and that is what says they are not yours.
 
-Hand them to `/buddy-agent-harness:init`, exactly as `doctor` says. The repair `doctor` gives you already names the skill that owns it, so you never have to classify a finding yourself.
+**Who to hand one to is read off the repair `doctor` gave it, and the question is whether it names `init`.** It names it one of two ways — the `/buddy-agent-harness:init` skill, or a `buddy-agent-harness init` command line — and both mean the finding is `init`'s, which writes both kinds of bridge in the first place and writes a `CLAUDE.md` stub *without* asking, where every correction here needs approval. Hand it to the skill; never run the command. A repair naming `init` in **neither** form is work for a person: `doctor` states it in full, and passing it on is the whole of what you do with it. Every MCP finding is that second case, as is every bridge finding a rebuild would not fix.
+
+Never infer an owner for a finding that names none. The wrong guess is always `init`, and on a two-sided divergence rebuilding is precisely what discards whichever side holds the newer edit.

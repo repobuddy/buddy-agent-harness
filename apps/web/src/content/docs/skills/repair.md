@@ -9,9 +9,9 @@ The other three skills each refuse this work on purpose. [`init`](/skills/init/)
 
 ## `doctor` detects, `repair` repairs
 
-The skill looks for nothing itself. It runs the `doctor` command, reads the findings, and corrects the ones that are its own — and it knows which those are because each finding's repair names the skill that owns it, so a finding added to `doctor` tomorrow routes correctly without the skill being touched.
+The skill looks for nothing itself. It runs the `doctor` command, reads the findings, and corrects the ones that are its own. It knows which those are by the finding's `problem` name: the skill keeps one correction per fault it repairs, and a `problem` it holds no correction for is not one it can repair. So a finding added to `doctor` tomorrow is reported and handed on rather than guessed at.
 
-That split is the design, not an implementation detail. Detection has one home, so the two halves cannot drift apart, and the finding set can grow without touching the skill. It is also what keeps `doctor` read-only: adding a repair flag there would forfeit hook-safety for every caller, and every bridge repair `doctor` reports is already expressible with `init` flags, so the flag would duplicate `init` rather than add anything.
+That split is the design, not an implementation detail. Detection has one home, so the two halves cannot drift apart, and the finding set can grow without touching the skill. It is also what keeps `doctor` read-only: adding a repair flag there would forfeit hook-safety for every caller, and the bridge repairs worth automating are already expressible with `init` flags, so the flag would duplicate `init` rather than add anything.
 
 ## Run it
 
@@ -29,11 +29,13 @@ Our agent config is out of date — check it and fix what's wrong.
 
 ## What it corrects
 
-`doctor` reports two families of finding, and only one is the skill's.
+`doctor` reports several families of finding, and only one is the skill's.
 
-**Bridge and instruction findings** — the `missing` / `degraded` / `stale` / `diverged-*` / `unpinned-copy` set, and the `instructions-*` set — are about a bridge, whether it stopped resolving or was never completed. Those go to [`init`](/skills/init/), which is what builds every bridge in the first place. The skill reports them and hands them on.
+**Bridge and instruction findings** — the `missing` / `degraded` / `stale` / `diverged-*` / `unpinned-copy` set, and the `instructions-*` set — are about a bridge, whether it stopped resolving or was never completed. Most go to [`init`](/skills/init/), which is what builds every bridge in the first place. A few go to nobody: a divergence with edits on both sides, one where no baseline says which side moved, and a bridge whose only fault is the git index. Rebuilding those would destroy work rather than repair it, so they are yours to settle by hand. Either way the skill reports them and hands them on.
 
 The instruction bridges are worth a note, because they look like configuration faults. A `CLAUDE.md` that names `AGENTS.md` nowhere is a bridge that was never finished, and `init` writes that import itself. `init` also writes the `CLAUDE.md` stub *without* asking, where `repair` asks before every write — and one line cannot have two homes and two contradictory approval rules.
+
+**MCP findings** — the `mcp-*` set, reported when a golden MCP server set and a harness's copy of it disagree — belong to nobody. Which side is right is a judgment about servers rather than a correction to a file, so `doctor` states each repair in full and the skill passes it to you unchanged.
 
 **Configuration findings** are its own:
 
@@ -69,5 +71,6 @@ These hold regardless of what you ask for mid-run:
 - Never write without approval. There is no flag that skips it.
 - Never detect. `doctor` owns detection; a check here would be a second home for it.
 - Never rebuild a bridge. That is `doctor`'s diagnosis and [`init`](/skills/init/)'s repair.
+- Never invent an owner. A finding whose repair names no skill is work for a person, and the skill says so rather than picking one.
 - Never consolidate. Moving content into `AGENTS.md` is `init`'s.
 - Local agent configuration only: no workflows, repository settings, or unrelated project files. A retired harness name in a workflow file is not the skill's to rename.

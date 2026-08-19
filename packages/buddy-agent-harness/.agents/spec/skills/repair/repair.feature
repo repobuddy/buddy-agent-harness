@@ -1,3 +1,4 @@
+@frozen
 Feature: Repair agent configuration that doctor reported as wrong
 
   # ── /buddy-agent-harness:repair ──
@@ -9,6 +10,13 @@ Feature: Repair agent configuration that doctor reported as wrong
     Then the `doctor` command is run against the repository
     And every finding the skill acts on comes from that command's output
     And the skill checks no file for a fault the command did not report
+
+  @behavior
+  Scenario: tells two findings at one path apart by their repairs
+    Given a `doctor` report carrying two findings at one path under different `problem` names
+    When the agent runs the `repair` skill
+    Then each of them is acted on with the repair that addresses its own `problem`
+    And neither of them is acted on with the other's repair
 
   @behavior
   Scenario: reports that doctor ran clean and stops
@@ -32,6 +40,21 @@ Feature: Repair agent configuration that doctor reported as wrong
     Then the report hands that finding on without naming a side to keep
     And `.claude/skills` is unchanged
     And `.agents/skills` is unchanged
+
+  @behavior
+  Scenario: hands an MCP finding on as work for a person
+    Given a `doctor` report carrying an `mcp-diverged-unknown` finding for a server in a harness config
+    When the agent runs the `repair` skill
+    Then the report states that finding as work for a person rather than naming a skill for it
+    And the harness config is unchanged
+    And the golden MCP set is unchanged
+
+  @behavior
+  Scenario: names no owner for a finding whose repair names no skill
+    Given a `doctor` report carrying an `unpinned-copy` finding whose repair names a `git` invocation and no skill
+    When the agent runs the `repair` skill
+    Then the report passes on the repair the command stated for it
+    And the report names no skill as that finding's owner
 
   @behavior
   Scenario: hands an unbridged instruction file to init rather than adding the import
