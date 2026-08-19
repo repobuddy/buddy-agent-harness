@@ -7,9 +7,11 @@ concept: command-interface
 
 ## What
 
-The **one output shape** every `doctor` finding is reported through, whichever of the three families it came from.
+The **one output shape** every `doctor` finding is reported through, whichever family it came from.
 
-The command asks three independent questions about a repository — do the skills bridges resolve, can each harness read `AGENTS.md`, is the configuration around them right — and answers all three in a single report. The families do not share a check, a vocabulary, or a repair owner. They share this: the sections the report has, what a finding row carries, how the healthy answer is stated, and how the whole thing is encoded.
+The command asks several independent questions about a repository — do the skills bridges resolve, can each harness read `AGENTS.md`, is the configuration around them right, have the MCP server sets drifted — and answers all of them in a single report. The families do not share a check, a vocabulary, or a repair owner. They share this: the sections the report has, what a finding row carries, how the healthy answer is stated, and how the whole thing is encoded.
+
+The set of families **grows**, which is the strongest argument for the node. Each new one arrives with its own problems and its own repairs, and reaches every consumer without the report shape being renegotiated — provided the shape is written down somewhere other than inside one family.
 
 That shape had no owner, and the cost was concrete. When a field was added to `findings`, nothing in the corpus said what the report was supposed to contain, so the change could be checked only against whichever tests happened to exist. A field belonging to every family at once belongs to none of them in particular, which is why it is a node rather than a paragraph repeated three times.
 
@@ -25,7 +27,7 @@ That shape had no owner, and the cost was concrete. When a field was added to `f
 
 **Non-goals**
 
-- **Deciding what is wrong.** Every fault is a detecting node's: `../bridge-resolution/`, `../instruction-bridges/`, `../configuration-diagnosis/`.
+- **Deciding what is wrong.** Every fault is a detecting node's: `../bridge-resolution/`, `../instruction-bridges/`, `../configuration-diagnosis/`, `../mcp-diagnosis/`.
 - **Deciding who repairs it.** `../../workflows/detect-and-repair/`. This node states which fields exist; that node states which of them a consumer may route on.
 - **The encoder itself.** `--format` is `doctor`'s surface and is specified here, but the TOON/JSON/text encoder and its table alignment are shared with the `init` command and have no node yet — see the Backfill note in `../README.md`.
 - **The `init` command's report.** A different report with a different shape.
@@ -98,7 +100,7 @@ The guard is worth keeping because it is the table that makes it unreachable, no
 flowchart TD
   A[Parse the format and the requested harnesses] --> B{Format supported and every harness known?}
   B -->|no| C[Write the reason to stderr and exit 1]
-  B -->|yes| D[Run all three families against the root]
+  B -->|yes| D[Run every family against the root]
   D --> E{Any finding?}
   E -->|no| F[Set findings to the healthy sentence, counting both bridge sections]
   E -->|yes| G[Set findings to one row per finding: path, problem, detail]

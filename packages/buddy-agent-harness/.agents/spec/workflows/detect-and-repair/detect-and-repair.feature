@@ -17,7 +17,7 @@ Feature: Hand every doctor finding to the one surface that repairs it
 
   @behavior
   Scenario: carries a repair with every finding it reports
-    Given a repository holding a fault from each of the three families
+    Given a repository holding a fault from more than one family
     When the command reports its findings
     Then every finding carries a non-empty detail and a repair
 
@@ -53,6 +53,20 @@ Feature: Hand every doctor finding to the one surface that repairs it
     Then each names the `repair` skill as the surface that repairs it
 
   @behavior
+  Scenario: names no skill for any MCP finding, in either rendering
+    Given every problem belonging to the MCP family
+    When each repair is read in both of its renderings
+    Then none names a skill
+    And each states what the user must decide instead
+
+  @behavior
+  Scenario: accounts for every problem in exactly one family
+    Given the families the report routes by
+    When every problem the command can report is assigned to one
+    Then each problem belongs to exactly one family
+    And the families together account for all of them
+
+  @behavior
   Scenario: never tells the skill to run the init command
     Given a repair the `init` command would satisfy
     When the shipped skill's rendering of it is read
@@ -73,6 +87,6 @@ Feature: Hand every doctor finding to the one surface that repairs it
 
   @behavior
   Scenario: writes nothing while detecting, whatever it finds
-    Given a repository holding a fault from each of the three families
+    Given a repository holding a fault from more than one family
     When the command runs against it
     Then no file in the repository is created, modified, or removed

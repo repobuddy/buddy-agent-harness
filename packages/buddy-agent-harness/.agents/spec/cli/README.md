@@ -4,14 +4,15 @@
 
 The package publishes one binary with two commands: `init`, which writes a repository's canonical configuration and the bridges into it, and `doctor`, which reports what is wrong with what is already there.
 
-`doctor` is the larger surface, and it is **one command reporting three families of fault through one output shape**. The families are independent — each check answers a different question about the same repository, and a single run reports as many as it finds, across all three. The shape they share is a node of its own, because a field added to the report belongs to every family at once and to none of them in particular.
+`doctor` is the larger surface, and it is **one command reporting several families of fault through one output shape**. The families are independent — each answers a different question about the same repository, and a single run reports as many as it finds, across all of them. The shape they share is a node of its own, because a field added to the report belongs to every family at once and to none of them in particular, and because the set of families grows.
 
 | Node | Subject |
 | --- | --- |
 | [`bridge-resolution/`](./bridge-resolution/README.md) | Whether every skills bridge still resolves into `.agents/skills` |
 | [`instruction-bridges/`](./instruction-bridges/README.md) | Whether every enabled harness can still read `AGENTS.md` |
 | [`configuration-diagnosis/`](./configuration-diagnosis/README.md) | Whether the configuration around those bridges is present and wrong |
-| [`diagnosis-report/`](./diagnosis-report/README.md) | The one output shape all three families are reported through |
+| [`mcp-diagnosis/`](./mcp-diagnosis/README.md) | Whether the golden MCP server set and the harness copies of it have drifted |
+| [`diagnosis-report/`](./diagnosis-report/README.md) | The one output shape every family is reported through |
 
 The cross-surface flow these findings feed — one surface detects, another repairs — is at [`../workflows/detect-and-repair/`](../workflows/detect-and-repair/README.md).
 

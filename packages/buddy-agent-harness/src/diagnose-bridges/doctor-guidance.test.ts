@@ -135,10 +135,14 @@ describe('skill launcher', () => {
 	})
 })
 
-/** The configuration faults, which the module keeps private: everything in neither other family. */
-const configurationRepairs = doctorRepairs.filter(
-	(entry) => !bridgeRepairs.includes(entry) && !instructionRepairs.includes(entry),
-)
+/**
+ * The two families the module keeps private. Named rather than derived by exclusion: deriving the
+ * configuration family as "everything in neither exported family" silently swallowed the MCP family
+ * the moment it landed, and the guard below is what makes the next one fail loudly instead.
+ */
+const configurationProblems = ['deprecated-harness', 'ignored-bridge', 'unread-local-override', 'unloadable-skill']
+const configurationRepairs = doctorRepairs.filter((entry) => configurationProblems.includes(entry.problem))
+const mcpRepairs = doctorRepairs.filter((entry) => entry.problem.startsWith('mcp-'))
 
 /** The bridge problems a rebuilt bridge fixes — every one but the three that need a hand. */
 const byHand = ['diverged-both', 'diverged-unknown', 'unpinned-copy']
@@ -191,8 +195,32 @@ describe('the detect-and-repair seam', () => {
 	})
 
 	it('sends every configuration finding to the repair skill', () => {
-		expect(configurationRepairs.length).toBeGreaterThan(0)
+		expect(configurationRepairs).toHaveLength(configurationProblems.length)
 		for (const entry of configurationRepairs) expect(entry.skillRepair('<path>')).toContain(repairSkillInvocation)
+	})
+
+	// Correcting a drifted server set is the user's judgment about which side is right, so no skill
+	// is named in either rendering.
+	it('names no skill for any MCP finding, in either rendering', () => {
+		expect(mcpRepairs.length).toBeGreaterThan(0)
+		for (const entry of mcpRepairs) {
+			const { command, instruction } = entry.repair('<path>', commandInvocation)
+			for (const text of [entry.skillRepair('<path>'), command, instruction]) {
+				expect(text).not.toContain(initSkillInvocation)
+				expect(text).not.toContain(repairSkillInvocation)
+			}
+		}
+	})
+
+	// The families must partition the table. When a fifth arrives this fails, rather than letting an
+	// exclusion-derived family quietly absorb it and assert the wrong owner for every one of its
+	// problems — which is exactly what happened when the MCP family landed.
+	it('accounts for every problem in exactly one family', () => {
+		const families = [bridgeRepairs, instructionRepairs, configurationRepairs, mcpRepairs]
+		const counted = families.flatMap((family) => family.map((entry) => entry.problem))
+
+		expect(new Set(counted).size).toBe(counted.length)
+		expect(counted.sort()).toEqual(doctorRepairs.map((entry) => entry.problem).sort())
 	})
 
 	// The name is what a consumer routes on, so it must not have to be recovered from the prose.
