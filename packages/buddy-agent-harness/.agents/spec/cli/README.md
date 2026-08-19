@@ -14,15 +14,14 @@ The package publishes one binary with two commands: `init`, which writes a repos
 | [`mcp-diagnosis/`](./mcp-diagnosis/README.md) | Whether the golden MCP server set and the harness copies of it have drifted |
 | [`diagnosis-report/`](./diagnosis-report/README.md) | The one output shape every family is reported through |
 | [`entry-point/`](./entry-point/README.md) | How the package is called, and what it answers with |
+| [`command-output/`](./command-output/README.md) | How a result becomes the bytes on stdout, for both commands |
 
 The cross-surface flow these findings feed — one surface detects, another repairs — is at [`../workflows/detect-and-repair/`](../workflows/detect-and-repair/README.md).
 
-## Backfill gap
+## Where the boundaries fall
 
-Two parts of this surface have no node yet, and neither is a stub of an existing one.
+The shared output layer is [`command-output/`](./command-output/README.md): `diagnosis-report/` states which formats `doctor` accepts, and that node states how a result becomes those bytes, for both commands rather than for either.
 
-**The shared output layer** — the TOON/JSON/text encoder and its aligned text rendering, at `../../../src/command-output/`. Both commands write through it, so it belongs to neither alone. `diagnosis-report/` specifies which formats `doctor` accepts; how a report becomes those bytes is unowned.
-
-**The `init` skill's write behavior** — what it consolidates, what it declines to invent, and the fact that it writes the `CLAUDE.md` import stub and the Gemini `context.fileName` entry itself. [`../skills/harness-init/`](../skills/harness-init/README.md) specifies the **`init` command**: its options, its formats, and its error behavior. The skill that every instruction-bridge repair is routed to is a different subject, and it has no node.
+The `init` **skill**'s write behavior is [`../skills/init/`](../skills/init/README.md) — what it consolidates, what it declines to invent, and the writes it makes without asking. [`../skills/harness-init/`](../skills/harness-init/README.md) keeps the **`init` command**: its options, its formats, and its error behavior. The skill every instruction-bridge repair routes to is a different subject, and now says what arriving there does.
 
 The entry-point contract that was the third gap here is now [`entry-point/`](./entry-point/README.md), and the asymmetry this section recorded is closed: `run(argv)` answers the consumer that wants exactly what the command **prints**, the exported report builder answers the one that wants the **report as data**, and the diagnosis functions still answer the one that wants the findings the report was assembled from.
