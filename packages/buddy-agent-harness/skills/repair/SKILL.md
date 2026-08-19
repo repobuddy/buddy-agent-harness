@@ -19,7 +19,7 @@ node scripts/doctor.mjs
 
 That path is relative to this skill's own directory. The launcher runs the CLI that shipped beside it against the current working directory, so nothing is downloaded. Fall back to `npx -y buddy-agent-harness@^0.5.0 doctor` when the launcher cannot be resolved or run.
 
-The default output is TOON, which is what you parse. Each entry in `findings` carries three fields: `problem` (the finding's name), `path` (what it is about), and `detail` (what is wrong, in prose). `help` carries the repairs.
+The default output is TOON, which is what you parse. Each entry in `findings` carries three fields: `problem` (the finding's name), `path` (what it is about), and `detail` (what is wrong, in prose). The repairs are not on the row — they are lifted into `help`, which follows `findings` in order and collapses two entries only where the repair is word-for-word identical. Read a finding's repair off the matching position and confirm it by the `path` it names; where two findings sit at one path, what each repair says to do is what tells them apart.
 
 **Route on `problem`, never on `detail`.** The prose exists to be read by a person, and rewording it must not change what you do.
 
@@ -27,10 +27,14 @@ If `findings` reports zero problems, say so and stop. There is nothing to repair
 
 ## 2. Sort what it found
 
-**`doctor` tells you who repairs each finding — read that, do not classify them yourself.** Every finding's repair in `help` names a skill. A repair naming `/buddy-agent-harness:init` is not yours; a repair naming `/buddy-agent-harness:repair` is. Routing this way means a finding added to `doctor` tomorrow reaches the right skill without this file being edited, and a hand-kept list here could only drift from the one the command already maintains.
+**Route on `problem`.** `references/classes.md` carries one section per fault this skill corrects, keyed by the `problem` name. A `problem` with a section there is yours; a `problem` without one is not. Nothing else decides it.
 
-- **Findings `init` repairs** — the skills bridges and the instruction bridges alike. Report them and hand them on, exactly as `doctor` says. Rebuilding a skills projection can relocate skills a user wrote, and on the Windows case the naive repair is to recreate the link, the operation that already failed on that machine. An unfinished instruction bridge is `init`'s for a different reason: it writes the `CLAUDE.md` stub *without* asking, where everything here needs approval, and one write cannot have two homes and two contradictory approval rules.
-- **Findings `repair` repairs.** These are yours. Look the finding's `problem` up in `references/classes.md`, which carries the correction and the stopping point for each. A `problem` with no entry there is one you have no correction for — report it and say so rather than improvising.
+That rule holds for every finding `doctor` reports today and for the ones it reports next year. A fault this skill has no correction for is not one it can repair, so what `classes.md` covers and what this skill owns are the same fact — and a finding added tomorrow gets reported rather than improvised on.
+
+**Do not read ownership off a skill name in `help`.** Some repairs name a skill and most do not: a bridge repair names a shell invocation, an MCP repair names a reconciliation by hand, and only the instruction and configuration families name a skill at all. An owner is not something the report can always be asked for.
+
+- **Findings that are yours.** Look the `problem` up in `references/classes.md`, which carries the correction and the stopping point for each.
+- **Findings that are not yours.** Report each one and pass on the repair `doctor` states for it, unchanged. **Who to hand it to is read off that repair.** One naming `/buddy-agent-harness:init` goes to `init` — it writes both kinds of bridge in the first place, and it writes the `CLAUDE.md` stub *without* asking, where everything here needs approval, and one write cannot have two homes and two contradictory approval rules. One naming **no skill** is work for a person; say that rather than inferring an owner. Never rebuild a bridge yourself: on the Windows case the naive repair is to recreate the link, the operation that already failed on that machine, and on a two-sided divergence rebuilding discards whichever side holds the newer edit.
 
 ## 3. Draw the line at material content
 
