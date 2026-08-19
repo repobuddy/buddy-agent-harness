@@ -17,11 +17,11 @@ todos:
   - content: Promote cli/ to a descriptive index over its children
     status: completed
   - content: Spec gate, including a seam pass over the nodes together
-    status: in_progress
+    status: completed
   - content: Deliver — a verification per frozen scenario; add tests where none exists
     status: completed
   - content: Impl gate
-    status: pending
+    status: completed
   - content: pnpm verify (coverage gated at 100%), changeset if packages/ changed
     status: pending
   - content: Handoff — PR against main linking issue #58, monitor CI, merge when green
@@ -77,6 +77,5 @@ implementation wins and the disagreement is reported.
 
 ## NEXT
 
-Rebased onto #60; `cli/diagnosis-report/` now specifies `help[N]{command,instruction}` and
-binds all four properties operator ruled in. Spec gate round two is regrading the rebased
-tree. Then PR against main linking #58, CI, merge.
+Spec gate cleared and self-asserted after three judge rounds. Open the PR against main
+linking #58, then monitor CI and merge.
