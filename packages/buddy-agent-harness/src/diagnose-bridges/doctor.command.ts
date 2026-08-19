@@ -4,7 +4,7 @@ import { command, exitCodes, z } from 'clibuilder'
 import { binPath, parseFormat, writeResult } from '../command-output/command-output.ts'
 import { type ConfigurationFinding, diagnoseConfiguration } from '../diagnose-configuration/diagnose-configuration.ts'
 import { diagnoseMcp } from '../diagnose-mcp/diagnose-mcp.ts'
-import { type HarnessName, harnessRegistry } from '../harness-registry/harness-registry.ts'
+import { parseHarnesses } from '../harness-registry/harness-registry.ts'
 import { type DiagnoseResult, diagnoseBridges } from './diagnose-bridges.ts'
 import { commandInvocation, type DoctorProblem, type RepairAction } from './doctor-guidance.ts'
 import { GitBridgeState } from './git-bridge-state.ts'
@@ -92,21 +92,11 @@ export const doctorCommand: cli.Command = command({
 	run(args) {
 		try {
 			const format = parseFormat(args.format)
-			const requested = args.harness
-				?.split(',')
-				.map((name) => name.trim())
-				.filter(Boolean)
-			const unsupported = requested?.filter((name) => !harnessRegistry.some((harness) => harness.name === name))
-			if (unsupported?.length)
-				throw new Error(
-					`Unsupported harness: ${unsupported.join(', ')}. Supported: ${harnessRegistry
-						.map((harness) => harness.name)
-						.join(', ')}.`,
-				)
+			const harnesses = parseHarnesses(args.harness)
 			const root = args.root ?? process.cwd()
 			const result = diagnoseBridges({
 				root,
-				...(requested?.length ? { harnesses: requested as HarnessName[] } : {}),
+				...(harnesses.length ? { harnesses } : {}),
 				cli: commandInvocation,
 			})
 			const git = new GitBridgeState(root)

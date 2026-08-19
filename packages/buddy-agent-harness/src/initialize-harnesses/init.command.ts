@@ -2,7 +2,7 @@ import type { cli } from 'clibuilder'
 import { command, exitCodes, z } from 'clibuilder'
 import { parseFormat, writeResult } from '../command-output/command-output.ts'
 import { doctorCommand } from '../diagnose-bridges/doctor.command.ts'
-import { type HarnessName, harnessRegistry } from '../harness-registry/harness-registry.ts'
+import { parseHarnesses } from '../harness-registry/harness-registry.ts'
 import { initializeHarnesses } from './initialize-harnesses.ts'
 
 export const initCommand: cli.Command = command({
@@ -34,21 +34,11 @@ export const initCommand: cli.Command = command({
 	run(args) {
 		try {
 			const format = parseFormat(args.format)
-			const requested = args.harness
-				?.split(',')
-				.map((name) => name.trim())
-				.filter(Boolean)
-			const unsupported = requested?.filter((name) => !harnessRegistry.some((harness) => harness.name === name))
-			if (unsupported?.length)
-				throw new Error(
-					`Unsupported harness: ${unsupported.join(', ')}. Supported: ${harnessRegistry
-						.map((harness) => harness.name)
-						.join(', ')}.`,
-				)
+			const harnesses = parseHarnesses(args.harness)
 			writeResult(
 				initializeHarnesses({
 					root: args.root ?? process.cwd(),
-					...(requested?.length ? { harnesses: requested as HarnessName[] } : {}),
+					...(harnesses.length ? { harnesses } : {}),
 					...(args.copy === undefined ? {} : { copy: args.copy }),
 					...(args.force === undefined ? {} : { force: args.force }),
 				}),
