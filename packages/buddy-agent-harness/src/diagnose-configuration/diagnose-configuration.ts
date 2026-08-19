@@ -67,7 +67,7 @@ export function diagnoseConfiguration({ root, git, cli }: DiagnoseConfigurationO
 	const findings: ConfigurationFinding[] = []
 	const add = (path: string, problem: ConfigurationProblem) => {
 		const { detail, repair } = repairFor(problem)
-		findings.push({ path, problem, detail, repair: repair(path, cli) })
+		findings.push({ path, problem, detail, repair: repair({ file: path }, cli) })
 	}
 
 	const harnesses = selectHarnesses(root, [])

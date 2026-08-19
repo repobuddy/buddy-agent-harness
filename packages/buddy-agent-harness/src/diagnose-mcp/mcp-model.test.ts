@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { divergingFields, sameField } from './mcp-model.ts'
-import { goldenLocator, parseGoldenSet, parseTarget } from './mcp-sources.ts'
+import { parseGoldenSet, parseTarget } from './mcp-sources.ts'
 
 describe('divergingFields', () => {
 	it('names no field when the golden set declares nothing', () => {
@@ -131,15 +131,5 @@ describe('parseTarget', () => {
 
 	it('reads a document that is not an object as holding no servers', () => {
 		expect(parseTarget(json, 'null')).toEqual({ kind: 'servers', servers: new Map() })
-	})
-})
-
-describe('goldenLocator', () => {
-	it('names the line and column when the parser gave them', () => {
-		expect(goldenLocator({ line: 2, column: 9 })).toBe('.agents/buddy-agent-harness/mcp.toml#L2:9')
-	})
-
-	it('names the file alone when it did not', () => {
-		expect(goldenLocator(undefined)).toBe('.agents/buddy-agent-harness/mcp.toml')
 	})
 })

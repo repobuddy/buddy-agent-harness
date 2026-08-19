@@ -139,7 +139,12 @@ export function diagnoseBridges({ root, harnesses: preferred = [], cli }: Diagno
 
 	if (!isDirectory(canonical)) {
 		const { detail, repair } = repairFor('no-canonical')
-		findings.push({ path: canonicalPath, problem: 'no-canonical', detail, repair: repair(canonicalPath, cli) })
+		findings.push({
+			path: canonicalPath,
+			problem: 'no-canonical',
+			detail,
+			repair: repair({ file: canonicalPath }, cli),
+		})
 	}
 
 	for (const harness of bridged) {
@@ -149,7 +154,7 @@ export function diagnoseBridges({ root, harnesses: preferred = [], cli }: Diagno
 		if (inspection.direction) divergence.push({ path, direction: inspection.direction })
 		if (inspection.problem) {
 			const { detail, repair } = repairFor(inspection.problem)
-			findings.push({ path, problem: inspection.problem, detail, repair: repair(path, cli) })
+			findings.push({ path, problem: inspection.problem, detail, repair: repair({ file: path }, cli) })
 		}
 	}
 

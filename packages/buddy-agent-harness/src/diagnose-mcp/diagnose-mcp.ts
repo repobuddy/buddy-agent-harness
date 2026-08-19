@@ -2,13 +2,14 @@ import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { type McpProblem, repairFor } from '../diagnose-bridges/doctor-guidance.ts'
 import type { GitBridgeState } from '../diagnose-bridges/git-bridge-state.ts'
+import { type Locator, locatorText } from '../diagnose-bridges/locator.ts'
 import type { ConfigurationFinding } from '../diagnose-configuration/diagnose-configuration.ts'
 import { selectHarnesses } from '../harness-registry/harness-registry.ts'
 import type { McpConfig } from '../harness-registry/mcp-config.ts'
 import { McpBaseline, type McpDirection, parseProjectionRecord, projectionRecordPath } from './mcp-baseline.ts'
 import { divergingFields, type McpServer } from './mcp-model.ts'
 import { credentialFields } from './mcp-secrets.ts'
-import { goldenLocator, goldenSetPath, parseGoldenSet, parseTarget } from './mcp-sources.ts'
+import { goldenSetPath, parseGoldenSet, parseTarget } from './mcp-sources.ts'
 
 /**
  * The MCP half of `doctor`: how a repository's **golden MCP server set** and the harness copies of
@@ -63,9 +64,12 @@ const divergence: Record<McpDirection, McpProblem> = {
 
 export function diagnoseMcp({ root, git, cli }: DiagnoseMcpOptions): ConfigurationFinding[] {
 	const findings: ConfigurationFinding[] = []
-	const add = (path: string, problem: McpProblem) => {
+	// The finding carries the locator in parts as far as the repair, which is where a repair naming
+	// only the server or only the file reads one off. The string is built here and nowhere else, and
+	// nothing recovers a part from it: a server named `io.github.foo` survives no split of it.
+	const add = (at: Locator, problem: McpProblem) => {
 		const { detail, repair } = repairFor(problem)
-		findings.push({ path, problem, detail, repair: repair(path, cli) })
+		findings.push({ path: locatorText(at), problem, detail, repair: repair(at, cli) })
 	}
 
 	/**
@@ -78,7 +82,7 @@ export function diagnoseMcp({ root, git, cli }: DiagnoseMcpOptions): Configurati
 		const committed = git.trackingOf(path) !== 'untracked'
 		for (const [name, server] of servers)
 			for (const field of credentialFields(server))
-				add(`${path}#servers.${name}.${field}`, committed ? 'mcp-committed-secret' : 'mcp-literal-secret')
+				add({ file: path, server: name, field }, committed ? 'mcp-committed-secret' : 'mcp-literal-secret')
 	}
 
 	// Targets are read first so an unreadable one is reported whether or not a golden set exists: a
@@ -88,7 +92,7 @@ export function diagnoseMcp({ root, git, cli }: DiagnoseMcpOptions): Configurati
 	for (const config of targetsOf(root)) {
 		const parsed = parseTarget(config, read(root, config.path))
 		if (parsed.kind === 'unreadable') {
-			add(config.path, 'mcp-target-unreadable')
+			add({ file: config.path }, 'mcp-target-unreadable')
 			continue
 		}
 		// A harness with no MCP file has nothing that could have drifted. Writing one for the first
@@ -101,7 +105,7 @@ export function diagnoseMcp({ root, git, cli }: DiagnoseMcpOptions): Configurati
 
 	const golden = parseGoldenSet(read(root, goldenSetPath))
 	if (golden.kind === 'unreadable') {
-		add(goldenLocator(golden.position), 'mcp-golden-unreadable')
+		add({ file: goldenSetPath, position: golden.position }, 'mcp-golden-unreadable')
 		return findings
 	}
 	if (golden.kind === 'absent') return findings
@@ -114,17 +118,17 @@ export function diagnoseMcp({ root, git, cli }: DiagnoseMcpOptions): Configurati
 		for (const [name, declared] of golden.servers) {
 			const carried = servers.get(name)
 			if (!carried) {
-				add(`${config.path}#servers.${name}`, 'mcp-unprojected')
+				add({ file: config.path, server: name }, 'mcp-unprojected')
 				continue
 			}
 			for (const field of divergingFields(declared, carried))
 				add(
-					`${config.path}#servers.${name}.${field}`,
+					{ file: config.path, server: name, field },
 					divergence[baseline.directionOf(config, name, field, declared, carried)],
 				)
 		}
 		for (const name of servers.keys())
-			if (!golden.servers.has(name)) add(`${config.path}#servers.${name}`, 'mcp-undeclared')
+			if (!golden.servers.has(name)) add({ file: config.path, server: name }, 'mcp-undeclared')
 	}
 
 	return findings

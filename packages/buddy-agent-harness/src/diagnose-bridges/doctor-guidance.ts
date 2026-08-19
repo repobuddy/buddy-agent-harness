@@ -1,3 +1,5 @@
+import { type Locator, locatorText } from './locator.ts'
+
 /**
  * The one place `doctor`'s guidance is written. The command reads `detail` and `repair` to fill its
  * `findings` and `help` sections; `skills/doctor/SKILL.md` is generated from the same table by
@@ -89,16 +91,18 @@ export type Repair = {
 	/** What `doctor` prints in the `findings` row for this problem. */
 	detail: string
 	/**
-	 * What fixes it, for `doctor`'s own output. `path` is the repository-relative bridge path; `cli`
-	 * is how to invoke this tool.
+	 * What fixes it, for `doctor`'s own output. `at` is where the finding is, in parts — the file
+	 * alone for a bridge, the file, server, and field for an MCP finding; `cli` is how to invoke this
+	 * tool. A repair that names only part of a locator reads it off `at` rather than splitting the
+	 * rendered string, which no separator survives: a server may be named `io.github.foo`.
 	 */
-	repair(path: string, cli: string): RepairAction
+	repair(at: Locator, cli: string): RepairAction
 	/**
 	 * What the shipped skill tells an agent to do instead. A repair that rebuilds a bridge delegates
 	 * to the `init` skill rather than calling the `init` command, because rebuilding can move
 	 * user-authored skills and that judgment is the `init` skill's, not `doctor`'s.
 	 */
-	skillRepair(path: string): string
+	skillRepair(at: Locator): string
 }
 
 /** How the command names itself. */
@@ -165,17 +169,6 @@ export const initSkillInvocation = '/buddy-agent-harness:init'
 /** Where the user authors the golden MCP server set, named in every MCP repair that points at it. */
 const goldenSet = '.agents/buddy-agent-harness/mcp.toml'
 
-/**
- * The file half and the server half of an MCP locator (`.cursor/mcp.json#servers.linear.command`).
- *
- * A repair that adds or drops a whole server reads as an instruction about a file and a name, not
- * about a path into one — "add `fs` to `.cursor/mcp.json`" rather than "add the server to
- * `.cursor/mcp.json#servers.fs`". The field-level repairs keep the whole locator, because there the
- * path into the file is the point.
- */
-const fileOf = (locator: string) => locator.split('#')[0] as string
-const serverOf = (locator: string) => locator.split('.').pop() as string
-
 /** The skills bridges, reported in `bridges`. */
 export const bridgeRepairs: readonly Repair[] = [
 	{
@@ -190,27 +183,27 @@ export const bridgeRepairs: readonly Repair[] = [
 	{
 		problem: 'missing',
 		detail: 'no bridge at this path — the harness sees zero project skills',
-		repair: (path, cli) => ({
+		repair: ({ file }, cli) => ({
 			command: `${cli} init`,
-			instruction: `run \`${cli} init\` to create the bridge at ${path}`,
+			instruction: `run \`${cli} init\` to create the bridge at ${file}`,
 		}),
 		skillRepair: () => `run \`${initSkillInvocation}\``,
 	},
 	{
 		problem: 'degraded',
 		detail: 'expected a directory but found a regular file — checkout without core.symlinks',
-		repair: (path, cli) => ({
+		repair: ({ file }, cli) => ({
 			command: `${cli} init --copy --force`,
-			instruction: `run \`${cli} init --copy --force\` to rebuild ${path} as a real directory`,
+			instruction: `run \`${cli} init --copy --force\` to rebuild ${file} as a real directory`,
 		}),
 		skillRepair: () => `run \`${initSkillInvocation} --copy --force\``,
 	},
 	{
 		problem: 'stale',
 		detail: 'symlink does not resolve to .agents/skills',
-		repair: (path, cli) => ({
+		repair: ({ file }, cli) => ({
 			command: `${cli} init --force`,
-			instruction: `run \`${cli} init --force\` to repoint ${path} at .agents/skills`,
+			instruction: `run \`${cli} init --force\` to repoint ${file} at .agents/skills`,
 		}),
 		skillRepair: () => `run \`${initSkillInvocation} --force\``,
 	},
@@ -220,50 +213,50 @@ export const bridgeRepairs: readonly Repair[] = [
 		// No command, unlike `diverged-canonical`, and the asymmetry is real: `init` only ever builds a
 		// bridge *from* the canonical directory, so no flag promotes the bridge's newer content back
 		// into it. Deciding to keep that side is the caller's, and the rebuild is what follows.
-		repair: (path, cli) => ({
+		repair: ({ file }, cli) => ({
 			command: '',
-			instruction: `replace .agents/skills with ${path} to keep the newer edit, then run \`${cli} init --force\``,
+			instruction: `replace .agents/skills with ${file} to keep the newer edit, then run \`${cli} init --force\``,
 		}),
-		skillRepair: (path) =>
-			`replace .agents/skills with ${path} to keep the newer edit, then run \`${initSkillInvocation} --force\``,
+		skillRepair: ({ file }) =>
+			`replace .agents/skills with ${file} to keep the newer edit, then run \`${initSkillInvocation} --force\``,
 	},
 	{
 		problem: 'diverged-canonical',
 		detail: 'only .agents/skills changed since the two last agreed — the copy is stale',
-		repair: (path, cli) => ({
+		repair: ({ file }, cli) => ({
 			command: `${cli} init --copy --force`,
-			instruction: `run \`${cli} init --copy --force\` to rebuild ${path} from the newer .agents/skills`,
+			instruction: `run \`${cli} init --copy --force\` to rebuild ${file} from the newer .agents/skills`,
 		}),
 		skillRepair: () => `run \`${initSkillInvocation} --copy --force\``,
 	},
 	{
 		problem: 'diverged-both',
 		detail: 'both sides changed since they last agreed — rebuilding would discard one of them',
-		repair: (path) => ({
+		repair: ({ file }) => ({
 			command: '',
-			instruction: `reconcile .agents/skills with ${path} by hand — rebuilding would discard one of them; \`git diff --no-index .agents/skills ${path}\` shows what differs`,
+			instruction: `reconcile .agents/skills with ${file} by hand — rebuilding would discard one of them; \`git diff --no-index .agents/skills ${file}\` shows what differs`,
 		}),
-		skillRepair: (path) => `run \`git diff --no-index .agents/skills ${path}\` and reconcile by hand`,
+		skillRepair: ({ file }) => `run \`git diff --no-index .agents/skills ${file}\` and reconcile by hand`,
 	},
 	{
 		problem: 'diverged-unknown',
 		detail: 'contents differ and no commit where they agreed was found — which side moved is unknown',
-		repair: (path) => ({
+		repair: ({ file }) => ({
 			command: '',
-			instruction: `reconcile .agents/skills with ${path} by hand — which side moved is unknown; \`git diff --no-index .agents/skills ${path}\` shows what differs`,
+			instruction: `reconcile .agents/skills with ${file} by hand — which side moved is unknown; \`git diff --no-index .agents/skills ${file}\` shows what differs`,
 		}),
-		skillRepair: (path) => `run \`git diff --no-index .agents/skills ${path}\` and reconcile by hand`,
+		skillRepair: ({ file }) => `run \`git diff --no-index .agents/skills ${file}\` and reconcile by hand`,
 	},
 	{
 		problem: 'unpinned-copy',
 		detail: 'tracked copy without the skip-worktree bit — the tree is dirty with content that must not be committed',
 		// The index entry is the tracked symlink on a Windows checkout but the individual files in a
 		// committed copy, so the paths are read back from git rather than assumed.
-		repair: (path) => ({
-			command: `git ls-files -z ${path} | xargs -0 git update-index --skip-worktree`,
-			instruction: `run \`git ls-files -z ${path} | xargs -0 git update-index --skip-worktree\` to restore the skip-worktree bit`,
+		repair: ({ file }) => ({
+			command: `git ls-files -z ${file} | xargs -0 git update-index --skip-worktree`,
+			instruction: `run \`git ls-files -z ${file} | xargs -0 git update-index --skip-worktree\` to restore the skip-worktree bit`,
 		}),
-		skillRepair: (path) => `run \`git ls-files -z ${path} | xargs -0 git update-index --skip-worktree\``,
+		skillRepair: ({ file }) => `run \`git ls-files -z ${file} | xargs -0 git update-index --skip-worktree\``,
 	},
 ]
 
@@ -286,18 +279,18 @@ export const instructionRepairs: readonly Repair[] = [
 	{
 		problem: 'instructions-missing',
 		detail: 'no instruction bridge at this path — the harness reads none of AGENTS.md',
-		repair: (path) => ({
+		repair: ({ file }) => ({
 			command: '',
-			instruction: `hand ${path} to \`${initSkillInvocation}\`, which writes the bridge into it`,
+			instruction: `hand ${file} to \`${initSkillInvocation}\`, which writes the bridge into it`,
 		}),
 		skillRepair: () => `run \`${initSkillInvocation}\``,
 	},
 	{
 		problem: 'instructions-unbridged',
 		detail: 'the file is present but names AGENTS.md nowhere — the harness reads none of it',
-		repair: (path) => ({
+		repair: ({ file }) => ({
 			command: '',
-			instruction: `hand ${path} to \`${initSkillInvocation}\`, which adds the bridge without discarding what the file already says`,
+			instruction: `hand ${file} to \`${initSkillInvocation}\`, which adds the bridge without discarding what the file already says`,
 		}),
 		skillRepair: () =>
 			`run \`${initSkillInvocation}\`, which adds the bridge without discarding what the file already says`,
@@ -305,9 +298,9 @@ export const instructionRepairs: readonly Repair[] = [
 	{
 		problem: 'instructions-unreadable',
 		detail: 'the settings file does not parse, so the harness reads none of it',
-		repair: (path) => ({
+		repair: ({ file }) => ({
 			command: '',
-			instruction: `fix the JSON in ${path} by hand, then hand it to \`${initSkillInvocation}\``,
+			instruction: `fix the JSON in ${file} by hand, then hand it to \`${initSkillInvocation}\``,
 		}),
 		skillRepair: () => `fix the JSON by hand, then run \`${initSkillInvocation}\``,
 	},
@@ -322,36 +315,36 @@ const configurationRepairs: readonly Repair[] = [
 		problem: 'deprecated-harness',
 		detail:
 			'a projection under a harness name that has been superseded — the replacement reads .agents/skills natively and needs no projection at all',
-		repair: (path) => ({
+		repair: ({ file }) => ({
 			command: '',
-			instruction: `remove ${path} and enable the harness that replaced it — \`${repairSkillInvocation}\` offers the correction`,
+			instruction: `remove ${file} and enable the harness that replaced it — \`${repairSkillInvocation}\` offers the correction`,
 		}),
 		skillRepair: () => `run \`${repairSkillInvocation}\``,
 	},
 	{
 		problem: 'ignored-bridge',
 		detail: 'a .gitignore rule matches this bridge — an untracked bridge swallows a real edit silently',
-		repair: (path) => ({
+		repair: ({ file }) => ({
 			command: '',
-			instruction: `narrow or remove the .gitignore rule matching ${path} — \`${repairSkillInvocation}\` offers the correction`,
+			instruction: `narrow or remove the .gitignore rule matching ${file} — \`${repairSkillInvocation}\` offers the correction`,
 		}),
 		skillRepair: () => `run \`${repairSkillInvocation}\``,
 	},
 	{
 		problem: 'unread-local-override',
 		detail: 'no harness reads this filename, so everything in it is invisible to every agent',
-		repair: (path) => ({
+		repair: ({ file }) => ({
 			command: '',
-			instruction: `move ${path} to CLAUDE.local.md, or consolidate it into AGENTS.md — \`${repairSkillInvocation}\` offers the correction`,
+			instruction: `move ${file} to CLAUDE.local.md, or consolidate it into AGENTS.md — \`${repairSkillInvocation}\` offers the correction`,
 		}),
 		skillRepair: () => `run \`${repairSkillInvocation}\``,
 	},
 	{
 		problem: 'unloadable-skill',
 		detail: 'frontmatter that does not parse, or no description — either one makes a harness skip the skill outright',
-		repair: (path) => ({
+		repair: ({ file }) => ({
 			command: '',
-			instruction: `quote the description in ${path}, or add one — \`${repairSkillInvocation}\` offers the correction`,
+			instruction: `quote the description in ${file}, or add one — \`${repairSkillInvocation}\` offers the correction`,
 		}),
 		skillRepair: () => `run \`${repairSkillInvocation}\``,
 	},
@@ -371,83 +364,83 @@ const mcpRepairs: readonly Repair[] = [
 		problem: 'mcp-golden-unreadable',
 		detail:
 			'the golden MCP set does not parse — the locator gives the line and column, and nothing else can be said about it',
-		repair: (path) => ({ command: '', instruction: `fix the TOML at ${path}` }),
-		skillRepair: (path) =>
-			`fix the TOML at ${path} by hand — the reported line and column are all that can be quoted, because the parser's own message repeats the offending line and that line is the one holding the credential`,
+		repair: (at) => ({ command: '', instruction: `fix the TOML at ${locatorText(at)}` }),
+		skillRepair: (at) =>
+			`fix the TOML at ${locatorText(at)} by hand — the reported line and column are all that can be quoted, because the parser's own message repeats the offending line and that line is the one holding the credential`,
 	},
 	{
 		problem: 'mcp-target-unreadable',
 		detail:
 			'this harness config does not parse, so the harness starts none of its servers and nothing in it can be compared',
-		repair: (path) => ({ command: '', instruction: `fix the syntax of ${path}` }),
-		skillRepair: (path) => `fix the syntax of ${path} by hand`,
+		repair: (at) => ({ command: '', instruction: `fix the syntax of ${locatorText(at)}` }),
+		skillRepair: (at) => `fix the syntax of ${locatorText(at)} by hand`,
 	},
 	{
 		problem: 'mcp-unprojected',
 		detail: 'the golden set declares this server and the harness config does not carry it',
-		repair: (path) => ({
+		repair: ({ file, server }) => ({
 			command: '',
-			instruction: `add the server ${serverOf(path)} to ${fileOf(path)}, or drop it from the golden set`,
+			instruction: `add the server ${server} to ${file}, or drop it from the golden set`,
 		}),
-		skillRepair: (path) =>
-			`add the server at ${path} to that file from its golden entry, or drop it from the golden set`,
+		skillRepair: (at) =>
+			`add the server at ${locatorText(at)} to that file from its golden entry, or drop it from the golden set`,
 	},
 	{
 		problem: 'mcp-undeclared',
 		detail: 'the harness config carries this server and the golden set does not declare it',
-		repair: (path) => ({
+		repair: ({ file, server }) => ({
 			command: '',
-			instruction: `add the server ${serverOf(path)} to ${goldenSet}, or drop it from ${fileOf(path)}`,
+			instruction: `add the server ${server} to ${goldenSet}, or drop it from ${file}`,
 		}),
-		skillRepair: (path) =>
-			`copy the server at ${path} into ${goldenSet}, refusing any literal credential it carries, or drop it from ${fileOf(path)}`,
+		skillRepair: (at) =>
+			`copy the server at ${locatorText(at)} into ${goldenSet}, refusing any literal credential it carries, or drop it from ${at.file}`,
 	},
 	{
 		problem: 'mcp-diverged-target',
 		detail: 'only the harness config changed since the two last agreed — the edit was made through the copy',
-		repair: (path) => ({ command: '', instruction: `reconcile the value at ${path} back into ${goldenSet}` }),
-		skillRepair: (path) => `reconcile the value at ${path} back into ${goldenSet}, field by field`,
+		repair: (at) => ({ command: '', instruction: `reconcile the value at ${locatorText(at)} back into ${goldenSet}` }),
+		skillRepair: (at) => `reconcile the value at ${locatorText(at)} back into ${goldenSet}, field by field`,
 	},
 	{
 		problem: 'mcp-diverged-golden',
 		detail: 'only the golden set changed since the two last agreed — the harness copy is stale',
-		repair: (path) => ({ command: '', instruction: `update ${path} from the golden entry` }),
-		skillRepair: (path) => `update ${path} from the golden entry`,
+		repair: (at) => ({ command: '', instruction: `update ${locatorText(at)} from the golden entry` }),
+		skillRepair: (at) => `update ${locatorText(at)} from the golden entry`,
 	},
 	{
 		problem: 'mcp-diverged-both',
 		detail: 'both sides changed since they last agreed — merging either way would discard the other',
-		repair: (path) => ({ command: '', instruction: `reconcile ${path} against ${goldenSet} by hand` }),
-		skillRepair: (path) =>
-			`reconcile ${path} against ${goldenSet} by hand — never merge a three-way conflict automatically`,
+		repair: (at) => ({ command: '', instruction: `reconcile ${locatorText(at)} against ${goldenSet} by hand` }),
+		skillRepair: (at) =>
+			`reconcile ${locatorText(at)} against ${goldenSet} by hand — never merge a three-way conflict automatically`,
 	},
 	{
 		problem: 'mcp-diverged-unknown',
 		detail:
 			'the two disagree and no baseline says which side moved — neither history nor a last-projected record covers this server',
-		repair: (path) => ({ command: '', instruction: `compare ${path} against ${goldenSet} by hand` }),
-		skillRepair: (path) => `compare ${path} against ${goldenSet} by hand`,
+		repair: (at) => ({ command: '', instruction: `compare ${locatorText(at)} against ${goldenSet} by hand` }),
+		skillRepair: (at) => `compare ${locatorText(at)} against ${goldenSet} by hand`,
 	},
 	{
 		problem: 'mcp-literal-secret',
 		detail: 'a credential-bearing field holds a literal rather than a reference to an environment variable',
-		repair: (path) => ({
+		repair: (at) => ({
 			command: '',
-			instruction: `move the value at ${path} into an environment variable and reference it`,
+			instruction: `move the value at ${locatorText(at)} into an environment variable and reference it`,
 		}),
-		skillRepair: (path) =>
-			`move the value at ${path} into an environment variable and reference it — read the value from the file, never from this report, and never repeat it back`,
+		skillRepair: (at) =>
+			`move the value at ${locatorText(at)} into an environment variable and reference it — read the value from the file, never from this report, and never repeat it back`,
 	},
 	{
 		problem: 'mcp-committed-secret',
 		detail:
 			'a credential-bearing field holds a literal in a git-tracked file — the credential is committed, and moving it does not un-commit it',
-		repair: (path) => ({
+		repair: (at) => ({
 			command: '',
-			instruction: `rotate the credential behind ${path}, then reference it from an environment variable`,
+			instruction: `rotate the credential behind ${locatorText(at)}, then reference it from an environment variable`,
 		}),
-		skillRepair: (path) =>
-			`rotate the credential behind ${path} at its issuer, then reference it from an environment variable — it is in the repository's history, so moving it is not enough`,
+		skillRepair: (at) =>
+			`rotate the credential behind ${locatorText(at)} at its issuer, then reference it from an environment variable — it is in the repository's history, so moving it is not enough`,
 	},
 ]
 
@@ -485,7 +478,7 @@ export function renderDoctorSkill(version: string): string {
 	const cell = (value: string) => value.replaceAll('|', '\\|')
 	const rows = (repairs: readonly Repair[]) =>
 		repairs
-			.map((entry) => `| \`${entry.problem}\` | ${entry.detail} | ${cell(entry.skillRepair('<path>'))} |`)
+			.map((entry) => `| \`${entry.problem}\` | ${entry.detail} | ${cell(entry.skillRepair({ file: '<path>' }))} |`)
 			.join('\n')
 
 	return `---

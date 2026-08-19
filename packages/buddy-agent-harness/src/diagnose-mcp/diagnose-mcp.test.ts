@@ -147,6 +147,33 @@ describe('diagnoseMcp', () => {
 
 			expect(find(root, 'mcp-undeclared')?.path).toBe(`${cursor}#servers.sentry`)
 		})
+
+		// `io.github.*` is a common way to name an MCP server, and a repair that recovered the name by
+		// splitting the locator on `.` named `foo` — a server neither file has. The parts travel with
+		// the finding for this reason, and only the locator is ever assembled from them.
+		it('names a dotted server in full in the repair for one the target does not carry', () => {
+			const root = repository()
+			write(root, golden, '[servers."io.github.foo"]\ncommand = "npx"\n')
+			write(root, cursor, JSON.stringify({ mcpServers: {} }))
+
+			const finding = find(root, 'mcp-unprojected')
+
+			expect(finding?.path).toBe(`${cursor}#servers.io.github.foo`)
+			expect(finding?.repair.instruction).toBe(
+				`add the server io.github.foo to ${cursor}, or drop it from the golden set`,
+			)
+		})
+
+		it('names a dotted server in full in the repair for one the golden set does not declare', () => {
+			const root = repository()
+			write(root, golden, goldenLinear)
+			write(root, cursor, JSON.stringify({ mcpServers: { 'io.github.foo': { command: 'npx' } } }))
+
+			const finding = find(root, 'mcp-undeclared')
+
+			expect(finding?.path).toBe(`${cursor}#servers.io.github.foo`)
+			expect(finding?.repair.instruction).toBe(`add the server io.github.foo to ${golden}, or drop it from ${cursor}`)
+		})
 	})
 
 	describe('divergence', () => {
