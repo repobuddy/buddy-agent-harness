@@ -46,7 +46,7 @@ So a consumer's question is not "which of the two skills?" but "does this findin
 
 - **`doctor` skill** — reads the report and routes each finding to the skill that owns it. The consumer this contract is written for.
 - **`repair` skill** — acts on the findings it owns and hands on the ones it does not.
-- **`init` skill** — owns every instruction repair, and every bridge repair that rebuilding fixes.
+- **`init` skill** — owns every instruction repair, and every bridge repair that rebuilding fixes. Its conduct once it holds one is `../../skills/init/`.
 - **person at a shell** — the consumer who routes by reading rather than by parsing, and for whom the repair must still be an instruction they can follow.
 - **session-start hook** — never routes anything, and is the reason the detecting surface must stay read-only.
 

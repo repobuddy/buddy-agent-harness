@@ -29,7 +29,7 @@ That shape had no owner, and the cost was concrete. When a field was added to `f
 
 - **Deciding what is wrong.** Every fault is a detecting node's: `../bridge-resolution/`, `../instruction-bridges/`, `../configuration-diagnosis/`, `../mcp-diagnosis/`.
 - **Deciding who repairs it.** `../../workflows/detect-and-repair/`. This node states which fields exist; that node states which of them a consumer may route on.
-- **The encoder itself.** `--format` is `doctor`'s surface and is specified here, but the TOON/JSON/text encoder and its table alignment are shared with the `init` command and have no node yet — see the Backfill note in `../README.md`.
+- **The encoder itself.** `--format` is `doctor`'s surface and is specified here, but the TOON/JSON/text encoder and its table alignment are shared with the `init` command: `../command-output/`.
 - **The `init` command's report.** A different report with a different shape.
 
 ## Use Cases

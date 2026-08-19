@@ -39,6 +39,7 @@ This project mirrors its source surfaces so a contributor can find a spec beside
 | Node | Subject |
 | --- | --- |
 | [`skills/harness-init/`](./skills/harness-init/README.md) | Initialize canonical skills across enabled agent harnesses |
+| [`skills/init/`](./skills/init/README.md) | What the `init` skill consolidates, declines to invent, and writes without asking |
 | [`skills/repair/`](./skills/repair/README.md) | Correct agent configuration that is present and wrong |
 | [`cli/`](./cli/README.md) | Index over the package's command-line product surface |
 | [`cli/bridge-resolution/`](./cli/bridge-resolution/README.md) | Report whether every skills bridge still resolves into `.agents/skills` |
@@ -47,6 +48,7 @@ This project mirrors its source surfaces so a contributor can find a spec beside
 | [`cli/mcp-diagnosis/`](./cli/mcp-diagnosis/README.md) | Report drift between a golden MCP server set and the harness copies of it |
 | [`cli/diagnosis-report/`](./cli/diagnosis-report/README.md) | The one output shape every finding family is reported through |
 | [`cli/entry-point/`](./cli/entry-point/README.md) | Reach a command without going through the process |
+| [`cli/command-output/`](./cli/command-output/README.md) | How a command's result becomes the bytes on stdout |
 | [`workflows/`](./workflows/README.md) | Index over the flows that cross the skill and CLI surfaces |
 | [`workflows/detect-and-repair/`](./workflows/detect-and-repair/README.md) | The contract between `doctor` and the skills that correct what it finds |
 
@@ -54,12 +56,10 @@ This project mirrors its source surfaces so a contributor can find a spec beside
 
 The project implementation predates this SDD spec. `harness-init` was the first backfilled behavioral node.
 
-The `doctor` command is now described in full: every finding family under `cli/`, the output shape they share at `cli/diagnosis-report/`, and the cross-surface flow they feed at `workflows/detect-and-repair/`. How that command is reached at all is at `cli/entry-point/`.
+The `doctor` command is now described in full: every finding family under `cli/`, the output shape they share at `cli/diagnosis-report/`, and the cross-surface flow they feed at `workflows/detect-and-repair/`. How that command is reached at all is at `cli/entry-point/`, and how any command's result becomes bytes is at `cli/command-output/`. The `init` skill — as distinct from the `init` command at `skills/harness-init/` — is at `skills/init/`.
 
 What is still outstanding:
 
-- The **`init` skill's write behavior** — what it consolidates, what it declines to invent, and the bridges it writes without asking. `skills/harness-init/` specifies the `init` **command**; the skill every instruction repair routes to has no node.
-- The **shared command output layer** — the TOON/JSON/text encoder and its text rendering, used by both commands, at `src/command-output/`.
 - **`tooling/`**, still a reference stub over the build, packaging, and release surfaces.
 - **`skills/enhance/`** and **`skills/doctor/`**, shipped skills with no node of their own; the `doctor` skill's content is generated from the same guidance table the command reports from.
 
