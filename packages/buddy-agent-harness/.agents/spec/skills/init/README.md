@@ -84,7 +84,7 @@ Three rules, and each closes a different failure:
 - **Nothing survives derivation.** Write the heading and one line stating what the repository is, and stop. Padding a file that is read on every session costs context on every session.
 - **A nested `AGENTS.md`.** Left where it is and never merged upward — merging changes which files it governs. Bridged in place with the same stub, and reported by name as judged additive rather than counted.
 - **A nested `AGENTS.md` that reverses a root rule.** The one creation that stops to ask, even though it only creates a file. Bridging hands Claude Code two instructions and no rule for choosing between them, so the three options are put to the owner: bridge it anyway, reword it as additive, or leave it unbridged. The rest are bridged without waiting on the answer.
-- **The command reports a conflict.** Resolve the named target and retry. `--force` replaces that exact projection and nothing else; `--copy` is a snapshot rather than a live projection, and a run that falls back to one says so.
+- **The command reports a conflict.** Resolve the named target and retry. `--force` is reached for only to replace that exact projection — the flag itself replaces every conflicting target, so the narrowness is the skill's discipline rather than the command's guarantee (issue #80). `--copy` is a snapshot rather than a live projection, and a run that falls back to one says so.
 - **Every enabled harness reads the canonical directory natively.** No bridge exists, so no non-material region is written: a warning about a path this repository does not have teaches the next agent to distrust the rest of the file. This is a rule the skill states rather than a state a default run reaches — Claude Code is enabled unconditionally and needs both bridges — and it is specified as it ships rather than normalized away.
 - **The non-material region's markers are present and empty.** A deliberate opt-out; left empty. Markers that are **gone** are not an opt-out — the region is far more often lost to a rewrite or a merge than removed on purpose — so it is restored.
 - **The repository has a formatter.** It is run over the written files and the run says so. The skill is not itself a formatter.
@@ -122,7 +122,9 @@ flowchart TD
   Q2 --> R[Report what was created, consolidated, linked, and left canonical-only, then offer enhance once]
 ```
 
-The survey and the classification write nothing, which is what makes the plan at `C` worth presenting: it is composed from what is on disk rather than from what has already happened to it. The branch at `D` is per step rather than per run, so one run can create a directory unasked, replace a file on approval, and leave a third alone because the owner declined it — a declined step drops that one write and rejoins the run at `I`.
+The survey and the classification write nothing, which is what makes the plan at `C` worth presenting: it is composed from what is on disk rather than from what has already happened to it. The branch at `D` is per step rather than per run — the approval is asked for *any* step that replaces what a person wrote — so one run can create a directory unasked, replace a file on approval, and leave a third alone because the owner declined it.
+
+The graph rejoins at `I` after a decline, and that edge is the shipped skill's **structure** rather than a rule it states: the skill gates each step and never says what a decline does to the steps already approved. The scenario at `G→H` therefore asserts only what is written down — the declined file is left alone — and the continuation is reported as a gap rather than specified as behavior (issue #79).
 
 ## Scenario map
 
@@ -146,7 +148,7 @@ The survey and the classification write nothing, which is what makes the plan at
 | D→F | Claude Code enabled and no `CLAUDE.md` | `writes the CLAUDE.md import stub without asking` |
 | D→F | Gemini CLI enabled and no `.gemini/settings.json` | `writes the Gemini entry unasked where no settings file exists` |
 | D→F | two packages holding a nested `AGENTS.md` each | `bridges every additive nested file unasked and names each one it judged` |
-| G→H | a presented step replacing an authored instruction file | `leaves a declined step's file as it stands and carries on with the rest` |
+| G→H | a presented step replacing an authored instruction file | `leaves a declined step's file as it stands` |
 | I | a skill directory moving into the canonical directory | `preserves the history of a skill it moves` |
 | I | a skill whose `description` carries an unquoted colon | `fixes the frontmatter that decides whether a harness loads the skill` |
 | J | a `.cursorrules` whose consolidation was approved | `appends consolidated content rather than restructuring what a person wrote` |

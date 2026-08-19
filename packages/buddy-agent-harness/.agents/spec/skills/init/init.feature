@@ -128,11 +128,11 @@ Feature: Consolidate a repository's agent configuration and bridge the harnesses
     And the report does not state the outcome as a count alone
 
   @behavior
-  Scenario: leaves a declined step's file as it stands and carries on with the rest
+  Scenario: leaves a declined step's file as it stands
     Given a presented step replacing an authored instruction file with a pointer
     When the owner declines it
     Then that file is unchanged
-    And the remaining approved steps are still applied
+    And no pointer is written in its place
 
   @behavior
   Scenario: preserves the history of a skill it moves
