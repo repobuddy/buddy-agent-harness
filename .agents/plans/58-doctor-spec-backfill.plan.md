@@ -23,9 +23,9 @@ todos:
   - content: Impl gate
     status: completed
   - content: pnpm verify (coverage gated at 100%), changeset if packages/ changed
-    status: pending
+    status: completed
   - content: Handoff — PR against main linking issue #58, monitor CI, merge when green
-    status: pending
+    status: completed
 ---
 
 # 58 — backfill doctor's bridge and instruction findings, and home the doctor→repair flow
@@ -75,7 +75,36 @@ implementation wins and the disagreement is reported.
 3. **`unpinned-copy` is filed as a bridge problem and is not one.** Its `BridgeReport` status is
    `ok` — the bridge resolves. What is wrong is the git index. Specified as it ships.
 
-## NEXT
+## Landed
 
-Spec gate cleared and self-asserted after three judge rounds. Open the PR against main
-linking #58, then monitor CI and merge.
+Merged as PR #66. Issue #58 auto-closed.
+
+Four behavioral nodes registered — `cli/bridge-resolution/`, `cli/instruction-bridges/`,
+`cli/diagnosis-report/`, `workflows/detect-and-repair/` — with `cli/` and `workflows/`
+promoted from stubs to descriptive indexes. The `doctor` → `repair` contract moved out of
+`skills/repair/` into the seam node, and the two report-shape scenarios moved out of
+`cli/configuration-diagnosis/`, so each claim is stated once.
+
+Rebased twice mid-flight: onto #60, which split each repair into `{ command, instruction }`,
+and onto the MCP family, which made `doctor` report four families rather than three. Both
+were absorbed by editing one node, which is the argument the CR was opened to make.
+
+No changeset — nothing published changed. Ratified by operator.
+
+## Filed rather than fixed
+
+| Issue | What |
+| --- | --- |
+| #59 | `unpinned-copy` is filed as a bridge problem and reports a bridge whose status is `ok` |
+| #62 | a check that every reference in a spec node resolves |
+| #63 | the `repair` skill routes on a skill name in `help` that is absent for its own family |
+| #67 | the by-concept index is empty because the generator truncates node paths |
+| #68 | a test that writes down a set the source exports is not evidence about that set |
+| #69 | two surfaces still have no node — the `init` skill's write behavior and the shared output layer |
+
+## Not filed here
+
+The spec-judge's pre-flight could not be exercised on any round, because the conductor did
+not relay the producer's declared governance set through the dispatch channel. Raised on this
+CR and the preceding one, so it is a gap in the dispatch path rather than a one-off — it
+belongs to the SDD tooling, not to this repository, and was reported up the relay instead.
