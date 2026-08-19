@@ -17,6 +17,10 @@ Each entry gives the short definition and links to the page that owns the topic.
 
 **tool setting**: harness or tool configuration kept in its own separately named file under `.agents/`, because each setting has its own schema and compatibility rules.
 
+**golden set**: the user-authored canonical list of MCP servers at `.agents/buddy-agent-harness/mcp.toml`, one entry per server in the superset of fields the supported hosts accept. See [MCP Servers](/agent-configuration/mcp-servers/).
+
+**last-projected record**: `.agents/buddy-agent-harness/mcp.projected.json`, the per-target record of what was last written from the golden set, and the drift baseline for a file git cannot speak for. See [MCP Servers](/agent-configuration/mcp-servers/#which-side-moved).
+
 ## Harnesses
 
 **harness**: a coding-agent runtime with its own skill discovery location. Claude Code, Codex, and Cursor are harnesses.

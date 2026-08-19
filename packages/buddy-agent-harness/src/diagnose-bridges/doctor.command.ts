@@ -3,6 +3,7 @@ import type { cli } from 'clibuilder'
 import { command, z } from 'clibuilder'
 import { binPath, parseFormat, writeResult } from '../command-output/command-output.ts'
 import { type ConfigurationFinding, diagnoseConfiguration } from '../diagnose-configuration/diagnose-configuration.ts'
+import { diagnoseMcp } from '../diagnose-mcp/diagnose-mcp.ts'
 import { type HarnessName, harnessRegistry } from '../harness-registry/harness-registry.ts'
 import { type DiagnoseResult, diagnoseBridges } from './diagnose-bridges.ts'
 import { commandInvocation, type DoctorProblem, type RepairAction } from './doctor-guidance.ts'
@@ -108,7 +109,11 @@ export const doctorCommand: cli.Command = command({
 				...(requested?.length ? { harnesses: requested as HarnessName[] } : {}),
 				cli: commandInvocation,
 			})
-			const configuration = diagnoseConfiguration({ root, git: new GitBridgeState(root), cli: commandInvocation })
+			const git = new GitBridgeState(root)
+			const configuration = [
+				...diagnoseConfiguration({ root, git, cli: commandInvocation }),
+				...diagnoseMcp({ root, git, cli: commandInvocation }),
+			]
 			// Exit stays 0 even with findings: the diagnosis succeeded, and a non-zero code reads to an
 			// agent as "this command is broken, try something else".
 			writeResult(buildReport(binPath(homedir(), process.argv[1]), result, configuration), format)

@@ -196,6 +196,12 @@ Each finding row carries three fields: `problem` is its name and the only thing 
 
 `--harness` does not affect these checks. Every one requires a projection to exist on disk, and a projection cannot exist without its harness's own directory, which selects that harness already.
 
+## MCP findings
+
+Where a repository keeps a [golden MCP server set](/agent-configuration/mcp-servers/) at `.agents/buddy-agent-harness/mcp.toml`, `doctor` compares it against each harness's project-scope MCP configuration and reports drift in both directions, as `mcp-*` findings in the same `findings` section. Literal credentials in any MCP file are reported whether or not a golden set exists, and a secret's value never enters the report — the finding carries a locator like `.cursor/mcp.json#servers.linear.headers.Authorization` and nothing else.
+
+These findings stay within the command's contract: read-only, `--harness`-independent for the same reason as the configuration findings, and routed on `problem`. What the golden set is, which file each harness reads, and every `mcp-*` finding with its repair are on [MCP Servers](/agent-configuration/mcp-servers/).
+
 ## Exit codes
 
 `doctor` exits `0` even when it has findings. The diagnosis succeeded, and a non-zero code reads to an agent as "this command is broken, try something else." A `--strict` flag for CI, the one caller that genuinely wants a failing process, is not implemented yet.

@@ -42,12 +42,13 @@ This project mirrors its source surfaces so a contributor can find a spec beside
 | [`skills/repair/`](./skills/repair/README.md) | Correct agent configuration that is present and wrong |
 | [`cli/`](./cli/README.md) | Expose the package's command-line product surface — stub |
 | [`cli/configuration-diagnosis/`](./cli/configuration-diagnosis/README.md) | Report agent configuration that is present and wrong |
+| [`cli/mcp-diagnosis/`](./cli/mcp-diagnosis/README.md) | Report drift between a golden MCP server set and the harness copies of it |
 
 ## Backfill gap
 
 The project implementation predates this SDD spec. The CLI and the remaining shipped or tooling surfaces are still stubs; `harness-init` is the first backfilled behavioral node.
 
-`cli/configuration-diagnosis/` specifies the `doctor` command's configuration half, which is new. The command's **bridge-resolution** and **instruction-bridge** halves are older than this node and remain unspecified — backfilling them is outstanding, and is why `cli/` itself is still a stub rather than a descriptive index.
+`cli/configuration-diagnosis/` and `cli/mcp-diagnosis/` specify the `doctor` command's configuration and MCP halves, both of which are new. The command's **bridge-resolution** and **instruction-bridge** halves are older than this node and remain unspecified — backfilling them is outstanding, and is why `cli/` itself is still a stub rather than a descriptive index.
 
 <!-- BEGIN generated: by-concept (project-spec/concept-index) -->
 

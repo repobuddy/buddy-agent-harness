@@ -1,6 +1,7 @@
 import { lstatSync } from 'node:fs'
 import { join } from 'node:path'
 import type { InstructionBridge } from './instruction-bridge.ts'
+import type { McpConfig } from './mcp-config.ts'
 
 export type HarnessName =
 	| 'claude-code'
@@ -24,6 +25,10 @@ export type HarnessScopeName = 'project' | 'user'
  * `skillsDirectory` is the projection target the harness needs to see `.agents/skills` at this
  * scope. A harness that reads `.agents/skills` natively there has none, and is never projected into.
  *
+ * `mcpConfig` is where this harness keeps its MCP servers at this scope. Unlike the other two it
+ * is not a bridge into a canonical file the harness cannot read — it is the harness's own
+ * configuration, which `doctor` compares against the golden set and never writes.
+ *
  * `instructionBridge` is the same question for `AGENTS.md`: what the harness needs at this scope in
  * order to read it. It belongs per scope for the same reason `skillsDirectory` does — the file
  * differs. Unlike `skillsDirectory`, the `init` command does not write it; the `init` skill does. It
@@ -33,6 +38,7 @@ export type HarnessScope = {
 	detect: string
 	skillsDirectory?: string
 	instructionBridge?: InstructionBridge
+	mcpConfig?: McpConfig
 }
 
 export type Harness = {
@@ -75,17 +81,27 @@ export const harnessRegistry: readonly Harness[] = [
 			detect: '.claude',
 			skillsDirectory: '.claude/skills',
 			instructionBridge: { kind: 'import', path: 'CLAUDE.md' },
+			mcpConfig: { path: '.mcp.json', key: 'mcpServers', format: 'json' },
 		},
 		user: { detect: '.claude', skillsDirectory: '.claude/skills' },
 	},
-	{ name: 'cursor', project: { detect: '.cursor' }, user: { detect: '.cursor' } },
-	{ name: 'codex', project: { detect: '.codex' }, user: { detect: '.codex' } },
+	{
+		name: 'cursor',
+		project: { detect: '.cursor', mcpConfig: { path: '.cursor/mcp.json', key: 'mcpServers', format: 'json' } },
+		user: { detect: '.cursor' },
+	},
+	{
+		name: 'codex',
+		project: { detect: '.codex', mcpConfig: { path: '.codex/config.toml', key: 'mcp_servers', format: 'toml' } },
+		user: { detect: '.codex' },
+	},
 	{ name: 'copilot-cli', project: { detect: '.github/skills' }, user: { detect: '.copilot' } },
 	{
 		name: 'gemini-cli',
 		project: {
 			detect: '.gemini',
 			instructionBridge: { kind: 'settings-entry', path: '.gemini/settings.json', key: 'context.fileName' },
+			mcpConfig: { path: '.gemini/settings.json', key: 'mcpServers', format: 'json', shared: true },
 		},
 		user: { detect: '.gemini' },
 	},

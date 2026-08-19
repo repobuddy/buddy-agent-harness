@@ -113,6 +113,7 @@ export default defineConfig({
 						{ label: 'Writing Portable Skills', slug: 'agent-configuration/portable-skills' },
 						{ label: 'Skill Scripts', slug: 'agent-configuration/skill-scripts' },
 						{ label: 'Lookup Files', slug: 'agent-configuration/lookup-files' },
+						{ label: 'MCP Servers', slug: 'agent-configuration/mcp-servers' },
 						{
 							label: 'Skill Design',
 							items: [

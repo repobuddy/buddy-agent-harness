@@ -62,6 +62,25 @@ export class GitBridgeState {
 	}
 
 	/**
+	 * The newest commits that touched any of these paths, newest first. Empty outside a repository,
+	 * which is the same "cannot tell" degradation as everything else here.
+	 *
+	 * Bounded like `lastAgreedTree` is: a baseline that is not in the recent history of the two files
+	 * is not a baseline anyone can act on, and walking a whole repository to prove its absence costs
+	 * more than the answer is worth.
+	 */
+	commitsTouching(paths: readonly string[]): string[] {
+		if (this.prefix === undefined) return []
+		return lines(git(this.root, ['rev-list', '-n', '200', 'HEAD', '--', ...paths]))
+	}
+
+	/** One file's content at one commit, or `undefined` when it did not exist there. */
+	contentAt(commit: string, path: string): string | undefined {
+		if (this.prefix === undefined) return undefined
+		return git(this.root, ['show', `${commit}:${this.prefix}${path}`])
+	}
+
+	/**
 	 * Names the side that moved by finding the newest commit whose two trees agreed, then asking which
 	 * of the working directories still matches it.
 	 */

@@ -24,6 +24,8 @@ Only Claude Code needs a skills projection. Every other harness in the table rea
 
 Only the repository column decides whether a projection gets written. The user column is here because the same skills can be installed there and the failure mode is identical, and because a harness answering differently in the two columns — Antigravity does — is otherwise invisible. Nothing is written outside the repository.
 
+Where each harness keeps its project-scope MCP servers is a third question, with a third answer set — four different files across two formats, and two harnesses with no documented project-scope file at all. That table lives on [MCP Servers](/agent-configuration/mcp-servers/#the-files-it-is-compared-against).
+
 Devin Desktop was named Windsurf until the rebrand on 2026-06-02. `--harness windsurf` is still accepted as a deprecated alias, and still writes the legacy `.windsurf/skills` projection because Devin continues to scan that path; [What a projection is](/reference/configuration-layout/#what-a-projection-is) covers how it is reported.
 
 Vendor documentation changes independently. Follow the linked vendor documentation for setup requirements, product editions, and features beyond skills and instructions. The confidence behind each row is recorded in [Sources & Confidence](/sources/).

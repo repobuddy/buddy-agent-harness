@@ -28,6 +28,26 @@ export type BridgeProblem =
  */
 export type ConfigurationFault = 'deprecated-harness' | 'ignored-bridge' | 'unread-local-override' | 'unloadable-skill'
 
+/**
+ * Every way the golden MCP server set and a harness's copy of it can disagree, plus the two
+ * credential findings.
+ *
+ * A family of its own because nothing it says is shared with the others. A bridge either resolves
+ * or does not; two MCP files never share a byte, so every finding here is the result of a semantic
+ * comparison, and each one names a **server** and usually a **field** rather than a file.
+ */
+export type McpProblem =
+	| 'mcp-golden-unreadable'
+	| 'mcp-target-unreadable'
+	| 'mcp-unprojected'
+	| 'mcp-undeclared'
+	| 'mcp-diverged-target'
+	| 'mcp-diverged-golden'
+	| 'mcp-diverged-both'
+	| 'mcp-diverged-unknown'
+	| 'mcp-literal-secret'
+	| 'mcp-committed-secret'
+
 export type InstructionProblem =
 	| 'no-instructions'
 	| 'instructions-missing'
@@ -35,7 +55,7 @@ export type InstructionProblem =
 	| 'instructions-unreadable'
 
 /** Everything `doctor` can report against, across all three sections. */
-export type DoctorProblem = BridgeProblem | InstructionProblem | ConfigurationFault
+export type DoctorProblem = BridgeProblem | InstructionProblem | ConfigurationFault | McpProblem
 
 /** Alias kept for callers that name the whole set rather than one section. */
 export type ConfigurationProblem = DoctorProblem
@@ -137,6 +157,20 @@ export const repairSkillInvocation = '/buddy-agent-harness:repair'
 
 /** How the skill hands a repair back to `init`. */
 export const initSkillInvocation = '/buddy-agent-harness:init'
+
+/** Where the user authors the golden MCP server set, named in every MCP repair that points at it. */
+const goldenSet = '.agents/buddy-agent-harness/mcp.toml'
+
+/**
+ * The file half and the server half of an MCP locator (`.cursor/mcp.json#servers.linear.command`).
+ *
+ * A repair that adds or drops a whole server reads as an instruction about a file and a name, not
+ * about a path into one — "add `fs` to `.cursor/mcp.json`" rather than "add the server to
+ * `.cursor/mcp.json#servers.fs`". The field-level repairs keep the whole locator, because there the
+ * path into the file is the point.
+ */
+const fileOf = (locator: string) => locator.split('#')[0] as string
+const serverOf = (locator: string) => locator.split('.').pop() as string
 
 /** The skills bridges, reported in `bridges`. */
 export const bridgeRepairs: readonly Repair[] = [
@@ -319,8 +353,107 @@ const configurationRepairs: readonly Repair[] = [
 	},
 ]
 
-/** All three sections, in the order `doctor` reports them. */
-export const doctorRepairs: readonly Repair[] = [...bridgeRepairs, ...instructionRepairs, ...configurationRepairs]
+/**
+ * The golden MCP server set against the harness copies of it.
+ *
+ * Every repair names a **locator** rather than a file — `.cursor/mcp.json#servers.linear.command` —
+ * because a file holding twenty servers is not an address. The locator never carries a value: not
+ * a whole one, and not a prefix. `doctor` is safe to run from a session-start hook, so a value it
+ * echoes lands in agent context on every session and from there into transcripts, and `sk-ab…`
+ * leaks into exactly the same place the whole string would.
+ */
+const mcpRepairs: readonly Repair[] = [
+	{
+		problem: 'mcp-golden-unreadable',
+		detail:
+			'the golden MCP set does not parse — the locator gives the line and column, and nothing else can be said about it',
+		repair: (path) => ({ command: '', instruction: `fix the TOML at ${path}` }),
+		skillRepair: (path) =>
+			`fix the TOML at ${path} by hand — the reported line and column are all that can be quoted, because the parser's own message repeats the offending line and that line is the one holding the credential`,
+	},
+	{
+		problem: 'mcp-target-unreadable',
+		detail:
+			'this harness config does not parse, so the harness starts none of its servers and nothing in it can be compared',
+		repair: (path) => ({ command: '', instruction: `fix the syntax of ${path}` }),
+		skillRepair: (path) => `fix the syntax of ${path} by hand`,
+	},
+	{
+		problem: 'mcp-unprojected',
+		detail: 'the golden set declares this server and the harness config does not carry it',
+		repair: (path) => ({
+			command: '',
+			instruction: `add the server ${serverOf(path)} to ${fileOf(path)}, or drop it from the golden set`,
+		}),
+		skillRepair: (path) =>
+			`add the server at ${path} to that file from its golden entry, or drop it from the golden set`,
+	},
+	{
+		problem: 'mcp-undeclared',
+		detail: 'the harness config carries this server and the golden set does not declare it',
+		repair: (path) => ({
+			command: '',
+			instruction: `add the server ${serverOf(path)} to ${goldenSet}, or drop it from ${fileOf(path)}`,
+		}),
+		skillRepair: (path) =>
+			`copy the server at ${path} into ${goldenSet}, refusing any literal credential it carries, or drop it from ${fileOf(path)}`,
+	},
+	{
+		problem: 'mcp-diverged-target',
+		detail: 'only the harness config changed since the two last agreed — the edit was made through the copy',
+		repair: (path) => ({ command: '', instruction: `reconcile the value at ${path} back into ${goldenSet}` }),
+		skillRepair: (path) => `reconcile the value at ${path} back into ${goldenSet}, field by field`,
+	},
+	{
+		problem: 'mcp-diverged-golden',
+		detail: 'only the golden set changed since the two last agreed — the harness copy is stale',
+		repair: (path) => ({ command: '', instruction: `update ${path} from the golden entry` }),
+		skillRepair: (path) => `update ${path} from the golden entry`,
+	},
+	{
+		problem: 'mcp-diverged-both',
+		detail: 'both sides changed since they last agreed — merging either way would discard the other',
+		repair: (path) => ({ command: '', instruction: `reconcile ${path} against ${goldenSet} by hand` }),
+		skillRepair: (path) =>
+			`reconcile ${path} against ${goldenSet} by hand — never merge a three-way conflict automatically`,
+	},
+	{
+		problem: 'mcp-diverged-unknown',
+		detail:
+			'the two disagree and no baseline says which side moved — neither history nor a last-projected record covers this server',
+		repair: (path) => ({ command: '', instruction: `compare ${path} against ${goldenSet} by hand` }),
+		skillRepair: (path) => `compare ${path} against ${goldenSet} by hand`,
+	},
+	{
+		problem: 'mcp-literal-secret',
+		detail: 'a credential-bearing field holds a literal rather than a reference to an environment variable',
+		repair: (path) => ({
+			command: '',
+			instruction: `move the value at ${path} into an environment variable and reference it`,
+		}),
+		skillRepair: (path) =>
+			`move the value at ${path} into an environment variable and reference it — read the value from the file, never from this report, and never repeat it back`,
+	},
+	{
+		problem: 'mcp-committed-secret',
+		detail:
+			'a credential-bearing field holds a literal in a git-tracked file — the credential is committed, and moving it does not un-commit it',
+		repair: (path) => ({
+			command: '',
+			instruction: `rotate the credential behind ${path}, then reference it from an environment variable`,
+		}),
+		skillRepair: (path) =>
+			`rotate the credential behind ${path} at its issuer, then reference it from an environment variable — it is in the repository's history, so moving it is not enough`,
+	},
+]
+
+/** All four sections, in the order `doctor` reports them. */
+export const doctorRepairs: readonly Repair[] = [
+	...bridgeRepairs,
+	...instructionRepairs,
+	...configurationRepairs,
+	...mcpRepairs,
+]
 
 const repairsByProblem = new Map(doctorRepairs.map((entry) => [entry.problem, entry]))
 
@@ -378,7 +511,7 @@ The command is read-only. It never repairs anything, so it is safe to run at any
 
 \`instructions\` lists every instruction bridge into \`AGENTS.md\`, with a \`status\` of \`ok\`, \`missing\`, \`unbridged\`, or \`unreadable\`. They are a separate section because nothing about them is shared: a different \`kind\`, a different status vocabulary, and a repair that is never a command.
 
-\`findings\` explains each problem from either section and \`help\` carries its repair, one row per distinct repair, with two columns:
+\`findings\` explains each problem and carries more than the two sections above: the configuration and MCP findings below have no section of their own, because they are about files rather than about bridges. \`help\` carries each repair, one row per distinct repair, with two columns:
 
 - \`command\` — a shell invocation that, run exactly as given, **completes** the repair.
 - \`instruction\` — the same repair in the imperative, always present and complete on its own.
@@ -419,6 +552,27 @@ ${rows(configurationRepairs)}
 
 An instruction bridge is reported per file, so a monorepo gets one row per \`AGENTS.md\` in the tree. Each nested \`AGENTS.md\` needs its own stub — an import bridges the file beside it and nothing deeper.
 
+## MCP findings and their repairs
+
+A repository may keep a **golden MCP server set** at \`${goldenSet}\` — one canonical entry per server, in the superset of fields the supported hosts accept, written by the user. Where it exists, \`doctor\` compares it against each harness's own MCP configuration and reports how the two have drifted. **No golden set means no MCP drift findings at all**, and a harness with no MCP file yet has nothing that could have drifted.
+
+Comparison is semantic. Six config keys across three file formats means no two of these files are ever byte-equal, so each side is parsed into one model and the models are compared. A field the golden set leaves unset is never a difference, however a harness fills it in: a host restating its own default and a user's deliberate edit are indistinguishable there, and treating both as changes is what makes a golden set accumulate noise.
+
+Each finding names a **locator**, not a file: \`.cursor/mcp.json#servers.linear.command\` is the server and field, and that is what you route on.
+
+| Finding | What it means | Repair |
+| --- | --- | --- |
+${rows(mcpRepairs)}
+
+### Credentials
+
+The two secret findings are the ones to handle carefully.
+
+- **The report never contains the value.** It gives you the locator and stops. Read the value out of the file named in the locator, and do not repeat it into your reply, into a commit message, or into any other file. There is no truncated preview to work from because a truncated credential is a leaked credential in the same transcript.
+- **\`mcp-committed-secret\` is not \`mcp-literal-secret\` with worse wording.** The file is tracked, so the value is in the repository's history and every clone already has it. Moving it into an environment variable fixes the working tree and changes nothing about that. Rotate it at its issuer first.
+- **A reference passes.** \`\${LINEAR_TOKEN}\` and \`Bearer \${LINEAR_TOKEN}\` are the documented ways to write these fields and are never reported. The test is that shape, not how random the value looks.
+- **An unreadable golden set is reported by position only.** The parser's own message quotes the line it failed on, and in this file that line is the one holding the credential — so neither the message nor the offending line is ever carried into the report. Open the file at the reported line and column.
+
 ## The Windows case
 
 The common failure is \`degraded\`. Creating a symlink on Windows needs a privilege most accounts do not have, and Git for Windows gates it separately with \`core.symlinks\`, which its installer leaves off. With \`core.symlinks=false\` git does not error — it writes the symlink out as a regular file whose contents are the target path. \`${initSkillInvocation} --copy --force\` rebuilds the bridges as real directories on that machine.
@@ -430,6 +584,7 @@ A copy is a snapshot rather than a live projection, and an agent that edits a sk
 - Never repair a \`diverged-both\` or \`diverged-unknown\` bridge by re-running \`init\`. Rebuilding overwrites whichever side holds the newer edit. Reconcile the two directories first.
 - Edit skills at \`.agents/skills/<name>/SKILL.md\`. Editing through a bridge is only safe when that bridge is a symlink.
 - Do not add bridges to \`.gitignore\`. An untracked bridge swallows a real edit silently.
+- Never repeat a value from a file an \`mcp-literal-secret\` or \`mcp-committed-secret\` finding points at. The report withheld it on purpose, and quoting it back puts it in the transcript anyway.
 - Write instructions in \`AGENTS.md\`, never in \`CLAUDE.md\`. A bridge file holds the import and any harness-specific notes; content written there reaches one harness and drifts from the canonical file.
 `
 }
