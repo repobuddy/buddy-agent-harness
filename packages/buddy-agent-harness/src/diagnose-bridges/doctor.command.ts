@@ -1,6 +1,6 @@
 import { homedir } from 'node:os'
 import type { cli } from 'clibuilder'
-import { command, z } from 'clibuilder'
+import { command, exitCodes, z } from 'clibuilder'
 import { binPath, parseFormat, writeResult } from '../command-output/command-output.ts'
 import { type ConfigurationFinding, diagnoseConfiguration } from '../diagnose-configuration/diagnose-configuration.ts'
 import { diagnoseMcp } from '../diagnose-mcp/diagnose-mcp.ts'
@@ -9,7 +9,7 @@ import { type DiagnoseResult, diagnoseBridges } from './diagnose-bridges.ts'
 import { commandInvocation, type DoctorProblem, type RepairAction } from './doctor-guidance.ts'
 import { GitBridgeState } from './git-bridge-state.ts'
 
-type DoctorReport = {
+export type DoctorReport = {
 	bin: string
 	bridges: DiagnoseResult['bridges']
 	instructions: DiagnoseResult['instructions']
@@ -34,7 +34,7 @@ type DoctorReport = {
  * AXI §5: the healthy answer states the zero with context, so an agent does not re-run with other
  * flags to confirm that an empty section really meant "nothing wrong".
  */
-export function buildReport(
+export function buildDoctorReport(
 	bin: string,
 	result: DiagnoseResult,
 	configuration: ConfigurationFinding[] = [],
@@ -116,10 +116,13 @@ export const doctorCommand: cli.Command = command({
 			]
 			// Exit stays 0 even with findings: the diagnosis succeeded, and a non-zero code reads to an
 			// agent as "this command is broken, try something else".
-			writeResult(buildReport(binPath(homedir(), process.argv[1]), result, configuration), format)
+			writeResult(buildDoctorReport(binPath(homedir(), process.argv[1]), result, configuration), format)
+			return exitCodes.success
 		} catch (error) {
 			process.stderr.write(`error: ${error instanceof Error ? error.message : 'Harness diagnosis failed.'}\n`)
-			process.exitCode = 1
+			// Returned, not written: a command that writes the code reports its failure past `run`
+			// rather than to it, leaving a caller that is not the process no way to learn of it.
+			return exitCodes.error
 		}
 	},
 })

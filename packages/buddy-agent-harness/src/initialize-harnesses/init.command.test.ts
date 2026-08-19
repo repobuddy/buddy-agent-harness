@@ -9,8 +9,8 @@ const mockedInitializeHarnesses = vi.mocked(initializeHarnesses)
 const stderr = vi.spyOn(process.stderr, 'write').mockImplementation(() => true)
 const stdout = vi.spyOn(process.stdout, 'write').mockImplementation(() => true)
 
-function run(args: { copy?: boolean; force?: boolean; format?: string; harness?: string; root?: string }): void {
-	;(initCommand as { run(value: typeof args): void }).run(args)
+function run(args: { copy?: boolean; force?: boolean; format?: string; harness?: string; root?: string }): number {
+	return (initCommand as { run(value: typeof args): number }).run(args)
 }
 
 beforeEach(() => {
@@ -44,7 +44,6 @@ describe('init command', () => {
 			force: true,
 		})
 		expect(stdout).toHaveBeenCalledWith(expect.stringContaining('"copied":true'))
-		expect(process.exitCode).toBeUndefined()
 	})
 
 	it('uses the working directory and TOON when options are omitted', () => {
@@ -66,19 +65,18 @@ describe('init command', () => {
 		expect(stdout).toHaveBeenCalledWith(expect.stringContaining('copied'))
 	})
 
+	// Returned rather than written: a caller that is not the process learns of the failure too.
 	it('reports invalid formats and initialization failures', () => {
-		run({ format: 'yaml', root: '/workspace' })
+		expect(run({ format: 'yaml', root: '/workspace' })).toBe(1)
 		expect(stderr).toHaveBeenCalledWith('error: --format must be toon, json, or text.\n')
-		expect(process.exitCode).toBe(1)
 
 		stderr.mockClear()
-		process.exitCode = undefined
 		mockedInitializeHarnesses.mockImplementationOnce(() => {
 			throw 'unavailable'
 		})
-		run({ format: 'json', root: '/workspace' })
+		expect(run({ format: 'json', root: '/workspace' })).toBe(1)
 		expect(stderr).toHaveBeenCalledWith('error: Harness initialization failed.\n')
-		expect(process.exitCode).toBe(1)
+		expect(process.exitCode).toBeUndefined()
 	})
 
 	it('passes requested harnesses through and rejects unsupported names', () => {
@@ -92,17 +90,15 @@ describe('init command', () => {
 			copied: false,
 		})
 
-		run({ format: 'json', harness: 'windsurf, codex', root: '/workspace' })
+		expect(run({ format: 'json', harness: 'windsurf, codex', root: '/workspace' })).toBe(0)
 
 		expect(mockedInitializeHarnesses).toHaveBeenCalledWith({
 			root: '/workspace',
 			harnesses: ['windsurf', 'codex'],
 		})
 
-		process.exitCode = undefined
-		run({ format: 'json', harness: 'aider', root: '/workspace' })
+		expect(run({ format: 'json', harness: 'aider', root: '/workspace' })).toBe(1)
 		expect(stderr).toHaveBeenCalledWith(expect.stringContaining('Unsupported harness: aider'))
-		expect(process.exitCode).toBe(1)
 	})
 
 	it('registers its command group', () => {

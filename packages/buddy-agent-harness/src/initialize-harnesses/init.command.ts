@@ -1,5 +1,5 @@
 import type { cli } from 'clibuilder'
-import { command, z } from 'clibuilder'
+import { command, exitCodes, z } from 'clibuilder'
 import { parseFormat, writeResult } from '../command-output/command-output.ts'
 import { doctorCommand } from '../diagnose-bridges/doctor.command.ts'
 import { type HarnessName, harnessRegistry } from '../harness-registry/harness-registry.ts'
@@ -54,9 +54,12 @@ export const initCommand: cli.Command = command({
 				}),
 				format,
 			)
+			return exitCodes.success
 		} catch (error) {
 			process.stderr.write(`error: ${error instanceof Error ? error.message : 'Harness initialization failed.'}\n`)
-			process.exitCode = 1
+			// Returned, not written: a command that writes the code reports its failure past `run`
+			// rather than to it, leaving a caller that is not the process no way to learn of it.
+			return exitCodes.error
 		}
 	},
 })
