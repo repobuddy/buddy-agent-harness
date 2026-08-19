@@ -1,5 +1,6 @@
 import { sep } from 'node:path'
 import { encode } from '@toon-format/toon'
+import { isRecord } from '../is-record/is-record.ts'
 
 export type OutputFormat = 'json' | 'toon' | 'text'
 
@@ -19,10 +20,6 @@ export function writeResult(value: object, format: OutputFormat): void {
 function encodeResult(value: object, format: OutputFormat): string {
 	if (format === 'json') return JSON.stringify(value)
 	return format === 'text' ? renderText(value) : encode(value)
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-	return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
 function cell(value: unknown): string {

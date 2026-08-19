@@ -1,3 +1,4 @@
+import { isRecord } from '../is-record/is-record.ts'
 /**
  * The shape both sides of an MCP comparison are normalized into.
  *
@@ -44,10 +45,6 @@ export type McpField = (typeof mcpFields)[number]
 
 /** The two fields holding one value per name rather than a single value. */
 const mapFields = new Set<McpField>(['env', 'headers'])
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-	return typeof value === 'object' && value !== null && !Array.isArray(value)
-}
 
 /**
  * Whether two values of the same field agree. Arrays are ordered — `args` is a command line, and

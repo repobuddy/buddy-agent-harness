@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { type HarnessName, harnessRegistry, selectHarnesses } from './harness-registry.ts'
+import { type HarnessName, harnessRegistry, parseHarnesses, selectHarnesses } from './harness-registry.ts'
 
 function entry(name: HarnessName) {
 	const harness = harnessRegistry.find((candidate) => candidate.name === name)
@@ -51,5 +51,34 @@ describe('selectHarnesses', () => {
 		mkdirSync(join(root, '.gemini'), { recursive: true })
 
 		expect(selectHarnesses(root, []).map((harness) => harness.name)).toEqual(['claude-code', 'cursor', 'gemini-cli'])
+	})
+})
+
+describe('parseHarnesses', () => {
+	it('reads a comma-separated option as registry names', () => {
+		expect(parseHarnesses('windsurf, codex')).toEqual(['windsurf', 'codex'])
+	})
+
+	it('reads an absent option as no preference', () => {
+		expect(parseHarnesses(undefined)).toEqual([])
+	})
+
+	it('drops the empty segments a trailing comma leaves', () => {
+		expect(parseHarnesses('codex,,')).toEqual(['codex'])
+	})
+
+	// Named once here rather than in each command's own test. Both commands take the option, neither
+	// owns what a name means, and a rejection asserted per command is the same sentence written twice
+	// more than it is true.
+	it('rejects a name the registry does not know, and names every one it does', () => {
+		expect(() => parseHarnesses('aider')).toThrow(
+			`Unsupported harness: aider. Supported: ${harnessRegistry.map((harness) => harness.name).join(', ')}.`,
+		)
+	})
+
+	// Every requested name is reported, so a caller fixing a list of four does not learn of the
+	// second bad one only after fixing the first.
+	it('names every unsupported harness at once', () => {
+		expect(() => parseHarnesses('aider,codex,continue')).toThrow('Unsupported harness: aider, continue.')
 	})
 })

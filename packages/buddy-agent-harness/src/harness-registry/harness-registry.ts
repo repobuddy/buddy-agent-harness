@@ -113,6 +113,36 @@ export const harnessRegistry: readonly Harness[] = [
 	},
 ]
 
+const harnessNames = new Set<string>(harnessRegistry.map((harness) => harness.name))
+
+function isHarnessName(value: string): value is HarnessName {
+	return harnessNames.has(value)
+}
+
+/**
+ * The `--harness` option, as names this registry knows. Both commands take the option and neither
+ * owns what a name means, so the parse lives beside the list it validates against: a harness added
+ * to the registry is accepted by both commands with nothing else to change, and the rejection reads
+ * the same either way.
+ *
+ * An unknown name throws rather than being dropped. A caller that asked for a harness by name and
+ * got a report about the two default ones has been told the wrong thing about their repository.
+ */
+export function parseHarnesses(value: string | undefined): HarnessName[] {
+	const requested = (value ?? '')
+		.split(',')
+		.map((name) => name.trim())
+		.filter(Boolean)
+	const unsupported = requested.filter((name) => !isHarnessName(name))
+	if (unsupported.length)
+		throw new Error(
+			`Unsupported harness: ${unsupported.join(', ')}. Supported: ${harnessRegistry
+				.map((harness) => harness.name)
+				.join(', ')}.`,
+		)
+	return requested.filter(isHarnessName)
+}
+
 /** Enabled whether or not the repository already contains their directories. */
 const defaultHarnesses: readonly HarnessName[] = ['claude-code', 'cursor']
 

@@ -126,7 +126,7 @@ export function diagnoseInstructions(
 			path: canonicalInstructions,
 			problem: 'no-instructions',
 			detail,
-			repair: repair(canonicalInstructions, cli),
+			repair: repair({ file: canonicalInstructions }, cli),
 		})
 	}
 
@@ -136,7 +136,7 @@ export function diagnoseInstructions(
 			instructions.push({ harness: name, path, kind: inspection.kind, status: inspection.status })
 			if (inspection.problem) {
 				const { detail, repair } = repairFor(inspection.problem)
-				findings.push({ path, problem: inspection.problem, detail, repair: repair(path, cli) })
+				findings.push({ path, problem: inspection.problem, detail, repair: repair({ file: path }, cli) })
 			}
 		}
 	}

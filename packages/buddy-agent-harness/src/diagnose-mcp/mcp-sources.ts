@@ -1,6 +1,8 @@
 import { parse as parseToml } from 'smol-toml'
 import { parseJsonWithComments } from '../diagnose-bridges/json-with-comments.ts'
+import type { Position } from '../diagnose-bridges/locator.ts'
 import type { McpConfig } from '../harness-registry/mcp-config.ts'
+import { isRecord } from '../is-record/is-record.ts'
 import type { McpServer, McpTransport } from './mcp-model.ts'
 
 /** Where the golden set lives, and why it is namespaced rather than sitting at `.agents/mcp.json`. */
@@ -9,23 +11,11 @@ export const goldenSetPath = '.agents/buddy-agent-harness/mcp.toml'
 /** The table the golden set keeps its servers under. */
 const goldenKey = 'servers'
 
-/**
- * Where a malformed file failed. **Position only.** A TOML parser's own error message quotes the
- * offending line back, and in a file of MCP configuration that line is exactly the one holding a
- * credential — so neither the message nor the code block it carries is ever read. Line and column
- * are enough to fix the file and carry nothing out of it.
- */
-export type Position = { line: number; column: number }
-
 export type ParsedServers =
 	/** The file is absent. Nothing to compare, and not a fault. */
 	| { kind: 'absent' }
 	| { kind: 'servers'; servers: Map<string, McpServer> }
 	| { kind: 'unreadable'; position?: Position | undefined }
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-	return typeof value === 'object' && value !== null && !Array.isArray(value)
-}
 
 function stringMap(value: unknown): Record<string, string> | undefined {
 	if (!isRecord(value)) return undefined
@@ -103,15 +93,6 @@ export function positionOf(error: unknown): Position | undefined {
 	if (!isRecord(error)) return undefined
 	const { line, column } = error
 	return typeof line === 'number' && typeof column === 'number' ? { line, column } : undefined
-}
-
-/**
- * How an unreadable golden set is addressed: the file, plus the position when the parser gave one.
- * A separate function because the position-or-nothing choice is the whole of what a caller may say
- * about a file it must not quote.
- */
-export function goldenLocator(position: Position | undefined): string {
-	return position ? `${goldenSetPath}#L${position.line}:${position.column}` : goldenSetPath
 }
 
 /** The golden set, parsed. Absent is the common case and is not a fault. */

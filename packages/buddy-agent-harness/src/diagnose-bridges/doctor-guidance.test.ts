@@ -11,6 +11,7 @@ import {
 	initSkillInvocation,
 	instructionRepairs,
 	launcherFor,
+	type RepairRow,
 	renderDoctorSkill,
 	renderSkillLauncher,
 	repairFor,
@@ -23,14 +24,25 @@ const version = JSON.parse(readFileSync(join(packageRoot, 'package.json'), 'utf8
 
 describe('doctor guidance', () => {
 	it('has one repair for every problem it can report', () => {
-		for (const entry of doctorRepairs) expect(repairFor(entry.problem)).toBe(entry)
+		for (const entry of doctorRepairs) expect(repairFor(entry.problem)).toEqual(entry)
+	})
+
+	// The half the assertion above cannot reach. Iterating the table and looking each entry back up
+	// is the direction that cannot fail; the direction that can is a problem added to a union with no
+	// row written for it, and a union is not enumerable at runtime. So the table is keyed by the
+	// union and the compiler holds it, which makes a type error the only place this is assertable.
+	it('does not type a repair table that leaves a problem without a row', () => {
+		// @ts-expect-error - a table of one row is not a row for every DoctorProblem
+		const incomplete: Record<DoctorProblem, RepairRow> = { stale: repairFor('stale') }
+
+		expect(Object.keys(incomplete)).toEqual(['stale'])
 	})
 
 	// The contract `help` is read through: a non-empty `command` runs verbatim and finishes the job,
 	// an empty one means judgment. `instruction` is the half that is always there.
 	it('gives every repair an instruction, and leaves the command optional', () => {
 		for (const entry of doctorRepairs) {
-			const repair = entry.repair('<path>', 'bah')
+			const repair = entry.repair({ file: '<path>' }, 'bah')
 
 			expect(repair.instruction, entry.problem).not.toBe('')
 			expect(repair, entry.problem).toHaveProperty('command')
@@ -41,7 +53,7 @@ describe('doctor guidance', () => {
 	// instruction to a person into an invitation to paste prose into a shell.
 	it('wraps no repair in an imperative it does not carry itself', () => {
 		for (const entry of doctorRepairs) {
-			expect(entry.repair('<path>', 'bah').instruction, entry.problem).not.toMatch(/^Run /)
+			expect(entry.repair({ file: '<path>' }, 'bah').instruction, entry.problem).not.toMatch(/^Run /)
 		}
 	})
 
@@ -51,23 +63,23 @@ describe('doctor guidance', () => {
 	it('offers no command for a repair no single invocation completes', () => {
 		// Asserted as a closed set rather than spot-checked, so a bridge problem added later that no
 		// single invocation repairs has to be listed here deliberately instead of passing unnoticed.
-		const judgment = bridgeRepairs.filter((entry) => entry.repair('<path>', 'bah').command === '')
+		const judgment = bridgeRepairs.filter((entry) => entry.repair({ file: '<path>' }, 'bah').command === '')
 
 		expect(judgment.map((entry) => entry.problem)).toEqual(['diverged-bridge', 'diverged-both', 'diverged-unknown'])
 		for (const entry of judgment) {
-			expect(entry.repair('<path>', 'bah').instruction, entry.problem).not.toBe('')
+			expect(entry.repair({ file: '<path>' }, 'bah').instruction, entry.problem).not.toBe('')
 		}
-		expect(repairFor('diverged-both').repair('<path>', 'bah').instruction).toContain('git diff --no-index')
+		expect(repairFor('diverged-both').repair({ file: '<path>' }, 'bah').instruction).toContain('git diff --no-index')
 	})
 
 	// A skill invocation is not a command: nothing in a shell runs `/buddy-agent-harness:init`. Every
 	// instruction-bridge repair is one, which is why none of them offers a command either.
 	it('never offers a skill invocation as a runnable command', () => {
 		for (const entry of doctorRepairs) {
-			expect(entry.repair('<path>', 'bah').command, entry.problem).not.toContain('/buddy-agent-harness:')
+			expect(entry.repair({ file: '<path>' }, 'bah').command, entry.problem).not.toContain('/buddy-agent-harness:')
 		}
 		for (const entry of instructionRepairs) {
-			expect(entry.repair('<path>', 'bah').command, entry.problem).toBe('')
+			expect(entry.repair({ file: '<path>' }, 'bah').command, entry.problem).toBe('')
 		}
 	})
 
@@ -75,7 +87,7 @@ describe('doctor guidance', () => {
 	// a person reading `--format text` sees the same invocation an agent would run.
 	it('quotes every command it offers inside its own instruction', () => {
 		for (const entry of doctorRepairs) {
-			const { command, instruction } = entry.repair('<path>', 'bah')
+			const { command, instruction } = entry.repair({ file: '<path>' }, 'bah')
 
 			if (command) expect(instruction, entry.problem).toContain(`\`${command}\``)
 		}
@@ -86,7 +98,7 @@ describe('doctor guidance', () => {
 
 		for (const entry of doctorRepairs) {
 			expect(skill).toContain(entry.detail)
-			expect(skill).toContain(entry.skillRepair('<path>').replaceAll('|', '\\|'))
+			expect(skill).toContain(entry.skillRepair({ file: '<path>' }).replaceAll('|', '\\|'))
 		}
 	})
 
@@ -186,15 +198,15 @@ describe('the detect-and-repair seam', () => {
 	// rendering hands the work to the `init` skill; a caller reading the command's output can just
 	// run the invocation, so the command rendering gives it one and names no skill.
 	it('renders every repair twice, and the two disagree about who acts', () => {
-		for (const entry of doctorRepairs) expect(repairFor(entry.problem)).toBe(entry)
+		for (const entry of doctorRepairs) expect(repairFor(entry.problem)).toEqual(entry)
 
 		const missing = repairFor('missing')
-		expect(missing.repair('<path>', commandInvocation).command).toBe(`${commandInvocation} init`)
-		expect(missing.skillRepair('<path>')).toContain(initSkillInvocation)
+		expect(missing.repair({ file: '<path>' }, commandInvocation).command).toBe(`${commandInvocation} init`)
+		expect(missing.skillRepair({ file: '<path>' })).toContain(initSkillInvocation)
 
 		// The bridge family is where the two part: no bridge repair names a skill in `help`.
 		for (const entry of bridgeRepairs) {
-			const { command, instruction } = entry.repair('<path>', commandInvocation)
+			const { command, instruction } = entry.repair({ file: '<path>' }, commandInvocation)
 			expect(`${command}${instruction}`).not.toContain(initSkillInvocation)
 			expect(`${command}${instruction}`).not.toContain(repairSkillInvocation)
 		}
@@ -203,21 +215,21 @@ describe('the detect-and-repair seam', () => {
 	it('carries a repair with every finding it reports', () => {
 		for (const entry of doctorRepairs) {
 			expect(entry.detail).not.toBe('')
-			expect(entry.repair('.claude/skills', 'bah').instruction).not.toBe('')
-			expect(entry.skillRepair('.claude/skills')).not.toBe('')
+			expect(entry.repair({ file: '.claude/skills' }, 'bah').instruction).not.toBe('')
+			expect(entry.skillRepair({ file: '.claude/skills' })).not.toBe('')
 		}
 	})
 
 	it('sends a bridge finding to the init skill wherever rebuilding is the repair', () => {
 		for (const entry of bridgeRepairs.filter((repair) => !byHand.includes(repair.problem)))
-			expect(entry.skillRepair('<path>')).toContain(initSkillInvocation)
+			expect(entry.skillRepair({ file: '<path>' })).toContain(initSkillInvocation)
 	})
 
 	// Rebuilding is what destroys the work here, so no skill is named at all — an invented owner
 	// would be `init`, which is the one thing that must not run.
 	it('names no skill for a finding that rebuilding would not repair', () => {
 		for (const entry of bridgeRepairs.filter((repair) => byHand.includes(repair.problem))) {
-			const skillRepair = entry.skillRepair('<path>')
+			const skillRepair = entry.skillRepair({ file: '<path>' })
 			expect(skillRepair).not.toContain(initSkillInvocation)
 			expect(skillRepair).not.toContain(repairSkillInvocation)
 			expect(skillRepair).toContain('git ')
@@ -225,12 +237,13 @@ describe('the detect-and-repair seam', () => {
 	})
 
 	it('sends every instruction finding to the init skill', () => {
-		for (const entry of instructionRepairs) expect(entry.skillRepair('<path>')).toContain(initSkillInvocation)
+		for (const entry of instructionRepairs) expect(entry.skillRepair({ file: '<path>' })).toContain(initSkillInvocation)
 	})
 
 	it('sends every configuration finding to the repair skill', () => {
 		expect(configurationRepairs).toHaveLength(configurationProblems.length)
-		for (const entry of configurationRepairs) expect(entry.skillRepair('<path>')).toContain(repairSkillInvocation)
+		for (const entry of configurationRepairs)
+			expect(entry.skillRepair({ file: '<path>' })).toContain(repairSkillInvocation)
 	})
 
 	// Correcting a drifted server set is the user's judgment about which side is right, so no skill
@@ -238,8 +251,8 @@ describe('the detect-and-repair seam', () => {
 	it('names no skill for any MCP finding, in either rendering', () => {
 		expect(mcpRepairs.length).toBeGreaterThan(0)
 		for (const entry of mcpRepairs) {
-			const { command, instruction } = entry.repair('<path>', commandInvocation)
-			for (const text of [entry.skillRepair('<path>'), command, instruction]) {
+			const { command, instruction } = entry.repair({ file: '<path>' }, commandInvocation)
+			for (const text of [entry.skillRepair({ file: '<path>' }), command, instruction]) {
 				expect(text).not.toContain(initSkillInvocation)
 				expect(text).not.toContain(repairSkillInvocation)
 			}
@@ -266,9 +279,9 @@ describe('the detect-and-repair seam', () => {
 	// the options come from the repairing skill's own reference, not from the report.
 	it('states exactly one repair per problem, never a set to choose between', () => {
 		for (const entry of doctorRepairs) {
-			expect(repairFor(entry.problem)).toBe(entry)
-			expect(Object.keys(entry.repair('.claude/skills', 'bah')).sort()).toEqual(['command', 'instruction'])
-			expect(typeof entry.skillRepair('.claude/skills')).toBe('string')
+			expect(repairFor(entry.problem)).toEqual(entry)
+			expect(Object.keys(entry.repair({ file: '.claude/skills' }, 'bah')).sort()).toEqual(['command', 'instruction'])
+			expect(typeof entry.skillRepair({ file: '.claude/skills' })).toBe('string')
 		}
 	})
 })
@@ -278,7 +291,7 @@ const needsAPersonFirst = ['diverged-bridge', 'diverged-both', 'diverged-unknown
 
 describe('the repair as a command and an instruction', () => {
 	it('states a repair as a runnable command and a prose instruction', () => {
-		const { command, instruction } = repairFor('degraded').repair('.claude/skills', commandInvocation)
+		const { command, instruction } = repairFor('degraded').repair({ file: '.claude/skills' }, commandInvocation)
 
 		expect(command).toBe(`${commandInvocation} init --copy --force`)
 		expect(instruction).toContain(command)
@@ -286,7 +299,7 @@ describe('the repair as a command and an instruction', () => {
 	})
 
 	it('leaves the command empty for a repair that is judgment', () => {
-		const { command, instruction } = repairFor('unloadable-skill').repair('.agents/skills/x/SKILL.md', 'bah')
+		const { command, instruction } = repairFor('unloadable-skill').repair({ file: '.agents/skills/x/SKILL.md' }, 'bah')
 
 		expect(command).toBe('')
 		expect(instruction).not.toBe('')
@@ -295,7 +308,7 @@ describe('the repair as a command and an instruction', () => {
 	it('carries an instruction for every repair, and a command only where one completes it', () => {
 		const rendered = doctorRepairs.map((entry) => ({
 			problem: entry.problem,
-			...entry.repair('.claude/skills', commandInvocation),
+			...entry.repair({ file: '.claude/skills' }, commandInvocation),
 		}))
 
 		for (const entry of rendered) expect(entry.instruction).not.toBe('')
@@ -315,7 +328,7 @@ describe('the repair as a command and an instruction', () => {
 	it('gives a diverged bridge no command, so executing every command destroys nothing', () => {
 		for (const problem of needsAPersonFirst) {
 			const { command, instruction } = repairFor(problem as (typeof needsAPersonFirst)[number] & DoctorProblem).repair(
-				'.claude/skills',
+				{ file: '.claude/skills' },
 				commandInvocation,
 			)
 
@@ -324,7 +337,7 @@ describe('the repair as a command and an instruction', () => {
 		}
 
 		const runnable = doctorRepairs
-			.map((entry) => ({ problem: entry.problem, ...entry.repair('.claude/skills', commandInvocation) }))
+			.map((entry) => ({ problem: entry.problem, ...entry.repair({ file: '.claude/skills' }, commandInvocation) }))
 			.filter((entry) => entry.command !== '')
 			.map((entry) => entry.problem)
 		expect(runnable.filter((problem) => needsAPersonFirst.includes(problem))).toEqual([])
@@ -341,8 +354,8 @@ const reportedOncePerRepository = ['no-canonical', 'no-instructions']
 it('gives two findings of one problem at two paths their own help entry each', () => {
 	const collides = doctorRepairs
 		.filter((entry) => {
-			const left = entry.repair('.claude/skills', commandInvocation)
-			const right = entry.repair('.windsurf/skills', commandInvocation)
+			const left = entry.repair({ file: '.claude/skills' }, commandInvocation)
+			const right = entry.repair({ file: '.windsurf/skills' }, commandInvocation)
 			return left.command === right.command && left.instruction === right.instruction
 		})
 		.map((entry) => entry.problem)
@@ -376,7 +389,7 @@ const initOwned: DoctorProblem[] = [
 it('names init in every repair init owns, and in no other', () => {
 	const namesInit = doctorRepairs
 		.filter((entry) => {
-			const { command, instruction } = entry.repair('<path>', commandInvocation)
+			const { command, instruction } = entry.repair({ file: '<path>' }, commandInvocation)
 			const text = `${command}\n${instruction}`
 			return text.includes(initSkillInvocation) || text.includes(`${commandInvocation} init`)
 		})
