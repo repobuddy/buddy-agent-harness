@@ -2,6 +2,7 @@ import { parse as parseToml } from 'smol-toml'
 import { parseJsonWithComments } from '../diagnose-bridges/json-with-comments.ts'
 import type { Position } from '../diagnose-bridges/locator.ts'
 import type { McpConfig } from '../harness-registry/mcp-config.ts'
+import { isRecord } from '../is-record/is-record.ts'
 import type { McpServer, McpTransport } from './mcp-model.ts'
 
 /** Where the golden set lives, and why it is namespaced rather than sitting at `.agents/mcp.json`. */
@@ -15,10 +16,6 @@ export type ParsedServers =
 	| { kind: 'absent' }
 	| { kind: 'servers'; servers: Map<string, McpServer> }
 	| { kind: 'unreadable'; position?: Position | undefined }
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-	return typeof value === 'object' && value !== null && !Array.isArray(value)
-}
 
 function stringMap(value: unknown): Record<string, string> | undefined {
 	if (!isRecord(value)) return undefined

@@ -1,6 +1,7 @@
 import type { GitBridgeState } from '../diagnose-bridges/git-bridge-state.ts'
 import { parseJsonWithComments } from '../diagnose-bridges/json-with-comments.ts'
 import type { McpConfig } from '../harness-registry/mcp-config.ts'
+import { isRecord } from '../is-record/is-record.ts'
 import { type McpField, type McpServer, sameField } from './mcp-model.ts'
 import { goldenSetPath, type ParsedServers, parseGoldenSet, parseTarget } from './mcp-sources.ts'
 
@@ -9,10 +10,6 @@ export type McpDirection = 'target' | 'golden' | 'both' | 'unknown'
 
 /** Where the record of what was last written to each target lives, beside the golden set it came from. */
 export const projectionRecordPath = '.agents/buddy-agent-harness/mcp.projected.json'
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-	return typeof value === 'object' && value !== null && !Array.isArray(value)
-}
 
 /**
  * The last-projected record: per target path, per server name, the model that was written there.
