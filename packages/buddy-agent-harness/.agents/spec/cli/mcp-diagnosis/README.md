@@ -259,8 +259,8 @@ Every check is independent, and a check that cannot answer reports nothing rathe
 
 ## References
 
-- `../../../../../.research/mcp-canonical-location/` backs the golden set's path and every
+- `../../../../../../.research/mcp-canonical-location/` backs the golden set's path and every
   project-scope MCP target: which harness reads which file, under which key, in which format, and
   which two of the supported harnesses document none.
-- `../../../../../.research/agentic-configuration-standards/` (E-MCP-01 through E-MCP-05) backs
+- `../../../../../../.research/agentic-configuration-standards/` (E-MCP-01 through E-MCP-05) backs
   the superset's field list and the lossiness the golden set exists to remove.
