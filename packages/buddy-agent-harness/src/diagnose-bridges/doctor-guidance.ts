@@ -105,6 +105,25 @@ export type Repair = {
 	skillRepair(at: Locator): string
 }
 
+/**
+ * One row of a repair table. The problem is the key it is filed under rather than a field on it, so
+ * a table typed `Record<…Problem, RepairRow>` cannot be written with a row missing: adding a
+ * variant to one of the unions above fails to compile until its row exists. That is the only place
+ * the invariant can be held — a union is not enumerable at runtime, so no test can walk it, and a
+ * lookup that asserts its own completeness reads `.detail` off `undefined` the first time it is
+ * wrong.
+ */
+export type RepairRow = Omit<Repair, 'problem'>
+
+/**
+ * A table as the list `doctor` reports, in the order it was written. The keys of a
+ * `Record<P, RepairRow>` are `P` by construction, which is what the assertion says; nothing here
+ * claims a row exists.
+ */
+function repairsOf<Problem extends DoctorProblem>(table: Record<Problem, RepairRow>): readonly Repair[] {
+	return (Object.entries(table) as [Problem, RepairRow][]).map(([problem, row]) => ({ problem, ...row }))
+}
+
 /** How the command names itself. */
 export const commandInvocation = 'buddy-agent-harness'
 /**
@@ -170,18 +189,16 @@ export const initSkillInvocation = '/buddy-agent-harness:init'
 const goldenSet = '.agents/buddy-agent-harness/mcp.toml'
 
 /** The skills bridges, reported in `bridges`. */
-export const bridgeRepairs: readonly Repair[] = [
-	{
-		problem: 'no-canonical',
+const bridgeTable: Record<BridgeProblem, RepairRow> = {
+	'no-canonical': {
 		detail: 'the canonical skill directory does not exist, so no bridge can resolve',
-		repair: (_path, cli) => ({
+		repair: (_at, cli) => ({
 			command: `${cli} init`,
 			instruction: `run \`${cli} init\` to create .agents/skills and the bridges into it`,
 		}),
 		skillRepair: () => `run \`${initSkillInvocation}\`, which creates \`.agents/skills\` and the bridges`,
 	},
-	{
-		problem: 'missing',
+	missing: {
 		detail: 'no bridge at this path — the harness sees zero project skills',
 		repair: ({ file }, cli) => ({
 			command: `${cli} init`,
@@ -189,8 +206,7 @@ export const bridgeRepairs: readonly Repair[] = [
 		}),
 		skillRepair: () => `run \`${initSkillInvocation}\``,
 	},
-	{
-		problem: 'degraded',
+	degraded: {
 		detail: 'expected a directory but found a regular file — checkout without core.symlinks',
 		repair: ({ file }, cli) => ({
 			command: `${cli} init --copy --force`,
@@ -198,8 +214,7 @@ export const bridgeRepairs: readonly Repair[] = [
 		}),
 		skillRepair: () => `run \`${initSkillInvocation} --copy --force\``,
 	},
-	{
-		problem: 'stale',
+	stale: {
 		detail: 'symlink does not resolve to .agents/skills',
 		repair: ({ file }, cli) => ({
 			command: `${cli} init --force`,
@@ -207,8 +222,7 @@ export const bridgeRepairs: readonly Repair[] = [
 		}),
 		skillRepair: () => `run \`${initSkillInvocation} --force\``,
 	},
-	{
-		problem: 'diverged-bridge',
+	'diverged-bridge': {
 		detail: 'only the bridge changed since the two last agreed — an agent wrote through the copy',
 		// No command, unlike `diverged-canonical`, and the asymmetry is real: `init` only ever builds a
 		// bridge *from* the canonical directory, so no flag promotes the bridge's newer content back
@@ -220,8 +234,7 @@ export const bridgeRepairs: readonly Repair[] = [
 		skillRepair: ({ file }) =>
 			`replace .agents/skills with ${file} to keep the newer edit, then run \`${initSkillInvocation} --force\``,
 	},
-	{
-		problem: 'diverged-canonical',
+	'diverged-canonical': {
 		detail: 'only .agents/skills changed since the two last agreed — the copy is stale',
 		repair: ({ file }, cli) => ({
 			command: `${cli} init --copy --force`,
@@ -229,8 +242,7 @@ export const bridgeRepairs: readonly Repair[] = [
 		}),
 		skillRepair: () => `run \`${initSkillInvocation} --copy --force\``,
 	},
-	{
-		problem: 'diverged-both',
+	'diverged-both': {
 		detail: 'both sides changed since they last agreed — rebuilding would discard one of them',
 		repair: ({ file }) => ({
 			command: '',
@@ -238,8 +250,7 @@ export const bridgeRepairs: readonly Repair[] = [
 		}),
 		skillRepair: ({ file }) => `run \`git diff --no-index .agents/skills ${file}\` and reconcile by hand`,
 	},
-	{
-		problem: 'diverged-unknown',
+	'diverged-unknown': {
 		detail: 'contents differ and no commit where they agreed was found — which side moved is unknown',
 		repair: ({ file }) => ({
 			command: '',
@@ -247,8 +258,7 @@ export const bridgeRepairs: readonly Repair[] = [
 		}),
 		skillRepair: ({ file }) => `run \`git diff --no-index .agents/skills ${file}\` and reconcile by hand`,
 	},
-	{
-		problem: 'unpinned-copy',
+	'unpinned-copy': {
 		detail: 'tracked copy without the skip-worktree bit — the tree is dirty with content that must not be committed',
 		// The index entry is the tracked symlink on a Windows checkout but the individual files in a
 		// committed copy, so the paths are read back from git rather than assumed.
@@ -258,7 +268,9 @@ export const bridgeRepairs: readonly Repair[] = [
 		}),
 		skillRepair: ({ file }) => `run \`git ls-files -z ${file} | xargs -0 git update-index --skip-worktree\``,
 	},
-]
+}
+
+export const bridgeRepairs: readonly Repair[] = repairsOf(bridgeTable)
 
 /**
  * The instruction bridges, reported in `instructions`. Every repair is the `init` skill: these are
@@ -266,9 +278,8 @@ export const bridgeRepairs: readonly Repair[] = [
  * while restoring the bridge is judgment no flag carries. `repair` therefore names the skill in
  * both places rather than pretending a shell command exists.
  */
-export const instructionRepairs: readonly Repair[] = [
-	{
-		problem: 'no-instructions',
+const instructionTable: Record<InstructionProblem, RepairRow> = {
+	'no-instructions': {
 		detail: 'no AGENTS.md at the repository root, so every instruction bridge points at nothing',
 		repair: () => ({
 			command: '',
@@ -276,8 +287,7 @@ export const instructionRepairs: readonly Repair[] = [
 		}),
 		skillRepair: () => `run \`${initSkillInvocation}\`, which derives AGENTS.md and the bridges to it`,
 	},
-	{
-		problem: 'instructions-missing',
+	'instructions-missing': {
 		detail: 'no instruction bridge at this path — the harness reads none of AGENTS.md',
 		repair: ({ file }) => ({
 			command: '',
@@ -285,8 +295,7 @@ export const instructionRepairs: readonly Repair[] = [
 		}),
 		skillRepair: () => `run \`${initSkillInvocation}\``,
 	},
-	{
-		problem: 'instructions-unbridged',
+	'instructions-unbridged': {
 		detail: 'the file is present but names AGENTS.md nowhere — the harness reads none of it',
 		repair: ({ file }) => ({
 			command: '',
@@ -295,8 +304,7 @@ export const instructionRepairs: readonly Repair[] = [
 		skillRepair: () =>
 			`run \`${initSkillInvocation}\`, which adds the bridge without discarding what the file already says`,
 	},
-	{
-		problem: 'instructions-unreadable',
+	'instructions-unreadable': {
 		detail: 'the settings file does not parse, so the harness reads none of it',
 		repair: ({ file }) => ({
 			command: '',
@@ -304,15 +312,16 @@ export const instructionRepairs: readonly Repair[] = [
 		}),
 		skillRepair: () => `fix the JSON by hand, then run \`${initSkillInvocation}\``,
 	},
-]
+}
+
+export const instructionRepairs: readonly Repair[] = repairsOf(instructionTable)
 
 /**
  * Configuration that is present and wrong. Detected here like everything else, but repaired by the
  * `repair` skill rather than by `init` — which is why it is a section of its own.
  */
-const configurationRepairs: readonly Repair[] = [
-	{
-		problem: 'deprecated-harness',
+const configurationTable: Record<ConfigurationFault, RepairRow> = {
+	'deprecated-harness': {
 		detail:
 			'a projection under a harness name that has been superseded — the replacement reads .agents/skills natively and needs no projection at all',
 		repair: ({ file }) => ({
@@ -321,8 +330,7 @@ const configurationRepairs: readonly Repair[] = [
 		}),
 		skillRepair: () => `run \`${repairSkillInvocation}\``,
 	},
-	{
-		problem: 'ignored-bridge',
+	'ignored-bridge': {
 		detail: 'a .gitignore rule matches this bridge — an untracked bridge swallows a real edit silently',
 		repair: ({ file }) => ({
 			command: '',
@@ -330,8 +338,7 @@ const configurationRepairs: readonly Repair[] = [
 		}),
 		skillRepair: () => `run \`${repairSkillInvocation}\``,
 	},
-	{
-		problem: 'unread-local-override',
+	'unread-local-override': {
 		detail: 'no harness reads this filename, so everything in it is invisible to every agent',
 		repair: ({ file }) => ({
 			command: '',
@@ -339,8 +346,7 @@ const configurationRepairs: readonly Repair[] = [
 		}),
 		skillRepair: () => `run \`${repairSkillInvocation}\``,
 	},
-	{
-		problem: 'unloadable-skill',
+	'unloadable-skill': {
 		detail: 'frontmatter that does not parse, or no description — either one makes a harness skip the skill outright',
 		repair: ({ file }) => ({
 			command: '',
@@ -348,7 +354,9 @@ const configurationRepairs: readonly Repair[] = [
 		}),
 		skillRepair: () => `run \`${repairSkillInvocation}\``,
 	},
-]
+}
+
+const configurationRepairs: readonly Repair[] = repairsOf(configurationTable)
 
 /**
  * The golden MCP server set against the harness copies of it.
@@ -359,24 +367,21 @@ const configurationRepairs: readonly Repair[] = [
  * echoes lands in agent context on every session and from there into transcripts, and `sk-ab…`
  * leaks into exactly the same place the whole string would.
  */
-const mcpRepairs: readonly Repair[] = [
-	{
-		problem: 'mcp-golden-unreadable',
+const mcpTable: Record<McpProblem, RepairRow> = {
+	'mcp-golden-unreadable': {
 		detail:
 			'the golden MCP set does not parse — the locator gives the line and column, and nothing else can be said about it',
 		repair: (at) => ({ command: '', instruction: `fix the TOML at ${locatorText(at)}` }),
 		skillRepair: (at) =>
 			`fix the TOML at ${locatorText(at)} by hand — the reported line and column are all that can be quoted, because the parser's own message repeats the offending line and that line is the one holding the credential`,
 	},
-	{
-		problem: 'mcp-target-unreadable',
+	'mcp-target-unreadable': {
 		detail:
 			'this harness config does not parse, so the harness starts none of its servers and nothing in it can be compared',
 		repair: (at) => ({ command: '', instruction: `fix the syntax of ${locatorText(at)}` }),
 		skillRepair: (at) => `fix the syntax of ${locatorText(at)} by hand`,
 	},
-	{
-		problem: 'mcp-unprojected',
+	'mcp-unprojected': {
 		detail: 'the golden set declares this server and the harness config does not carry it',
 		repair: ({ file, server }) => ({
 			command: '',
@@ -385,8 +390,7 @@ const mcpRepairs: readonly Repair[] = [
 		skillRepair: (at) =>
 			`add the server at ${locatorText(at)} to that file from its golden entry, or drop it from the golden set`,
 	},
-	{
-		problem: 'mcp-undeclared',
+	'mcp-undeclared': {
 		detail: 'the harness config carries this server and the golden set does not declare it',
 		repair: ({ file, server }) => ({
 			command: '',
@@ -395,34 +399,29 @@ const mcpRepairs: readonly Repair[] = [
 		skillRepair: (at) =>
 			`copy the server at ${locatorText(at)} into ${goldenSet}, refusing any literal credential it carries, or drop it from ${at.file}`,
 	},
-	{
-		problem: 'mcp-diverged-target',
+	'mcp-diverged-target': {
 		detail: 'only the harness config changed since the two last agreed — the edit was made through the copy',
 		repair: (at) => ({ command: '', instruction: `reconcile the value at ${locatorText(at)} back into ${goldenSet}` }),
 		skillRepair: (at) => `reconcile the value at ${locatorText(at)} back into ${goldenSet}, field by field`,
 	},
-	{
-		problem: 'mcp-diverged-golden',
+	'mcp-diverged-golden': {
 		detail: 'only the golden set changed since the two last agreed — the harness copy is stale',
 		repair: (at) => ({ command: '', instruction: `update ${locatorText(at)} from the golden entry` }),
 		skillRepair: (at) => `update ${locatorText(at)} from the golden entry`,
 	},
-	{
-		problem: 'mcp-diverged-both',
+	'mcp-diverged-both': {
 		detail: 'both sides changed since they last agreed — merging either way would discard the other',
 		repair: (at) => ({ command: '', instruction: `reconcile ${locatorText(at)} against ${goldenSet} by hand` }),
 		skillRepair: (at) =>
 			`reconcile ${locatorText(at)} against ${goldenSet} by hand — never merge a three-way conflict automatically`,
 	},
-	{
-		problem: 'mcp-diverged-unknown',
+	'mcp-diverged-unknown': {
 		detail:
 			'the two disagree and no baseline says which side moved — neither history nor a last-projected record covers this server',
 		repair: (at) => ({ command: '', instruction: `compare ${locatorText(at)} against ${goldenSet} by hand` }),
 		skillRepair: (at) => `compare ${locatorText(at)} against ${goldenSet} by hand`,
 	},
-	{
-		problem: 'mcp-literal-secret',
+	'mcp-literal-secret': {
 		detail: 'a credential-bearing field holds a literal rather than a reference to an environment variable',
 		repair: (at) => ({
 			command: '',
@@ -431,8 +430,7 @@ const mcpRepairs: readonly Repair[] = [
 		skillRepair: (at) =>
 			`move the value at ${locatorText(at)} into an environment variable and reference it — read the value from the file, never from this report, and never repeat it back`,
 	},
-	{
-		problem: 'mcp-committed-secret',
+	'mcp-committed-secret': {
 		detail:
 			'a credential-bearing field holds a literal in a git-tracked file — the credential is committed, and moving it does not un-commit it',
 		repair: (at) => ({
@@ -442,20 +440,26 @@ const mcpRepairs: readonly Repair[] = [
 		skillRepair: (at) =>
 			`rotate the credential behind ${locatorText(at)} at its issuer, then reference it from an environment variable — it is in the repository's history, so moving it is not enough`,
 	},
-]
+}
 
-/** All four sections, in the order `doctor` reports them. */
-export const doctorRepairs: readonly Repair[] = [
-	...bridgeRepairs,
-	...instructionRepairs,
-	...configurationRepairs,
-	...mcpRepairs,
-]
+const mcpRepairs: readonly Repair[] = repairsOf(mcpTable)
 
-const repairsByProblem = new Map(doctorRepairs.map((entry) => [entry.problem, entry]))
+/**
+ * All four sections, in the order `doctor` reports them. Annotated over the whole union rather than
+ * inferred, so a problem added to any of the four fails here too if its section was left alone.
+ */
+const doctorTable: Record<DoctorProblem, RepairRow> = {
+	...bridgeTable,
+	...instructionTable,
+	...configurationTable,
+	...mcpTable,
+}
 
+export const doctorRepairs: readonly Repair[] = repairsOf(doctorTable)
+
+/** The repair for one problem. Total by construction: the table is keyed by the union. */
 export function repairFor(problem: DoctorProblem): Repair {
-	return repairsByProblem.get(problem) as Repair
+	return { problem, ...doctorTable[problem] }
 }
 
 export const doctorSkill = {

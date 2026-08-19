@@ -11,6 +11,7 @@ import {
 	initSkillInvocation,
 	instructionRepairs,
 	launcherFor,
+	type RepairRow,
 	renderDoctorSkill,
 	renderSkillLauncher,
 	repairFor,
@@ -23,7 +24,18 @@ const version = JSON.parse(readFileSync(join(packageRoot, 'package.json'), 'utf8
 
 describe('doctor guidance', () => {
 	it('has one repair for every problem it can report', () => {
-		for (const entry of doctorRepairs) expect(repairFor(entry.problem)).toBe(entry)
+		for (const entry of doctorRepairs) expect(repairFor(entry.problem)).toEqual(entry)
+	})
+
+	// The half the assertion above cannot reach. Iterating the table and looking each entry back up
+	// is the direction that cannot fail; the direction that can is a problem added to a union with no
+	// row written for it, and a union is not enumerable at runtime. So the table is keyed by the
+	// union and the compiler holds it, which makes a type error the only place this is assertable.
+	it('does not type a repair table that leaves a problem without a row', () => {
+		// @ts-expect-error - a table of one row is not a row for every DoctorProblem
+		const incomplete: Record<DoctorProblem, RepairRow> = { stale: repairFor('stale') }
+
+		expect(Object.keys(incomplete)).toEqual(['stale'])
 	})
 
 	// The contract `help` is read through: a non-empty `command` runs verbatim and finishes the job,
@@ -186,7 +198,7 @@ describe('the detect-and-repair seam', () => {
 	// rendering hands the work to the `init` skill; a caller reading the command's output can just
 	// run the invocation, so the command rendering gives it one and names no skill.
 	it('renders every repair twice, and the two disagree about who acts', () => {
-		for (const entry of doctorRepairs) expect(repairFor(entry.problem)).toBe(entry)
+		for (const entry of doctorRepairs) expect(repairFor(entry.problem)).toEqual(entry)
 
 		const missing = repairFor('missing')
 		expect(missing.repair({ file: '<path>' }, commandInvocation).command).toBe(`${commandInvocation} init`)
@@ -267,7 +279,7 @@ describe('the detect-and-repair seam', () => {
 	// the options come from the repairing skill's own reference, not from the report.
 	it('states exactly one repair per problem, never a set to choose between', () => {
 		for (const entry of doctorRepairs) {
-			expect(repairFor(entry.problem)).toBe(entry)
+			expect(repairFor(entry.problem)).toEqual(entry)
 			expect(Object.keys(entry.repair({ file: '.claude/skills' }, 'bah')).sort()).toEqual(['command', 'instruction'])
 			expect(typeof entry.skillRepair({ file: '.claude/skills' })).toBe('string')
 		}
