@@ -11,7 +11,7 @@ todos:
   - content: Draft the spec node and suite for MCP golden-set diagnosis
     status: completed
   - content: Spec gate
-    status: pending
+    status: completed
   - content: Implement the golden-set reader, reverse converters, and drift detection
     status: completed
   - content: Implement secret detection that never carries a value into a finding
@@ -19,11 +19,11 @@ todos:
   - content: Wire the findings into doctor and regenerate the doctor skill
     status: completed
   - content: Impl gate
-    status: pending
+    status: completed
   - content: Docs pages under apps/web
-    status: pending
+    status: completed
   - content: Changeset and pnpm verify
-    status: pending
+    status: completed
   - content: Handoff — PR against main linking issue #54, then merge it
     status: pending
 ---
@@ -60,4 +60,6 @@ which issue #51's `repair` skill is the candidate for.
 
 ## NEXT
 
-Spec gate is running. Then the impl gate, the docs, and the PR.
+Both gates approved and the suite is frozen. The detection half is landing; the forward
+projection writers and the approval-gated reconcile writer stay open under #54, which this
+PR therefore references without closing.
