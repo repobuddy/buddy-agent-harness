@@ -9,7 +9,7 @@ const mockedInitializeHarnesses = vi.mocked(initializeHarnesses)
 const stderr = vi.spyOn(process.stderr, 'write').mockImplementation(() => true)
 const stdout = vi.spyOn(process.stdout, 'write').mockImplementation(() => true)
 
-function run(args: { copy?: boolean; force?: boolean; format?: string; harness?: string; root?: string }): number {
+function run(args: { copy?: boolean; force?: string; format?: string; harness?: string; root?: string }): number {
 	return (initCommand as { run(value: typeof args): number }).run(args)
 }
 
@@ -31,12 +31,13 @@ describe('init command', () => {
 			harnesses: ['claude-code'],
 			native: [],
 			linked: ['claude-code'],
+			skipped: [],
 			deprecated: [],
 			skills: 1,
 			copied: true,
 		})
 
-		run({ copy: true, force: true, format: 'json', root: '/workspace' })
+		run({ copy: true, force: 'true', format: 'json', root: '/workspace' })
 
 		expect(mockedInitializeHarnesses).toHaveBeenCalledWith({
 			root: '/workspace',
@@ -52,6 +53,7 @@ describe('init command', () => {
 			harnesses: ['claude-code'],
 			native: [],
 			linked: ['claude-code'],
+			skipped: [],
 			deprecated: [],
 			skills: 0,
 			copied: false,
@@ -85,6 +87,7 @@ describe('init command', () => {
 			harnesses: ['claude-code', 'cursor', 'windsurf'],
 			native: ['cursor'],
 			linked: ['claude-code', 'windsurf'],
+			skipped: [],
 			deprecated: [{ name: 'windsurf', replacedBy: 'devin-desktop' }],
 			skills: 0,
 			copied: false,

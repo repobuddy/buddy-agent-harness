@@ -209,18 +209,18 @@ const bridgeTable: Record<BridgeProblem, RepairRow> = {
 	degraded: {
 		detail: 'expected a directory but found a regular file — checkout without core.symlinks',
 		repair: ({ file }, cli) => ({
-			command: `${cli} init --copy --force`,
-			instruction: `run \`${cli} init --copy --force\` to rebuild ${file} as a real directory`,
+			command: `${cli} init --copy --force ${file}`,
+			instruction: `run \`${cli} init --copy --force ${file}\` to rebuild ${file} as a real directory`,
 		}),
-		skillRepair: () => `run \`${initSkillInvocation} --copy --force\``,
+		skillRepair: ({ file }) => `run \`${initSkillInvocation} --copy --force ${file}\``,
 	},
 	stale: {
 		detail: 'symlink does not resolve to .agents/skills',
 		repair: ({ file }, cli) => ({
-			command: `${cli} init --force`,
-			instruction: `run \`${cli} init --force\` to repoint ${file} at .agents/skills`,
+			command: `${cli} init --force ${file}`,
+			instruction: `run \`${cli} init --force ${file}\` to repoint ${file} at .agents/skills`,
 		}),
-		skillRepair: () => `run \`${initSkillInvocation} --force\``,
+		skillRepair: ({ file }) => `run \`${initSkillInvocation} --force ${file}\``,
 	},
 	'diverged-bridge': {
 		detail: 'only the bridge changed since the two last agreed — an agent wrote through the copy',
@@ -229,18 +229,18 @@ const bridgeTable: Record<BridgeProblem, RepairRow> = {
 		// into it. Deciding to keep that side is the caller's, and the rebuild is what follows.
 		repair: ({ file }, cli) => ({
 			command: '',
-			instruction: `replace .agents/skills with ${file} to keep the newer edit, then run \`${cli} init --force\``,
+			instruction: `replace .agents/skills with ${file} to keep the newer edit, then run \`${cli} init --force ${file}\``,
 		}),
 		skillRepair: ({ file }) =>
-			`replace .agents/skills with ${file} to keep the newer edit, then run \`${initSkillInvocation} --force\``,
+			`replace .agents/skills with ${file} to keep the newer edit, then run \`${initSkillInvocation} --force ${file}\``,
 	},
 	'diverged-canonical': {
 		detail: 'only .agents/skills changed since the two last agreed — the copy is stale',
 		repair: ({ file }, cli) => ({
-			command: `${cli} init --copy --force`,
-			instruction: `run \`${cli} init --copy --force\` to rebuild ${file} from the newer .agents/skills`,
+			command: `${cli} init --copy --force ${file}`,
+			instruction: `run \`${cli} init --copy --force ${file}\` to rebuild ${file} from the newer .agents/skills`,
 		}),
-		skillRepair: () => `run \`${initSkillInvocation} --copy --force\``,
+		skillRepair: ({ file }) => `run \`${initSkillInvocation} --copy --force ${file}\``,
 	},
 	'diverged-both': {
 		detail: 'both sides changed since they last agreed — rebuilding would discard one of them',

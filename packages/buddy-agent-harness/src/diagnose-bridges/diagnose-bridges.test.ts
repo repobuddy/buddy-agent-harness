@@ -84,8 +84,8 @@ describe('diagnoseBridges', () => {
 				problem: 'degraded',
 				detail: 'expected a directory but found a regular file — checkout without core.symlinks',
 				repair: {
-					command: 'bah init --copy --force',
-					instruction: 'run `bah init --copy --force` to rebuild .claude/skills as a real directory',
+					command: 'bah init --copy --force .claude/skills',
+					instruction: 'run `bah init --copy --force .claude/skills` to rebuild .claude/skills as a real directory',
 				},
 			},
 		])
@@ -117,8 +117,8 @@ describe('diagnoseBridges', () => {
 		])
 		expect(result.findings[0]).toMatchObject({
 			repair: {
-				command: 'bah init --force',
-				instruction: 'run `bah init --force` to repoint .claude/skills at .agents/skills',
+				command: 'bah init --force .claude/skills',
+				instruction: 'run `bah init --force .claude/skills` to repoint .claude/skills at .agents/skills',
 			},
 		})
 	})
@@ -253,7 +253,8 @@ describe('diagnoseBridges', () => {
 			expect(result.findings[0]).toMatchObject({
 				repair: {
 					command: '',
-					instruction: 'replace .agents/skills with .claude/skills to keep the newer edit, then run `bah init --force`',
+					instruction:
+						'replace .agents/skills with .claude/skills to keep the newer edit, then run `bah init --force .claude/skills`',
 				},
 			})
 		})
@@ -267,8 +268,9 @@ describe('diagnoseBridges', () => {
 			expect(result.divergence).toEqual([{ path: '.claude/skills', direction: 'canonical' }])
 			expect(result.findings[0]).toMatchObject({
 				repair: {
-					command: 'bah init --copy --force',
-					instruction: 'run `bah init --copy --force` to rebuild .claude/skills from the newer .agents/skills',
+					command: 'bah init --copy --force .claude/skills',
+					instruction:
+						'run `bah init --copy --force .claude/skills` to rebuild .claude/skills from the newer .agents/skills',
 				},
 			})
 		})

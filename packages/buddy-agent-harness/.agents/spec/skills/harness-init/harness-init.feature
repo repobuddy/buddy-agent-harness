@@ -51,6 +51,24 @@ Feature: Initialize local agent skills across coding harnesses
     Then the conflicting target is replaced by the canonical skill
 
   @behavior
+  Scenario: replaces only the target that force names
+    Given a consumer repository has conflicting targets for canonical skills across two enabled harnesses
+    When the agent runs `buddy-agent-harness init --force` naming one of those targets
+    Then that target is replaced by the canonical skill and the other target keeps its own content
+
+  @behavior
+  Scenario: reports a conflict it was told to leave alone rather than failing the run
+    Given a consumer repository has conflicting targets for canonical skills across two enabled harnesses
+    When the agent runs `buddy-agent-harness init --force` naming one of those targets
+    Then the command reports the unnamed harness as skipped and the named harness as linked
+
+  @behavior
+  Scenario: rejects a force target no enabled harness projects
+    Given a consumer repository has a conflicting target for canonical skills
+    When the agent runs `buddy-agent-harness init --force` naming a target no enabled harness projects
+    Then the command reports that no target matches and leaves every harness target unchanged
+
+  @behavior
   Scenario: creates relative links for canonical skills
     Given a consumer repository has canonical skill `review` and links are available
     When the agent runs `buddy-agent-harness init` without `--copy`

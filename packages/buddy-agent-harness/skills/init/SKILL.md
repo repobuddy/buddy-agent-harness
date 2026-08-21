@@ -1,7 +1,7 @@
 ---
 name: init
 description: Use this skill when initializing, adopting, or migrating a repository's agent configuration to the open AGENTS.md and Agent Skills standards, so one canonical source works across Claude Code, Codex, Cursor, Copilot CLI, and other agent harnesses.
-argument-hint: '[--root <dir>] [--harness <names>] [--copy] [--force]'
+argument-hint: '[--root <dir>] [--harness <names>] [--copy] [--force <targets>]'
 ---
 
 # Harness Init
@@ -27,12 +27,12 @@ Skills and instructions are separate questions. Gemini CLI reads the canonical s
 
 ## Arguments
 
-An invocation may carry the command's own flags, most often when `doctor` hands back a repair: `/buddy-agent-harness:init --copy --force`.
+An invocation may carry the command's own flags, most often when `doctor` hands back a repair: `/buddy-agent-harness:init --copy --force .claude/skills`.
 
 Read them from the invocation itself rather than from a placeholder. Claude Code appends what the caller typed as `ARGUMENTS: <value>`, and Codex substitutes nothing at all, so on every harness the flags arrive as text you can read. Writing `$ARGUMENTS` into this body would resolve on Claude Code and stay literal everywhere else.
 
 - `--root`, `--harness`, `--copy`, `--force`, and `--format` pass through to the command in Phase 4.
-- Prose carries the same weight: "links are unavailable here" means `--copy`, and "replace the bridge" means `--force`.
+- Prose carries the same weight: "links are unavailable here" means `--copy`, and "replace the bridge" means `--force` naming that bridge.
 - An argument never skips a phase. `--force` still needs the Phase 3 approval, and the survey still runs first.
 - Say what you did not recognize and carry on. Never guess at a flag.
 
@@ -68,7 +68,7 @@ One case does need asking even though it only creates a file: a nested `AGENTS.m
 2. Move approved skills and commands to `.agents/skills/<name>/SKILL.md`, preferring `git mv` so history follows. Fix frontmatter per `references/frontmatter.md` — this is where cross-harness portability is won or lost.
 3. Merge approved instruction content into `AGENTS.md`, preserving the author's wording. Append; do not restructure. Replace a harness file with a pointer only where approved. Content only some tasks need belongs in a skill, not in `AGENTS.md`.
 4. Run `node scripts/init.mjs` at the repository root, resolving that path against this skill's own directory. The launcher runs the CLI that shipped beside it, so nothing is downloaded; fall back to `npx -y buddy-agent-harness@^0.6.0 init` when the path cannot be resolved. It links `.agents/skills` into the harnesses that need it and skips those that read it natively. Add harnesses the user names with `--harness codex,gemini-cli`.
-5. If the command reports a conflict, resolve the named target and retry. Use `--force` only to replace that exact projection; use `--copy` only where links are unavailable — a copy is a snapshot, not a live projection, so say so when you fall back.
+5. If the command reports a conflict, resolve the named target and retry. Pass the target to `--force` — `--force .claude/skills` replaces that projection and reports any other conflict untouched, where a bare `--force` replaces every conflicting target at once. Reach for the bare form only when replacing all of them is what you came for. Use `--copy` only where links are unavailable — a copy is a snapshot, not a live projection, so say so when you fall back.
 6. Apply the instruction bridges `init` does not write. Claude Code reads `CLAUDE.md`, not `AGENTS.md` — create a `CLAUDE.md` containing `@AGENTS.md`. Gemini CLI needs `AGENTS.md` added to `context.fileName` in `.gemini/settings.json`. Both are detailed in the matching `references/harnesses/<harness>.md`; apply only the ones you enabled. Where nested `AGENTS.md` files exist, write the same stub in each directory holding one — `references/agents-md.md` covers the one case that stops for approval first.
 7. If any bridge now exists, write or restore the non-material region in `AGENTS.md` per `references/agents-md.md`, unless the markers are present and empty. Without it, an agent asked to change a skill edits `.claude/skills/<name>/SKILL.md` — which a link resolves back to canonical, but a copy silently forks. Skip this when every enabled harness reads `.agents/skills/` natively; with no bridge there is nothing to warn about.
 

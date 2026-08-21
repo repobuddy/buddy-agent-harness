@@ -1,4 +1,13 @@
-import { existsSync, lstatSync, mkdirSync, mkdtempSync, readlinkSync, symlinkSync, writeFileSync } from 'node:fs'
+import {
+	existsSync,
+	lstatSync,
+	mkdirSync,
+	mkdtempSync,
+	readFileSync,
+	readlinkSync,
+	symlinkSync,
+	writeFileSync,
+} from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
@@ -102,6 +111,54 @@ describe('initializeHarnesses', () => {
 		initializeHarnesses({ root, force: true })
 		expect(lstatSync(join(root, '.claude', 'skills')).isSymbolicLink()).toBe(true)
 		expect(lstatSync(join(root, '.windsurf', 'skills')).isSymbolicLink()).toBe(true)
+	})
+
+	it('replaces only the named target and leaves the other conflict alone', () => {
+		const root = repository()
+		mkdirSync(join(root, '.windsurf', 'skills', 'review'), { recursive: true })
+		writeFileSync(join(root, '.windsurf', 'skills', 'review', 'SKILL.md'), 'theirs')
+		mkdirSync(join(root, '.claude', 'skills', 'review'), { recursive: true })
+		writeFileSync(join(root, '.claude', 'skills', 'review', 'SKILL.md'), 'custom')
+
+		initializeHarnesses({ root, force: ['.claude/skills'] })
+
+		expect(lstatSync(join(root, '.claude', 'skills')).isSymbolicLink()).toBe(true)
+		expect(lstatSync(join(root, '.windsurf', 'skills')).isSymbolicLink()).toBe(false)
+		expect(readFileSync(join(root, '.windsurf', 'skills', 'review', 'SKILL.md'), 'utf8')).toBe('theirs')
+	})
+
+	it('reports the conflict it was told to leave alone rather than failing the run', () => {
+		const root = repository()
+		mkdirSync(join(root, '.windsurf', 'skills'), { recursive: true })
+		writeFileSync(join(root, '.windsurf', 'skills', 'theirs.md'), 'theirs')
+		mkdirSync(join(root, '.claude', 'skills'), { recursive: true })
+		writeFileSync(join(root, '.claude', 'skills', 'ours.md'), 'ours')
+
+		const result = initializeHarnesses({ root, force: ['.claude/skills'] })
+
+		expect(result.linked).toContain('claude-code')
+		expect(result.linked).not.toContain('windsurf')
+		expect(result.skipped).toEqual(['windsurf'])
+	})
+
+	it('names a target no harness projects rather than silently forcing nothing', () => {
+		const root = repository()
+		mkdirSync(join(root, '.claude', 'skills'), { recursive: true })
+		writeFileSync(join(root, '.claude', 'skills', 'ours.md'), 'ours')
+
+		expect(() => initializeHarnesses({ root, force: ['.cluade/skills'] })).toThrow(/\.cluade\/skills/)
+		// The typo aborted before any write, so the conflict it was reached for is still there.
+		expect(existsSync(join(root, '.claude', 'skills', 'ours.md'))).toBe(true)
+	})
+
+	it('selects a target by an absolute path as well as the repo-relative one it was reported by', () => {
+		const root = repository()
+		mkdirSync(join(root, '.claude', 'skills'), { recursive: true })
+		writeFileSync(join(root, '.claude', 'skills', 'ours.md'), 'ours')
+
+		initializeHarnesses({ root, force: [join(root, '.claude', 'skills')] })
+
+		expect(lstatSync(join(root, '.claude', 'skills')).isSymbolicLink()).toBe(true)
 	})
 
 	it('preserves a canonical link on re-run and rejects a link to another directory', () => {

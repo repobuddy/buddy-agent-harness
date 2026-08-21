@@ -49,19 +49,63 @@ function linkTarget(target: string, canonicalSkills: string): string {
 	return platform() === 'win32' ? resolve(canonicalSkills) : relative(dirname(target), canonicalSkills)
 }
 
+/**
+ * Which conflicting targets a run may replace. `true` is every one of them; a list names them
+ * individually, so a run invoked to fix one bridge cannot reach past it to another. `false` and an
+ * empty list both mean none, which is what makes a conflict stop the run.
+ */
+export type ForceSelection = boolean | readonly string[]
+
+/**
+ * Translates what the option parser hands back into a selection. A valueless `--force` arrives as
+ * the literal string `true` — that is how the parser encodes a flag given no value — and means
+ * every conflicting target, which is what keeps an existing `init --force` doing what it always did.
+ * Anything else is a comma-separated list of targets.
+ */
+export function parseForce(value: string): ForceSelection {
+	if (value === 'true') return true
+	if (value === 'false') return false
+	return value
+		.split(',')
+		.map((target) => target.trim())
+		.filter((target) => target.length > 0)
+}
+
 export type ProjectSkillsOptions = {
 	root: string
 	canonicalSkills: string
 	harnesses: readonly Harness[]
 	copy: boolean
-	force: boolean
+	force: ForceSelection
+}
+
+export type ProjectSkillsResult = {
+	/** Harnesses whose target now points at the canonical directory. */
+	linked: HarnessName[]
+	/** Harnesses left untouched because their target conflicts and `--force` did not name it. */
+	skipped: HarnessName[]
+}
+
+/**
+ * Targets are matched against what the caller typed, resolved against the repository root, so the
+ * repo-relative form the conflict message prints is the form that selects it back — and an absolute
+ * path naming the same directory selects it too.
+ */
+function namesTarget(root: string, target: string, given: string): boolean {
+	return resolve(root, given) === resolve(target)
 }
 
 /**
  * Points every harness that cannot read `.agents/skills` at the canonical directory. Symlinking is
- * preferred; a platform that refuses the link falls back to a copy. Returns the projected harnesses.
+ * preferred; a platform that refuses the link falls back to a copy.
  */
-export function projectSkills({ root, canonicalSkills, harnesses, copy, force }: ProjectSkillsOptions): HarnessName[] {
+export function projectSkills({
+	root,
+	canonicalSkills,
+	harnesses,
+	copy,
+	force,
+}: ProjectSkillsOptions): ProjectSkillsResult {
 	const projections = harnesses
 		.filter((harness) => harness.project.skillsDirectory)
 		.map((harness) => ({
@@ -69,17 +113,35 @@ export function projectSkills({ root, canonicalSkills, harnesses, copy, force }:
 			target: join(root, harness.project.skillsDirectory as string),
 		}))
 
-	const conflicts = projections
-		.filter(({ target }) => pathOccupied(target) && !linksTo(target, canonicalSkills))
-		.map(({ target }) => target)
-
-	if (conflicts.length && !force) {
+	const named = Array.isArray(force) ? force : []
+	// A name matching no projection target at all is a typo, not a narrower run: silently forcing
+	// nothing would surface as the conflict error the flag was reached for, blaming the wrong thing.
+	const unknown = named.filter((given) => !projections.some(({ target }) => namesTarget(root, target, given)))
+	if (unknown.length) {
 		throw new Error(
-			`Refusing to replace existing skill targets:\n${conflicts.map((target) => `- ${target}`).join('\n')}`,
+			`No skill target matches:\n${unknown.map((given) => `- ${given}`).join('\n')}\n` +
+				`Targets for the enabled harnesses:\n${projections.map(({ target }) => `- ${relative(root, target)}`).join('\n')}`,
 		)
 	}
 
-	for (const { target } of projections) {
+	const forces = (target: string): boolean => force === true || named.some((given) => namesTarget(root, target, given))
+
+	const conflicts = projections.filter(({ target }) => pathOccupied(target) && !linksTo(target, canonicalSkills))
+	const blocked = conflicts.filter(({ target }) => !forces(target))
+
+	// Nothing was named, so nothing distinguishes one conflict from another: stop before writing.
+	// Once a target IS named, the unnamed conflicts are the ones this run was told to leave alone,
+	// so they are skipped and reported rather than turned into a refusal that writes nothing at all.
+	if (blocked.length && named.length === 0) {
+		throw new Error(
+			`Refusing to replace existing skill targets:\n${blocked.map(({ target }) => `- ${relative(root, target)}`).join('\n')}`,
+		)
+	}
+
+	const skipped = new Set(blocked.map(({ harness }) => harness.name))
+
+	for (const { harness, target } of projections) {
+		if (skipped.has(harness.name)) continue
 		mkdirSync(dirname(target), { recursive: true })
 		if (linksTo(target, canonicalSkills)) continue
 		if (pathOccupied(target)) rmSync(target, { recursive: true, force: true })
@@ -95,5 +157,8 @@ export function projectSkills({ root, canonicalSkills, harnesses, copy, force }:
 		}
 	}
 
-	return projections.map(({ harness }) => harness.name)
+	return {
+		linked: projections.filter(({ harness }) => !skipped.has(harness.name)).map(({ harness }) => harness.name),
+		skipped: projections.filter(({ harness }) => skipped.has(harness.name)).map(({ harness }) => harness.name),
+	}
 }
