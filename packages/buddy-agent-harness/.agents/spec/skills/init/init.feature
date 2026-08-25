@@ -28,12 +28,27 @@ Feature: Consolidate a repository's agent configuration and bridge the harnesses
     And a root `AGENTS.md` carrying authored content would instead be left as it stands
 
   @behavior
-  Scenario: reports a subagent and a rule directory rather than converting either
+  Scenario: offers no consolidation that would leave fewer readers than before
+    Given a `.cursorrules` a person wrote, for a harness that reads `AGENTS.md` in one mode only
+    When the agent runs the `init` skill
+    Then the offer is to consolidate into `AGENTS.md` and leave a generated copy behind
+    And no offer is made to consolidate the file and delete it
+
+  @behavior
+  Scenario: asks about each artifact separately rather than about the set
+    Given two artifacts only one harness reads, each with a different candidate
+    When the agent runs the `init` skill
+    Then approval is asked for each of them on its own
+    And approving one converts only that one
+
+  @behavior
+  Scenario: lists every artifact only one harness reads, and converts none unasked
     Given a `.claude/agents/` directory and a `.cursor/rules/` directory
     When the agent runs the `init` skill
-    Then both are reported as canonical-only
-    And neither is converted into another harness's format
-    And both are left where they are
+    Then each is listed with the canonical form it is a candidate for
+    And the subagent is reported as having no candidate at all
+    And neither is converted into another harness's format without approval
+    And an artifact whose conversion is declined is left where it is
 
   @behavior
   Scenario: refuses an MCP conversion the mapping cannot carry losslessly

@@ -8,10 +8,12 @@ What to look for during the survey, and where each finding belongs.
 | Nested instructions | `**/AGENTS.md` below the root, and any `**/CLAUDE.md` beside one | canonical and scoped — report, never merge upward. Bridging is per directory and per approval; see `agents-md.md` |
 | Skills | `.claude/skills/`, `.cursor/skills/`, `.codex/skills/`, `.github/skills/`, `.windsurf/skills/`, `.gemini/skills/` | move to `.agents/skills/`, fix frontmatter, then link back |
 | Commands | `.claude/commands/*.md`, `.cursor/commands/*.md` | move to `.agents/skills/<name>/SKILL.md`. Claude Code has merged commands into skills, so this follows the harness rather than fighting it |
-| Subagents | `.claude/agents/` | canonical-only — no cross-harness format exists. Report; leave in place |
-| Rules | `.cursor/rules/**.mdc`, `.claude/rules/`, `.windsurf/rules/` | canonical-only — `.mdc` and `.md` are not interchangeable, and path-scoping syntax differs. Report |
+| Subagents | `.claude/agents/` | canonical-only — no cross-harness format exists. Report as having no candidate at all, so the list is not read as pending work; leave in place |
+| Rules | `.cursor/rules/**.mdc`, `.claude/rules/`, `.windsurf/rules/` | offer a skill where the paths a rule names are incidental to what it says; leave it where the path scoping is the point. `.mdc` and `.md` are not interchangeable and path-scoping has no `AGENTS.md` equivalent, so the choice is the owner's — ask per rule |
 | MCP servers | `.mcp.json`, `.cursor/mcp.json`, `.vscode/mcp.json`, `.claude/settings.json` | canonical-only. Report; never convert between formats. A mapping between them exists but is not lossless, and applying it means inventing fields the source did not carry |
 | Hooks, LSP, output styles | hook blocks in settings files, `.claude/output-styles/` | canonical-only. Hook event names differ by case across harnesses, so no safe projection exists. Report |
+
+`doctor` reports every artifact only one harness can read, each with the canonical form it is a candidate for. That report is the list — the table above says what each class *is*, and the command says what this repository actually has. Do not derive a second list by walking these paths yourself.
 
 For every entry, record which of three states it is in:
 

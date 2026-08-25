@@ -2,6 +2,7 @@ import { lstatSync } from 'node:fs'
 import { join } from 'node:path'
 import type { InstructionBridge } from './instruction-bridge.ts'
 import type { McpConfig } from './mcp-config.ts'
+import type { NonstandardArtifact } from './nonstandard-artifact.ts'
 
 export type HarnessName =
 	| 'claude-code'
@@ -29,6 +30,11 @@ export type HarnessScopeName = 'project' | 'user'
  * is not a bridge into a canonical file the harness cannot read — it is the harness's own
  * configuration, which `doctor` compares against the golden set and never writes.
  *
+ * `nonstandard` is what this harness reads that no other harness can. Unlike the three above it is
+ * not something the tool maintains — it is what a repository accumulated before it was canonical,
+ * and `doctor` reports it so it can be converted. Declared here because the paths are per harness
+ * and belong beside the harness's other paths, not in a second list that would drift from this one.
+ *
  * `instructionBridge` is the same question for `AGENTS.md`: what the harness needs at this scope in
  * order to read it. It belongs per scope for the same reason `skillsDirectory` does — the file
  * differs. Unlike `skillsDirectory`, the `init` command does not write it; the `init` skill does. It
@@ -39,6 +45,7 @@ export type HarnessScope = {
 	skillsDirectory?: string
 	instructionBridge?: InstructionBridge
 	mcpConfig?: McpConfig
+	nonstandard?: readonly NonstandardArtifact[]
 }
 
 export type Harness = {
@@ -82,33 +89,73 @@ export const harnessRegistry: readonly Harness[] = [
 			skillsDirectory: '.claude/skills',
 			instructionBridge: { kind: 'import', path: 'CLAUDE.md' },
 			mcpConfig: { path: '.mcp.json', key: 'mcpServers', format: 'json' },
+			nonstandard: [
+				{ path: '.claude/commands', shape: 'directory', kind: 'command' },
+				{ path: '.claude/rules', shape: 'directory', kind: 'rule' },
+				{ path: '.claude/agents', shape: 'directory', kind: 'subagent' },
+			],
 		},
 		user: { detect: '.claude', skillsDirectory: '.claude/skills' },
 	},
 	{
 		name: 'cursor',
-		project: { detect: '.cursor', mcpConfig: { path: '.cursor/mcp.json', key: 'mcpServers', format: 'json' } },
+		project: {
+			detect: '.cursor',
+			mcpConfig: { path: '.cursor/mcp.json', key: 'mcpServers', format: 'json' },
+			nonstandard: [
+				{ path: '.cursorrules', shape: 'file', kind: 'instructions' },
+				{ path: '.cursor/rules', shape: 'directory', kind: 'rule' },
+				{ path: '.cursor/commands', shape: 'directory', kind: 'command' },
+				{ path: '.cursor/skills', shape: 'directory', kind: 'skill' },
+			],
+		},
 		user: { detect: '.cursor' },
 	},
 	{
 		name: 'codex',
-		project: { detect: '.codex', mcpConfig: { path: '.codex/config.toml', key: 'mcp_servers', format: 'toml' } },
+		project: {
+			detect: '.codex',
+			mcpConfig: { path: '.codex/config.toml', key: 'mcp_servers', format: 'toml' },
+			nonstandard: [{ path: '.codex/skills', shape: 'directory', kind: 'skill' }],
+		},
 		user: { detect: '.codex' },
 	},
-	{ name: 'copilot-cli', project: { detect: '.github/skills' }, user: { detect: '.copilot' } },
+	{
+		name: 'copilot-cli',
+		project: {
+			detect: '.github/skills',
+			nonstandard: [
+				{ path: '.github/copilot-instructions.md', shape: 'file', kind: 'instructions' },
+				{ path: '.github/instructions', shape: 'directory', kind: 'instructions' },
+				{ path: '.github/skills', shape: 'directory', kind: 'skill' },
+			],
+		},
+		user: { detect: '.copilot' },
+	},
 	{
 		name: 'gemini-cli',
 		project: {
 			detect: '.gemini',
 			instructionBridge: { kind: 'settings-entry', path: '.gemini/settings.json', key: 'context.fileName' },
 			mcpConfig: { path: '.gemini/settings.json', key: 'mcpServers', format: 'json', shared: true },
+			nonstandard: [
+				{ path: 'GEMINI.md', shape: 'file', kind: 'instructions' },
+				{ path: '.gemini/skills', shape: 'directory', kind: 'skill' },
+			],
 		},
 		user: { detect: '.gemini' },
 	},
 	{ name: 'devin-desktop', project: { detect: '.devin' } },
 	{
 		name: 'windsurf',
-		project: { detect: '.windsurf', skillsDirectory: '.windsurf/skills' },
+		project: {
+			detect: '.windsurf',
+			skillsDirectory: '.windsurf/skills',
+			nonstandard: [
+				{ path: '.windsurfrules', shape: 'file', kind: 'instructions' },
+				{ path: '.windsurf/rules', shape: 'directory', kind: 'rule' },
+			],
+		},
 		deprecated: 'devin-desktop',
 	},
 ]
