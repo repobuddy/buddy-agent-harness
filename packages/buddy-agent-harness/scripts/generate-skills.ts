@@ -49,11 +49,13 @@ const targets: { path: string; expected: string | undefined }[] = []
 /**
  * Which subcommand each skill's launcher runs. Keyed by skill rather than assumed equal to it:
  * `repair` runs `doctor` to find what it repairs, and while that launcher was labelled generated it
- * was not on this list, so nothing rewrote it and nothing caught it going stale.
+ * was not on this list, so nothing rewrote it and nothing caught it going stale. `init` needs both:
+ * `init` to write the projections, and `doctor` to list the artifacts only one harness can read.
  */
 const launchers: { skill: string; subcommand: string }[] = [
 	{ skill: 'doctor', subcommand: 'doctor' },
 	{ skill: 'init', subcommand: 'init' },
+	{ skill: 'init', subcommand: 'doctor' },
 	{ skill: 'repair', subcommand: 'doctor' },
 ]
 

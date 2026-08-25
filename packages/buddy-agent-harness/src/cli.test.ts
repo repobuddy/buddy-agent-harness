@@ -154,6 +154,7 @@ describe('the process boundary', () => {
 		expect(writers).toEqual([
 			'bin/buddy-agent-harness.mjs',
 			'skills/doctor/scripts/doctor.mjs',
+			'skills/init/scripts/doctor.mjs',
 			'skills/init/scripts/init.mjs',
 			'skills/repair/scripts/doctor.mjs',
 			// Not a writer itself: this is the renderer whose template emits the launchers above.
