@@ -3,6 +3,7 @@ import { command, exitCodes, z } from 'clibuilder'
 import { parseFormat, writeResult } from '../command-output/command-output.ts'
 import { doctorCommand } from '../diagnose-bridges/doctor.command.ts'
 import { parseHarnesses } from '../harness-registry/harness-registry.ts'
+import { parseForce } from '../skill-projection/skill-projection.ts'
 import { initializeHarnesses } from './initialize-harnesses.ts'
 
 export const initCommand: cli.Command = command({
@@ -22,8 +23,9 @@ export const initCommand: cli.Command = command({
 			type: z.optional(z.boolean()),
 		},
 		force: {
-			description: 'Replace conflicting target skill directories.',
-			type: z.optional(z.boolean()),
+			description:
+				'Replace conflicting target skill directories. Names the targets to replace, comma-separated (e.g. .claude/skills); given alone it replaces every conflicting target.',
+			type: z.optional(z.string()),
 		},
 		format: {
 			description: 'Output format: toon (default), json, or text for a human-readable report.',
@@ -40,7 +42,7 @@ export const initCommand: cli.Command = command({
 					root: args.root ?? process.cwd(),
 					...(harnesses.length ? { harnesses } : {}),
 					...(args.copy === undefined ? {} : { copy: args.copy }),
-					...(args.force === undefined ? {} : { force: args.force }),
+					...(args.force === undefined ? {} : { force: parseForce(args.force) }),
 				}),
 				format,
 			)

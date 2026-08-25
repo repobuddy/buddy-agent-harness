@@ -293,7 +293,7 @@ describe('the repair as a command and an instruction', () => {
 	it('states a repair as a runnable command and a prose instruction', () => {
 		const { command, instruction } = repairFor('degraded').repair({ file: '.claude/skills' }, commandInvocation)
 
-		expect(command).toBe(`${commandInvocation} init --copy --force`)
+		expect(command).toBe(`${commandInvocation} init --copy --force .claude/skills`)
 		expect(instruction).toContain(command)
 		expect(instruction).not.toMatch(/^Run `/)
 	})

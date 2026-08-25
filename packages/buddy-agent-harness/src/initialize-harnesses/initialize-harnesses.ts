@@ -1,18 +1,20 @@
 import { join } from 'node:path'
 import { type HarnessName, selectHarnesses } from '../harness-registry/harness-registry.ts'
-import { countSkills, projectSkills } from '../skill-projection/skill-projection.ts'
+import { countSkills, type ForceSelection, projectSkills } from '../skill-projection/skill-projection.ts'
 
 export type InitializeOptions = {
 	root: string
 	harnesses?: HarnessName[]
 	copy?: boolean
-	force?: boolean
+	force?: ForceSelection
 }
 export type InitializeResult = {
 	root: string
 	harnesses: HarnessName[]
 	native: HarnessName[]
 	linked: HarnessName[]
+	/** Enabled harnesses left untouched because their target conflicts and `--force` did not name it. */
+	skipped: HarnessName[]
 	/** Enabled harnesses whose name has been superseded, as `{ name, replacedBy }`. */
 	deprecated: { name: HarnessName; replacedBy: HarnessName }[]
 	skills: number
@@ -28,13 +30,14 @@ export function initializeHarnesses({
 	const canonicalSkills = join(root, '.agents', 'skills')
 	const skills = countSkills(canonicalSkills)
 	const harnesses = selectHarnesses(root, preferred)
-	const linked = projectSkills({ root, canonicalSkills, harnesses, copy, force })
+	const { linked, skipped } = projectSkills({ root, canonicalSkills, harnesses, copy, force })
 
 	return {
 		root,
 		harnesses: harnesses.map((harness) => harness.name),
 		native: harnesses.filter((harness) => !harness.project.skillsDirectory).map((harness) => harness.name),
 		linked,
+		skipped,
 		deprecated: harnesses
 			.filter((harness) => harness.deprecated)
 			.map((harness) => ({ name: harness.name, replacedBy: harness.deprecated as HarnessName })),

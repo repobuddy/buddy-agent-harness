@@ -28,6 +28,7 @@ The skill is for local agent-configuration setup only. It preserves user-authore
 | ---------------------------------------- | -------------------------------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------- |
 | `buddy-agent-harness init`               | An agent is asked to initialize local agent configuration | Consumer root, active harness, and user preferences | Creates or updates compatible projections and records enabled harnesses |
 | `buddy-agent-harness init --copy`        | Copying is explicitly required               | Consumer root and canonical skills             | Materializes copies instead of links                                            |
+| `buddy-agent-harness init --force <targets>` | A reported conflict is to be replaced   | Consumer root and the conflicting targets to replace | Replaces the named targets and reports the conflicts it left alone        |
 | `buddy-agent-harness init --format json` | Another program needs the result             | Consumer root                                  | Emits the initialization result as JSON                                         |
 
 ## Control Flow
@@ -43,7 +44,10 @@ flowchart TD
   G --> H[Add user-preferred harnesses]
   H --> I{Any conflicting target?}
   I -->|yes, no --force| J[Report every conflict and stop]
-  I -->|no, or --force| K{Copy requested or link unavailable?}
+  I -->|yes, --force names an unprojected target| P[Report that no target matches and stop]
+  I -->|yes, --force names some| Q[Skip and report the conflicts it did not name]
+  I -->|no, or --force names none| K{Copy requested or link unavailable?}
+  Q --> K
   K -->|no| L[Create relative links]
   K -->|yes| M[Copy skill directories]
   L --> N[Report the enabled harnesses]
@@ -66,7 +70,10 @@ The consumer root is always the repository root, including in a monorepo. The ac
 | Select enabled harnesses   | no additional user preference exists                     | `configures the active harness by default` |
 | Select enabled harnesses   | the user prefers additional supported harnesses           | `configures the active harness and preferred harnesses` |
 | Reject conflict            | one or more targets differ from expected canonical links | `preflights every conflict before writing initialization output`         |
-| Replace conflict           | targets conflict and force is requested                  | `replaces conflicting skill targets when force is requested`             |
+| Reject conflict            | force names a target no enabled harness projects         | `rejects a force target no enabled harness projects`                     |
+| Replace conflict           | targets conflict and force names none of them            | `replaces conflicting skill targets when force is requested`             |
+| Replace conflict           | targets conflict across two harnesses and force names one | `replaces only the target that force names`                             |
+| Skip unnamed conflict      | targets conflict across two harnesses and force names one | `reports a conflict it was told to leave alone rather than failing the run` |
 | Link or copy               | links are available and copy is not requested            | `creates relative links for canonical skills`                            |
 | Link or copy               | copy is requested or links are unavailable               | `copies canonical skills when links cannot be used`                      |
 | Preserve concurrent target | a target appears during a failed link attempt            | `preserves a target that appears during link fallback`                   |
