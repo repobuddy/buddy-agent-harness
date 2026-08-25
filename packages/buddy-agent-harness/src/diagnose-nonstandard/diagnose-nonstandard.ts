@@ -1,4 +1,4 @@
-import { existsSync, lstatSync, readFileSync } from 'node:fs'
+import { lstatSync, readFileSync } from 'node:fs'
 import { join, posix } from 'node:path'
 import { filesUnder } from '../diagnose-bridges/directory-files.ts'
 import { type NonstandardProblem, type RepairAction, repairFor } from '../diagnose-bridges/doctor-guidance.ts'
@@ -73,8 +73,9 @@ function authoredHere(path: string): boolean {
 
 function artifactFiles(root: string, artifact: NonstandardArtifact): string[] {
 	const absolute = join(root, artifact.path)
+	// A path that is not there fails this too — `lstat` throws and the catch reads as "not ours".
 	if (!authoredHere(absolute)) return []
-	if (artifact.shape === 'file') return existsSync(absolute) ? [artifact.path] : []
+	if (artifact.shape === 'file') return [artifact.path]
 	const below = artifact.kind === 'skill' ? skillFiles(absolute) : filesUnder(absolute)
 	return below.map((file) => posix.join(artifact.path, file))
 }
@@ -87,16 +88,10 @@ function artifactFiles(root: string, artifact: NonstandardArtifact): string[] {
  */
 export function diagnoseNonstandard({ root, cli }: DiagnoseNonstandardOptions): NonstandardFinding[] {
 	const findings: NonstandardFinding[] = []
-	const seen = new Set<string>()
 
 	for (const harness of harnessRegistry) {
 		for (const artifact of harness.project.nonstandard ?? []) {
 			for (const path of artifactFiles(root, artifact)) {
-				// Two harnesses can name the same path — a deprecated alias and its replacement, or a
-				// directory two of them read. The artifact is one artifact, so it is one finding.
-				if (seen.has(path)) continue
-				seen.add(path)
-
 				const kind =
 					artifact.kind === 'rule' && path.endsWith('.mdc') && !scopedByGlobs(readFileSync(join(root, path), 'utf8'))
 						? 'instructions'
@@ -108,5 +103,7 @@ export function diagnoseNonstandard({ root, cli }: DiagnoseNonstandardOptions): 
 		}
 	}
 
+	// No dedupe: one artifact is declared by one harness, and `harness-registry.test.ts` holds that
+	// invariant. Collapsing a duplicate here would hide the registry mistake rather than surface it.
 	return findings.sort((left, right) => left.path.localeCompare(right.path))
 }

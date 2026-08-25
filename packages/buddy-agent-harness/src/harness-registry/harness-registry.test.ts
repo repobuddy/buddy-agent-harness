@@ -82,3 +82,31 @@ describe('parseHarnesses', () => {
 		expect(() => parseHarnesses('aider,codex,continue')).toThrow('Unsupported harness: aider, continue.')
 	})
 })
+
+// `diagnoseNonstandard` reports one finding per declared path and does not dedupe, because a path
+// declared twice is a registry mistake rather than a real duplicate. This is what makes that safe:
+// the invariant is held here, where it is visible, instead of swallowed at runtime.
+describe('non-standard artifact declarations', () => {
+	it('declares each path under exactly one harness', () => {
+		const declared = harnessRegistry.flatMap((harness) =>
+			(harness.project.nonstandard ?? []).map((artifact) => artifact.path),
+		)
+
+		expect(declared.length).toBeGreaterThan(0)
+		expect([...new Set(declared)].sort()).toEqual([...declared].sort())
+	})
+
+	// A projection target is the bridge `init` writes, and the bridge families already own it.
+	// Declaring one here would report a repository for configuration this tool put there.
+	it('declares no path that is a skills projection target', () => {
+		const projections = new Set(
+			harnessRegistry.map((harness) => harness.project.skillsDirectory).filter((path) => path !== undefined),
+		)
+
+		for (const harness of harnessRegistry) {
+			for (const artifact of harness.project.nonstandard ?? []) {
+				expect(projections.has(artifact.path), `${harness.name} declares ${artifact.path}`).toBe(false)
+			}
+		}
+	})
+})

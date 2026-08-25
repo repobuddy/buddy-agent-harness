@@ -55,6 +55,14 @@ describe('diagnoseNonstandard', () => {
 		for (const finding of diagnose(root)) expect(finding.problem).toBe('nonstandard-instructions')
 	})
 
+	// A `.mdc` is not required to carry frontmatter, and one without any binds to no paths at all —
+	// so it is always-on prose, the same as one that says so explicitly.
+	it('reads a rule with no frontmatter as instruction content', () => {
+		const root = repository({ '.cursor/rules/plain.mdc': 'Prefer small diffs.' })
+
+		expect(diagnose(root)).toMatchObject([{ path: '.cursor/rules/plain.mdc', problem: 'nonstandard-instructions' }])
+	})
+
 	it('reports a harness command as work a skill would carry everywhere', () => {
 		const root = repository({ '.claude/commands/ship.md': '# Ship' })
 
