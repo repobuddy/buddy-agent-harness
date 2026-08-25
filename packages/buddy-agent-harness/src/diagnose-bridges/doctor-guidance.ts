@@ -1,3 +1,5 @@
+import type { Harness, HarnessScope } from '../harness-registry/harness-registry.ts'
+import { harnessRegistry } from '../harness-registry/harness-registry.ts'
 import { type Locator, locatorText } from './locator.ts'
 
 /**
@@ -473,18 +475,33 @@ export const generatedSkillWarning =
 	'<!-- Generated from src/diagnose-bridges/doctor-guidance.ts by scripts/generate-skills.ts. Do not edit by hand. -->'
 
 /**
+ * A file the generator writes under `skills/doctor/`, path relative to that directory. The skill is
+ * split the way `init`'s is: a lean `SKILL.md` an agent always reads, and reference pages it loads
+ * only for the family it is acting on. One flat file made every reader of one finding pay for the
+ * prose behind all five.
+ */
+export type GeneratedDoc = { path: string; content: string }
+
+/** A repair table, rendered for the skill's reader. */
+function repairTable(repairs: readonly Repair[]): string {
+	// A repair may itself contain a pipe, which would otherwise end the table cell early.
+	const cell = (value: string) => value.replaceAll('|', '\\|')
+	return `| Finding | What it means | Repair |
+| --- | --- | --- |
+${repairs
+	.map((entry) => `| \`${entry.problem}\` | ${entry.detail} | ${cell(entry.skillRepair({ file: '<path>' }))} |`)
+	.join('\n')}`
+}
+
+/**
  * The shipped `doctor` skill, rendered from the same table the command prints. `version` is the
  * package version the skill ships with; it pins the `npx` invocation so the table and the CLI that
  * produced it stay on the same breaking line.
+ *
+ * The finding tables are NOT here. They live in the reference pages below, and this file carries
+ * only what every reader needs: how to run it, how to read the report, and where to go next.
  */
 export function renderDoctorSkill(version: string): string {
-	// A repair may itself contain a pipe, which would otherwise end the table cell early.
-	const cell = (value: string) => value.replaceAll('|', '\\|')
-	const rows = (repairs: readonly Repair[]) =>
-		repairs
-			.map((entry) => `| \`${entry.problem}\` | ${entry.detail} | ${cell(entry.skillRepair({ file: '<path>' }))} |`)
-			.join('\n')
-
 	return `---
 name: ${doctorSkill.name}
 description: ${doctorSkill.description}
@@ -512,7 +529,7 @@ The command is read-only. It never repairs anything, so it is safe to run at any
 
 \`instructions\` lists every instruction bridge into \`AGENTS.md\`, with a \`status\` of \`ok\`, \`missing\`, \`unbridged\`, or \`unreadable\`. They are a separate section because nothing about them is shared: a different \`kind\`, a different status vocabulary, and a repair that is never a command.
 
-\`findings\` explains each problem and carries more than the two sections above: the configuration and MCP findings below have no section of their own, because they are about files rather than about bridges. \`help\` carries each repair, one row per distinct repair, with two columns:
+\`findings\` explains each problem and carries more than the two sections above: the configuration and MCP findings have no section of their own, because they are about files rather than about bridges. \`help\` carries each repair, one row per distinct repair, with two columns:
 
 - \`command\` — a shell invocation that, run exactly as given, **completes** the repair.
 - \`instruction\` — the same repair in the imperative, always present and complete on its own.
@@ -527,58 +544,17 @@ When every bridge resolves, \`findings\` says so outright rather than being empt
 
 The default output is TOON, which is what you parse. Add \`--format text\` when you need to show the same report to a person, or \`--format json\`.
 
-## Skills bridge findings
+## Where the detail is
 
-| Finding | What it means | Repair |
-| --- | --- | --- |
-${rows(bridgeRepairs)}
+Every \`problem\` name routes to exactly one page. Load the page for the finding in front of you and leave the rest unread — the tables are long, and reading four families to act on one is what this split exists to stop.
 
-Substitute the reported bridge path for \`<path>\`.
-
-## Instruction bridge findings
-
-| Finding | What it means | Repair |
-| --- | --- | --- |
-${rows(instructionRepairs)}
-
-## Configuration findings and their repairs
-
-The bridges resolve, and the configuration around them is still wrong: a superseded harness name, a git-ignored bridge, a local-override file nothing reads, a skill whose frontmatter makes every harness skip it. None of these is an \`init\` flag — \`init\` consolidates and creates, and will not correct a file the user already wrote. They go to the \`repair\` skill, which offers each correction with its before and after and writes only what is approved.
-
-| Finding | What it means | Repair |
-| --- | --- | --- |
-${rows(configurationRepairs)}
-
-\`unbridged\` is the one to read carefully. The file is there and looks fine, and it names \`AGENTS.md\` nowhere — a \`CLAUDE.md\` someone overwrote with real content, or a \`.gemini/settings.json\` another tool rewrote without \`AGENTS.md\` in \`context.fileName\`. Never fix it by replacing the file: the content that displaced the bridge may be the only copy of something.
-
-An instruction bridge is reported per file, so a monorepo gets one row per \`AGENTS.md\` in the tree. Each nested \`AGENTS.md\` needs its own stub — an import bridges the file beside it and nothing deeper.
-
-## MCP findings and their repairs
-
-A repository may keep a **golden MCP server set** at \`${goldenSet}\` — one canonical entry per server, in the superset of fields the supported hosts accept, written by the user. Where it exists, \`doctor\` compares it against each harness's own MCP configuration and reports how the two have drifted. **No golden set means no MCP drift findings at all**, and a harness with no MCP file yet has nothing that could have drifted.
-
-Comparison is semantic. Six config keys across three file formats means no two of these files are ever byte-equal, so each side is parsed into one model and the models are compared. A field the golden set leaves unset is never a difference, however a harness fills it in: a host restating its own default and a user's deliberate edit are indistinguishable there, and treating both as changes is what makes a golden set accumulate noise.
-
-Each finding names a **locator**, not a file: \`.cursor/mcp.json#servers.linear.command\` is the server and field, and that is what you route on.
-
-| Finding | What it means | Repair |
-| --- | --- | --- |
-${rows(mcpRepairs)}
-
-### Credentials
-
-The two secret findings are the ones to handle carefully.
-
-- **The report never contains the value.** It gives you the locator and stops. Read the value out of the file named in the locator, and do not repeat it into your reply, into a commit message, or into any other file. There is no truncated preview to work from because a truncated credential is a leaked credential in the same transcript.
-- **\`mcp-committed-secret\` is not \`mcp-literal-secret\` with worse wording.** The file is tracked, so the value is in the repository's history and every clone already has it. Moving it into an environment variable fixes the working tree and changes nothing about that. Rotate it at its issuer first.
-- **A reference passes.** \`\${LINEAR_TOKEN}\` and \`Bearer \${LINEAR_TOKEN}\` are the documented ways to write these fields and are never reported. The test is that shape, not how random the value looks.
-- **An unreadable golden set is reported by position only.** The parser's own message quotes the line it failed on, and in this file that line is the one holding the credential — so neither the message nor the offending line is ever carried into the report. Open the file at the reported line and column.
-
-## The Windows case
-
-The common failure is \`degraded\`. Creating a symlink on Windows needs a privilege most accounts do not have, and Git for Windows gates it separately with \`core.symlinks\`, which its installer leaves off. With \`core.symlinks=false\` git does not error — it writes the symlink out as a regular file whose contents are the target path. \`${initSkillInvocation} --copy --force\` rebuilds the bridges as real directories on that machine.
-
-A copy is a snapshot rather than a live projection, and an agent that edits a skill through it writes into the copy instead of into \`.agents/skills\`. That is what the \`diverged\` findings catch.
+| Page | Load it for |
+| --- | --- |
+| \`references/bridges.md\` | any \`bridges\` row that is not \`ok\` |
+| \`references/instructions.md\` | any \`instructions\` row that is not \`ok\` |
+| \`references/configuration.md\` | a finding about the configuration around the bridges rather than a bridge |
+| \`references/mcp.md\` | any finding whose path is an MCP locator — **always** before acting on a credential finding |
+| \`references/harnesses/<name>.md\` | the paths and files one named harness uses |
 
 ## Rules
 
@@ -588,4 +564,143 @@ A copy is a snapshot rather than a live projection, and an agent that edits a sk
 - Never repeat a value from a file an \`mcp-literal-secret\` or \`mcp-committed-secret\` finding points at. The report withheld it on purpose, and quoting it back puts it in the transcript anyway.
 - Write instructions in \`AGENTS.md\`, never in \`CLAUDE.md\`. A bridge file holds the import and any harness-specific notes; content written there reaches one harness and drifts from the canonical file.
 `
+}
+
+/** How one harness's scope reads, for its generated reference page. */
+function scopeRows(scope: HarnessScope): string {
+	const bridge = scope.instructionBridge
+	const mcp = scope.mcpConfig
+	return [
+		`| detection directory | \`${scope.detect}\` |`,
+		`| skills projection | ${scope.skillsDirectory ? `\`${scope.skillsDirectory}\` — written by \`init\`` : 'none — reads `.agents/skills` natively'} |`,
+		`| instruction bridge | ${
+			bridge === undefined
+				? 'none'
+				: bridge.kind === 'import'
+					? `\`${bridge.path}\` — an import of \`AGENTS.md\``
+					: `\`${bridge.path}\` — \`AGENTS.md\` in the \`${bridge.key}\` entry`
+		} |`,
+		`| MCP configuration | ${mcp === undefined ? 'none' : `\`${mcp.path}\` — the \`${mcp.key}\` key, ${mcp.format}${mcp.shared ? ', shared with other settings' : ''}`} |`,
+	].join('\n')
+}
+
+/**
+ * One page per harness, generated from the registry rather than written by hand. These are the
+ * paths the detectors actually use, so a page written beside them would drift the first time a
+ * harness moved a file. Editorial judgment about a harness — what is contested, what not to
+ * generate — stays in the `init` skill's own reference pages, which these link to where one exists.
+ */
+function harnessPage(harness: Harness, hasInitReference: boolean): GeneratedDoc {
+	const deprecated =
+		harness.deprecated === undefined
+			? ''
+			: `\n> **Superseded by \`${harness.deprecated}\`.** The legacy paths still work, so a projection here keeps resolving and \`doctor\` reports the name as deprecated rather than broken. New repositories should enable \`${harness.deprecated}\`.\n`
+
+	const user =
+		harness.user === undefined
+			? '\nNo user-scope paths are primary-sourced for this harness, so `doctor` describes none.\n'
+			: `\n## User scope
+
+Described, never written: \`init\` and \`doctor\` both work inside a repository.
+
+| What | Path |
+| --- | --- |
+${scopeRows(harness.user)}
+`
+
+	const editorial = hasInitReference
+		? `\n## Judgment about this harness\n\nWhat to generate for it, what to leave alone, and which claims are contested: \`../../../init/references/harnesses/${harness.name}.md\`. That page is hand-written and is the one to read before writing anything for this harness.\n`
+		: ''
+
+	return {
+		path: `references/harnesses/${harness.name}.md`,
+		content: `${generatedSkillWarning}
+
+# ${harness.name}
+${deprecated}
+## Project scope
+
+Where \`doctor\` looks inside a repository.
+
+| What | Path |
+| --- | --- |
+${scopeRows(harness.project)}
+${user}${editorial}`,
+	}
+}
+
+/**
+ * The reference pages, split by finding family plus one per harness. `initReferences` names the
+ * harnesses the `init` skill has a hand-written page for; it is read off the filesystem by the
+ * generator rather than written down here, so a page added there is linked without a second edit.
+ */
+export function renderDoctorReferences(initReferences: ReadonlySet<string>): GeneratedDoc[] {
+	return [
+		{
+			path: 'references/bridges.md',
+			content: `${generatedSkillWarning}
+
+# Skills bridge findings
+
+${repairTable(bridgeRepairs)}
+
+Substitute the reported bridge path for \`<path>\`.
+
+## The Windows case
+
+The common failure is \`degraded\`. Creating a symlink on Windows needs a privilege most accounts do not have, and Git for Windows gates it separately with \`core.symlinks\`, which its installer leaves off. With \`core.symlinks=false\` git does not error — it writes the symlink out as a regular file whose contents are the target path. \`${initSkillInvocation} --copy --force\` rebuilds every bridge as a real directory on that machine; name one bridge to rebuild only that one.
+
+A copy is a snapshot rather than a live projection, and an agent that edits a skill through it writes into the copy instead of into \`.agents/skills\`. That is what the \`diverged\` findings catch.
+`,
+		},
+		{
+			path: 'references/instructions.md',
+			content: `${generatedSkillWarning}
+
+# Instruction bridge findings
+
+${repairTable(instructionRepairs)}
+
+\`unbridged\` is the one to read carefully. The file is there and looks fine, and it names \`AGENTS.md\` nowhere — a \`CLAUDE.md\` someone overwrote with real content, or a \`.gemini/settings.json\` another tool rewrote without \`AGENTS.md\` in \`context.fileName\`. Never fix it by replacing the file: the content that displaced the bridge may be the only copy of something.
+
+An instruction bridge is reported per file, so a monorepo gets one row per \`AGENTS.md\` in the tree. Each nested \`AGENTS.md\` needs its own stub — an import bridges the file beside it and nothing deeper.
+`,
+		},
+		{
+			path: 'references/configuration.md',
+			content: `${generatedSkillWarning}
+
+# Configuration findings
+
+The bridges resolve, and the configuration around them is still wrong: a superseded harness name, a git-ignored bridge, a local-override file nothing reads, a skill whose frontmatter makes every harness skip it. None of these is an \`init\` flag — \`init\` consolidates and creates, and will not correct a file the user already wrote. They go to the \`repair\` skill, which offers each correction with its before and after and writes only what is approved.
+
+${repairTable(configurationRepairs)}
+`,
+		},
+		{
+			path: 'references/mcp.md',
+			content: `${generatedSkillWarning}
+
+# MCP findings
+
+A repository may keep a **golden MCP server set** at \`${goldenSet}\` — one canonical entry per server, in the superset of fields the supported hosts accept, written by the user. Where it exists, \`doctor\` compares it against each harness's own MCP configuration and reports how the two have drifted. **No golden set means no MCP drift findings at all**, and a harness with no MCP file yet has nothing that could have drifted.
+
+Comparison is semantic. Six config keys across three file formats means no two of these files are ever byte-equal, so each side is parsed into one model and the models are compared. A field the golden set leaves unset is never a difference, however a harness fills it in: a host restating its own default and a user's deliberate edit are indistinguishable there, and treating both as changes is what makes a golden set accumulate noise.
+
+Each finding names a **locator**, not a file: \`.cursor/mcp.json#servers.linear.command\` is the server and field, and that is what you route on.
+
+${repairTable(mcpRepairs)}
+
+## Credentials
+
+The two secret findings are the ones to handle carefully.
+
+- **The report never contains the value.** It gives you the locator and stops. Read the value out of the file named in the locator, and do not repeat it into your reply, into a commit message, or into any other file. There is no truncated preview to work from because a truncated credential is a leaked credential in the same transcript.
+- **\`mcp-committed-secret\` is not \`mcp-literal-secret\` with worse wording.** The file is tracked, so the value is in the repository's history and every clone already has it. Moving it into an environment variable fixes the working tree and changes nothing about that. Rotate it at its issuer first.
+- **A reference passes.** \`\${LINEAR_TOKEN}\` and \`Bearer \${LINEAR_TOKEN}\` are the documented ways to write these fields and are never reported. The test is that shape, not how random the value looks.
+- **An unreadable golden set is reported by position only.** The parser's own message quotes the line it failed on, and in this file that line is the one holding the credential — so neither the message nor the offending line is ever carried into the report. Open the file at the reported line and column.
+`,
+		},
+		...harnessRegistry.map((harness) => harnessPage(harness, initReferences.has(harness.name))),
+	]
 }
