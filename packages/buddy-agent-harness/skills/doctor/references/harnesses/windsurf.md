@@ -16,3 +16,12 @@ Where `doctor` looks inside a repository.
 | MCP configuration | none |
 
 No user-scope paths are primary-sourced for this harness, so `doctor` describes none.
+
+## Configuration only this harness reads
+
+Reported by `doctor` so it can be converted; see `../nonstandard.md` for what each conversion is.
+
+| Path | Kind | Converts to |
+| --- | --- | --- |
+| `.windsurfrules` | instructions | `AGENTS.md`, with a generated bridge left behind |
+| `.windsurf/rules/` | rule | a skill, where the path scoping is incidental |

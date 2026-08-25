@@ -25,7 +25,7 @@ The command is read-only. It never repairs anything, so it is safe to run at any
 
 `instructions` lists every instruction bridge into `AGENTS.md`, with a `status` of `ok`, `missing`, `unbridged`, or `unreadable`. They are a separate section because nothing about them is shared: a different `kind`, a different status vocabulary, and a repair that is never a command.
 
-`findings` explains each problem and carries more than the two sections above: the configuration and MCP findings have no section of their own, because they are about files rather than about bridges. `help` carries each repair, one row per distinct repair, with two columns:
+`findings` explains each problem and carries more than the two sections above: the configuration, MCP, and non-standard findings have no section of their own, because they are about files rather than about bridges. `help` carries each repair, one row per distinct repair, with two columns:
 
 - `command` — a shell invocation that, run exactly as given, **completes** the repair.
 - `instruction` — the same repair in the imperative, always present and complete on its own.
@@ -50,6 +50,7 @@ Every `problem` name routes to exactly one page. Load the page for the finding i
 | `references/instructions.md` | any `instructions` row that is not `ok` |
 | `references/configuration.md` | a finding about the configuration around the bridges rather than a bridge |
 | `references/mcp.md` | any finding whose path is an MCP locator — **always** before acting on a credential finding |
+| `references/nonstandard.md` | a finding about configuration only one harness can read |
 | `references/harnesses/<name>.md` | the paths and files one named harness uses |
 
 ## Rules
