@@ -4,6 +4,7 @@ import { command, exitCodes, z } from 'clibuilder'
 import { binPath, parseFormat, writeResult } from '../command-output/command-output.ts'
 import { type ConfigurationFinding, diagnoseConfiguration } from '../diagnose-configuration/diagnose-configuration.ts'
 import { diagnoseMcp } from '../diagnose-mcp/diagnose-mcp.ts'
+import { diagnoseNonstandard } from '../diagnose-nonstandard/diagnose-nonstandard.ts'
 import { parseHarnesses } from '../harness-registry/harness-registry.ts'
 import { type DiagnoseResult, diagnoseBridges } from './diagnose-bridges.ts'
 import { commandInvocation, type DoctorProblem, type RepairAction } from './doctor-guidance.ts'
@@ -103,6 +104,7 @@ export const doctorCommand: cli.Command = command({
 			const configuration = [
 				...diagnoseConfiguration({ root, git, cli: commandInvocation }),
 				...diagnoseMcp({ root, git, cli: commandInvocation }),
+				...diagnoseNonstandard({ root, cli: commandInvocation }),
 			]
 			// Exit stays 0 even with findings: the diagnosis succeeded, and a non-zero code reads to an
 			// agent as "this command is broken, try something else".

@@ -1,5 +1,6 @@
 import type { Harness, HarnessScope } from '../harness-registry/harness-registry.ts'
 import { harnessRegistry } from '../harness-registry/harness-registry.ts'
+import type { NonstandardKind } from '../harness-registry/nonstandard-artifact.ts'
 import { type Locator, locatorText } from './locator.ts'
 
 /**
@@ -52,14 +53,29 @@ export type McpProblem =
 	| 'mcp-literal-secret'
 	| 'mcp-committed-secret'
 
+/**
+ * Configuration that works, for exactly one harness. Not wrong and not missing — the two states the
+ * other families cover — which is why it is a family of its own: every other finding says something
+ * is broken, and these say something reaches less far than the repository meant.
+ *
+ * Each one names the canonical form it converts to, because surfacing without a destination is just
+ * a list of files somebody already knows about.
+ */
+export type NonstandardProblem =
+	| 'nonstandard-instructions'
+	| 'nonstandard-rule'
+	| 'nonstandard-command'
+	| 'nonstandard-skill'
+	| 'nonstandard-subagent'
+
 export type InstructionProblem =
 	| 'no-instructions'
 	| 'instructions-missing'
 	| 'instructions-unbridged'
 	| 'instructions-unreadable'
 
-/** Everything `doctor` can report against, across all three sections. */
-export type DoctorProblem = BridgeProblem | InstructionProblem | ConfigurationFault | McpProblem
+/** Everything `doctor` can report against, across every section. */
+export type DoctorProblem = BridgeProblem | InstructionProblem | ConfigurationFault | McpProblem | NonstandardProblem
 
 /** Alias kept for callers that name the whole set rather than one section. */
 export type ConfigurationProblem = DoctorProblem
@@ -447,7 +463,64 @@ const mcpTable: Record<McpProblem, RepairRow> = {
 const mcpRepairs: readonly Repair[] = repairsOf(mcpTable)
 
 /**
- * All four sections, in the order `doctor` reports them. Annotated over the whole union rather than
+ * Configuration only one harness can read. Every repair here is a **conversion**, and every one of
+ * them is the `init` skill's: consolidating what a repository already has is exactly its remit, and
+ * the content is the user's, so it is offered and never written on sight. `repair` owns none of
+ * them — it corrects configuration that is wrong, and none of this is wrong.
+ *
+ * `nonstandard-subagent` is the exception that names no owner. There is no cross-harness subagent
+ * format to convert to, so the honest report is that the gap exists, not a repair that cannot run.
+ */
+const nonstandardTable: Record<NonstandardProblem, RepairRow> = {
+	'nonstandard-instructions': {
+		detail: 'instruction content only one harness reads — AGENTS.md carries the same prose to all of them',
+		repair: ({ file }) => ({
+			command: '',
+			instruction: `consolidate ${file} into AGENTS.md and leave a generated bridge in its place — \`${initSkillInvocation}\` offers the consolidation`,
+		}),
+		skillRepair: ({ file }) => `hand ${file} to \`${initSkillInvocation}\`, which consolidates it into AGENTS.md`,
+	},
+	'nonstandard-rule': {
+		detail: 'a path-scoped rule only one harness reads — a skill reaches every harness where the scoping is incidental',
+		repair: ({ file }) => ({
+			command: '',
+			instruction: `convert ${file} into a skill under .agents/skills where its guidance is not tied to the paths it names — \`${initSkillInvocation}\` offers the conversion; keep it where the path scoping is the point`,
+		}),
+		skillRepair: ({ file }) =>
+			`hand ${file} to \`${initSkillInvocation}\` to convert into a skill, unless the path scoping is load-bearing`,
+	},
+	'nonstandard-command': {
+		detail: 'a harness command file — a skill is the portable form, and this harness reads skills too',
+		repair: ({ file }) => ({
+			command: '',
+			instruction: `move ${file} to .agents/skills/<name>/SKILL.md — \`${initSkillInvocation}\` offers the move`,
+		}),
+		skillRepair: ({ file }) => `hand ${file} to \`${initSkillInvocation}\`, which moves it to .agents/skills`,
+	},
+	'nonstandard-skill': {
+		detail: 'a skill under a harness directory rather than the canonical one, where only that harness finds it',
+		repair: ({ file }) => ({
+			command: '',
+			instruction: `move ${file} to .agents/skills and project it back where the harness needs one — \`${initSkillInvocation}\` offers the move`,
+		}),
+		skillRepair: ({ file }) => `hand ${file} to \`${initSkillInvocation}\`, which moves it to .agents/skills`,
+	},
+	'nonstandard-subagent': {
+		detail:
+			'a subagent definition with no cross-harness form — nothing outside this harness can read it, and no canonical form exists yet',
+		repair: ({ file }) => ({
+			command: '',
+			instruction: `leave ${file} where it is and record that it reaches one harness only — no portable form exists to convert it to`,
+		}),
+		skillRepair: ({ file }) =>
+			`leave ${file} in place — no portable form exists yet, so this is work for a person rather than a skill`,
+	},
+}
+
+export const nonstandardRepairs: readonly Repair[] = repairsOf(nonstandardTable)
+
+/**
+ * All five sections, in the order `doctor` reports them. Annotated over the whole union rather than
  * inferred, so a problem added to any of the four fails here too if its section was left alone.
  */
 const doctorTable: Record<DoctorProblem, RepairRow> = {
@@ -455,6 +528,7 @@ const doctorTable: Record<DoctorProblem, RepairRow> = {
 	...instructionTable,
 	...configurationTable,
 	...mcpTable,
+	...nonstandardTable,
 }
 
 export const doctorRepairs: readonly Repair[] = repairsOf(doctorTable)
@@ -529,7 +603,7 @@ The command is read-only. It never repairs anything, so it is safe to run at any
 
 \`instructions\` lists every instruction bridge into \`AGENTS.md\`, with a \`status\` of \`ok\`, \`missing\`, \`unbridged\`, or \`unreadable\`. They are a separate section because nothing about them is shared: a different \`kind\`, a different status vocabulary, and a repair that is never a command.
 
-\`findings\` explains each problem and carries more than the two sections above: the configuration and MCP findings have no section of their own, because they are about files rather than about bridges. \`help\` carries each repair, one row per distinct repair, with two columns:
+\`findings\` explains each problem and carries more than the two sections above: the configuration, MCP, and non-standard findings have no section of their own, because they are about files rather than about bridges. \`help\` carries each repair, one row per distinct repair, with two columns:
 
 - \`command\` — a shell invocation that, run exactly as given, **completes** the repair.
 - \`instruction\` — the same repair in the imperative, always present and complete on its own.
@@ -554,6 +628,7 @@ Every \`problem\` name routes to exactly one page. Load the page for the finding
 | \`references/instructions.md\` | any \`instructions\` row that is not \`ok\` |
 | \`references/configuration.md\` | a finding about the configuration around the bridges rather than a bridge |
 | \`references/mcp.md\` | any finding whose path is an MCP locator — **always** before acting on a credential finding |
+| \`references/nonstandard.md\` | a finding about configuration only one harness can read |
 | \`references/harnesses/<name>.md\` | the paths and files one named harness uses |
 
 ## Rules
@@ -564,6 +639,22 @@ Every \`problem\` name routes to exactly one page. Load the page for the finding
 - Never repeat a value from a file an \`mcp-literal-secret\` or \`mcp-committed-secret\` finding points at. The report withheld it on purpose, and quoting it back puts it in the transcript anyway.
 - Write instructions in \`AGENTS.md\`, never in \`CLAUDE.md\`. A bridge file holds the import and any harness-specific notes; content written there reaches one harness and drifts from the canonical file.
 `
+}
+
+/** Where each kind of harness-exclusive artifact is meant to end up, for the per-harness tables. */
+function conversionOf(kind: NonstandardKind): string {
+	switch (kind) {
+		case 'instructions':
+			return '`AGENTS.md`, with a generated bridge left behind'
+		case 'rule':
+			return 'a skill, where the path scoping is incidental'
+		case 'command':
+			return '`.agents/skills/<name>/SKILL.md`'
+		case 'skill':
+			return '`.agents/skills`, projected back if needed'
+		case 'subagent':
+			return 'nothing yet — no cross-harness format exists'
+	}
 }
 
 /** How one harness's scope reads, for its generated reference page. */
@@ -608,6 +699,24 @@ Described, never written: \`init\` and \`doctor\` both work inside a repository.
 ${scopeRows(harness.user)}
 `
 
+	const artifacts = harness.project.nonstandard ?? []
+	const nonstandard =
+		artifacts.length === 0
+			? ''
+			: `\n## Configuration only this harness reads
+
+Reported by \`doctor\` so it can be converted; see \`../nonstandard.md\` for what each conversion is.
+
+| Path | Kind | Converts to |
+| --- | --- | --- |
+${artifacts
+	.map(
+		(artifact) =>
+			`| \`${artifact.path}${artifact.shape === 'directory' ? '/' : ''}\` | ${artifact.kind} | ${conversionOf(artifact.kind)} |`,
+	)
+	.join('\n')}
+`
+
 	const editorial = hasInitReference
 		? `\n## Judgment about this harness\n\nWhat to generate for it, what to leave alone, and which claims are contested: \`../../../init/references/harnesses/${harness.name}.md\`. That page is hand-written and is the one to read before writing anything for this harness.\n`
 		: ''
@@ -625,7 +734,7 @@ Where \`doctor\` looks inside a repository.
 | What | Path |
 | --- | --- |
 ${scopeRows(harness.project)}
-${user}${editorial}`,
+${user}${nonstandard}${editorial}`,
 	}
 }
 
@@ -699,6 +808,31 @@ The two secret findings are the ones to handle carefully.
 - **\`mcp-committed-secret\` is not \`mcp-literal-secret\` with worse wording.** The file is tracked, so the value is in the repository's history and every clone already has it. Moving it into an environment variable fixes the working tree and changes nothing about that. Rotate it at its issuer first.
 - **A reference passes.** \`\${LINEAR_TOKEN}\` and \`Bearer \${LINEAR_TOKEN}\` are the documented ways to write these fields and are never reported. The test is that shape, not how random the value looks.
 - **An unreadable golden set is reported by position only.** The parser's own message quotes the line it failed on, and in this file that line is the one holding the credential — so neither the message nor the offending line is ever carried into the report. Open the file at the reported line and column.
+`,
+		},
+		{
+			path: 'references/nonstandard.md',
+			content: `${generatedSkillWarning}
+
+# Non-standard configuration
+
+Configuration only one harness can read. Nothing here is broken — a Cursor rule does exactly what it says — which is why none of it is in the other four families. What these findings report is **reach**: guidance that lands in one tool and nowhere else, where nobody finds out except by noticing an agent behave differently somewhere else.
+
+Each finding names the canonical form it converts to. The direction is always the same: move the content to a canonical source, and let the harness file be **generated** from it rather than authored beside it. A repository with none of these is the target; it is a direction to walk, not a gate to pass.
+
+${repairTable(nonstandardRepairs)}
+
+## Two of them need judgment, not a move
+
+**A path-scoped rule may have nowhere to go.** \`AGENTS.md\` scopes by directory nesting and a skill is loaded on relevance, so neither reproduces "these globs and no others". Where the scoping is incidental — a rule that happens to name paths but says something generally true — a skill carries it everywhere. Where the scoping is the point, leave it, and the finding stays as the record of why.
+
+**A subagent has no portable form at all.** No cross-harness format exists, so the finding is the gap rather than a repair. It names no skill, and it is work for a person if it is work at all.
+
+## What is not reported
+
+A harness directory that is a **symlink** is a projection someone already made, not configuration authored here. An artifact is reported whether or not its harness is enabled: a \`.cursorrules\` in a repository nobody opens in Cursor is still instruction content \`AGENTS.md\` does not carry, and filtering by the enabled set would hide exactly the drift worth converting.
+
+Hooks, LSP settings, and output styles are not covered yet. Their event names and shapes differ by harness with no safe projection, and half-reporting them would be worse than the silence.
 `,
 		},
 		...harnessRegistry.map((harness) => harnessPage(harness, initReferences.has(harness.name))),

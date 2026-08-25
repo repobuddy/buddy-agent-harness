@@ -11,6 +11,7 @@ import {
 	initSkillInvocation,
 	instructionRepairs,
 	launcherFor,
+	nonstandardRepairs,
 	type RepairRow,
 	renderDoctorReferences,
 	renderDoctorSkill,
@@ -307,11 +308,11 @@ describe('the detect-and-repair seam', () => {
 		}
 	})
 
-	// The families must partition the table. When a fifth arrives this fails, rather than letting an
+	// The families must partition the table. When a sixth arrives this fails, rather than letting an
 	// exclusion-derived family quietly absorb it and assert the wrong owner for every one of its
 	// problems — which is exactly what happened when the MCP family landed.
 	it('accounts for every problem in exactly one family', () => {
-		const families = [bridgeRepairs, instructionRepairs, configurationRepairs, mcpRepairs]
+		const families = [bridgeRepairs, instructionRepairs, configurationRepairs, mcpRepairs, nonstandardRepairs]
 		const counted = families.flatMap((family) => family.map((entry) => entry.problem))
 
 		expect(new Set(counted).size).toBe(counted.length)
@@ -412,8 +413,9 @@ it('gives two findings of one problem at two paths their own help entry each', (
 })
 
 /**
- * The ten repairs `init` owns: every instruction bridge, and every skills bridge a rebuild fixes.
- * The other thirteen name no owner and are work for a person.
+ * The repairs `init` owns: every instruction bridge, every skills bridge a rebuild fixes, and every
+ * non-standard artifact with a canonical form to convert to. The rest name no owner and are work
+ * for a person — including `nonstandard-subagent`, which has no portable form to convert into.
  */
 const initOwned: DoctorProblem[] = [
 	'no-canonical',
@@ -426,6 +428,10 @@ const initOwned: DoctorProblem[] = [
 	'instructions-missing',
 	'instructions-unbridged',
 	'instructions-unreadable',
+	'nonstandard-instructions',
+	'nonstandard-rule',
+	'nonstandard-command',
+	'nonstandard-skill',
 ]
 
 // The `repair` skill decides who to hand a finding to by asking whether its repair names `init` at

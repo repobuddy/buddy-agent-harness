@@ -46,6 +46,7 @@ This project mirrors its source surfaces so a contributor can find a spec beside
 | [`cli/instruction-bridges/`](./cli/instruction-bridges/README.md) | Report whether every enabled harness can still read `AGENTS.md` |
 | [`cli/configuration-diagnosis/`](./cli/configuration-diagnosis/README.md) | Report agent configuration that is present and wrong |
 | [`cli/mcp-diagnosis/`](./cli/mcp-diagnosis/README.md) | Report drift between a golden MCP server set and the harness copies of it |
+| [`cli/nonstandard-configuration/`](./cli/nonstandard-configuration/README.md) | Report agent configuration that only one harness can read |
 | [`cli/diagnosis-report/`](./cli/diagnosis-report/README.md) | The one output shape every finding family is reported through |
 | [`cli/entry-point/`](./cli/entry-point/README.md) | Reach a command without going through the process |
 | [`cli/command-output/`](./cli/command-output/README.md) | How a command's result becomes the bytes on stdout |
