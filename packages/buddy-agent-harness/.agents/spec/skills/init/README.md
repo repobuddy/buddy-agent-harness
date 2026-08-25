@@ -23,7 +23,9 @@ Two properties are why it is a node rather than a paragraph inside the command's
 
 - **canonical configuration** — the root `AGENTS.md` and the `.agents/` tree; the one source every harness is pointed at.
 - **consolidate** — move instruction content a person wrote into `AGENTS.md`, preserving their wording, and leave a pointer behind only where that was approved.
-- **canonical-only** — an artifact with no cross-harness format to convert into, or none that is lossless: subagents, rules, hooks, output styles, MCP server definitions. Reported, never converted.
+- **canonical-only** — an artifact with no cross-harness format to convert into, or none that is lossless: subagents, hooks, output styles, MCP server definitions. Reported, never converted.
+- **convertible with judgment** — a rule only one harness reads. A skill carries it everywhere where the paths it names are incidental to what it says, and nothing reproduces it where the scoping is the point. Which of the two a given rule is cannot be read off the file, so it is listed with its candidate and converted only on approval.
+- **candidate** — the canonical form an artifact would convert to, named alongside it when it is listed. An artifact with none is reported as having none, so a list of them is not read as a queue of pending work.
 - **bridge** — what a harness that cannot read the canonical source is given instead: a skills projection (the command's write) or an instruction bridge — a `CLAUDE.md` importing `AGENTS.md`, or an `AGENTS.md` entry in `.gemini/settings.json` (this skill's write).
 - **material** — content that stays true whether or not this tool ever ran. Material content is the user's: derived, approved, and never invented.
 - **non-material region** — the marked block in `AGENTS.md` describing the bridges this run created. Written and re-written unasked, because every line in it stops being true when the tool's output is removed.
@@ -98,6 +100,8 @@ flowchart TD
   B1 -->|yes| C[Present the plan: what is created, what moves, what is left alone and why]
   B1 -->|no| B2[Plan a heading and one line stating what the repository is]
   B2 --> C
+  B --> B3[List each artifact only one harness reads, with the candidate it converts to]
+  B3 --> C
   C --> D{Would the step replace bytes a person wrote?}
   D -->|yes| E[Ask for that step]
   D -->|no| F[Write it and report it]
@@ -106,7 +110,8 @@ flowchart TD
   G -->|yes| F
   H --> I[Scaffold the baseline and move the approved skills and commands]
   F --> I
-  I --> J[Append the approved instruction content to AGENTS.md]
+  I --> I1[Apply the approved conversions, and nothing else from the list]
+  I1 --> J[Append the approved instruction content to AGENTS.md]
   J --> K[Run the init command to write the skills projections]
   K --> L{A conflict reported?}
   L -->|yes| M[Resolve the named target and retry]
@@ -119,8 +124,10 @@ flowchart TD
   Q --> Q1{Does the repository have a formatter of its own?}
   Q1 -->|yes| Q2[Run it over the written files and say so]
   Q1 -->|no| R
-  Q2 --> R[Report what was created, consolidated, linked, and left canonical-only, then offer enhance once]
+  Q2 --> R[Report what was created, consolidated, linked, and still reaching one harness, then offer enhance once]
 ```
+
+**Conversion is offered per artifact, never for the set.** Two rules can be in the list for different reasons — one whose paths are incidental, one whose scoping is the whole point — so a single approval would carry a file the owner never looked at. The ask is also never for a conversion that would **narrow** who reads the content: consolidating into `AGENTS.md` for a harness that reads it in one mode only is offered together with the generated copy that keeps the other modes working, or not at all. The owner is agreeing to a trade, and cannot agree to one nobody described.
 
 The survey and the classification write nothing, which is what makes the plan at `C` worth presenting: it is composed from what is on disk rather than from what has already happened to it. The branch at `D` is per step rather than per run — the approval is asked for *any* step that replaces what a person wrote — so one run can create a directory unasked, replace a file on approval, and leave a third alone because the owner declined it.
 
@@ -135,7 +142,9 @@ The graph rejoins at `I` after a decline, and that edge is the shipped skill's *
 | A | a repository holding harness artifacts | `writes nothing while surveying the repository` |
 | B | a `CLAUDE.md` whose whole body is the import | `skips a bridge a previous run already wrote` |
 | B | a root `AGENTS.md` holding nothing but a heading | `treats a heading-only AGENTS.md as absent and derives against it` |
-| B | a `.claude/agents/` directory and a `.cursor/rules/` directory | `reports a subagent and a rule directory rather than converting either` |
+| B | a `.claude/agents/` directory and a `.cursor/rules/` directory | `lists every artifact only one harness reads, and converts none unasked` |
+| C | a `.cursorrules` for a harness that reads `AGENTS.md` in one mode only | `offers no consolidation that would leave fewer readers than before` |
+| D→E | two artifacts only one harness reads, each with a different candidate | `asks about each artifact separately rather than about the set` |
 | B | an MCP server defined in a harness settings file | `refuses an MCP conversion the mapping cannot carry losslessly` |
 | B | a nested `AGENTS.md` under a package | `leaves a nested AGENTS.md where it is rather than merging it upward` |
 | C | frontmatter derived for a skill that has none | `shows the derived name and description verbatim before writing either` |
