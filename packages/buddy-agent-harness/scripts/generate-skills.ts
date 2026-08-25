@@ -4,6 +4,8 @@
  * Three jobs, all driven by `package.json`'s version:
  *   - `skills/<name>/scripts/<name>.mjs` is the launcher each skill runs in preference to `npx`.
  *   - `skills/doctor/SKILL.md` is written whole from the guidance the `doctor` command prints.
+ *   - `skills/doctor/references/**` is written whole from the same guidance and the harness registry,
+ *     so an agent loads one finding family rather than all of them.
  *   - `skills/init/SKILL.md` is hand-written prose, so only its `npx` fallback is rewritten.
  *
  * The fallback is pinned to the caret range of the version that shipped the skill. Unpinned, a
@@ -13,11 +15,12 @@
  *   pnpm skill:gen          rewrite the committed skills
  *   pnpm skill:gen --check  fail when a committed skill is stale (the CI step)
  */
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import {
 	launcherFor,
+	renderDoctorReferences,
 	renderDoctorSkill,
 	renderSkillLauncher,
 	skillInvocation,
@@ -59,6 +62,27 @@ for (const { skill, subcommand } of launchers) {
 }
 
 targets.push({ path: skillPath('doctor', 'SKILL.md'), expected: renderDoctorSkill(version) })
+
+/**
+ * Which harnesses the `init` skill has a hand-written page for, read off the filesystem rather than
+ * listed here: a page added there is then linked from `doctor`'s own harness page with no second
+ * edit, and a list written down here could only go stale against the directory it describes.
+ */
+function initHarnessReferences(): Set<string> {
+	try {
+		return new Set(
+			readdirSync(skillPath('init', 'references', 'harnesses'))
+				.filter((entry) => entry.endsWith('.md'))
+				.map((entry) => entry.slice(0, -'.md'.length)),
+		)
+	} catch {
+		return new Set()
+	}
+}
+
+for (const doc of renderDoctorReferences(initHarnessReferences())) {
+	targets.push({ path: skillPath('doctor', ...doc.path.split('/')), expected: doc.content })
+}
 
 // Hand-written prose. Only the pinned fallback is generated, so an edit to the body survives.
 const initSkill = read(skillPath('init', 'SKILL.md'))

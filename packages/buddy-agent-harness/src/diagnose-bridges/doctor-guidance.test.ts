@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process'
-import { globSync, readFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
+import { existsSync, globSync, readdirSync, readFileSync } from 'node:fs'
+import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import {
@@ -12,6 +12,7 @@ import {
 	instructionRepairs,
 	launcherFor,
 	type RepairRow,
+	renderDoctorReferences,
 	renderDoctorSkill,
 	renderSkillLauncher,
 	repairFor,
@@ -93,12 +94,18 @@ describe('doctor guidance', () => {
 		}
 	})
 
+	// Across the whole shipped skill, not just SKILL.md: the tables moved into the reference pages,
+	// and a repair rendered into no page at all is a finding the reader can never route.
 	it('renders every repair into the skill, with the path parameterized', () => {
-		const skill = renderDoctorSkill(version)
+		const pages = [renderDoctorSkill(version), ...renderDoctorReferences(initHarnessReferences()).map((d) => d.content)]
 
 		for (const entry of doctorRepairs) {
-			expect(skill).toContain(entry.detail)
-			expect(skill).toContain(entry.skillRepair({ file: '<path>' }).replaceAll('|', '\\|'))
+			const detail = pages.filter((page) => page.includes(entry.detail))
+			const repair = pages.filter((page) => page.includes(entry.skillRepair({ file: '<path>' }).replaceAll('|', '\\|')))
+			// Exactly one page, not at least one: a repair on two pages is two homes for one fact, and
+			// the reader who loads the other one acts on the copy that was not updated.
+			expect(detail, `detail for ${entry.problem}`).toHaveLength(1)
+			expect(repair.length, `repair for ${entry.problem}`).toBeGreaterThan(0)
 		}
 	})
 
@@ -125,7 +132,48 @@ describe('doctor guidance', () => {
 	it('matches the committed skill', () => {
 		expect(readFileSync(join(packageRoot, 'skills', 'doctor', 'SKILL.md'), 'utf8')).toBe(renderDoctorSkill(version))
 	})
+
+	it('matches every committed reference page', () => {
+		const docs = renderDoctorReferences(initHarnessReferences())
+		expect(docs.length).toBeGreaterThan(0)
+		for (const doc of docs) {
+			expect(readFileSync(join(packageRoot, 'skills', 'doctor', ...doc.path.split('/')), 'utf8')).toBe(doc.content)
+		}
+	})
+
+	// The split is only an improvement if the pointers land. A page named in SKILL.md that does not
+	// exist costs the reader the whole lookup and teaches them to stop following the table.
+	it('ships every reference page its own pointer table names', () => {
+		for (const [, path] of renderDoctorSkill(version).matchAll(/`(references\/[a-z-]+\.md)`/g)) {
+			expect(existsSync(join(packageRoot, 'skills', 'doctor', ...(path as string).split('/')))).toBe(true)
+		}
+	})
+
+	// A harness page hands editorial judgment to the `init` skill by relative path. Resolved here
+	// rather than eyeballed: the depth is three levels up and reads as plausible at any of them.
+	it('resolves every cross-reference into the init skill', () => {
+		const harnessPages = renderDoctorReferences(initHarnessReferences()).filter((doc) =>
+			doc.path.startsWith('references/harnesses/'),
+		)
+		const links = harnessPages.flatMap((doc) =>
+			[...doc.content.matchAll(/`((?:\.\.\/)+[^`]+\.md)`/g)].map((match) => ({ doc, target: match[1] as string })),
+		)
+		expect(links.length).toBeGreaterThan(0)
+		for (const { doc, target } of links) {
+			const from = dirname(join(packageRoot, 'skills', 'doctor', ...doc.path.split('/')))
+			expect(existsSync(resolve(from, target))).toBe(true)
+		}
+	})
 })
+
+/** The same filesystem read the generator does, so the test is not a second copy of the list. */
+function initHarnessReferences(): Set<string> {
+	return new Set(
+		readdirSync(join(packageRoot, 'skills', 'init', 'references', 'harnesses'))
+			.filter((entry) => entry.endsWith('.md'))
+			.map((entry) => entry.slice(0, -'.md'.length)),
+	)
+}
 
 describe('skill launcher', () => {
 	// `repair` runs `doctor` to find what it repairs, so its launcher is named for the subcommand
