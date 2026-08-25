@@ -584,7 +584,7 @@ describe('diagnoseMcp', () => {
 			expectNoLeak(root, 'dv_8a2e37fb')
 		})
 
-		it('never carries an unreadable file’s content into the finding', () => {
+		it("never carries an unreadable file's content into the finding", () => {
 			const root = repository()
 			write(root, cursor, '{ "mcpServers": { "linear": { "env": { "API_KEY": ur_6c50f2b8 } } }')
 

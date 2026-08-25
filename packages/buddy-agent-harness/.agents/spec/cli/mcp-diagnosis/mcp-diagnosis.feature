@@ -293,7 +293,7 @@ Feature: Report drift between a golden MCP server set and the harness copies of 
     And no field of anything the command emits contains that literal
 
   @behavior
-  Scenario: never carries an unreadable file’s content into the finding
+  Scenario: never carries an unreadable file's content into the finding
     Given a `.cursor/mcp.json` that is not valid JSON on the line assigning a credential
     When the command diagnoses MCP configuration
     Then it reports an `mcp-target-unreadable` fault
