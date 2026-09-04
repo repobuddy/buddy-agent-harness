@@ -1,6 +1,6 @@
 {
 	"name": "buddy-agent-harness",
-	"version": "0.6.0",
+	"version": "0.7.0",
 	"description": "Initialize standards-based agent configuration across agent harnesses",
 	"keywords": [
 		"repobuddy",
