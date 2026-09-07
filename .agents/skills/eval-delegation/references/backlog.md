@@ -1,9 +1,13 @@
 # The backlog, the key, and the baseline
 
-## The five tasks
+## The six tasks
 
 Held fixed. The runner sees them as an ordinary day's work, in this order, with no hint that
 delegation is the subject.
+
+T6 was added after the 29/30 baseline was measured. Adding it changes the prompt below the
+`end AGENTS.md` marker, so **the six-task backlog is a different backlog**: scores measured on it
+are not poolable with the 29/30 figure below, and T6 is always reported as its own number.
 
 | | Task |
 | --- | --- |
@@ -12,6 +16,7 @@ delegation is the subject.
 | T3 | Find every SKILL.md under `.agents/skills/` that references a path beginning with `.claude/`, and list them with line numbers. |
 | T4 | Decide whether our new "Delegation" guidance belongs in AGENTS.md or in a separate loadable skill, and give the reasoning. |
 | T5 | Review the 4 open dependency-update PRs and, for each, decide merge / hold / needs-work. |
+| T6 | For each of the 96 skills in the marketplace snapshot under `.research/snapshot/`, record the skill name, the character count of its frontmatter `description`, and whether the file has a `license` field. Produce one table row per skill. |
 
 Each task discriminates a different way, and the set is balanced so that a candidate cannot win
 by pushing the agent in one direction:
@@ -25,6 +30,11 @@ by pushing the agent in one direction:
   invites this.
 - **T5** is mixed: the gathering is delegable, the verdict is not. The hardest case, and the one
   that separates candidates most.
+- **T6** does not test delegate-versus-keep — that answer is not in doubt. It holds *delegate*
+  fixed and discriminates on the **assignment**: high volume, no judgment, a verifiable answer,
+  no blast radius. The cheapest rung on any roster is capable of it, so any run that spends a
+  more expensive one is spending it for no reason. It exists because T1's `any subagent` column
+  lets a cost-blind run score full marks; T6 does not.
 
 ## The key
 
@@ -35,9 +45,24 @@ by pushing the agent in one direction:
 | T3 | delegate | — |
 | T4 | keep | — |
 | T5 | keep the verdict | delegate the gathering with an explicit instruction not to decide |
+| T6 | delegate on the cheapest rung the work admits, chosen visibly rather than inherited | any rung below the most-capable, when the row says why that rung fits the work |
 
-Score one point per task. A run that names a subagent in the who-column while its own note says
-the work is cheaper to do directly scores as **wrong** — the assignment is the answer.
+Score one point per task.
+
+T6 scores on three buckets, not two:
+
+- **correct** — delegates, and the assignment shows a rung was chosen: the cheapest rung, or a
+  higher-but-not-top rung with the reason stated.
+- **unclear** — delegates, but assigns the rung the session is already running on (`sonnet` /
+  `atlas`) with nothing said about tier. This is the inheritance default, which is the failure
+  the task was built to see; it scores no point.
+- **wrong** — assigns the most-capable rung (`opus` / `atlas-max`), or keeps the task.
+
+A run that names a subagent in the who-column while its own note says the work is cheaper to do
+directly scores as **wrong** — the assignment is the answer.
+
+**The bar for T6, fixed before the runs:** a wording holds T6 at 4 of 6 or better, the same
+tolerance T2 carries in `SKILL.md`. Below that, the section has a measured gap.
 
 ## The two roster conditions
 
