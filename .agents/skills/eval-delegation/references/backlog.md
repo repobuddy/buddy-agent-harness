@@ -84,7 +84,60 @@ the clean backlog above, at six runs per cell:
 | --- | --- | --- | --- | --- | --- |
 | shipped wording | 6/6 | 5/6 | 6/6 | 6/6 | 6/6 |
 
-For contrast, measured on an earlier backlog whose T2 was a typo fix rather than a `.gitignore`
+## Baseline — the shipped wording on the six-task backlog
+
+A separate backlog from the one above. **Never pool these figures with the 29/30.** Six runs,
+three per roster, all on the same model, the shipped section built through
+`build-prompts.mjs` with only the T6 line differing below the `end AGENTS.md` marker.
+
+T6, reported on its own as the key requires:
+
+| | T6 |
+| --- | --- |
+| shipped wording | **6/6 correct** |
+
+Every run delegated T6 to the cheapest rung on its roster — `haiku` three times on the current
+roster, `atlas-mini` three times on the drifted one. No run inherited the session's own rung, and
+no run spent the most-capable one. The bar was 4 of 6, fixed before the runs. The shipped wording
+holds T6.
+
+The rest of the six-task backlog, for the record and not comparable to the 29/30:
+
+| | T1 | T2 | T3 | T4 | T5 |
+| --- | --- | --- | --- | --- | --- |
+| shipped wording | 5/6 | 6/6 | 6/6 | 6/6 | 5/6 |
+
+Both misses are the same run, on the current roster: it briefed T1 without naming any
+verification, and delegated T5's merge/hold/needs-work verdict itself rather than the gathering.
+One run either way is noise at this sample size.
+
+### What T6 measured that T1 could not
+
+T1 and T6 are both bulk mechanical, and the runs assigned them to **different rungs**:
+
+| | blast radius | rung chosen |
+| --- | --- | --- |
+| T1 — 61-call-site rename | wide | the session's own mid rung, 5 of 6 |
+| T6 — 96-file read-only sweep | none | the cheapest rung, 6 of 6 |
+
+That is rung-to-risk calibration, and it is what `the cheaper the subagent, the less should break
+if it gets the answer wrong` asks for. The line reads as passive risk-bounding, but the runs use
+it as a tier rule in both directions. The reported failure — everything inheriting the parent's
+model — did not reproduce.
+
+### The thin spot T6 exposed anyway
+
+Three of six runs delegated T6 correctly and still reported the tier rule as missing in their
+**unclear** line: no rule for choosing among the rungs, and no rule for sizing a subagent against
+risk. Both drifted runs that named it assigned correctly regardless.
+
+This is the T5 pattern: a clause the runs resolve in practice while reporting they could not
+apply it. It is a known thin spot, recorded rather than chased. Closing it costs words in a
+section loaded on every session, and the behavior it would buy is already at 6 of 6.
+
+## Earlier contrasts
+
+Measured on an earlier backlog whose T2 was a typo fix rather than a `.gitignore`
 line — **report these separately, never pooled with the above**:
 
 | Candidate | Score | Notes |
