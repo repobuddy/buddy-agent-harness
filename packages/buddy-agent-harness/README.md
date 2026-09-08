@@ -18,7 +18,7 @@ In Claude Code, add the [cyberplace](https://github.com/cyberuni/cyberplace) mar
 
 ## CLI
 
-`init` runs behind the `init` skill, which sorts the configuration you already wrote before the command links anything. Install the package alongside `repobuddy` to mount both commands on `buddy`, as `buddy agent-harness doctor` and `buddy agent-harness init`.
+`init` runs behind the `init` skill, which sorts the configuration you already wrote before the command links anything. Install the package alongside `repobuddy` to mount every command on `buddy`, as `buddy agent-harness doctor`, `buddy agent-harness init`, and `buddy agent-harness dep-plugins`.
 
 The repository root's `AGENTS.md` and `.agents/` tree are canonical: `.agents/AGENTS.md` holds shared behavior, `.agents/skills/**/SKILL.md` holds capabilities, and separately named files hold tool settings. The active harness is enabled by default; explicit user preferences add others. The command preserves user-authored configuration and projects only supported mappings; it records nothing on disk.
 
@@ -29,5 +29,13 @@ The repository root's `AGENTS.md` and `.agents/` tree are canonical: `.agents/AG
 ```sh
 npx -y buddy-agent-harness doctor
 ```
+
+`dep-plugins` derives a marketplace catalog for plugins shipped by this repository's own dependencies, so a harness can install them — reaching a whole plugin (agents, commands, hooks, MCP servers) rather than only its skills:
+
+```sh
+npx -y buddy-agent-harness dep-plugins
+```
+
+It writes the catalog, then reports what each detected harness needs to match it and the command that does it. It never touches harness state itself. Claude Code and Codex install from this catalog; Copilot CLI rejects an npm marketplace source, and Cursor exposes no plugin subcommand from a terminal.
 
 It never repairs anything and always exits `0`; each finding names the `init` command that fixes it.
