@@ -77,7 +77,7 @@ Pin it. An unpinned `npx` resolves whatever the registry calls latest, while the
 
 Regenerate the pin at release, or it rots. A skill generated at one version keeps naming that version until something rewrites it, and the fallback then documents a CLI nobody ships any more.
 
-For the runner words themselves, and what each costs per call, see [npx and upx](https://cyberuni.github.io/universal-plugin/concepts/npx-and-upx/) in the universal-plugin documentation.
+For the runner words themselves, and what each costs per call, see [`@repobuddy/upx`](https://github.com/repobuddy/upx) for the local-first runner and [npx and upx](https://cyberuni.github.io/universal-plugin/concepts/npx-and-upx/) for picking between them.
 
 :::note[Single-sourced]
 That an npm-sourced plugin has its dependencies installed while a git-sourced one does not is observed behavior, recorded in [Sources & Confidence](/sources/) at low confidence. The advice stands either way: a script with dependencies wants the npm route, because that is the route carrying a dependency tree at all. The Node resolution this page relies on is not in question.
