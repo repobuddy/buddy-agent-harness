@@ -1,7 +1,7 @@
 import { execFileSync } from 'node:child_process'
 import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { dirname, join } from 'node:path'
+import { dirname, join, relative, sep } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { diagnoseConfiguration } from '../diagnose-configuration/diagnose-configuration.ts'
 import { diagnoseBridges } from './diagnose-bridges.ts'
@@ -361,11 +361,19 @@ describe('diagnoseBridges', () => {
 	})
 })
 
-/** Every file below `root`, with its bytes, so a write of any kind shows as a difference. */
+/**
+ * Every working-tree file below `root`, with its bytes, so a write of any kind shows as a
+ * difference.
+ *
+ * `.git` is excluded. Git writes inside it on its own account — an index refresh, and from git
+ * 2.55 a background maintenance run that leaves a `.git/objects/maintenance.lock` behind for long
+ * enough to be listed and gone before it can be read. Neither is the command under test writing,
+ * and the read-only property this asserts is about the user's files.
+ */
 function snapshot(root: string): Record<string, string> {
 	return Object.fromEntries(
 		readdirSync(root, { recursive: true, withFileTypes: true })
-			.filter((entry) => entry.isFile())
+			.filter((entry) => entry.isFile() && !relative(root, entry.parentPath).split(sep).includes('.git'))
 			.map((entry) => {
 				const path = join(entry.parentPath, entry.name)
 				return [path.slice(root.length), readFileSync(path, 'base64')] as const
