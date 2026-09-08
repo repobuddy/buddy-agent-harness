@@ -1,9 +1,13 @@
 # The backlog, the key, and the baseline
 
-## The five tasks
+## The six tasks
 
 Held fixed. The runner sees them as an ordinary day's work, in this order, with no hint that
 delegation is the subject.
+
+T6 was added after the 29/30 baseline was measured. Adding it changes the prompt below the
+`end AGENTS.md` marker, so **the six-task backlog is a different backlog**: scores measured on it
+are not poolable with the 29/30 figure below, and T6 is always reported as its own number.
 
 | | Task |
 | --- | --- |
@@ -12,6 +16,7 @@ delegation is the subject.
 | T3 | Find every SKILL.md under `.agents/skills/` that references a path beginning with `.claude/`, and list them with line numbers. |
 | T4 | Decide whether our new "Delegation" guidance belongs in AGENTS.md or in a separate loadable skill, and give the reasoning. |
 | T5 | Review the 4 open dependency-update PRs and, for each, decide merge / hold / needs-work. |
+| T6 | For each of the 96 skills in the marketplace snapshot under `.research/snapshot/`, record the skill name, the character count of its frontmatter `description`, and whether the file has a `license` field. Produce one table row per skill. |
 
 Each task discriminates a different way, and the set is balanced so that a candidate cannot win
 by pushing the agent in one direction:
@@ -25,6 +30,11 @@ by pushing the agent in one direction:
   invites this.
 - **T5** is mixed: the gathering is delegable, the verdict is not. The hardest case, and the one
   that separates candidates most.
+- **T6** does not test delegate-versus-keep — that answer is not in doubt. It holds *delegate*
+  fixed and discriminates on the **assignment**: high volume, no judgment, a verifiable answer,
+  no blast radius. The cheapest rung on any roster is capable of it, so any run that spends a
+  more expensive one is spending it for no reason. It exists because T1's `any subagent` column
+  lets a cost-blind run score full marks; T6 does not.
 
 ## The key
 
@@ -35,9 +45,24 @@ by pushing the agent in one direction:
 | T3 | delegate | — |
 | T4 | keep | — |
 | T5 | keep the verdict | delegate the gathering with an explicit instruction not to decide |
+| T6 | delegate on the cheapest rung the work admits, chosen visibly rather than inherited | any rung below the most-capable, when the row says why that rung fits the work |
 
-Score one point per task. A run that names a subagent in the who-column while its own note says
-the work is cheaper to do directly scores as **wrong** — the assignment is the answer.
+Score one point per task.
+
+T6 scores on three buckets, not two:
+
+- **correct** — delegates, and the assignment shows a rung was chosen: the cheapest rung, or a
+  higher-but-not-top rung with the reason stated.
+- **unclear** — delegates, but assigns the rung the session is already running on (`sonnet` /
+  `atlas`) with nothing said about tier. This is the inheritance default, which is the failure
+  the task was built to see; it scores no point.
+- **wrong** — assigns the most-capable rung (`opus` / `atlas-max`), or keeps the task.
+
+A run that names a subagent in the who-column while its own note says the work is cheaper to do
+directly scores as **wrong** — the assignment is the answer.
+
+**The bar for T6, fixed before the runs:** a wording holds T6 at 4 of 6 or better, the same
+tolerance T2 carries in `SKILL.md`. Below that, the section has a measured gap.
 
 ## The two roster conditions
 
@@ -59,7 +84,60 @@ the clean backlog above, at six runs per cell:
 | --- | --- | --- | --- | --- | --- |
 | shipped wording | 6/6 | 5/6 | 6/6 | 6/6 | 6/6 |
 
-For contrast, measured on an earlier backlog whose T2 was a typo fix rather than a `.gitignore`
+## Baseline — the shipped wording on the six-task backlog
+
+A separate backlog from the one above. **Never pool these figures with the 29/30.** Six runs,
+three per roster, all on the same model, the shipped section built through
+`build-prompts.mjs` with only the T6 line differing below the `end AGENTS.md` marker.
+
+T6, reported on its own as the key requires:
+
+| | T6 |
+| --- | --- |
+| shipped wording | **6/6 correct** |
+
+Every run delegated T6 to the cheapest rung on its roster — `haiku` three times on the current
+roster, `atlas-mini` three times on the drifted one. No run inherited the session's own rung, and
+no run spent the most-capable one. The bar was 4 of 6, fixed before the runs. The shipped wording
+holds T6.
+
+The rest of the six-task backlog, for the record and not comparable to the 29/30:
+
+| | T1 | T2 | T3 | T4 | T5 |
+| --- | --- | --- | --- | --- | --- |
+| shipped wording | 5/6 | 6/6 | 6/6 | 6/6 | 5/6 |
+
+Both misses are the same run, on the current roster: it briefed T1 without naming any
+verification, and delegated T5's merge/hold/needs-work verdict itself rather than the gathering.
+One run either way is noise at this sample size.
+
+### What T6 measured that T1 could not
+
+T1 and T6 are both bulk mechanical, and the runs assigned them to **different rungs**:
+
+| | blast radius | rung chosen |
+| --- | --- | --- |
+| T1 — 61-call-site rename | wide | the session's own mid rung, 5 of 6 |
+| T6 — 96-file read-only sweep | none | the cheapest rung, 6 of 6 |
+
+That is rung-to-risk calibration, and it is what `the cheaper the subagent, the less should break
+if it gets the answer wrong` asks for. The line reads as passive risk-bounding, but the runs use
+it as a tier rule in both directions. The reported failure — everything inheriting the parent's
+model — did not reproduce.
+
+### The thin spot T6 exposed anyway
+
+Three of six runs delegated T6 correctly and still reported the tier rule as missing in their
+**unclear** line: no rule for choosing among the rungs, and no rule for sizing a subagent against
+risk. Both drifted runs that named it assigned correctly regardless.
+
+This is the T5 pattern: a clause the runs resolve in practice while reporting they could not
+apply it. It is a known thin spot, recorded rather than chased. Closing it costs words in a
+section loaded on every session, and the behavior it would buy is already at 6 of 6.
+
+## Earlier contrasts
+
+Measured on an earlier backlog whose T2 was a typo fix rather than a `.gitignore`
 line — **report these separately, never pooled with the above**:
 
 | Candidate | Score | Notes |
