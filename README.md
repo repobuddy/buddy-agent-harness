@@ -26,7 +26,15 @@ npx -y buddy-agent-harness doctor
 
 `init` runs behind the `init` skill, which sorts the configuration you already wrote before the command links anything.
 
-To mount both commands on `buddy`, install the package alongside `repobuddy` and declare its plugin module in the consumer repository's `.repobuddy.json`:
+`dep-plugins` derives a marketplace catalog for plugins shipped by this repository's own dependencies, so a harness can install them:
+
+```sh
+npx -y buddy-agent-harness dep-plugins
+```
+
+It writes the catalog and reports what each detected harness needs in order to match it, with the command that does it — reported rather than run, because registering and installing write into a developer's own harness state.
+
+To mount these commands on `buddy`, install the package alongside `repobuddy` and declare its plugin module in the consumer repository's `.repobuddy.json`:
 
 ```json
 {

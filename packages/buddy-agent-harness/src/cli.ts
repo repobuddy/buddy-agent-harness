@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { cli, exitCodes } from 'clibuilder'
+import { depPluginsCommand } from './dep-plugins/dep-plugins.command.ts'
 import { doctorCommand } from './diagnose-bridges/doctor.command.ts'
 import { initCommand } from './initialize-harnesses/init.command.ts'
 
@@ -24,6 +25,7 @@ function app() {
 	})
 		.command(initCommand)
 		.command(doctorCommand)
+		.command(depPluginsCommand)
 }
 
 /**
