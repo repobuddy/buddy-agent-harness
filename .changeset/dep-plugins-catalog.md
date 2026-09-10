@@ -11,8 +11,10 @@ its own plugin mechanism. It reaches whole plugins — agents, commands, hooks, 
 than only skills.
 
 ```sh
-buddy-agent-harness dep-plugins            # write .agents/buddy-agent-harness/.claude-plugin/marketplace.json
-buddy-agent-harness dep-plugins --check    # report whether it is current; writes nothing
+buddy-agent-harness dep-plugins                # write .agents/buddy-agent-harness/.claude-plugin/marketplace.json
+buddy-agent-harness dep-plugins --check        # report whether it is current; writes nothing
+buddy-agent-harness dep-plugins --format text  # human-readable report; `toon` is the default, `json` is also available
+buddy-agent-harness dep-plugins --root ./pkg   # run against a directory other than the current one
 ```
 
 Three decisions worth knowing:

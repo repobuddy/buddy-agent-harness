@@ -45,7 +45,7 @@ This skill is narrow on purpose — one section, one backlog, one scoring key. G
 
 ## The bar
 
-A candidate replaces the shipped wording only if it holds T1, T3, T4 and T5 at the baseline and does not drop T2 below 4 of 6.
+A candidate replaces the shipped wording only if it holds T1, T3, T4 and T5 at the baseline and does not drop T2 below 4 of 6. If the change touches how a subagent is chosen rather than whether one is spawned, the model-choice axis at the end of `references/backlog.md` applies too, and its bar must be met as well.
 
 Fix the decision rule before you look at the results. A rule chosen afterwards is a preference wearing a number.
 

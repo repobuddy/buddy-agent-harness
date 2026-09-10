@@ -122,7 +122,7 @@ flowchart TD
   M[Compose the delegation addition] --> N[Condition the guidance on the harness being able to spawn subagents]
   N --> O[State the floor: do the work yourself when briefing costs more than doing]
   O --> P[State the ceiling: keep the decision, delegate the gathering that feeds it]
-  P --> Q[Bound how cheap a subagent may be by how much breaks if it is wrong]
+  P --> Q[State that a subagent inherits the model and no context; bound how cheap by whether the answer can be checked]
   Q --> R[Require a brief: the context, the why, and what done looks like]
   R --> S{Names a model, vendor, or version?}
   S -->|yes| T[Reject — the section must survive model drift]
@@ -158,7 +158,7 @@ Each step of this graph is a property the wording was measured to need. `N` is w
 | `N` self-gating | the offered section | `opens by conditioning its guidance on the harness having subagents` |
 | `O` floor | the offered section | `tells the agent when to do the work itself` |
 | `P` ceiling | the offered section | `keeps the decision with the delegating agent` |
-| `Q` blast radius | the offered section | `makes how cheap a subagent may be follow from how much breaks` |
+| `Q` blast radius | the offered section | `states that a spawned subagent inherits the model, and makes how cheap it may be follow from whether a wrong answer can be told cheaply` |
 | `R` brief | the offered section | `requires every spawned subagent to be briefed` |
 
 ## References
@@ -275,7 +275,7 @@ Feature: Offer opinionated additions to an existing canonical instruction file
   Scenario: makes how cheap a subagent may be follow from how much breaks
     Given the delegation section the enhance skill offers
     When the agent composes it for review
-    Then it states that the cheaper the subagent, the less should break if its answer is wrong
+    Then it states that a spawned subagent inherits the agent's own model unless one is chosen, and makes how cheap it may be follow from whether a wrong answer could be told cheaply
 
   @behavior
   Scenario: requires every spawned subagent to be briefed

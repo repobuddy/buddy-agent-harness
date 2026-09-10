@@ -71,3 +71,31 @@ The general version — blind A/B of competing instruction wordings, scored agai
 backlog — belongs in an eval framework rather than here, and is proposed upstream to ACED in
 `cyberuni/cyberplace`. If that lands, this skill should become a thin backlog-and-key definition
 on top of it rather than its own runner.
+
+## Running the runners as subagents
+
+**Happened,** and invalidated a full round of 24 runs before it was caught.
+
+Subagents inherit every CLAUDE.md level, including `~/.claude/CLAUDE.md`. On a machine whose
+global CLAUDE.md already carries a Delegation section — which is the normal state for anyone who
+has adopted the section this skill exists to test — that section is in *every* runner's context,
+in every arm, no matter what the prompt file says. The candidate arm then holds two competing
+sections and the shipped arm holds the same one twice. Measured directly: a runner under the
+normal HOME quotes the shipped section back; the same runner under a sandbox HOME has nothing
+but the Agent tool description.
+
+Telling the runner in its spawn brief to ignore other instructions does not fix this. The text is
+still there.
+
+Use `scripts/run.sh`. It runs each run as `claude -p` with HOME pointed at a sandbox holding
+credentials and nothing else, and cwd an empty directory. Never spawn runners as subagents.
+
+## Scoring without an empty control
+
+**Happened.** The backlog ran for 54 runs with no arm that omits the section. A score of 29 of 30
+was read as evidence the wording worked. Measured with a control: an AGENTS.md carrying no
+Delegation section at all also scores 30 of 30 on routing. The tasks do not discriminate the
+presence of the section, so no candidate's routing score ever meant what it appeared to mean.
+
+Build the control with `build-prompts.mjs --no-section`. Run it in every round. A candidate that
+does not beat the empty control has not been shown to do anything.
