@@ -1,9 +1,9 @@
 ---
 title: 'Skill: enhance'
-description: What the enhance skill offers a repository, how it decides a section is already covered, and the runs behind the wording it ships.
+description: What the enhance skill offers a repository, how it decides a section is already covered or carries an outdated version of a shipped one, and the runs behind the wording it ships.
 ---
 
-The `enhance` skill proposes guidance a repository does not have. [`init`](/skills/init/) is the other half: it consolidates what you already wrote and bridges the harnesses that cannot read it, and it invents nothing. Initialization has to be safe to run anywhere, so it carries no opinions. An addition is opinionated by construction.
+The `enhance` skill proposes guidance a repository does not have, and offers a fresh copy of guidance it took from an earlier release. [`init`](/skills/init/) is the other half: it consolidates what you already wrote and bridges the harnesses that cannot read it, and it invents nothing. Initialization has to be safe to run anywhere, so it carries no opinions. An addition is opinionated by construction.
 
 That is why `enhance` is opt-in. Every addition is offered and never written on sight, and `init` now ends by asking whether to run it.
 
@@ -35,13 +35,32 @@ Coverage is judged by meaning, not by heading or wording. A repository covering 
 
 Detection decides every run. There is no first-run path and no memory of a previous decline, so a section you delete is offered again. Absence is the whole state. If the repeat offer annoys you, decline `init`'s offer to run the skill.
 
-Every run reports, whichever way it went: what it read, what it judged covered and why, what it offered, and what was written. A run that offers nothing still reports. That is the only way to tell "already covered" from "did not look".
+Every run reports, whichever way it went: what it read, the verdict for each addition and why, what it offered, and what was written. A run that offers nothing still reports. That is the only way to tell "already covered" from "did not look".
+
+## When a section is out of date
+
+Judging by meaning has one blind spot, and it took a while to notice. A wording that ships here can change. The `## Delegation` text was rewritten once already. A repository that took the earlier version keeps a section that covers the subject perfectly well, so every later run judged it covered and the new wording was never mentioned. The file quietly stayed a release behind, and nothing in the report said so.
+
+So coverage is now two questions rather than one. The first is unchanged: does the merged view already tell the agent what this addition would tell it? Only text that answers yes reaches the second: is that text a recognizable earlier form of the addition's own wording? Each addition's reference file states that criterion beside the one for coverage, as a small set of conditions that decide the question outright.
+
+The order is the safety property, and it is worth being explicit about why. Coverage is the broad judgment, staleness the narrow one inside it. Guidance you wrote yourself, under your own heading, clears the first question and never reaches the second, so the skill has no path that weighs your words against this package's and prefers its own. Doubt resolves the same direction in both places: toward leaving the file alone. Closeness in meaning is coverage. It is never staleness.
+
+Each addition therefore ends in one of three states:
+
+- **absent** — offered as an addition, as before.
+- **an earlier form, in the root `AGENTS.md`** — the current text is offered as a replacement for that section, and for nothing else.
+- **covered** — nothing offered, and the report names what covers it.
+
+A replacement is an offer like any other. You see the section as it stands and the text that would take its place, and nothing is written until you say so. On approval only that section changes, from its heading to the next heading of the same or higher level; the rest of the file is left byte-for-byte as it was. On a decline the old section stays exactly where it is.
+
+An earlier form found somewhere other than the root `AGENTS.md`, in a `CLAUDE.md` or a `.cursorrules`, is reported by name and not replaced. This skill writes one file. Replacing the root copy while an older copy stayed in a harness file would leave you holding two versions of the same guidance instead of one, which is worse than the problem it set out to fix. Run [`init`](/skills/init/) to consolidate first.
 
 ## What it never does
 
 These hold regardless of what you ask for mid-run:
 
 - Never write without approval. The offer is the point.
+- Never silently overwrite. A replacement is gated exactly as an addition is, word for word.
 - Never edit an addition to fit a repository.
 - Never touch the managed region, a nested `AGENTS.md`, or any file other than the root `AGENTS.md`.
 - Never consolidate harness instruction files. Reading them is the coverage judgment; merging them is [`init`](/skills/init/).
@@ -61,7 +80,19 @@ If this harness can spawn subagents, delegate the mechanical work and the resear
 A subagent inherits your model if you do not pick one, and none of your context either way. Pick the cheapest, unless you cannot say what a right answer looks like or could not cheaply tell a wrong one. Give it the context, the why, and what done looks like.
 ```
 
-You see that text in full before you answer. On approval it is appended to the root `AGENTS.md`, outside the `buddy-agent-harness` managed region: the section asserts something about how the repository is worked in and holds true whether or not the tool ever ran, which makes it material content, and material content needs approval. The managed region is for the tool's own bookkeeping.
+The staleness criterion has to answer a harder question than it first appears: not "does this say roughly the same thing", but "did this text come from *here*, at an older version". The two are easy to confuse, and confusing them means offering to overwrite something an owner wrote.
+
+So the criterion is three conditions on a `## Delegation` section, and the first one carries the weight. It looks for one span of the text, present character for character: `whose answer is far smaller than the reading behind it`. That span appears in the current wording and in the one it replaced, so it proves nothing about which version is in the file; what it proves is that the section came from this file at all. Nobody arrives at that clause independently. The other two conditions then pick the version: the section says a subagent inherits no context, and says nothing about the model it inherits or how to pick one. A section that does mention the model is the current text.
+
+It is one span rather than several, and that is a correction rather than an accident. An earlier draft accepted a second span, `the context, the why, and what done looks like`, which appears in both wordings just as reliably — but it is an ordinary triad that an engineering team writes on its own without ever having seen this package, and blind runs on plausible in-house guidance built around it offered to replace the owner's words. Four phrases survive both wordings; exactly one of them is odd enough to stand for provenance. A provenance test is only as strong as its weakest accepted match, so the others are not accepted at all.
+
+An even earlier draft tried to do this with the opening clause "If this harness can spawn subagents" plus the silence about models, and it does not work either, for the same reason. That clause opens the current wording too, so it separates nothing, and silence about model inheritance is simply what unrelated prose looks like — most people writing delegation guidance would never think to mention it. Handed a plausible, independently-written section that happened to open that way, blind runs offered to replace it.
+
+One thing the span condition has to check beyond presence: whether the span is the section's own instruction or something it is quoting. A repository that quotes the phrase in order to argue against it — stating a deliberately different delegation policy — is the owner disagreeing with this package, which is about the strongest signal there is that the prose is theirs. Blind runs on exactly that file offered to replace it until the condition said so. It is the same rule the coverage judgment already applies one step earlier, where a heading inside a fenced code block is not a heading.
+
+Once the three conditions hold, the section's remaining sentences are not read against the current text. That comparison always finds differences, because differing sentences are what a rewrite produces; an earlier draft of the criterion left the comparison open and blind runs on a genuinely stale file came back covered every time. The conditions themselves are still matched exactly — a paraphrase of the span is not the span, and is in fact evidence the text was written independently.
+
+You see the text in full before you answer. On approval it is appended to the root `AGENTS.md`, outside the `buddy-agent-harness` managed region: the section asserts something about how the repository is worked in and holds true whether or not the tool ever ran, which makes it material content, and material content needs approval. The managed region is for the tool's own bookkeeping.
 
 #### Why the Delegation wording
 
