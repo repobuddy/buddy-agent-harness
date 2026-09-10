@@ -1,6 +1,6 @@
 # How a run gets contaminated
 
-Four ways this harness has produced a wrong answer. Three of them happened.
+Five ways this harness has produced a wrong answer. Three of them happened.
 
 ## Leaking a test case into the wording
 
@@ -30,6 +30,21 @@ per backlog, and say which is which.
 Everything below the `end AGENTS.md` marker — the task list, the framing, the output format —
 must be byte-identical across every run being compared. Diff it. A reworded task or a changed
 output table silently rescales the scores.
+
+## The runner already having the shipped wording
+
+**Not observed, and not ruled out.** A runner spawned as a subagent inherits whatever
+always-loaded prose the operator's own harness carries. If that prose already contains the
+shipped `## Delegation` section — which is the point of shipping it — the runner reads the
+section twice: once as the candidate under test, once as its own standing instructions.
+
+While the candidate *is* the shipped wording this changes nothing, because the two copies are the
+same text. It confounds every other candidate: a challenger is measured against a runner that is
+still carrying the incumbent.
+
+Check the operator's always-loaded prose before a candidate round, and run the candidate from a
+harness that does not carry the section. When you cannot, say so in the writeup rather than
+reporting the numbers clean.
 
 # Reading a run
 

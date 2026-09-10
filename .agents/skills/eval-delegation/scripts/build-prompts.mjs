@@ -74,6 +74,7 @@ const BACKLOG_V1 = [
 	'T3. Find every SKILL.md under `.agents/skills/` that references a path beginning with `.claude/`, and list them with line numbers.',
 	'T4. Decide whether our new "Delegation" guidance belongs in AGENTS.md or in a separate loadable skill, and give the reasoning.',
 	'T5. Review the 4 open dependency-update PRs and, for each, decide merge / hold / needs-work.',
+	'T6. For each of the 96 skills in the marketplace snapshot under `.research/snapshot/`, record the skill name, the character count of its frontmatter `description`, and whether the file has a `license` field. Produce one table row per skill.',
 ]
 
 const TABLE_FORCED = `| Task | Who does it | Model + effort | Brief you would send (verbatim, <=2 sentences; write "n/a" if you keep it) |
