@@ -40,6 +40,7 @@ This project mirrors its source surfaces so a contributor can find a spec beside
 | --- | --- |
 | [`skills/harness-init/`](./skills/harness-init/README.md) | Initialize canonical skills across enabled agent harnesses |
 | [`skills/init/`](./skills/init/README.md) | What the `init` skill consolidates, declines to invent, and writes without asking |
+| [`skills/enhance/`](./skills/enhance/README.md) | Which vetted sections the `enhance` skill offers, when it offers a current wording in place of one it has retired, and when it asks rather than deciding |
 | [`skills/repair/`](./skills/repair/README.md) | Correct agent configuration that is present and wrong |
 | [`cli/`](./cli/README.md) | Index over the package's command-line product surface |
 | [`cli/bridge-resolution/`](./cli/bridge-resolution/README.md) | Report whether every skills bridge still resolves into `.agents/skills` |
@@ -62,7 +63,7 @@ The `doctor` command is now described in full: every finding family under `cli/`
 What is still outstanding:
 
 - **`tooling/`**, still a reference stub over the build, packaging, and release surfaces.
-- **`skills/enhance/`** and **`skills/doctor/`**, shipped skills with no node of their own; the `doctor` skill's content is generated from the same guidance table the command reports from.
+- **`skills/doctor/`**, a shipped skill with no node of its own; its content is generated from the same guidance table the command reports from.
 
 <!-- BEGIN generated: by-concept (project-spec/concept-index) -->
 
