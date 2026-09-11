@@ -14,10 +14,10 @@ todos:
     status: completed
   - content: Behavioral evidence — blind runs, before/after plus two adversarial fixtures
     status: completed
-  - content: Impl gate — 25/26 pass; the safety scenario failed rounds 2-5, halted on a second recurrence
-    status: pending
-  - content: Docs and changeset written; draft PR opened, not mergeable until the criterion is settled
+  - content: Impl gate — ACED judge passes 43/43; awaiting owner ratification (leash is auto-spec)
     status: in_progress
+  - content: Docs, changeset, draft PR updated to the shipped design
+    status: completed
 ---
 
 # 110 — `enhance` detects stale addition prose and offers the replacement
@@ -87,7 +87,37 @@ Both are recorded as corrections in the sibling log, and both generalize.
 The criterion is now three conditions: a character-for-character span present in both the outgoing
 and incoming wording establishes provenance, and the remaining two select the version.
 
-## Where it stopped, and the open question
+## The design, after the owner redirected it
+
+The provenance question is answered against a **stored artifact**, not a description of one. Each
+addition keeps every wording it has retired, verbatim, in a sibling history file; a present section
+is compared against those and never against the text that would be offered.
+
+Two structural predicates decide it, and neither is a proportion. Whole sentences surviving verbatim
+say the text passed through here. The retired wording's structure surviving says the section still
+is that text. Both, and it is stale. Neither, and it is the owner's. Sentences but not structure,
+and the skill says it cannot tell and asks.
+
+The ask carries three answers: it is theirs, it came from here, or settle it by measurement. The
+third is put only where the repository has a harness that can score wordings, is never run unasked,
+and is the only path in the feature that can conclude **keep yours** — a section that scores level
+or better is kept and said to be kept.
+
+## Why the earlier mechanism was abandoned
+
+Four impl-gate rounds, each defeated by a plausible owner-written section. Each produced a rule:
+
+1. A criterion must state whether its listed conditions are decisive.
+2. A provenance test must key on something nobody writes independently.
+3. A provenance test must ask whether text is asserted or shown.
+4. A provenance test is only as strong as its weakest accepted match.
+
+Narrowing to the single most distinctive phrase did not save it. The argument generalizes: any phrase
+short enough to write into a rule is short enough for someone to reach independently, having read the
+docs or worked in a repository this skill enhanced. Storing the wording sidesteps all four, and
+collapses the author's duty to keeping the outgoing text.
+
+## History: where the earlier attempt stopped
 
 The spec node landed clean: the spec gate returned ALIGNED on round 2 with all three lenses passing,
 and the suite is frozen at 26 scenarios. The corpus gap CR 35 left open is closed, with all five of
@@ -120,5 +150,6 @@ were reached, and choosing between them is a product decision about who this fea
 
 ## NEXT
 
-Blocked on the owner choosing among the three. Nothing to resume until then; the branch carries the
-spec node, the docs, the changeset, and the implementation as round 5 judged it.
+Owner ratifies the impl gate. The ACED impl judge passed all 43 frozen scenarios; its one structural
+finding was a set of stale descriptions, swept and fixed afterwards. On ratification, record the impl
+gate line, mark PR #111 ready for review, and leave the merge to the owner.
