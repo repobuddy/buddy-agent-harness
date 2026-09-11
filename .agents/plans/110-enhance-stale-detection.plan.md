@@ -14,8 +14,8 @@ todos:
     status: completed
   - content: Behavioral evidence — blind runs, before/after plus two adversarial fixtures
     status: completed
-  - content: Impl gate — ACED judge passes 43/43; awaiting owner ratification (leash is auto-spec)
-    status: in_progress
+  - content: Impl gate — ACED judge passes 43/43; ratified by the owner
+    status: completed
   - content: Docs, changeset, draft PR updated to the shipped design
     status: completed
 ---
@@ -150,6 +150,7 @@ were reached, and choosing between them is a product decision about who this fea
 
 ## NEXT
 
-Owner ratifies the impl gate. The ACED impl judge passed all 43 frozen scenarios; its one structural
-finding was a set of stale descriptions, swept and fixed afterwards. On ratification, record the impl
-gate line, mark PR #111 ready for review, and leave the merge to the owner.
+Landed pending merge. Both gates ratified by the owner; PR #111 is ready for review and the merge is
+the owner's. Nothing to resume. Backlog follow-ups are in the ledger: a tripwire enforcing the
+revision-time duty, a rule for combining results across two or more retired wordings, and an error
+band on the measurement tiebreak.
