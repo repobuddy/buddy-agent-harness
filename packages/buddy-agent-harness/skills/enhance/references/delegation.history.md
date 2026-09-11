@@ -1,6 +1,6 @@
 # Superseded wordings: Delegation
 
-Every wording this addition has shipped, newest first, each exactly as it was offered. Read this
+Every wording this addition has retired, newest first, each exactly as it was offered. Read this
 file when a `## Delegation` section is already present and reads as covered; it is what the section
 in front of you is compared against.
 
