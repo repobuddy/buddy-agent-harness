@@ -57,7 +57,7 @@
 	},
 	"dependencies": {
 		"@toon-format/toon": "^4.1.1",
-		"clibuilder": "^10.0.0",
+		"clibuilder": "^11.0.0",
 		"smol-toml": "^1.8.0"
 	},
 	"devDependencies": {
