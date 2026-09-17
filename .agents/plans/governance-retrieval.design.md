@@ -40,7 +40,7 @@ Split the work by when it happens. No plugin needs a CLI at run time to read a g
 | When | Owner | Job |
 | --- | --- | --- |
 | Authoring | the package that owns the subject | Publishes the governance as a plain Markdown file. |
-| Build | `universal-plugin` | A plugin declares the governances its skills use. `plugin build` copies each one to `<skill>/references/governances/<name>.md` in the skill folders that reference it, from the owning package installed as a dev dependency, and its check mode fails when a copy is stale. |
+| Build | `universal-plugin` | A plugin declares the governances its skills use. The build copies each one to `<skill>/references/governances/<name>.md` in the skill folders that reference it, from the owning package installed as a dev dependency. The copies are build output: gitignored, produced in `prepack`, and shipped in the npm package. |
 | Run | nobody | The skill reads its own copy. |
 | Local override | `buddy-agent-harness` | Manages `.agents/governances/` at project, user, and managed scope: `init` creates it, `doctor` reports it, and `governance list\|show` resolves a name for people and for agents working outside a skill. |
 
@@ -82,32 +82,34 @@ hand-written references, read as generated at a glance, and mirror the override 
   until an agent opens it.
 - The caller migration is repository by repository.
 
-## Conflict to resolve first: where a skill's script lives
+## Settled: where a skill's script lives
 
-This repository and the rule just added to `skill-design` disagree.
+The owner chose the bundle approach, shipped through npm:
 
-- [Skill Scripts](../../apps/web/src/content/docs/agent-configuration/skill-scripts.md) and this
-  package's generated launchers resolve the package root from the script
-  (`skills/<skill>/scripts/doctor.mjs` goes four levels up to `dist/cli.mjs`), and document a
-  pinned `npx` fallback for installs where that path is missing.
-- `skill-design` (cyberplace branch `docs/skill-script-bundling`) says a skill's scripts stay
-  inside the skill folder, run with plain `node`, and never reach a path outside it. Shared logic
-  is authored in the package source and bundled into each skill's `scripts/`, with a drift check.
-  `repobuddy` now builds its `min-release-age` and `init-buddy` scripts this way.
+- A skill's script is a self-contained, minified bundle inside the skill folder, built from the
+  package source in `prepack`. It is gitignored and ships only in the npm package.
+- A CI check packs the package and runs each bundle from the unpacked skill folder.
+- Each skill documents a pinned `npx -y <package>@^<version> <command>` fallback for installs that
+  have no built `scripts/`, which is every git-sourced install.
+- The plugin is distributed from npm where the harness supports it. Claude Code and Codex document
+  an npm plugin source; Copilot CLI and Cursor document only local paths, and Claude Code
+  organization-distributed marketplaces exclude npm, so those installs use the fallback.
 
-The launcher approach keeps one copy of the code and relies on the plugin layout plus the `npx`
-fallback. The bundle approach keeps each skill folder complete, so `skills add --skill <name>`,
-a copied folder, and a plugin install behave the same, at the cost of a bundle per skill.
+`skill-design` states this (cyberplace branch `docs/skill-script-bundling`), `repobuddy` builds its
+`min-release-age` and `init-buddy` scripts this way, and this repository's launchers are being
+replaced on branch `fix/bundle-skill-scripts`, which also rewrites the Skill Scripts page.
 
-Governance copies follow the same reasoning as script bundles, so this design assumes the bundle
-approach. If the launcher approach stays, the governance copy step should target the plugin root
-instead, and `skill-design` needs to change back.
+Governance copies follow the same model, which leaves one question: a git-sourced install has no
+copy. Either the skill falls back to the human-facing command
+(`npx -y buddy-agent-harness@^<version> governance show <name>`), or the copies are committed,
+since they are small text and the size argument does not apply to them.
 
 ## Migration order
 
-1. Settle the script-placement conflict above and align `skill-design` and Skill Scripts.
+1. Decide the git-install fallback for governance copies (above).
 2. Add the run-time lookup rule to `skill-design`.
-3. Add the governance copy step and its check to `universal-plugin plugin build`.
+3. Add the governance copy step to `universal-plugin plugin build`, and a pack check that the copies
+   ship.
 4. Move the layered resolver to `buddy-agent-harness`; add `governance list|show` and the
    `.agents/governances/` handling to `init` and `doctor`.
 5. Move each document to its owner.
