@@ -73,7 +73,7 @@ That shape had no owner, and the cost was concrete. When a field was added to `f
 
 `governances` is the one section that reports something that is **not a fault**. An override is a choice someone made, so it is reported rather than diagnosed: it never becomes a finding row, never produces a `help` entry, and never changes the exit code. It is present on every report for the same reason `bridges` is — a reader learns that the layers were looked at rather than having to infer it — and it holds either one row per override or the sentence stating the zero.
 
-Each row is the governance's **name** and the **layer** it came from, and no path. The layer names the directory, and a row carrying one reader's home directory is not a row another reader can act on. `../governance-overrides/` is where a reader goes to turn a layer back into a path.
+Each row is the governance's **name**, the **layer** it came from, and the **directory** it was read from, with the user's home directory collapsed to `~`. The path is on the row because the layer no longer settles it: there are two machine-wide layers, and an admin reading a row from the deprecated one has to see which directory answered before they can move it.
 
 Whether an override that **shadows** another layer's is worth calling out is open. Today it is not: a row names the layer that wins and says nothing about what it displaced.
 

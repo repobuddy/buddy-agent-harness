@@ -13,8 +13,15 @@ import {
 } from './governance-overrides.ts'
 
 export type GovernanceListReport = {
-	/** Where a governance may come from, in lookup order, so a reader knows where to write one. */
-	layers: { scope: GovernanceScope; path: string }[]
+	/**
+	 * Where a governance may come from, in lookup order, so a reader knows where to write one.
+	 *
+	 * `status` is emitted on every row, empty where there is nothing to say, rather than only on the
+	 * row that has something: an optional key would drop the whole array out of TOON's tabular form
+	 * into the nested list form, which is worse for exactly the consumer the default format exists
+	 * for.
+	 */
+	layers: { scope: GovernanceScope; path: string; status: string }[]
 	/** Always emitted, so a healthy run states its zero rather than leaving a reader to infer it. */
 	governances: { name: string; scope: GovernanceScope; path: string }[] | string
 }
@@ -43,6 +50,12 @@ function layersFor(args: Args): GovernanceLayer[] {
 	})
 	return args['overrides-only'] ? overrideLayers(layers) : layers
 }
+
+/**
+ * Said on the layer rather than on a finding: the old location still answers, so nothing is broken
+ * and nothing is to be repaired — there is simply somewhere better to put it.
+ */
+export const DEPRECATED_MANAGED = 'deprecated — move these documents to the managed layer above'
 
 const rootOption = {
 	description: 'Repository or package directory. Defaults to the current directory.',
@@ -74,7 +87,11 @@ export const governanceListCommand: cli.Command = command({
 			const layers = layersFor(args)
 			const entries = listGovernances(layers)
 			const report: GovernanceListReport = {
-				layers: layers.map(({ scope, dir }) => ({ scope, path: collapseHome(home, dir) })),
+				layers: layers.map(({ scope, dir }) => ({
+					scope,
+					path: collapseHome(home, dir),
+					status: scope === 'managed-deprecated' ? DEPRECATED_MANAGED : '',
+				})),
 				governances: entries.length
 					? entries.map(({ name, scope, path }) => ({ name, scope, path: collapseHome(home, path) }))
 					: '0 governances — no layer holds one',

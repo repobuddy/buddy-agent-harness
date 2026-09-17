@@ -4,6 +4,7 @@ import { join, sep } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import {
 	countProjectGovernances,
+	deprecatedManagedGovernancesDir,
 	type GovernanceLayer,
 	governanceLayers,
 	listGovernances,
@@ -23,18 +24,32 @@ function layer(scope: GovernanceLayer['scope'], documents: Record<string, string
 	return { scope, dir }
 }
 
-describe('managedGovernancesDir', () => {
-	// The location moved packages without moving on disk, so a machine already carrying one keeps
-	// being read. These are the paths `universal-plugin` wrote, pinned so the move stays a move.
-	it('names the machine-wide directory each platform already uses', () => {
-		expect(managedGovernancesDir('linux')).toBe('/etc/universal-plugin/governances')
-		expect(managedGovernancesDir('darwin')).toBe('/Library/Application Support/UniPlugin/governances')
-		expect(managedGovernancesDir('win32', 'D:\\ProgramData')).toBe(join('D:\\ProgramData', 'UniPlugin', 'governances'))
+describe('the machine-wide directories', () => {
+	it('names a machine-wide directory this package owns, per platform', () => {
+		expect(managedGovernancesDir('linux')).toBe('/etc/buddy-agent-harness/governances')
+		expect(managedGovernancesDir('darwin')).toBe('/Library/Application Support/BuddyAgentHarness/governances')
+		expect(managedGovernancesDir('win32', 'D:\\ProgramData')).toBe(
+			join('D:\\ProgramData', 'BuddyAgentHarness', 'governances'),
+		)
+	})
+
+	// Pinned so a machine already carrying one keeps working: these are the paths `universal-plugin`
+	// wrote, and they are still read, below the layer above.
+	it('still names the directory universal-plugin wrote, per platform', () => {
+		expect(deprecatedManagedGovernancesDir('linux')).toBe('/etc/universal-plugin/governances')
+		expect(deprecatedManagedGovernancesDir('darwin')).toBe('/Library/Application Support/UniPlugin/governances')
+		expect(deprecatedManagedGovernancesDir('win32', 'D:\\ProgramData')).toBe(
+			join('D:\\ProgramData', 'UniPlugin', 'governances'),
+		)
 	})
 
 	it('falls back to the default program data directory when Windows does not name one', () => {
-		expect(managedGovernancesDir('win32', undefined)).toBe(join('C:\\ProgramData', 'UniPlugin', 'governances'))
-		expect(managedGovernancesDir('win32', '')).toBe(join('C:\\ProgramData', 'UniPlugin', 'governances'))
+		expect(managedGovernancesDir('win32', undefined)).toBe(join('C:\\ProgramData', 'BuddyAgentHarness', 'governances'))
+		expect(managedGovernancesDir('win32', '')).toBe(join('C:\\ProgramData', 'BuddyAgentHarness', 'governances'))
+		expect(deprecatedManagedGovernancesDir('win32', undefined)).toBe(
+			join('C:\\ProgramData', 'UniPlugin', 'governances'),
+		)
+		expect(deprecatedManagedGovernancesDir('win32', '')).toBe(join('C:\\ProgramData', 'UniPlugin', 'governances'))
 	})
 })
 
@@ -59,17 +74,31 @@ describe('the layer directories', () => {
 describe('governanceLayers', () => {
 	const options = { root: join(sep, 'repo'), home: join(sep, 'home', 'dev'), platform: 'linux' as const }
 
-	it('orders the layers project, user, managed, package', () => {
-		expect(governanceLayers(options).map((entry) => entry.scope)).toEqual(['project', 'user', 'managed', 'package'])
+	it('searches the directory this package owns before the one universal-plugin wrote', () => {
+		expect(governanceLayers(options).map((entry) => entry.scope)).toEqual([
+			'project',
+			'user',
+			'managed',
+			'managed-deprecated',
+			'package',
+		])
+		expect(governanceLayers(options).map((entry) => entry.dir)).toEqual([
+			join(sep, 'repo', '.agents', 'governances'),
+			join(sep, 'home', 'dev', '.agents', 'governances'),
+			'/etc/buddy-agent-harness/governances',
+			'/etc/universal-plugin/governances',
+			packageGovernancesDir(),
+		])
 	})
 
 	// The whole promise of `--overrides-only`: the package's own copy is not in the set, so an answer
 	// can only be one somebody set.
-	it('drops the package layer from the override set, leaving the three someone can write to', () => {
+	it('drops the package layer from the override set, leaving the ones someone can write to', () => {
 		expect(overrideLayers(governanceLayers(options)).map((entry) => entry.scope)).toEqual([
 			'project',
 			'user',
 			'managed',
+			'managed-deprecated',
 		])
 	})
 })
@@ -109,6 +138,29 @@ describe('resolveGovernance', () => {
 		const layers = [layer('project'), layer('user', { only: 'user copy' })]
 
 		expect(resolveGovernance('only', layers)).toMatchObject({ scope: 'user', content: 'user copy' })
+	})
+
+	// The whole point of reading both machine-wide directories: a machine that never moved its
+	// documents keeps resolving them, one layer further down.
+	it('reads the deprecated machine-wide layer when the one above it is empty', () => {
+		const layers = [layer('managed'), layer('managed-deprecated', { 'agent-tool-output': 'the old location' })]
+
+		expect(resolveGovernance('agent-tool-output', layers)).toMatchObject({
+			scope: 'managed-deprecated',
+			content: 'the old location',
+		})
+	})
+
+	it('prefers the layer this package owns over the deprecated one', () => {
+		const layers = [
+			layer('managed', { 'agent-tool-output': 'the new location' }),
+			layer('managed-deprecated', { 'agent-tool-output': 'the old location' }),
+		]
+
+		expect(resolveGovernance('agent-tool-output', layers)).toMatchObject({
+			scope: 'managed',
+			content: 'the new location',
+		})
 	})
 
 	it('answers with nothing when no layer holds it', () => {

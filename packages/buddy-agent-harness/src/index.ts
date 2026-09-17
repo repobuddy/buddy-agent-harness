@@ -49,6 +49,7 @@ export type {
 	LayerOptions,
 } from './governance-overrides/governance-overrides.ts'
 export {
+	deprecatedManagedGovernancesDir,
 	governanceLayers,
 	listGovernances,
 	managedGovernancesDir,

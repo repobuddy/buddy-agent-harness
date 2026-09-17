@@ -47,8 +47,8 @@ bridges[2]{harness,path,kind,status}:
 instructions[2]{harness,path,kind,status}:
   claude-code,CLAUDE.md,import,ok
   gemini-cli,.gemini/settings.json,none,missing
-governances[1]{name,scope}:
-  agent-tool-output,project
+governances[1]{name,scope,path}:
+  agent-tool-output,project,~/code/acme/.agents/governances/agent-tool-output.md
 findings[3]{path,problem,detail}:
   .claude/skills,degraded,expected a directory but found a regular file — checkout without core.symlinks
   .windsurf/skills,missing,no bridge at this path — the harness sees zero project skills
@@ -106,8 +106,8 @@ instructions:
   gemini-cli   .gemini/settings.json  none    missing
 
 governances:
-  name               scope
-  agent-tool-output  project
+  name               scope    path
+  agent-tool-output  project  ~/code/acme/.agents/governances/agent-tool-output.md
 
 findings:
   path                   problem               detail
@@ -164,9 +164,9 @@ Which harnesses are checked is the same question as for skills: the registry rec
 
 ## Governance overrides
 
-`doctor` also reports the [governance](/cli/governance/) overrides in play on this machine: one row per override, `{ name, scope }`, drawn from the project, user, and managed layers only — never what a skill ships, which is that skill's own business. It is never a finding: an override is a choice someone made, not a fault, and it never changes `doctor`'s exit code.
+`doctor` also reports the [governance](/cli/governance/) overrides in play on this machine: one row per override, `{ name, scope, path }`, drawn from the project, user, and both machine-wide layers only — never what a skill ships, which is that skill's own business. It is never a finding: an override is a choice someone made, not a fault, and it never changes `doctor`'s exit code.
 
-When there is no override, the section is the sentence `0 governance overrides — no .agents/governances at project, user, or machine scope` rather than an empty list, the same "state the zero" convention the rest of this report follows. No path is carried on either row shape — the scope names the directory, and a row naming one person's home directory is not a row another reader can act on.
+When there is no override, the section is the sentence `0 governance overrides — no .agents/governances at project, user, or machine scope` rather than an empty list, the same "state the zero" convention the rest of this report follows. The path is on the row because the scope no longer settles it: there are [two machine-wide directories](/cli/governance/#the-machine-wide-directories), and an admin reading a row from the deprecated one needs to see which one answered before they can move it. The home directory is collapsed to `~`, as in `bin`.
 
 ## Divergence
 

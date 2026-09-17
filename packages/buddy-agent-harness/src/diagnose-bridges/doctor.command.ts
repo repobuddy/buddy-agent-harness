@@ -1,7 +1,7 @@
 import { homedir } from 'node:os'
 import type { cli } from 'clibuilder'
 import { command, exitCodes, z } from 'clibuilder'
-import { binPath, parseFormat, writeResult } from '../command-output/command-output.ts'
+import { binPath, collapseHome, parseFormat, writeResult } from '../command-output/command-output.ts'
 import { type ConfigurationFinding, diagnoseConfiguration } from '../diagnose-configuration/diagnose-configuration.ts'
 import { diagnoseMcp } from '../diagnose-mcp/diagnose-mcp.ts'
 import { diagnoseNonstandard } from '../diagnose-nonstandard/diagnose-nonstandard.ts'
@@ -21,12 +21,16 @@ export type DoctorReport = {
 	bridges: DiagnoseResult['bridges']
 	instructions: DiagnoseResult['instructions']
 	/**
-	 * The governance overrides in play on this machine, each at the layer that would win. Reported
-	 * rather than diagnosed: an override is a choice someone made, not a fault, so it is a section of
-	 * its own and never a finding. No path is carried — the scope names the directory, and a row
-	 * naming one user's home directory is not a row another reader can act on.
+	 * The governance overrides in play on this machine, each at the layer that would win, and the
+	 * directory it was read from with the home directory collapsed to `~`. Reported rather than
+	 * diagnosed: an override is a choice someone made, not a fault, so it is a section of its own and
+	 * never a finding.
+	 *
+	 * The path is on the row because the scope no longer settles it: there are two machine-wide
+	 * layers, and an admin reading a row from the deprecated one has to see which directory answered
+	 * before they can move it.
 	 */
-	governances: { name: string; scope: GovernanceScope }[] | string
+	governances: { name: string; scope: GovernanceScope; path: string }[] | string
 	divergence?: DiagnoseResult['divergence']
 	/**
 	 * The repair is lifted out into `help`, so a finding row stays to the diagnosis itself. `problem`
@@ -52,7 +56,7 @@ export function buildDoctorReport(
 	bin: string,
 	result: DiagnoseResult,
 	configuration: ConfigurationFinding[] = [],
-	overrides: { name: string; scope: GovernanceScope }[] = [],
+	overrides: { name: string; scope: GovernanceScope; path: string }[] = [],
 ): DoctorReport {
 	const findings = [...result.findings, ...configuration]
 	const governances = overrides.length
@@ -114,6 +118,7 @@ export const doctorCommand: cli.Command = command({
 			const format = parseFormat(args.format)
 			const harnesses = parseHarnesses(args.harness)
 			const root = args.root ?? process.cwd()
+			const home = homedir()
 			const result = diagnoseBridges({
 				root,
 				...(harnesses.length ? { harnesses } : {}),
@@ -131,15 +136,15 @@ export const doctorCommand: cli.Command = command({
 				overrideLayers(
 					governanceLayers({
 						root,
-						home: homedir(),
+						home,
 						platform: process.platform,
 						programData: process.env['ProgramData'],
 					}),
 				),
-			).map(({ name, scope }) => ({ name, scope }))
+			).map(({ name, scope, path }) => ({ name, scope, path: collapseHome(home, path) }))
 			// Exit stays 0 even with findings: the diagnosis succeeded, and a non-zero code reads to an
 			// agent as "this command is broken, try something else".
-			writeResult(buildDoctorReport(binPath(homedir(), process.argv[1]), result, configuration, overrides), format)
+			writeResult(buildDoctorReport(binPath(home, process.argv[1]), result, configuration, overrides), format)
 			return exitCodes.success
 		} catch (error) {
 			process.stderr.write(`error: ${error instanceof Error ? error.message : 'Harness diagnosis failed.'}\n`)

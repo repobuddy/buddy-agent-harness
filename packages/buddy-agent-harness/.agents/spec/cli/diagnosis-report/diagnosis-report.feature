@@ -105,11 +105,11 @@ Feature: Report every doctor finding through one output shape
     And the override is not reported as a finding, a repair, or a change of exit code
 
   @behavior
-  Scenario: names the layer rather than the path
+  Scenario: names the directory each override was read from
     Given a repository holding a project governance override
     When the command builds its report
-    Then each row names the governance and the layer it came from
-    And no row carries the directory it was read from
+    Then each row names the governance, the layer it came from, and that directory
+    And the user's home directory is collapsed in it
 
   @behavior
   Scenario: states the zero outright when no layer holds an override

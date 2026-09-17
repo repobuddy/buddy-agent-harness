@@ -3,7 +3,7 @@ import { homedir, tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { encode } from '@toon-format/toon'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { binPath, renderText } from '../command-output/command-output.ts'
+import { binPath, collapseHome, renderText } from '../command-output/command-output.ts'
 import { type DiagnoseResult, diagnoseBridges } from './diagnose-bridges.ts'
 import { buildDoctorReport, doctorCommand } from './doctor.command.ts'
 
@@ -125,20 +125,30 @@ describe('the governance override section', () => {
 		expect(run({ format: 'json', root })).toBe(0)
 
 		const report = JSON.parse(stdout.mock.calls.map(([value]) => String(value)).join(''))
-		expect(report.governances).toEqual([{ name: 'agent-tool-output', scope: 'project' }])
+		expect(report.governances).toEqual([
+			{
+				name: 'agent-tool-output',
+				scope: 'project',
+				path: join(root, '.agents', 'governances', 'agent-tool-output.md'),
+			},
+		])
 		expect(typeof report.findings).toBe('string')
 	})
 
-	// No path on the row: the scope names the directory, and a row carrying one reader's home
-	// directory is not a row another reader can act on.
-	it('names the layer rather than the path', () => {
+	// There are two machine-wide layers now, so the scope alone no longer settles which directory
+	// answered — and an admin reading a row from the deprecated one has to see that before they can
+	// move it. The path is collapsed the same way `bin` is, which `command-output` covers.
+	it('names the directory each override was read from', () => {
 		const root = mkdtempSync(join(tmpdir(), 'doctor-governances-'))
 		mkdirSync(join(root, '.agents', 'governances'), { recursive: true })
 		writeFileSync(join(root, '.agents', 'governances', 'agent-tool-output.md'), '# Rules')
 
 		run({ format: 'json', root })
 
-		expect(stdout.mock.calls.map(([value]) => String(value)).join('')).not.toContain(root)
+		const report = JSON.parse(stdout.mock.calls.map(([value]) => String(value)).join(''))
+		expect(report.governances[0].path).toBe(
+			collapseHome(homedir(), join(root, '.agents', 'governances', 'agent-tool-output.md')),
+		)
 	})
 
 	it('states the zero outright when no layer holds an override', () => {

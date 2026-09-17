@@ -6,8 +6,15 @@ Feature: Resolve a governance through the override layers
   Scenario: names every layer in lookup order
     Given a repository and no override anywhere
     When the command lists the governances
-    Then the report names the project, user, managed, and package layers
+    Then the report names the project, user, both machine-wide, and package layers
     And it names them in that order
+
+  @behavior
+  Scenario: marks the layer universal-plugin wrote as deprecated, and says so on it alone
+    Given a repository and no override anywhere
+    When the command lists the governances
+    Then the deprecated machine-wide layer carries a status saying where to move its documents
+    And no other layer carries a status
 
   @behavior
   Scenario: reports each governance at the layer that would win
@@ -31,7 +38,7 @@ Feature: Resolve a governance through the override layers
   Scenario: leaves the package layer out when only overrides were asked for
     Given a run restricted to overrides
     When the command lists the governances
-    Then the report names only the project, user, and managed layers
+    Then the report names only the layers someone can write to
 
   @behavior
   Scenario: states the zero outright rather than leaving the section empty
@@ -66,6 +73,39 @@ Feature: Resolve a governance through the override layers
     When the command lists the governances
     Then it writes a stated reason to stderr and exits non-zero
 
+  # ── the machine-wide layers ──
+
+  @behavior
+  Scenario: names a machine-wide directory this package owns, per platform
+    Given each supported platform in turn
+    When the machine-wide layer is resolved
+    Then it is a directory named for this package, in that platform's own shape
+
+  @behavior
+  Scenario: still names the directory universal-plugin wrote, per platform
+    Given each supported platform in turn
+    When the deprecated machine-wide layer is resolved
+    Then it is the directory `universal-plugin` has always used on that platform
+
+  @behavior
+  Scenario: falls back to the default program data directory when Windows does not name one
+    Given Windows with no program data directory in the environment
+    When either machine-wide layer is resolved
+    Then the default program data directory stands in
+
+  @behavior
+  Scenario: searches the directory this package owns before the one universal-plugin wrote
+    Given the layers in lookup order
+    When they are built
+    Then the directory this package owns is searched before the one `universal-plugin` wrote
+
+  @behavior
+  Scenario: drops the package layer from the override set, leaving the ones someone can write to
+    Given the layers in lookup order
+    When the override set is taken from them
+    Then every layer someone can write to remains, including both machine-wide layers
+    And the package layer is not among them
+
   # ── governance show ──
 
   @behavior
@@ -99,6 +139,18 @@ Feature: Resolve a governance through the override layers
     Given a name held by a later layer and not by an earlier one
     When the command shows it
     Then the content and the layer are the later layer's
+
+  @behavior
+  Scenario: reads the deprecated machine-wide layer when the one above it is empty
+    Given a name held only by the directory `universal-plugin` wrote
+    When the command shows it
+    Then that layer answers, and the run does not fail
+
+  @behavior
+  Scenario: prefers the layer this package owns over the deprecated one
+    Given a name held by both machine-wide directories
+    When the command shows it
+    Then the directory this package owns answers
 
   @behavior
   Scenario: passes over an entry it cannot read and asks the next layer
@@ -158,11 +210,11 @@ Feature: Resolve a governance through the override layers
     And the override is not reported as a finding
 
   @behavior
-  Scenario: names the layer rather than the path
+  Scenario: names the directory each override was read from
     Given a repository holding a project override
     When the agent runs `buddy-agent-harness doctor`
-    Then each row names the governance and the layer it came from
-    And no row carries the directory it was read from
+    Then each row names the governance, the layer it came from, and that directory
+    And the user's home directory is collapsed in it
 
   @behavior
   Scenario: states the zero outright when no layer holds an override

@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url'
  * searched, and `package` is the only one that is not an override — it is what this package itself
  * ships, and `--overrides-only` is the promise never to return it.
  */
-export type GovernanceScope = 'project' | 'user' | 'managed' | 'package'
+export type GovernanceScope = 'project' | 'user' | 'managed' | 'managed-deprecated' | 'package'
 
 /** One place to look, and the name a report gives it. */
 export type GovernanceLayer = { scope: GovernanceScope; dir: string }
@@ -28,12 +28,21 @@ export type LayerOptions = {
 }
 
 /**
- * The machine-wide layer, at the location `universal-plugin` has been writing and reading for its
- * whole life. The layer moved to this package; the directory deliberately did not, because a
- * machine already carrying one would otherwise silently stop being read the day the command changed
- * hands. Renaming it is a migration, not a move, and is not part of this one.
+ * The machine-wide layer this package owns, and where a machine owner should put a governance now.
  */
 export function managedGovernancesDir(platform: NodeJS.Platform, programData?: string | undefined): string {
+	if (platform === 'darwin') return '/Library/Application Support/BuddyAgentHarness/governances'
+	if (platform === 'win32') return join(programData || 'C:\\ProgramData', 'BuddyAgentHarness', 'governances')
+	return '/etc/buddy-agent-harness/governances'
+}
+
+/**
+ * The machine-wide layer at the location `universal-plugin` has been writing and reading for its
+ * whole life. Still read, below the layer above, so a machine already carrying one keeps working
+ * rather than silently losing its governances the day the command changed hands. Reported as
+ * deprecated wherever it answers, so an admin learns there is somewhere else to move it to.
+ */
+export function deprecatedManagedGovernancesDir(platform: NodeJS.Platform, programData?: string | undefined): string {
 	if (platform === 'darwin') return '/Library/Application Support/UniPlugin/governances'
 	if (platform === 'win32') return join(programData || 'C:\\ProgramData', 'UniPlugin', 'governances')
 	return '/etc/universal-plugin/governances'
@@ -74,14 +83,15 @@ export function governanceLayers({ root, home, platform, programData }: LayerOpt
 		{ scope: 'project', dir: projectGovernancesDir(root) },
 		{ scope: 'user', dir: userGovernancesDir(home) },
 		{ scope: 'managed', dir: managedGovernancesDir(platform, programData) },
+		{ scope: 'managed-deprecated', dir: deprecatedManagedGovernancesDir(platform, programData) },
 		{ scope: 'package', dir: packageGovernancesDir() },
 	]
 }
 
 /**
- * The three layers a person or a machine owner can write to. This is what `--overrides-only`
- * searches, and it is a filter over the scope rather than a slice of the list, so a layer added in
- * the middle later cannot quietly become an override.
+ * The layers a person or a machine owner can write to. This is what `--overrides-only` searches, and
+ * it is a filter over the scope rather than a slice of the list, so a layer added in the middle
+ * later cannot quietly become an override.
  */
 export function overrideLayers(layers: readonly GovernanceLayer[]): GovernanceLayer[] {
 	return layers.filter((layer) => layer.scope !== 'package')

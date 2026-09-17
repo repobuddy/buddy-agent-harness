@@ -4,6 +4,7 @@ import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { collapseHome } from '../command-output/command-output.ts'
 import {
+	DEPRECATED_MANAGED,
 	type GovernanceListReport,
 	governanceCommand,
 	governanceListCommand,
@@ -86,7 +87,23 @@ describe('governance list', () => {
 		expect(list({ root: repository() })).toBe(0)
 
 		const report = JSON.parse(written()) as GovernanceListReport
-		expect(report.layers.map((entry) => entry.scope)).toEqual(['project', 'user', 'managed', 'package'])
+		expect(report.layers.map((entry) => entry.scope)).toEqual([
+			'project',
+			'user',
+			'managed',
+			'managed-deprecated',
+			'package',
+		])
+	})
+
+	// Said on the layer rather than as a finding: the old location still answers, so nothing is
+	// broken — there is somewhere better to put it.
+	it('marks the layer universal-plugin wrote as deprecated, and says so on it alone', () => {
+		expect(list({ root: repository() })).toBe(0)
+
+		const report = JSON.parse(written()) as GovernanceListReport
+		expect(report.layers.find((entry) => entry.scope === 'managed-deprecated')?.status).toBe(DEPRECATED_MANAGED)
+		expect(report.layers.filter((entry) => entry.status !== '')).toHaveLength(1)
 	})
 
 	it('reports each governance at the layer that would win', () => {
@@ -116,7 +133,7 @@ describe('governance list', () => {
 		expect(list({ root: repository(), 'overrides-only': true })).toBe(0)
 
 		const report = JSON.parse(written()) as GovernanceListReport
-		expect(report.layers.map((entry) => entry.scope)).toEqual(['project', 'user', 'managed'])
+		expect(report.layers.map((entry) => entry.scope)).toEqual(['project', 'user', 'managed', 'managed-deprecated'])
 	})
 
 	// The user layer is under the reader's home directory, and a report naming it in full is one
@@ -151,6 +168,7 @@ describe('governance list', () => {
 		expect(report.layers[0]).toEqual({
 			scope: 'project',
 			path: collapseHome(homedir(), join(process.cwd(), '.agents', 'governances')),
+			status: '',
 		})
 	})
 

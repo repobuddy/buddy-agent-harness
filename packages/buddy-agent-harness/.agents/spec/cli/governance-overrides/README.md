@@ -33,12 +33,16 @@ Nothing here diagnoses.
   a layer.
 - **layer** — one directory a governance can come from, and the name a report gives it: `project`,
   `user`, `managed`, `package`.
-- **override layer** — `project`, `user`, `managed`: the three someone can write to. `package` is
-  not one.
-- **lookup order** — project, then user, then managed, then package. The first layer holding the
-  name wins and the rest are not read.
-- **managed layer** — the machine-wide directory. A **default**, not enforcement: it sits after the
-  project and the user layers, so a repository and a person both outrank it.
+- **override layer** — `project`, `user`, and the two machine-wide layers: the ones someone can write
+  to. `package` is not one.
+- **lookup order** — project, then user, then the machine-wide layer this package owns, then the one
+  `universal-plugin` wrote, then package. The first layer holding the name wins and the rest are not
+  read.
+- **managed layer** — the machine-wide directory this package owns, and where a machine owner should
+  put a governance now. A **default**, not enforcement: it sits after the project and the user
+  layers, so a repository and a person both outrank it.
+- **deprecated managed layer** — the machine-wide directory `universal-plugin` wrote. Still read, one
+  layer below, and reported as deprecated wherever it appears.
 
 **Non-goals**
 
@@ -73,6 +77,8 @@ Nothing here diagnoses.
 | --- | --- | --- |
 | a skill | learn whether an override exists without paying for a registry lookup | the exit code of `show --overrides-only` |
 | a skill | never be handed a governance some package shipped in place of the copy it was tested with | `--overrides-only` |
+| machine owner | keep the governances they installed before this command existed | the deprecated machine-wide layer |
+| machine owner | learn that there is a better place to put them | the status on that layer, and the path on a row from it |
 | person at a shell | read a governance as the Markdown it is | `show <name>` |
 | person at a shell | learn which layers exist and which one is answering | `list` |
 | another program | take the document and the layer it came from together | `show --format json` |
@@ -99,12 +105,27 @@ Nothing here diagnoses.
 **Where each layer is**
 
 `project` is `<root>/.agents/governances/`, in the canonical tree beside the skills. `user` is
-`~/.agents/governances/`, the same path under the home directory. `managed` is the machine-wide
-directory, which differs per platform and keeps the location `universal-plugin` has been reading and
-writing: the layer moved packages, the directory deliberately did not, because a machine already
-carrying one would otherwise stop being read the day the command changed hands. `package` is beside
-this package's own manifest, found by walking up to it rather than by a relative path, because this
-code sits at three different depths in `src/`, in the bundle, and in a skill-script bundle.
+`~/.agents/governances/`, the same path under the home directory.
+
+**There are two machine-wide layers, and that is deliberate.** `managed` is the directory this
+package owns and the one a machine owner should write to now. `managed-deprecated` is the directory
+`universal-plugin` wrote, still read one layer below it, so a machine already carrying governances
+keeps resolving them rather than losing them the day the command changed hands. Neither renaming
+outright nor keeping only the old name would do both. Each differs per platform in the same shape:
+
+| Scope | Linux | macOS | Windows |
+| --- | --- | --- | --- |
+| `managed` | `/etc/buddy-agent-harness/governances` | `/Library/Application Support/BuddyAgentHarness/governances` | `%ProgramData%\BuddyAgentHarness\governances` |
+| `managed-deprecated` | `/etc/universal-plugin/governances` | `/Library/Application Support/UniPlugin/governances` | `%ProgramData%\UniPlugin\governances` |
+
+The deprecation is **said, not enforced**. The old location still answers, so nothing is broken and
+there is nothing to repair — which is why it is a status on the layer rather than a finding. `list`
+carries it on that layer's row and on no other, and a row from that layer names the directory it was
+read from, so an admin learns both that there is somewhere else to put it and where it currently is.
+
+`package` is beside this package's own manifest, found by walking up to it rather than by a relative
+path, because this code sits at three different depths in `src/`, in the bundle, and in a
+skill-script bundle.
 
 **Extensions**
 
@@ -174,6 +195,7 @@ The two graphs share the layer construction and nothing else. `list` never reads
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
 | D→L | any run | `names every layer in lookup order` |
+| D→L | any run | `marks the layer universal-plugin wrote as deprecated, and says so on it alone` |
 | H→K | one name in two layers | `reports each governance at the layer that would win` |
 | K | names out of order across layers | `sorts the names rather than reporting them in layer order` |
 | H | a directory and a non-Markdown file beside the documents | `counts only Markdown files as governances` |
@@ -182,6 +204,11 @@ The two graphs share the layer construction and nothing else. `list` never reads
 | L | a layer under the user's home directory | `collapses the home directory out of the reported paths` |
 | B→C | an unsupported format | `rejects an unsupported output format rather than falling back` |
 | D | no `--root` | `resolves the project layer against the working directory when no root is named` |
+| D | each platform | `names a machine-wide directory this package owns, per platform` |
+| D | each platform | `still names the directory universal-plugin wrote, per platform` |
+| D | Windows with no `%ProgramData%` | `falls back to the default program data directory when Windows does not name one` |
+| D | the whole list | `searches the directory this package owns before the one universal-plugin wrote` |
+| E→F | `--overrides-only` | `drops the package layer from the override set, leaving the ones someone can write to` |
 | →L | a failure with no message | `reports a failure it cannot read a message from` |
 
 ### `governance show`
@@ -193,6 +220,8 @@ The two graphs share the layer construction and nothing else. `list` never reads
 | U→W | `--format json` | `wraps the document with the layer it came from when asked for a machine format` |
 | R, S | the same name in two layers | `stops at the first layer that holds the name` |
 | R | an earlier layer without the name | `falls through to a later layer` |
+| R | only the deprecated machine-wide layer holds the name | `reads the deprecated machine-wide layer when the one above it is empty` |
+| R | both machine-wide layers hold the name | `prefers the layer this package owns over the deprecated one` |
 | R | an entry that is not a readable document | `passes over an entry it cannot read and asks the next layer` |
 | S→T | `--overrides-only` and no override | `exits non-zero, writing nothing to stdout, when no override layer holds the name` |
 | S→T | no layer at all holds it | `exits non-zero when no layer at all holds the name` |
@@ -206,7 +235,7 @@ The two graphs share the layer construction and nothing else. `list` never reads
 | --- | --- | --- |
 | — | a repository with no project layer | `creates the project override layer and reports what it holds` |
 | — | a repository holding an override | `reports the overrides the layers hold without turning any of them into a finding` |
-| — | a report naming a layer | `names the layer rather than the path` |
+| — | a report naming a layer | `names the directory each override was read from` |
 | — | no override anywhere | `states the zero outright when no layer holds an override` |
 
 ## References
