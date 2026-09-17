@@ -1,8 +1,9 @@
 import { execFileSync } from 'node:child_process'
-import { existsSync, globSync, readdirSync, readFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
+import { launchers } from '../skill-scripts/launchers.ts'
 import {
 	bridgeRepairs,
 	commandInvocation,
@@ -15,7 +16,6 @@ import {
 	type RepairRow,
 	renderDoctorReferences,
 	renderDoctorSkill,
-	renderSkillLauncher,
 	repairFor,
 	repairSkillInvocation,
 	skillInvocation,
@@ -176,52 +176,56 @@ function initHarnessReferences(): Set<string> {
 	)
 }
 
-describe('skill launcher', () => {
-	// `repair` runs `doctor` to find what it repairs, so its launcher is named for the subcommand
-	// rather than for the skill.
-	it.each([
-		['doctor', 'doctor'],
-		['init', 'init'],
-		['repair', 'doctor'],
-	])('matches the committed launcher for %s', (skill, subcommand) => {
-		expect(readFileSync(join(packageRoot, 'skills', skill, launcherFor(subcommand)), 'utf8')).toBe(
-			renderSkillLauncher(subcommand),
-		)
-	})
+describe('skill script', () => {
+	// The source each skill's bundle is built from — not the built bundle itself, which is
+	// minified and gitignored (see `tsdown.config.ts` and `scripts/pack-check.ts`, which check the
+	// packed, runnable artifact instead of a byte-for-byte copy).
+	function skillScriptSource(subcommand: string): string {
+		return readFileSync(join(packageRoot, 'src', 'skill-scripts', `${subcommand}.ts`), 'utf8')
+	}
 
 	it('builds its argv with the subcommand inserted, mutating nothing', () => {
-		const launcher = renderSkillLauncher('doctor')
+		const source = skillScriptSource('doctor')
 
-		expect(launcher).toContain("[...process.argv.slice(0, 2), 'doctor', ...process.argv.slice(2)]")
-		expect(launcher).not.toContain('process.argv.splice')
+		expect(source).toContain("[...process.argv.slice(0, 2), 'doctor', ...process.argv.slice(2)]")
+		expect(source).not.toContain('process.argv.splice')
 	})
 
 	it('calls the entry point instead of importing the executable for its side effect', () => {
-		const launcher = renderSkillLauncher('doctor')
+		const source = skillScriptSource('doctor')
 
-		expect(launcher).toContain('const { run } = await import(')
-		expect(launcher).not.toContain(`'bin'`)
+		expect(source).toContain("import { run } from '../cli.ts'")
+		expect(source).not.toContain(`'bin'`)
 	})
 
-	// Every launcher a skill ships is generated from one renderer, so no skill can hand-roll a
-	// second way of reaching the CLI. `repair`'s was labelled generated and was not on the
-	// generator's list, so nothing rewrote it and nothing caught it going stale.
-	it('generates every shipped launcher, so no skill hand-rolls a second call form', () => {
-		const shipped = globSync('skills/*/scripts/*.mjs', { cwd: packageRoot }).sort()
-		const generated = readFileSync(join(packageRoot, 'scripts', 'generate-skills.ts'), 'utf8')
-
-		expect(shipped.length).toBeGreaterThan(0)
-		for (const launcher of shipped) {
-			const [, skill, , file] = launcher.split('/')
-			expect(generated).toContain(`{ skill: '${skill}', subcommand: '${(file as string).replace('.mjs', '')}' }`)
+	// One source file per subcommand, not one per skill: `repair` and `init` both ship `doctor`'s
+	// bundle rather than hand-rolling a second way of reaching the CLI. A skill added to `launchers`
+	// with no matching source under `src/skill-scripts/` has nothing for `tsdown.config.ts` to build.
+	it('has a source file for every subcommand a shipped skill runs', () => {
+		expect(launchers.length).toBeGreaterThan(0)
+		for (const subcommand of new Set(launchers.map((entry) => entry.subcommand))) {
+			expect(existsSync(join(packageRoot, 'src', 'skill-scripts', `${subcommand}.ts`))).toBe(true)
 		}
 	})
 
-	// The point of the launcher: it resolves the CLI from its own location, so it runs from a
-	// repository root that is nowhere near the skill and downloads nothing.
+	// `pnpm build`, which copies the bundles, is expected to have run before this suite, the same way CI
+	// orders it (see `turbo.json`). Confirms the copy landed and carries the generated header, not
+	// that its bytes match some second rendering of it.
+	it('copies the built bundle into every skill that runs it', () => {
+		for (const { skill, subcommand } of launchers) {
+			const script = readFileSync(join(packageRoot, 'skills', skill, launcherFor(subcommand)), 'utf8')
+
+			expect(script).toContain('#!/usr/bin/env node')
+			expect(script).toContain(`Generated from packages/buddy-agent-harness/src/skill-scripts/${subcommand}.ts by`)
+		}
+	})
+
+	// The point of the bundle: it resolves the CLI from within itself, so it runs from a repository
+	// root that is nowhere near the skill and downloads nothing. `scripts/pack-check.ts` covers the
+	// stronger claim — that it also runs with no `node_modules` anywhere above it, once packed.
 	it('runs the shipped CLI against the working directory, not its own', () => {
-		const launcher = join(packageRoot, 'skills', 'doctor', launcherFor('doctor'))
-		const stdout = execFileSync(process.execPath, [launcher, '--format', 'json'], {
+		const script = join(packageRoot, 'skills', 'doctor', launcherFor('doctor'))
+		const stdout = execFileSync(process.execPath, [script, '--format', 'json'], {
 			cwd: packageRoot,
 			encoding: 'utf8',
 		})

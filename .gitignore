@@ -4,3 +4,8 @@ dist
 coverage
 .astro
 .agents/aced/results/
+
+# Per-skill script bundles, built by `pnpm build && pnpm skill:gen` (buddy-agent-harness). They ship
+# through the npm package's `files`, not through git; a git-sourced install falls back to the pinned
+# `npx` invocation each skill's SKILL.md documents.
+packages/buddy-agent-harness/skills/*/scripts/*.mjs

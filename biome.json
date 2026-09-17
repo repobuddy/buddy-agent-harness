@@ -10,7 +10,8 @@
 			"!**/node_modules",
 			"!**/dist",
 			"!**/.astro",
-			"!**/.turbo"
+			"!**/.turbo",
+			"!packages/buddy-agent-harness/skills/*/scripts/*.mjs"
 		]
 	}
 }

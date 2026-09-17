@@ -1,8 +1,11 @@
 /**
  * Keeps the shipped skills in step with the code and the version they ship with (AXI §7).
  *
- * Three jobs, all driven by `package.json`'s version:
- *   - `skills/<name>/scripts/<name>.mjs` is the launcher each skill runs in preference to `npx`.
+ * Jobs, all driven by `package.json`'s version:
+ *   - `skills/<skill>/scripts/<subcommand>.mjs` is the bundle each skill runs in preference to `npx`
+ *     — copied from `dist/skill-scripts/<subcommand>.mjs`, which `pnpm build` produces. The bundle
+ *     is never committed (see `.gitignore`) and ships through the npm package instead, so it is
+ *     copied on every run rather than compared for staleness the way the targets below are.
  *   - `skills/doctor/SKILL.md` is written whole from the guidance the `doctor` command prints.
  *   - `skills/doctor/references/**` is written whole from the same guidance and the harness registry,
  *     so an agent loads one finding family rather than all of them.
@@ -12,8 +15,11 @@
  * skill from an old install drives whatever `npx` resolves as latest, and its flags and findings
  * stop describing the command it just ran.
  *
- *   pnpm skill:gen          rewrite the committed skills
+ *   pnpm skill:gen          rewrite the committed skills and copy the built bundles
  *   pnpm skill:gen --check  fail when a committed skill is stale (the CI step)
+ *
+ * `--check` does not touch the bundles at all: whether the packed tarball carries every one of them,
+ * and whether one runs standalone, is `scripts/pack-check.ts`'s job, not this one's.
  */
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
@@ -22,9 +28,9 @@ import {
 	launcherFor,
 	renderDoctorReferences,
 	renderDoctorSkill,
-	renderSkillLauncher,
 	skillInvocation,
 } from '../src/diagnose-bridges/doctor-guidance.ts'
+import { launchers } from '../src/skill-scripts/launchers.ts'
 
 const packageRoot = dirname(dirname(fileURLToPath(import.meta.url)))
 const version = JSON.parse(readFileSync(join(packageRoot, 'package.json'), 'utf8')).version as string
@@ -44,24 +50,11 @@ function skillPath(skill: string, ...rest: string[]): string {
 	return join(packageRoot, 'skills', skill, ...rest)
 }
 
-const targets: { path: string; expected: string | undefined }[] = []
-
-/**
- * Which subcommand each skill's launcher runs. Keyed by skill rather than assumed equal to it:
- * `repair` runs `doctor` to find what it repairs, and while that launcher was labelled generated it
- * was not on this list, so nothing rewrote it and nothing caught it going stale. `init` needs both:
- * `init` to write the projections, and `doctor` to list the artifacts only one harness can read.
- */
-const launchers: { skill: string; subcommand: string }[] = [
-	{ skill: 'doctor', subcommand: 'doctor' },
-	{ skill: 'init', subcommand: 'init' },
-	{ skill: 'init', subcommand: 'doctor' },
-	{ skill: 'repair', subcommand: 'doctor' },
-]
-
-for (const { skill, subcommand } of launchers) {
-	targets.push({ path: skillPath(skill, launcherFor(subcommand)), expected: renderSkillLauncher(subcommand) })
+function bundlePath(subcommand: string): string {
+	return join(packageRoot, 'dist', 'skill-scripts', `${subcommand}.mjs`)
 }
+
+const targets: { path: string; expected: string | undefined }[] = []
 
 targets.push({ path: skillPath('doctor', 'SKILL.md'), expected: renderDoctorSkill(version) })
 
@@ -109,6 +102,29 @@ for (const target of targets) {
 	mkdirSync(dirname(target.path), { recursive: true })
 	writeFileSync(target.path, target.expected)
 	process.stdout.write(`skill: wrote ${relative}\n`)
+}
+
+// The bundles are copied only in write mode. They are gitignored and shipped through the npm
+// package rather than committed, so `--check` has nothing to compare them against — that coverage
+// is `scripts/pack-check.ts`'s, run after `npm pack`.
+if (!check) {
+	const subcommands = [...new Set(launchers.map((entry) => entry.subcommand))]
+	for (const subcommand of subcommands) {
+		const bundle = read(bundlePath(subcommand))
+		if (bundle === undefined) {
+			process.stdout.write(
+				`error: ${bundlePath(subcommand).slice(packageRoot.length + 1)} is missing — run \`pnpm build\` first\n`,
+			)
+			process.exit(1)
+		}
+		for (const { skill, subcommand: target } of launchers) {
+			if (target !== subcommand) continue
+			const path = skillPath(skill, launcherFor(subcommand))
+			mkdirSync(dirname(path), { recursive: true })
+			writeFileSync(path, bundle)
+			process.stdout.write(`skill: wrote ${path.slice(packageRoot.length + 1)}\n`)
+		}
+	}
 }
 
 if (!check) process.exit(0)

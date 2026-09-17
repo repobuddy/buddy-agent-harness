@@ -9,9 +9,17 @@ import { initCommand } from './initialize-harnesses/init.command.ts'
  * home for a number that already has one, and it stayed at `0.1.0` for five minor releases.
  *
  * `../package.json` resolves from `src/cli.ts` and from the bundled `dist/cli.mjs` alike — both sit
- * one directory under the package root.
+ * one directory under the package root. A skill-script bundle does not: it ships inside a skill
+ * folder several levels deeper, with no package tree beside it, so its build defines
+ * `__PACKAGE_VERSION__` as a literal and this reads that instead of the filesystem. `typeof` is safe
+ * against an identifier no other build ever declares — it evaluates to `'undefined'` rather than
+ * throwing, the same trick `typeof window` relies on.
  */
-const version = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')).version as string
+declare const __PACKAGE_VERSION__: string | undefined
+const version =
+	typeof __PACKAGE_VERSION__ !== 'undefined'
+		? __PACKAGE_VERSION__
+		: (JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')).version as string)
 
 /**
  * A factory rather than a module-level constant: `cli()` builds state, and state built at import

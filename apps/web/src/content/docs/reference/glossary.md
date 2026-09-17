@@ -45,7 +45,7 @@ Each entry gives the short definition and links to the page that owns the topic.
 
 **skill**: a `SKILL.md` file, holding frontmatter that governs when it loads and a body the agent follows once loaded. Commands, gateways, and personas are all skills. See [Kinds of Skill](/agent-configuration/skills/overview/).
 
-**launcher**: a script a skill ships in its own `scripts/` directory, which resolves the code it runs from its own location rather than the working directory. It lets an installed skill run its command without fetching anything. See [Skill Scripts](/agent-configuration/skill-scripts/).
+**launcher**: a self-contained bundle a skill ships in its own `scripts/` directory, built at package time from the project's source with every runtime dependency inlined. It lets an installed skill run its command without fetching anything or depending on a `node_modules` above it. Shipped through the package's own distribution channel rather than committed; a git-sourced install carries no bundle and falls back to a pinned `npx` invocation. See [Skill Scripts](/agent-configuration/skill-scripts/).
 
 **selection, visibility, effect**: the three independent axes that distinguish kinds of skill, namely how it is chosen, who may choose it, and what running it changes. The familiar names are recognizable combinations of values on these axes, not a fixed list.
 
