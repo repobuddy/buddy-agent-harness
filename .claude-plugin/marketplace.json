@@ -1,6 +1,9 @@
 {
+	"$schema": "https://json.schemastore.org/claude-code-marketplace.json",
 	"name": "repobuddy",
-	"owner": "repobuddy",
+	"owner": {
+		"name": "repobuddy"
+	},
 	"plugins": [
 		{
 			"name": "buddy-agent-harness",
