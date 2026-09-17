@@ -40,12 +40,16 @@ Split the work by when it happens. No plugin needs a CLI at run time to read a g
 | When | Owner | Job |
 | --- | --- | --- |
 | Authoring | the package that owns the subject | Publishes the governance as a plain Markdown file. |
-| Build | `universal-plugin` | A plugin declares the governances its skills use. `plugin build` copies each one into the skill folders that reference it, from the owning package installed as a dev dependency, and its check mode fails when a copy is stale. |
+| Build | `universal-plugin` | A plugin declares the governances its skills use. `plugin build` copies each one to `<skill>/references/governances/<name>.md` in the skill folders that reference it, from the owning package installed as a dev dependency, and its check mode fails when a copy is stale. |
 | Run | nobody | The skill reads its own copy. |
 | Local override | `buddy-agent-harness` | Manages `.agents/governances/` at project, user, and managed scope: `init` creates it, `doctor` reports it, and `governance list\|show` resolves a name for people and for agents working outside a skill. |
 
 The run-time rule, stated once in `skill-design`: read `.agents/governances/<name>.md` when it
-exists, otherwise the copy inside the skill folder. An agent follows that with two file checks.
+exists, otherwise `references/governances/<name>.md` inside the skill folder. An agent follows that
+with two file checks.
+
+The copies sit in their own `governances/` subfolder so they never collide with a skill's
+hand-written references, read as generated at a glance, and mirror the override path.
 
 ### What each package ends up with
 
