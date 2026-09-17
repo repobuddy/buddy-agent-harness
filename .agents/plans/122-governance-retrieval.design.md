@@ -1,8 +1,7 @@
 # Governance retrieval: where the command lives and how a skill reads a governance
 
-Design material, not a spec node. It proposes a direction across four repositories and needs the
-owner's decision before any of them changes. Open an issue and add its number to this file's name
-when the work is scheduled.
+Design material, not a spec node. Tracked in #122; the owner decided the open questions on
+2026-09-17 (see Decisions).
 
 ## Terms
 
@@ -52,7 +51,8 @@ Stated once in `skill-design`. The skill stops at the first hit.
 2. `buddy-agent-harness governance show <name> --overrides-only`, run only from an installed copy:
    `upx --local-only buddy-agent-harness@^<major> governance show <name> --overrides-only` when `upx`
    is on `PATH`, otherwise the bare command when `command -v buddy-agent-harness` finds it. The
-   command reads the user (`~/.agents/governances/`) and managed layers, never returns the governance
+   command reads the user layer (`~/.agents/governances/`) and then the managed layer (the
+   machine-wide directory), never returns the governance
    its own package ships, and exits non-zero when there is no override. `upx --local-only` exits 127
    when no installed copy satisfies the range. Either way, the skill moves to step 3. A skill that
    reads several governances resolves the runner once.
@@ -97,7 +97,8 @@ reference each other, so the copy step:
 - **`cyber-skills`** is retired.
 - **The documents** move to their owners. `skill-design` and `skill-repo-structure` go to ACED,
   which authors skills. `universal-plugin` keeps `plugin-design`, `slash-invocation`, and takes
-  `universal-plugin`. The owner of `agent-tool-output` and `cli-resolution` is open.
+  `universal-plugin`. `agent-tool-output` and `cli-resolution` also go to ACED; `cli-resolution` is
+  rewritten there around `upx --local-only` and the bundle-per-skill rule.
 
 ### Why a copy rather than a run-time call
 
@@ -147,10 +148,19 @@ Governance copies differ from script bundles: they are committed (see Where the 
    command; retire `cyber-skills`.
 6. Migrate the callers, one repository per change.
 
+## Decisions
+
+- **Owners.** `skill-design`, `skill-repo-structure`, `agent-tool-output`, and `cli-resolution` move
+  to ACED. `universal-plugin` keeps `plugin-design` and `slash-invocation` and takes
+  `universal-plugin`.
+- **Declaration.** The files in `<skill>/references/governances/` declare which governances a skill
+  uses. To use one, an author adds its file there; the build refreshes every file in that folder
+  from its owner, adds the governances those files reference, and fails when a file names no known
+  governance or when `SKILL.md` does not list a copy. Nothing is declared in `plugin.json`.
+- **Managed layer.** It stays, at the position the lookup order gives it: after the project
+  override and after the user layer, as a machine-wide default. It does not enforce; a project or
+  user override wins over it.
+
 ## Open questions
 
-- Which package owns `agent-tool-output` and `cli-resolution`?
-- Should a plugin declare its governances in `plugin.json` (an extension key) or should the build
-  scan skill bodies for references?
-- Does the managed override scope stay, and does `doctor` report a managed override that shadows
-  a plugin's copy?
+- Should `doctor` report a project or user override that shadows a managed governance?
