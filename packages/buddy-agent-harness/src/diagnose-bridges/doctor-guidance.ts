@@ -1,3 +1,5 @@
+import { readdirSync, readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import type { Harness, HarnessScope } from '../harness-registry/harness-registry.ts'
 import { harnessRegistry } from '../harness-registry/harness-registry.ts'
 import type { NonstandardKind } from '../harness-registry/nonstandard-artifact.ts'
@@ -154,6 +156,46 @@ export const commandInvocation = 'buddy-agent-harness'
  * flowing and stops at the next breaking line.
  */
 export const skillInvocation = (version: string) => `npx -y ${commandInvocation}@^${version}`
+
+/** Any `npx` invocation of this CLI, pinned or not, so a stale pin is rewritten rather than doubled. */
+export const anyNpxInvocation: RegExp = /npx -y buddy-agent-harness(@[^\s`]+)?/g
+
+/** A hand-written `SKILL.md` whose pinned `npx` fallback the generator rewrites in place. */
+export type PinTarget = { path: string; expected: string }
+
+/**
+ * Every hand-written `SKILL.md` under `skillsRoot` that names an `npx` invocation of this package,
+ * found by reading the `skills/` directory rather than a maintained list — a skill added later is
+ * covered with no second edit to this generator. `doctor`'s `SKILL.md` is excluded: the generator
+ * writes that one whole from `renderDoctorSkill`, so re-pinning it here would just retrace that write.
+ */
+export function handWrittenPinTargets(skillsRoot: string, version: string): PinTarget[] {
+	let skillNames: string[]
+	try {
+		skillNames = readdirSync(skillsRoot, { withFileTypes: true })
+			.filter((entry) => entry.isDirectory())
+			.map((entry) => entry.name)
+	} catch {
+		skillNames = []
+	}
+
+	const targets: PinTarget[] = []
+	for (const skill of [...skillNames].sort()) {
+		if (skill === doctorSkill.name) continue
+		let content: string
+		try {
+			content = readFileSync(join(skillsRoot, skill, 'SKILL.md'), 'utf8')
+		} catch {
+			continue
+		}
+		if (!content.includes(`npx -y ${commandInvocation}`)) continue
+		targets.push({
+			path: join(skillsRoot, skill, 'SKILL.md'),
+			expected: content.replaceAll(anyNpxInvocation, skillInvocation(version)),
+		})
+	}
+	return targets
+}
 
 /**
  * The launcher a skill ships, named for the subcommand it runs so a stack trace or a process list

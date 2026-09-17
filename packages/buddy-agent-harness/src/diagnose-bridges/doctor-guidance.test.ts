@@ -1,5 +1,6 @@
 import { execFileSync } from 'node:child_process'
-import { existsSync, readdirSync, readFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
@@ -9,6 +10,7 @@ import {
 	commandInvocation,
 	type DoctorProblem,
 	doctorRepairs,
+	handWrittenPinTargets,
 	initSkillInvocation,
 	instructionRepairs,
 	launcherFor,
@@ -175,6 +177,53 @@ function initHarnessReferences(): Set<string> {
 			.map((entry) => entry.slice(0, -'.md'.length)),
 	)
 }
+
+describe('hand-written skill pins', () => {
+	// The hole this closes: a hand-written SKILL.md with a pin that nothing in the generator's
+	// target list names goes stale silently, the way `skills/repair/SKILL.md`'s pin once did. This
+	// walks the same directory the generator does and asserts nothing it finds is left uncovered.
+	it('targets every shipped SKILL.md that names an npx invocation of this package, doctor excepted', () => {
+		const skillsRoot = join(packageRoot, 'skills')
+		const onDisk = readdirSync(skillsRoot, { withFileTypes: true })
+			.filter((entry) => entry.isDirectory() && entry.name !== 'doctor')
+			.map((entry) => join(skillsRoot, entry.name, 'SKILL.md'))
+			.filter((path) => existsSync(path) && readFileSync(path, 'utf8').includes(`npx -y ${commandInvocation}`))
+
+		expect(onDisk.length).toBeGreaterThan(0)
+		expect(
+			handWrittenPinTargets(skillsRoot, version)
+				.map((target) => target.path)
+				.sort(),
+		).toEqual(onDisk.sort())
+	})
+
+	it('rewrites a stale pin to the given version, and leaves doctor and pin-free skills out', () => {
+		const skillsRoot = mkdtempSync(join(tmpdir(), 'buddy-agent-harness-pins-'))
+		mkdirSync(join(skillsRoot, 'repair'), { recursive: true })
+		writeFileSync(join(skillsRoot, 'repair', 'SKILL.md'), 'Fall back to `npx -y buddy-agent-harness@^0.1.0 doctor`.\n')
+		mkdirSync(join(skillsRoot, 'doctor'), { recursive: true })
+		writeFileSync(join(skillsRoot, 'doctor', 'SKILL.md'), 'Fall back to `npx -y buddy-agent-harness@^0.1.0 doctor`.\n')
+		mkdirSync(join(skillsRoot, 'enhance'), { recursive: true })
+		writeFileSync(join(skillsRoot, 'enhance', 'SKILL.md'), 'No npx fallback here.\n')
+		mkdirSync(join(skillsRoot, 'no-skill-file'), { recursive: true })
+
+		const targets = handWrittenPinTargets(skillsRoot, '9.9.9')
+
+		expect(targets).toEqual([
+			{
+				path: join(skillsRoot, 'repair', 'SKILL.md'),
+				expected: 'Fall back to `npx -y buddy-agent-harness@^9.9.9 doctor`.\n',
+			},
+		])
+		// What `--check` reports as stale: the rewritten target's expected content differs from what
+		// is still committed, so a check run that reads this file back would flag it.
+		expect(readFileSync(targets[0]?.path as string, 'utf8')).not.toBe(targets[0]?.expected)
+	})
+
+	it('finds nothing under a skills directory that does not exist', () => {
+		expect(handWrittenPinTargets(join(tmpdir(), 'buddy-agent-harness-pins-missing'), version)).toEqual([])
+	})
+})
 
 describe('skill script', () => {
 	// The source each skill's bundle is built from — not the built bundle itself, which is
