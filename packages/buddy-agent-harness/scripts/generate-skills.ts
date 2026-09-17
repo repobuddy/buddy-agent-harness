@@ -9,7 +9,9 @@
  *   - `skills/doctor/SKILL.md` is written whole from the guidance the `doctor` command prints.
  *   - `skills/doctor/references/**` is written whole from the same guidance and the harness registry,
  *     so an agent loads one finding family rather than all of them.
- *   - `skills/init/SKILL.md` is hand-written prose, so only its `npx` fallback is rewritten.
+ *   - every other `skills/<skill>/SKILL.md` is hand-written prose, so only its `npx` fallback is
+ *     rewritten, if it has one. Which files those are is read off the `skills/` directory rather than
+ *     listed here, so a new hand-written skill with a pin is covered with no edit to this script.
  *
  * The fallback is pinned to the caret range of the version that shipped the skill. Unpinned, a
  * skill from an old install drives whatever `npx` resolves as latest, and its flags and findings
@@ -25,18 +27,15 @@ import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import {
+	handWrittenPinTargets,
 	launcherFor,
 	renderDoctorReferences,
 	renderDoctorSkill,
-	skillInvocation,
 } from '../src/diagnose-bridges/doctor-guidance.ts'
 import { launchers } from '../src/skill-scripts/launchers.ts'
 
 const packageRoot = dirname(dirname(fileURLToPath(import.meta.url)))
 const version = JSON.parse(readFileSync(join(packageRoot, 'package.json'), 'utf8')).version as string
-
-/** Any `npx` invocation of this CLI, pinned or not, so a stale pin is rewritten rather than doubled. */
-const anyNpxInvocation = /npx -y buddy-agent-harness(@[^\s`]+)?/g
 
 function read(path: string): string | undefined {
 	try {
@@ -79,12 +78,9 @@ for (const doc of renderDoctorReferences(initHarnessReferences())) {
 	targets.push({ path: skillPath('doctor', ...doc.path.split('/')), expected: doc.content })
 }
 
-// Hand-written prose. Only the pinned fallback is generated, so an edit to the body survives.
-const initSkill = read(skillPath('init', 'SKILL.md'))
-targets.push({
-	path: skillPath('init', 'SKILL.md'),
-	expected: initSkill?.replaceAll(anyNpxInvocation, skillInvocation(version)),
-})
+// Every other hand-written SKILL.md that names an `npx` fallback. Only the pin is generated, so an
+// edit to the surrounding prose survives.
+targets.push(...handWrittenPinTargets(skillPath(''), version))
 
 const check = process.argv.includes('--check')
 const stale: string[] = []
