@@ -24,7 +24,6 @@ The harness claims across this site are not equally well-sourced, and the differ
 | What an agent definition can express that a skill cannot | High | primary vendor documentation |
 | Claude Code skill arguments, and the fields the spec rejects | High | primary vendor documentation |
 | Codex skills having no argument mechanism | High | absence from the vendor page that supersedes custom prompts |
-| Plugin dependencies installed for an npm source but not a git source | Low | direct observation of local installs, no vendor specification |
 | Cursor rule selection via `globs` / `description` / neither | High | primary vendor documentation |
 | Copilot `applyTo` path-specific instructions | High | primary vendor documentation |
 | Nested `AGENTS.md` resolution (nearest-file-wins) | High | agents.md body copy and FAQ, primary |
@@ -82,6 +81,12 @@ This page gave two reasons for not documenting harness settings files. The secon
 The `doctor` page said the four instruction repairs "are the one place `help` cannot be pasted into a terminal". That was wrong when it was written. Every `help` line was rendered as ``Run `<repair>` `` whether or not the repair was a command, so a configuration finding published lines like ``Run `remove .windsurf/skills and enable the harness that replaced it` `` — prose wrapped in an imperative to run it. The `diverged-both` repair had the same shape from the start, with half the instruction inside the backticks and half outside.
 
 Corrected at [Output](/cli/doctor/#output), and the behavior changed with it: `help` is now one row per repair with a `command` column and an `instruction` column, and `command` is empty wherever no single invocation completes the repair. A caller no longer has to read the prose to find out whether it may run something. The same page's sample report was also a version behind — it showed `findings` without the `problem` column that finding rows have carried since the configuration checks shipped.
+
+### 2026-09-16 — Skill scripts were said to depend on the install carrying `node_modules`
+
+[Skill Scripts](/agent-configuration/skill-scripts/) said the choice was between an npm-sourced install, which carries a plugin's dependency tree, and a git-sourced one, which does not — so a script with dependencies "wants the npm route" because that route alone happened to carry `node_modules`. That claim was itself only low-confidence direct observation (see the removed "Plugin dependencies installed for an npm source but not a git source" row above), and this project's own shipped skills have since stopped relying on it: `doctor`, `init`, and `repair` each now run a bundle — built from the package's source, with every runtime dependency inlined — that ships inside the skill folder itself rather than depending on a `node_modules` sitting above it.
+
+Corrected at the same page, which now advises bundling the script per skill at build time and shipping the result through whichever channel already ships the rest of your code, rather than choosing a distribution channel for the sake of carrying a dependency tree. Project behavior changed with it: the shipped launchers are now self-contained bundles, built and packed by `prepack`, gitignored rather than committed, with the pinned `npx` fallback reserved for a git-sourced install or a path the agent cannot resolve.
 
 ## Undocumented but verified
 

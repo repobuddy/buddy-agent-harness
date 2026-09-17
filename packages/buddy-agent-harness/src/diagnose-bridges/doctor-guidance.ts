@@ -162,36 +162,13 @@ export const skillInvocation = (version: string) => `npx -y ${commandInvocation}
 export const launcherFor = (subcommand: string) => `scripts/${subcommand}.mjs`
 
 /**
- * How a skill names its launcher: the path as the skill sees it, resolved by the agent against the
+ * How a skill names its script: the path as the skill sees it, resolved by the agent against the
  * directory it read the `SKILL.md` from.
  *
- * `node` stays in front. The launcher ships without an executable bit, and its shebang does nothing
+ * `node` stays in front. The script ships without an executable bit, and its shebang does nothing
  * on Windows, so naming the file alone would not run it.
  */
 export const launcherInvocation = (subcommand: string) => `node ${launcherFor(subcommand)}`
-
-/**
- * The launcher written into a skill's `scripts/` directory. It resolves the CLI from its own
- * location rather than the working directory, so the skill runs the copy it shipped with and
- * fetches nothing. The repository it inspects is still the working directory, unchanged.
- */
-export function renderSkillLauncher(subcommand: string): string {
-	return `#!/usr/bin/env node
-// Generated from src/diagnose-bridges/doctor-guidance.ts by scripts/generate-skills.ts. Do not edit by hand.
-import { dirname, join } from 'node:path'
-import { fileURLToPath, pathToFileURL } from 'node:url'
-
-// <package>/skills/<skill>/scripts/${subcommand}.mjs: four levels up is the package root.
-const packageRoot = dirname(dirname(dirname(dirname(fileURLToPath(import.meta.url)))))
-const { run } = await import(pathToFileURL(join(packageRoot, 'dist', 'cli.mjs')).href)
-
-// The subcommand is composed into a fresh argv rather than spliced into the global one, so nothing
-// outside this file observes the rewrite. Applied only when non-zero, so a usage code clibuilder
-// recorded itself is not overwritten by the zero \`run\` returns on that path.
-const code = await run([...process.argv.slice(0, 2), '${subcommand}', ...process.argv.slice(2)])
-if (code !== 0) process.exitCode = code
-`
-}
 
 /**
  * How the skill hands a repair to `repair`. Bridge and instruction repairs go to `init`, which
@@ -593,7 +570,7 @@ Diagnose it:
 ${launcherInvocation('doctor')}
 \`\`\`
 
-That path is relative to this skill's own directory. The launcher runs the CLI that shipped beside it against the current working directory, so nothing is downloaded. Fall back to \`${skillInvocation(version)} doctor\` when the launcher cannot be resolved or run, which is the case when the plugin was installed from git rather than npm and its dependencies were never installed.
+That path is relative to this skill's own directory: \`scripts/doctor.mjs\` is a self-contained bundle built from this package's source and shipped inside the skill folder through the npm package, so it runs against the current working directory with nothing downloaded and no \`node_modules\` needed. Fall back to \`${skillInvocation(version)} doctor\` when \`scripts/doctor.mjs\` is missing or cannot be run — the case for a skill installed from git rather than from the npm package, which does not carry the bundle.
 
 The command is read-only. It never repairs anything, so it is safe to run at any point, including from a session-start hook.
 

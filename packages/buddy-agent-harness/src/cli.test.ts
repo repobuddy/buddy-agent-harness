@@ -127,6 +127,26 @@ describe('run', () => {
 		const manifest = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'))
 		expect(mockedCli).toHaveBeenCalledWith(expect.objectContaining({ version: manifest.version }))
 	})
+
+	// The skill-script build defines this identifier as a literal (see `tsdown.config.ts`) because
+	// its bundle ships without `package.json` beside it. A fresh module instance, with the global
+	// set the way that `define` would leave it, is the only way to exercise that branch without
+	// actually running the bundler.
+	it('reads the version a build defined as __PACKAGE_VERSION__, in preference to the manifest', async () => {
+		;(globalThis as Record<string, unknown>)['__PACKAGE_VERSION__'] = '9.9.9'
+		try {
+			vi.resetModules()
+			const { run: builtRun } = await import('./cli.ts')
+			stubApp(vi.fn(async () => undefined))
+
+			await builtRun(['node', 'buddy-agent-harness', '--version'])
+
+			expect(mockedCli).toHaveBeenCalledWith(expect.objectContaining({ version: '9.9.9' }))
+		} finally {
+			delete (globalThis as Record<string, unknown>)['__PACKAGE_VERSION__']
+			vi.resetModules()
+		}
+	})
 })
 
 describe('the public entry point', () => {
@@ -157,8 +177,9 @@ describe('the process boundary', () => {
 			'skills/init/scripts/doctor.mjs',
 			'skills/init/scripts/init.mjs',
 			'skills/repair/scripts/doctor.mjs',
-			// Not a writer itself: this is the renderer whose template emits the launchers above.
-			'src/diagnose-bridges/doctor-guidance.ts',
+			// The sources the bundles above are built from, not a second writer of their own.
+			'src/skill-scripts/doctor.ts',
+			'src/skill-scripts/init.ts',
 		])
 	})
 })

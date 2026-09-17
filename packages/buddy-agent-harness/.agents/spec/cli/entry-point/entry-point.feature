@@ -71,10 +71,10 @@ Feature: Reach a command without going through the process
   # ── the process boundary ──
 
   @behavior
-  Scenario: writes process.exitCode nowhere but bin, the launchers, and the renderer that emits them
+  Scenario: writes process.exitCode nowhere but bin, the skill-script sources, and the launchers built from them
     Given the sources the package ships
     When they are searched for a write to `process.exitCode`
-    Then only `bin/buddy-agent-harness.mjs`, the generated launchers, and the renderer whose template emits them hold one
+    Then only `bin/buddy-agent-harness.mjs`, the `src/skill-scripts/*.ts` sources, and the built launchers hold one
 
   @behavior
   Scenario: neither reads process.argv nor writes process.exitCode
@@ -100,24 +100,24 @@ Feature: Reach a command without going through the process
 
   @behavior
   Scenario: builds its argv with the subcommand inserted, mutating nothing
-    Given a generated launcher for a subcommand
+    Given a skill script's source for a subcommand
     When its source is read
     Then it composes an argv holding that subcommand
     And it does not splice `process.argv`
 
   @behavior
   Scenario: calls the entry point instead of importing the executable for its side effect
-    Given a generated launcher for a subcommand
+    Given a skill script's source for a subcommand
     When its source is read
     Then it imports the entry point
     And it does not import `bin/buddy-agent-harness.mjs`
 
   @behavior
-  Scenario: generates every shipped launcher, so no skill hand-rolls a second call form
-    Given every launcher a shipped skill carries
-    When the skill generator is run in check mode
-    Then no launcher is reported stale
-    And every launcher the generator wrote is a target it checks
+  Scenario: ships every launcher a skill runs, and each runs standalone with no node_modules above it
+    Given the package packed the way `npm publish` would
+    When the tarball is unpacked and inspected
+    Then every launcher listed for a shipped skill is present at the path its SKILL.md documents
+    And a copy of one skill's folder alone, with no `node_modules` above it, runs its launcher successfully
 
   # ── the reachable surface ──
 

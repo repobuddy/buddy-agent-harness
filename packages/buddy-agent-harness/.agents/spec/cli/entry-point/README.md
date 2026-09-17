@@ -11,7 +11,9 @@ Make the CLI's product reachable **in process**: what a command prints, and what
 
 `bin/buddy-agent-harness.mjs` is the process boundary — the only place that reads `process.argv` or writes `process.exitCode`. Everything under `src/` is the application: it is handed an argv, and it hands back an exit code.
 
-The boundary exists because callers that are not the process need to run a command. The shipped skills are exactly that. Each ships a launcher that runs a subcommand of the CLI it shipped beside, and with no callable entry point the only way to reach a subcommand was to **mutate global `process.argv` and side-effect-import the executable** — a workaround that ships identically in every skill and multiplies with each new one. The same absence makes the entry point unreachable from a test without stubbing one global and reading another back.
+The boundary exists because callers that are not the process need to run a command. The shipped skills are exactly that. Each ships a launcher — a bundle built from a `src/skill-scripts/<subcommand>.ts` source — that runs a subcommand of the CLI it shipped beside, and with no callable entry point the only way to reach a subcommand was to **mutate global `process.argv` and side-effect-import the executable** — a workaround that ships identically in every skill and multiplies with each new one. The same absence makes the entry point unreachable from a test without stubbing one global and reading another back.
+
+A launcher is a build artifact, never committed: `tsdown.config.ts` bundles and minifies each `src/skill-scripts/<subcommand>.ts`, and `scripts/generate-skills.ts` copies the result into every skill that runs it. It ships through the npm package's `files`, the same way `dist/` does. A skill installed from git rather than from the npm package carries no bundle at all, and its `SKILL.md` names the pinned `npx` invocation to fall back to for exactly that case.
 
 Reachability has two halves, because a caller wants one of two things:
 
@@ -28,13 +30,13 @@ Each layer is a thin composition of the one below it. Before this node only the 
 - **Exporting the application object.** `run` is exported; the `clibuilder` builder is not. Exporting it would make `clibuilder`'s builder shape part of this package's public API, so a `clibuilder` major would become a major here — a large surface to owe consumers for an internal convenience.
 - **Deciding what a command prints.** Each command owns its own output and its own format handling. This node owns how a command is *reached* and how its outcome is *reported back*.
 - **Specifying the report's shape.** The rows and sections of the `doctor` report are [`../diagnosis-report/`](../diagnosis-report/README.md)'s. This node owns that the report is reachable as a value, and that passing through the export does not reshape it.
-- **Removing every `process` read from the application.** `doctor` reports the path it was invoked as, and `clibuilder` gives a command no way to learn that except `process.argv[1]`. That one read stays, and is named here so it is a stated exception rather than an unnoticed leak. What leaves the application entirely is `process.exitCode`: no command writes it after this node, and the only sources that still hold a write are `bin`, the generated launchers, and the renderer whose template emits them.
+- **Removing every `process` read from the application.** `doctor` reports the path it was invoked as, and `clibuilder` gives a command no way to learn that except `process.argv[1]`. That one read stays, and is named here so it is a stated exception rather than an unnoticed leak. What leaves the application entirely is `process.exitCode`: no command writes it after this node, and the only sources that still hold a write are `bin`, the `src/skill-scripts/*.ts` entries, and the launchers built from them.
 - **Replacing the process boundary.** `bin` keeps reading `process.argv` and writing `process.exitCode`. The point is that it is the only thing that does.
 
 **Key terms**
 
 - **entry point** — `run(argv)`: argv in, exit code out.
-- **launcher** — the `scripts/<subcommand>.mjs` a skill ships and runs in preference to `npx`.
+- **launcher** — the `scripts/<subcommand>.mjs` a skill ships and runs in preference to `npx`: a bundle built from `src/skill-scripts/<subcommand>.ts`, shipped through the npm package rather than committed.
 - **exit code** — `0` the command did what was asked, `1` it was called correctly and could not complete, `2` it was called wrongly and the same invocation cannot succeed.
 
 ## Use Cases
@@ -58,10 +60,10 @@ Each layer is a thin composition of the one below it. Before this node only the 
 | agent parsing `doctor` | read a stream carrying the report and nothing else | failures are written to `stderr` |
 | test | drive a command and read its outcome without stubbing `process` | `run(argv)` |
 
-The structural scenarios — the `process.exitCode` scan, the launcher source reads, the generator's
-target list — introduce no further actor. Each discharges a goal already listed above: they are how
-the `skill launcher`'s "without touching a global" and `bin`'s "the only writer" are held to over
-time, rather than asserted once and left to erode.
+The structural scenarios — the `process.exitCode` scan, the skill-script source reads, the packed
+tarball's contents — introduce no further actor. Each discharges a goal already listed above: they
+are how the `skill launcher`'s "without touching a global" and `bin`'s "the only writer" are held to
+over time, rather than asserted once and left to erode.
 
 **Entry point**
 
@@ -141,16 +143,16 @@ export. Both kinds are booleans; only the first has a path through the graph.
 | --- | --- | --- |
 | J→K | a non-zero code | `applies a reported failure to the process` |
 | G→J, J→L | a zero returned over a code clibuilder recorded | `leaves a usage code clibuilder recorded on the process alone` |
-| — | the shipped application sources | `writes process.exitCode nowhere but bin, the launchers, and the renderer that emits them` |
+| — | the shipped application sources | `writes process.exitCode nowhere but bin, the skill-script sources, and the launchers built from them` |
 | — | the entry point's own module | `neither reads process.argv nor writes process.exitCode` |
 
 ### the skill launchers
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
-| — | a generated launcher's composed argv | `builds its argv with the subcommand inserted, mutating nothing` |
-| — | a generated launcher's imports | `calls the entry point instead of importing the executable for its side effect` |
-| — | the generator's target list | `generates every shipped launcher, so no skill hand-rolls a second call form` |
+| — | a skill script's composed argv | `builds its argv with the subcommand inserted, mutating nothing` |
+| — | a skill script's imports | `calls the entry point instead of importing the executable for its side effect` |
+| — | the packed tarball | `ships every launcher a skill runs, and each runs standalone with no node_modules above it` |
 
 ### the reachable surface
 
