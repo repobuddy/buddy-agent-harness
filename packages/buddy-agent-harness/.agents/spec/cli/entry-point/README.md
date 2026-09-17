@@ -20,7 +20,7 @@ Reachability has two halves, because a caller wants one of two things:
 | Layer | Answers | Consumer |
 | --- | --- | --- |
 | `diagnoseBridges` / `diagnoseInstructions` / `initializeHarnesses` | the raw diagnosis | already reachable, unchanged |
-| `listMcpServers` | a redacted inventory of configured MCP servers, project and (where documented) user scope | a consumer that wants what is configured, not a drift diagnosis, and without pulling in `clibuilder` |
+| `listMcpServers` | a redacted inventory of configured MCP servers — every scope `harnessRegistry` documents, plus VS Code, Windsurf/Devin Desktop, OpenCode, and Zed; Claude Code's project-local and plugin-shipped servers | a consumer that wants what is configured, not a drift diagnosis, and without pulling in `clibuilder` |
 | the `doctor` report builder | the assembled report **as a value** | a consumer that wants the answer |
 | `run(argv)` | that report serialized, plus an exit code | a consumer that wants **exactly what the command prints** |
 
