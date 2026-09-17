@@ -21,7 +21,7 @@ The CLI performs the linking step only. Consolidating existing configuration and
 
 ## Output
 
-The result reports the selected root, the canonical skill count, whether copying was requested, and three harness lists:
+The result reports the selected root, the canonical skill count, the count of documents in the project's [governance](/cli/governance/) override layer (`<root>/.agents/governances/`, created when absent), whether copying was requested, and three harness lists:
 
 | Field | Meaning |
 | --- | --- |

@@ -47,6 +47,8 @@ bridges[2]{harness,path,kind,status}:
 instructions[2]{harness,path,kind,status}:
   claude-code,CLAUDE.md,import,ok
   gemini-cli,.gemini/settings.json,none,missing
+governances[1]{name,scope}:
+  agent-tool-output,project
 findings[3]{path,problem,detail}:
   .claude/skills,degraded,expected a directory but found a regular file — checkout without core.symlinks
   .windsurf/skills,missing,no bridge at this path — the harness sees zero project skills
@@ -80,6 +82,7 @@ bridges[2]{harness,path,kind,status}:
 instructions[2]{harness,path,kind,status}:
   claude-code,CLAUDE.md,import,ok
   gemini-cli,.gemini/settings.json,settings-entry,ok
+governances: 0 governance overrides — no .agents/governances at project, user, or machine scope
 findings: 0 problems found — all 4 bridges resolve
 ```
 
@@ -101,6 +104,10 @@ instructions:
   harness      path                   kind    status
   claude-code  CLAUDE.md              import  ok
   gemini-cli   .gemini/settings.json  none    missing
+
+governances:
+  name               scope
+  agent-tool-output  project
 
 findings:
   path                   problem               detail
@@ -154,6 +161,12 @@ A repository with no root `AGENTS.md` gets one finding saying so, and no bridge 
 `.gemini/settings.json` may legally carry comments — the Gemini CLI loader strips them before parsing — so `doctor` strips them too. Reporting a commented settings file as broken would be a false alarm on a file that works. A trailing comma is still a parse error, because nothing documents it as accepted. [Harness Differences](/agent-configuration/harness-differences/#json-configuration-disagrees-about-comments) covers the disagreement between the two `settings.json` files.
 
 Which harnesses are checked is the same question as for skills: the registry records an instruction bridge per harness, and `--harness` gates both kinds together. Codex, Cursor, Copilot CLI, and Devin Desktop read `AGENTS.md` where it lies, so they get no rows — see [Harness Differences](/agent-configuration/harness-differences/).
+
+## Governance overrides
+
+`doctor` also reports the [governance](/cli/governance/) overrides in play on this machine: one row per override, `{ name, scope }`, drawn from the project, user, and managed layers only — never what a skill ships, which is that skill's own business. It is never a finding: an override is a choice someone made, not a fault, and it never changes `doctor`'s exit code.
+
+When there is no override, the section is the sentence `0 governance overrides — no .agents/governances at project, user, or machine scope` rather than an empty list, the same "state the zero" convention the rest of this report follows. No path is carried on either row shape — the scope names the directory, and a row naming one person's home directory is not a row another reader can act on.
 
 ## Divergence
 

@@ -1,4 +1,6 @@
-import { homedir } from 'node:os'
+import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
+import { homedir, tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { encode } from '@toon-format/toon'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { binPath, renderText } from '../command-output/command-output.ts'
@@ -112,12 +114,47 @@ describe('doctor command', () => {
 	})
 })
 
+describe('the governance override section', () => {
+	// Reported, never diagnosed: an override is a choice someone made, so it is a section of its own
+	// and the finding families are left exactly as they were.
+	it('reports the overrides the layers hold without turning any of them into a finding', () => {
+		const root = mkdtempSync(join(tmpdir(), 'doctor-governances-'))
+		mkdirSync(join(root, '.agents', 'governances'), { recursive: true })
+		writeFileSync(join(root, '.agents', 'governances', 'agent-tool-output.md'), '# Rules')
+
+		expect(run({ format: 'json', root })).toBe(0)
+
+		const report = JSON.parse(stdout.mock.calls.map(([value]) => String(value)).join(''))
+		expect(report.governances).toEqual([{ name: 'agent-tool-output', scope: 'project' }])
+		expect(typeof report.findings).toBe('string')
+	})
+
+	// No path on the row: the scope names the directory, and a row carrying one reader's home
+	// directory is not a row another reader can act on.
+	it('names the layer rather than the path', () => {
+		const root = mkdtempSync(join(tmpdir(), 'doctor-governances-'))
+		mkdirSync(join(root, '.agents', 'governances'), { recursive: true })
+		writeFileSync(join(root, '.agents', 'governances', 'agent-tool-output.md'), '# Rules')
+
+		run({ format: 'json', root })
+
+		expect(stdout.mock.calls.map(([value]) => String(value)).join('')).not.toContain(root)
+	})
+
+	it('states the zero outright when no layer holds an override', () => {
+		expect(buildDoctorReport('~/bin/bah', healthy).governances).toBe(
+			'0 governance overrides — no .agents/governances at project, user, or machine scope',
+		)
+	})
+})
+
 describe('buildDoctorReport', () => {
 	it('states the healthy answer outright rather than leaving findings empty', () => {
 		expect(buildDoctorReport('~/bin/bah', { ...healthy, instructions: [] })).toEqual({
 			bin: '~/bin/bah',
 			bridges: healthy.bridges,
 			instructions: [],
+			governances: '0 governance overrides — no .agents/governances at project, user, or machine scope',
 			findings: '0 problems found — the 1 bridge resolves and the configuration around them is current',
 		})
 	})

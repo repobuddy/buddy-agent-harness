@@ -21,6 +21,7 @@ The skill is for local agent-configuration setup only. It preserves user-authore
 - **active harness** — the harness that invokes initialization.
 - **enabled harness** — the active harness and any additional supported harnesses the user explicitly prefers.
 - **consumer root** — the Git repository root.
+- **project governance override layer** — `.agents/governances/` in the consumer repository, which this command creates when it is absent and counts. `../../cli/governance-overrides/` owns what the layer means and how it is read.
 
 ## Use Cases
 
@@ -38,7 +39,8 @@ flowchart TD
   A[Locate repository root] --> B{Requested output format valid?}
   B -->|no| C[Report format error]
   B -->|yes| D[Inspect canonical agent configuration]
-  D --> E[Read instructions, skills, and tool settings]
+  D --> D2[Create the canonical skills directory and the project governance override layer if absent]
+  D2 --> E[Read instructions, skills, and tool settings]
   E --> F[Select compatible canonical artifacts]
   F --> G[Select active harness]
   G --> H[Add user-preferred harnesses]
@@ -84,6 +86,9 @@ The consumer root is always the repository root, including in a monorepo. The ac
 | Write result               | JSON output requested                                    | `reports the requested copy option as JSON`                              |
 | Reject format              | an unsupported output format is requested                | `rejects an unsupported output format`                                   |
 
+The command creates the project governance override layer alongside the canonical skills directory, and reports how many documents it holds, for the same reason it reports the skill count: a repository is left with one obvious place to put an override rather than a path someone has to be told. It reads nothing from the layer and follows no lookup order — that is [`../../cli/governance-overrides/`](../../cli/governance-overrides/README.md).
+
 ## References
 
+- [`../../cli/governance-overrides/`](../../cli/governance-overrides/README.md) owns the layer this command creates, and the command that reads it.
 - [AGENTS.md](https://agents.md/) defines the open, project-level instruction format used for canonical agent behavior here.

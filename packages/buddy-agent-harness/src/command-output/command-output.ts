@@ -17,6 +17,20 @@ export function writeResult(value: object, format: OutputFormat): void {
 	process.stdout.write(`${encodeResult(value, format)}\n`)
 }
 
+/**
+ * The other thing a command can have to say: a document that already is the answer, written exactly
+ * as it was read. `governance show` is the caller — a rule set an agent is about to follow is not a
+ * result to encode, and a Markdown body run through TOON or through the text renderer comes back as
+ * one escaped line.
+ *
+ * It lives here rather than in that command because this module is the stdout boundary, and the
+ * boundary is the module rather than the function. A run still writes once: a command either encodes
+ * a result or writes a document, never both.
+ */
+export function writeDocument(content: string): void {
+	process.stdout.write(content.endsWith('\n') ? content : `${content}\n`)
+}
+
 function encodeResult(value: object, format: OutputFormat): string {
 	if (format === 'json') return JSON.stringify(value)
 	return format === 'text' ? renderText(value) : encode(value)
@@ -58,8 +72,15 @@ export function renderText(value: object): string {
 		.join('\n')
 }
 
-/** AXI §10: the executable's absolute path, with the user's home directory collapsed to `~`. */
+/**
+ * AXI §10: an absolute path with the user's home directory collapsed to `~`, so a reader handed a
+ * report can paste the path on a machine that is not the one it came from.
+ */
+export function collapseHome(home: string, path: string): string {
+	return home && path.startsWith(home + sep) ? `~${path.slice(home.length)}` : path
+}
+
+/** The same collapse for the executable that produced a report, which may not be known at all. */
 export function binPath(home: string, executable: string | undefined): string {
-	if (!executable) return 'buddy-agent-harness'
-	return home && executable.startsWith(home + sep) ? `~${executable.slice(home.length)}` : executable
+	return executable ? collapseHome(home, executable) : 'buddy-agent-harness'
 }

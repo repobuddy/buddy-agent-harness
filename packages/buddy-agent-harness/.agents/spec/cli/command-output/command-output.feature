@@ -58,6 +58,21 @@ Feature: Encode a command's result as the bytes on stdout
     Then a blank line separates the multi-line block from each neighbour
     And two scalars beside each other are not separated
 
+  # ── a command writing a document ──
+
+  @behavior
+  Scenario: writes a document verbatim, with no encoding around it
+    Given a command whose whole answer is a Markdown body it read
+    When it writes that document
+    Then the text reaches stdout exactly as it stands
+    And nothing else is written to that stream
+
+  @behavior
+  Scenario: ends the stream on a newline even when the document does not
+    Given a document that does not end in a newline
+    When it is written
+    Then one newline is added, and a document that already ends in one gains no second
+
   # ── a command naming the binary that ran ──
 
   @behavior
@@ -80,3 +95,10 @@ Feature: Encode a command's result as the bytes on stdout
     When the path is prepared for the report
     Then the package name stands in for it
     And the field is not left empty
+
+  @behavior
+  Scenario: collapses the home directory out of any path, not only the executable
+    Given a path under the user's home directory that is not an executable
+    When the path is prepared for a report
+    Then the home directory is replaced by `~`
+    And a path outside it, and a run with no home directory, are left alone

@@ -5,6 +5,12 @@ import { binPath, parseFormat, writeResult } from '../command-output/command-out
 import { type ConfigurationFinding, diagnoseConfiguration } from '../diagnose-configuration/diagnose-configuration.ts'
 import { diagnoseMcp } from '../diagnose-mcp/diagnose-mcp.ts'
 import { diagnoseNonstandard } from '../diagnose-nonstandard/diagnose-nonstandard.ts'
+import {
+	type GovernanceScope,
+	governanceLayers,
+	listGovernances,
+	overrideLayers,
+} from '../governance-overrides/governance-overrides.ts'
 import { parseHarnesses } from '../harness-registry/harness-registry.ts'
 import { type DiagnoseResult, diagnoseBridges } from './diagnose-bridges.ts'
 import { commandInvocation, type DoctorProblem, type RepairAction } from './doctor-guidance.ts'
@@ -14,6 +20,13 @@ export type DoctorReport = {
 	bin: string
 	bridges: DiagnoseResult['bridges']
 	instructions: DiagnoseResult['instructions']
+	/**
+	 * The governance overrides in play on this machine, each at the layer that would win. Reported
+	 * rather than diagnosed: an override is a choice someone made, not a fault, so it is a section of
+	 * its own and never a finding. No path is carried — the scope names the directory, and a row
+	 * naming one user's home directory is not a row another reader can act on.
+	 */
+	governances: { name: string; scope: GovernanceScope }[] | string
 	divergence?: DiagnoseResult['divergence']
 	/**
 	 * The repair is lifted out into `help`, so a finding row stays to the diagnosis itself. `problem`
@@ -39,8 +52,12 @@ export function buildDoctorReport(
 	bin: string,
 	result: DiagnoseResult,
 	configuration: ConfigurationFinding[] = [],
+	overrides: { name: string; scope: GovernanceScope }[] = [],
 ): DoctorReport {
 	const findings = [...result.findings, ...configuration]
+	const governances = overrides.length
+		? overrides
+		: '0 governance overrides — no .agents/governances at project, user, or machine scope'
 	// Both sections are bridges, so the healthy line counts them together rather than making a reader
 	// add up two numbers to learn that nothing is wrong.
 	if (!findings.length) {
@@ -50,6 +67,7 @@ export function buildDoctorReport(
 			bin,
 			bridges: result.bridges,
 			instructions: result.instructions,
+			governances,
 			findings: `0 problems found — ${bridges} and the configuration around them is current`,
 		}
 	}
@@ -58,6 +76,7 @@ export function buildDoctorReport(
 		bin,
 		bridges: result.bridges,
 		instructions: result.instructions,
+		governances,
 		...(result.divergence.length ? { divergence: result.divergence } : {}),
 		findings: findings.map(({ path, problem, detail }) => ({ path, problem, detail })),
 		// Deduped on the whole pair: several findings often share one repair, and repeating it reads as
@@ -106,9 +125,21 @@ export const doctorCommand: cli.Command = command({
 				...diagnoseMcp({ root, git, cli: commandInvocation }),
 				...diagnoseNonstandard({ root, cli: commandInvocation }),
 			]
+			// Read-only, and the override layers only: what a skill ships is the skill's business, and
+			// `doctor` reporting it would read as a repository setting nobody in this repository made.
+			const overrides = listGovernances(
+				overrideLayers(
+					governanceLayers({
+						root,
+						home: homedir(),
+						platform: process.platform,
+						programData: process.env['ProgramData'],
+					}),
+				),
+			).map(({ name, scope }) => ({ name, scope }))
 			// Exit stays 0 even with findings: the diagnosis succeeded, and a non-zero code reads to an
 			// agent as "this command is broken, try something else".
-			writeResult(buildDoctorReport(binPath(homedir(), process.argv[1]), result, configuration), format)
+			writeResult(buildDoctorReport(binPath(homedir(), process.argv[1]), result, configuration, overrides), format)
 			return exitCodes.success
 		} catch (error) {
 			process.stderr.write(`error: ${error instanceof Error ? error.message : 'Harness diagnosis failed.'}\n`)

@@ -98,6 +98,27 @@ Feature: Report every doctor finding through one output shape
     And a report with nothing wrong holds no `help` section at all
 
   @behavior
+  Scenario: reports the overrides the layers hold without turning any of them into a finding
+    Given a repository holding a project governance override
+    When the command builds its report
+    Then the report holds a `governances` section naming that override and its layer
+    And the override is not reported as a finding, a repair, or a change of exit code
+
+  @behavior
+  Scenario: names the layer rather than the path
+    Given a repository holding a project governance override
+    When the command builds its report
+    Then each row names the governance and the layer it came from
+    And no row carries the directory it was read from
+
+  @behavior
+  Scenario: states the zero outright when no layer holds an override
+    Given a repository with no override at project, user, or machine scope
+    When the command builds its report
+    Then the `governances` section holds a sentence stating that zero were found
+    And the section is present rather than absent
+
+  @behavior
   Scenario: encodes the report in the requested format and nothing else
     Given a report and each of the three supported formats in turn
     When the report is written

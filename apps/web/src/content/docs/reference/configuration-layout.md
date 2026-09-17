@@ -16,10 +16,14 @@ repository/
     ├── AGENTS.md             # shared repository guidance
     ├── skills/
     │   └── <skill>/SKILL.md  # reusable capabilities
+    ├── governances/
+    │   └── <name>.md         # governance overrides
     └── <tool-setting>        # separately named tool configuration
 ```
 
 Each immediate directory under `.agents/skills/` is a canonical skill. Files at that level are ignored.
+
+`.agents/governances/` is the project's [governance](/cli/governance/) override layer: one Markdown file per name, each overriding the copy a skill would otherwise load from its own package. `init` creates the directory when it is absent, and [`governance list`](/cli/governance/) and [`doctor`](/cli/doctor/) both report what is in it, alongside the user layer at `~/.agents/governances/` and a machine-wide managed layer.
 
 Tool settings stay in separately named files rather than being merged into one, because each setting has its own schema and compatibility rules.
 
