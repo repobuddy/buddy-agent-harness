@@ -49,17 +49,21 @@ Split the work by when it happens. No plugin needs a CLI at run time to read a g
 Stated once in `skill-design`. The skill stops at the first hit.
 
 1. `.agents/governances/<name>.md`, the project override. A file check.
-2. `buddy-agent-harness governance show <name> --overrides-only`, only when `buddy-agent-harness` is
-   already on `PATH` (`command -v`). It reads the user (`~/.agents/governances/`) and managed layers,
-   never returns the governance its own package ships, and exits non-zero when there is no override.
-   A skill that reads several governances checks `PATH` once.
+2. `buddy-agent-harness governance show <name> --overrides-only`, run only from an installed copy:
+   `upx --local-only buddy-agent-harness@^<major> governance show <name> --overrides-only` when `upx`
+   is on `PATH`, otherwise the bare command when `command -v buddy-agent-harness` finds it. The
+   command reads the user (`~/.agents/governances/`) and managed layers, never returns the governance
+   its own package ships, and exits non-zero when there is no override. `upx --local-only` exits 127
+   when no installed copy satisfies the range. Either way, the skill moves to step 3. A skill that
+   reads several governances resolves the runner once.
 3. `references/governances/<name>.md` inside the skill, the default.
 
 Step 2 returns overrides only: the skill was tested against its own copy, and a newer or older CLI
 must not replace that copy unless someone set an override. It never runs through `npx`, which would
 pay a registry lookup, and on a cold machine a download, on a step that usually finds nothing.
-`upx` falls back to `npx` in the same case; a `--local-only` mode in `@repobuddy/upx` would make it
-usable here.
+`upx --local-only` (`@repobuddy/upx` branch `feat/local-only`) finds repo-local and global installs
+and checks the version range, so a stale global copy without `--overrides-only` is skipped;
+`command -v` covers machines without `upx` but sees neither repo-local installs nor versions.
 
 ### Where the copies go
 
@@ -150,4 +154,3 @@ Governance copies differ from script bundles: they are committed (see Where the 
   scan skill bodies for references?
 - Does the managed override scope stay, and does `doctor` report a managed override that shadows
   a plugin's copy?
-- Should `@repobuddy/upx` gain a `--local-only` mode for optional steps like lookup step 2?
