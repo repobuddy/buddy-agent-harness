@@ -48,7 +48,14 @@ function transportOf(entry: Record<string, unknown>): McpTransport | undefined {
  * is a string is not a timeout, and letting it into the model would report a divergence whose real
  * cause is a typo the finding does not name.
  */
-function serverFrom(entry: Record<string, unknown>): McpServer {
+/**
+ * Exported for `mcp-inventory.ts`, which reads a handful of sources this module's own `McpConfig`
+ * shape cannot describe — a plugin's flat `.mcp.json`, a project entry nested inside `~/.claude.json`,
+ * and hosts whose `command` is an array or an object rather than a string. Each of those normalizes
+ * its raw entry into this same field shape before calling this function, so one reader still decides
+ * what counts as `transport`, `args`, and the rest.
+ */
+export function serverFrom(entry: Record<string, unknown>): McpServer {
 	const args = Array.isArray(entry['args']) && entry['args'].every((item) => typeof item === 'string')
 	const transport = transportOf(entry)
 	const env = stringMap(entry['env'])

@@ -12,6 +12,17 @@ export type HarnessName =
 	| 'gemini-cli'
 	| 'devin-desktop'
 	| 'windsurf'
+	/**
+	 * Recognized by `listMcpServers` (`mcp-inventory.ts`) only. These three have no entry in
+	 * `harnessRegistry` below and are never selected by `selectHarnesses` or `--harness`: they carry
+	 * no skills projection, instruction bridge, or `doctor` golden-set comparison, and adding one
+	 * here would risk drawing them into `diagnoseMcp`'s project-scope diagnosis, which this type
+	 * alone cannot do — only a `harnessRegistry` entry can. They exist here solely so the inventory's
+	 * `McpServerEntry.harness` field can name them.
+	 */
+	| 'vscode'
+	| 'opencode'
+	| 'zed'
 
 /** The two scopes a harness reads configuration at. Their roots differ; their shape does not. */
 export type HarnessScopeName = 'project' | 'user'
