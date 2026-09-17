@@ -39,6 +39,24 @@ export { diagnoseMcp } from './diagnose-mcp/diagnose-mcp.ts'
 export type { McpDirection } from './diagnose-mcp/mcp-baseline.ts'
 export type { McpField, McpServer, McpTransport } from './diagnose-mcp/mcp-model.ts'
 export { goldenSetPath } from './diagnose-mcp/mcp-sources.ts'
+export type { GovernanceListReport, GovernanceShowReport } from './governance-overrides/governance.command.ts'
+export { governanceCommand } from './governance-overrides/governance.command.ts'
+export type {
+	GovernanceDocument,
+	GovernanceEntry,
+	GovernanceLayer,
+	GovernanceScope,
+	LayerOptions,
+} from './governance-overrides/governance-overrides.ts'
+export {
+	deprecatedManagedGovernancesDir,
+	governanceLayers,
+	listGovernances,
+	managedGovernancesDir,
+	overrideLayers,
+	parseGovernanceName,
+	resolveGovernance,
+} from './governance-overrides/governance-overrides.ts'
 export type { Harness, HarnessName, HarnessScope, HarnessScopeName } from './harness-registry/harness-registry.ts'
 export { harnessRegistry } from './harness-registry/harness-registry.ts'
 export type { InstructionBridge } from './harness-registry/instruction-bridge.ts'

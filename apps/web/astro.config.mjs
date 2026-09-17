@@ -102,6 +102,7 @@ export default defineConfig({
 						{ label: 'init', slug: 'cli/init' },
 						{ label: 'doctor', slug: 'cli/doctor' },
 						{ label: 'dep-plugins', slug: 'cli/dep-plugins' },
+						{ label: 'governance', slug: 'cli/governance' },
 					],
 				},
 				{

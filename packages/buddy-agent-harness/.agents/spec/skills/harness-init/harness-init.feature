@@ -93,6 +93,13 @@ Feature: Initialize local agent skills across coding harnesses
     Then the repository contains `.agents/skills` and the command reports the enabled harnesses
 
   @behavior
+  Scenario: creates the project override layer and reports what it holds
+    Given a consumer repository has no `.agents/governances` directory
+    When the agent runs `buddy-agent-harness init`
+    Then the repository contains `.agents/governances`
+    And the result states how many governance documents it holds
+
+  @behavior
   Scenario: records nothing about the run on disk
     Given a consumer repository has canonical skill `review`
     When the agent runs `buddy-agent-harness init`

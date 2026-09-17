@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { doctorCommand } from '../diagnose-bridges/doctor.command.ts'
+import { governanceCommand } from '../governance-overrides/governance.command.ts'
 import { activate, harnessCommand, initCommand } from './init.command.ts'
 import { initializeHarnesses } from './initialize-harnesses.ts'
 
@@ -34,6 +35,7 @@ describe('init command', () => {
 			skipped: [],
 			deprecated: [],
 			skills: 1,
+			governances: 0,
 			copied: true,
 		})
 
@@ -56,6 +58,7 @@ describe('init command', () => {
 			skipped: [],
 			deprecated: [],
 			skills: 0,
+			governances: 0,
 			copied: false,
 		})
 
@@ -90,6 +93,7 @@ describe('init command', () => {
 			skipped: [],
 			deprecated: [{ name: 'windsurf', replacedBy: 'devin-desktop' }],
 			skills: 0,
+			governances: 0,
 			copied: false,
 		})
 
@@ -112,6 +116,6 @@ describe('init command', () => {
 		expect(addCommand).toHaveBeenCalledWith(harnessCommand)
 		// The mounted name is what consumers type, so it is pinned here rather than left to the object.
 		expect(harnessCommand.name).toBe('agent-harness')
-		expect(harnessCommand.commands).toEqual([initCommand, doctorCommand])
+		expect(harnessCommand.commands).toEqual([initCommand, doctorCommand, governanceCommand])
 	})
 })

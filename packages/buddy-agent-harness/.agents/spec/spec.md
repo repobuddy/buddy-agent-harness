@@ -49,6 +49,7 @@ This project mirrors its source surfaces so a contributor can find a spec beside
 | [`cli/mcp-diagnosis/`](./cli/mcp-diagnosis/README.md) | Report drift between a golden MCP server set and the harness copies of it |
 | [`cli/nonstandard-configuration/`](./cli/nonstandard-configuration/README.md) | Report agent configuration that only one harness can read |
 | [`cli/diagnosis-report/`](./cli/diagnosis-report/README.md) | The one output shape every finding family is reported through |
+| [`cli/governance-overrides/`](./cli/governance-overrides/README.md) | Where a governance comes from when someone has overridden it, and how a caller reads it |
 | [`cli/entry-point/`](./cli/entry-point/README.md) | Reach a command without going through the process |
 | [`cli/command-output/`](./cli/command-output/README.md) | How a command's result becomes the bytes on stdout |
 | [`workflows/`](./workflows/README.md) | Index over the flows that cross the skill and CLI surfaces |

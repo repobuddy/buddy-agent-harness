@@ -1,6 +1,6 @@
 import { sep } from 'node:path'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { binPath, parseFormat, renderText, writeResult } from './command-output.ts'
+import { binPath, collapseHome, parseFormat, renderText, writeDocument, writeResult } from './command-output.ts'
 
 const stdout = vi.spyOn(process.stdout, 'write').mockImplementation(() => true)
 
@@ -34,6 +34,33 @@ describe('writeResult', () => {
 
 		// Nothing else reaches the stream: one call per write, so a second writer would show up here.
 		expect(stdout).toHaveBeenCalledTimes(3)
+	})
+})
+
+describe('writeDocument', () => {
+	// A rule set an agent is about to follow is the answer, not a value to encode: run through TOON or
+	// through the text renderer it comes back as one escaped line.
+	it('writes a document verbatim, with no encoding around it', () => {
+		writeDocument('# Rules\n\nState the zero.\n')
+
+		expect(stdout).toHaveBeenCalledWith('# Rules\n\nState the zero.\n')
+		expect(stdout).toHaveBeenCalledTimes(1)
+	})
+
+	it('ends the stream on a newline even when the document does not', () => {
+		writeDocument('# Rules')
+
+		expect(stdout).toHaveBeenCalledWith('# Rules\n')
+	})
+})
+
+describe('collapseHome', () => {
+	it('collapses the home directory out of any path, not only the executable', () => {
+		expect(collapseHome(`${sep}home${sep}dev`, `${sep}home${sep}dev${sep}.agents${sep}governances`)).toBe(
+			`~${sep}.agents${sep}governances`,
+		)
+		expect(collapseHome(`${sep}home${sep}dev`, `${sep}etc${sep}governances`)).toBe(`${sep}etc${sep}governances`)
+		expect(collapseHome('', `${sep}etc${sep}governances`)).toBe(`${sep}etc${sep}governances`)
 	})
 })
 

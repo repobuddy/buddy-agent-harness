@@ -13,6 +13,8 @@ Both commands the package publishes end the same way: they build a plain object 
 
 **It is one boundary, deliberately.** Internal logic stays on plain objects and nothing below the command touches stdout, so a caller that is not a process can run the whole command and get a value back rather than a stream (`../entry-point/`). Adding a second place that writes would put a line of some other shape in the middle of what an agent is parsing.
 
+**The boundary is this module, not one function in it.** A command has two things it can have to say. Most have a **result**: a plain object, encoded in the requested format. One has a **document**: a governance (`../governance-overrides/`), which already is the answer and is written exactly as it was read, because a Markdown body run through TOON or through the text renderer comes back as one escaped line. Both writes live here and a run makes exactly one of them, which is what keeps the property the paragraph above is about.
+
 **The default consumer is a program.** TOON is the default because an agent parses it, JSON is for everything else, and text exists for reading over someone's shoulder. That ordering is why an unsupported format is an **error** rather than a fallback: a caller that misspelled `--format` and got TOON anyway would parse the wrong thing and never learn why. One function decides that for both commands, which is why the refusal is specified here and the format list a given command advertises is that command's.
 
 **Text is rendered from the shape, not from the report.** The renderer knows nothing about findings, bridges, or harnesses. It knows four shapes — a scalar, a nested record, a list of records, a list of primitives — and renders each one way. A field added to `doctor`'s report therefore renders without this layer being touched, which is the same property `../diagnosis-report/` exists to protect one level up.
@@ -20,6 +22,7 @@ Both commands the package publishes end the same way: they build a plain object 
 **Key terms**
 
 - **result** — the plain object a command built: the thing to be encoded, whatever it holds.
+- **document** — text that is already the answer, written verbatim rather than encoded.
 - **format** — one of `toon`, `json`, `text`. Nothing else is a format, including the absence of a value.
 - **block** — what one top-level key of the result renders as in text: one line, or several.
 - **cell** — one column's value in one row of a rendered table. A row that lacks the column has an empty one.
@@ -37,10 +40,11 @@ Both commands the package publishes end the same way: they build a plain object 
 
 **Actors**
 
-- **`doctor` command and `init` command** — the only callers of the encoder. They hand over a result and a format string and write nothing themselves. The executable path is asked for by `doctor` alone today, because it is the only report that names the binary that produced it; it lives here because collapsing a path is a formatting decision rather than a diagnostic one.
+- **`doctor` command and `init` command** — the callers of the encoder. They hand over a result and a format string and write nothing themselves. The executable path is asked for by `doctor` alone today, because it is the only report that names the binary that produced it; it lives here because collapsing a path is a formatting decision rather than a diagnostic one.
 - **`doctor` skill** — parses the default TOON output. The consumer the default exists for, and the reason an unknown format is not quietly satisfied.
 - **person at a shell** — reads `--format text`, and is the only reason the text renderer exists at all. Also the reader who has to **act on** a report produced somewhere else: a path carrying someone's home directory is one they cannot paste, and a report naming no binary at all is one they cannot reproduce.
 - **another program** — reads `--format json`, and needs the stream to hold the encoded result and nothing else.
+- **`governance show`** — the one caller with a document rather than a result, and the one reason the verbatim write exists. What it puts on stdout is what an agent is about to follow, so nothing may be added to it or escaped inside it.
 
 **Goals, and where each is served**
 
@@ -50,6 +54,7 @@ Both commands the package publishes end the same way: they build a plain object 
 | `doctor` skill | parse one document per run, in the format it asked for | the encoded line on stdout |
 | person at a shell | read the same result as aligned columns rather than as a wire format | `--format text` |
 | another program | never be handed a format it did not ask for | the refusal of an unsupported format |
+| `governance show` | hand over a Markdown document unchanged | the document write |
 | person at a shell | rerun what produced a report they were handed, without editing someone's home directory out of the path first | the executable path in the report |
 
 **Entry point**
@@ -57,13 +62,16 @@ Both commands the package publishes end the same way: they build a plain object 
 | Entry point | Trigger | Inputs | Outcome |
 | --- | --- | --- | --- |
 | a command writing its result | a command has finished its work and holds the object to report | the result object and the requested format | one encoded document written to stdout, followed by a newline |
+| a command writing a document | a command's whole answer is text that was already written, and encoding it would damage it | the document | the text written to stdout exactly as it stands, ending on a newline |
 | a command naming the binary that ran | a reader needs to rerun what produced a report, on a machine that may not be theirs | the user's home directory and the executable path | a path they can paste: the home directory collapsed to `~`, and never an empty field |
 
-Each entry point enters its own sub-graph in `## Control Flow`: the first *Writing a result*, the second *Naming the binary that ran*.
+Each entry point enters a sub-graph in `## Control Flow`: the first two *Writing a result or a document*, the third *Naming the binary that ran*.
 
 **Surface**
 
-Three things, and nothing else crosses the boundary: the **format check**, which answers with a format or throws; the **write**, which encodes a result and puts it on stdout; and the **executable path**, which collapses a home directory. There is no option, no configuration, and no state.
+Four things, and nothing else crosses the boundary: the **format check**, which answers with a format or throws; the **result write**, which encodes a result and puts it on stdout; the **document write**, which puts text on stdout as it stands; and the **home collapse**, which shortens a path under the user's home directory. There is no option, no configuration, and no state.
+
+The home collapse is one function used twice: `doctor` asks for it for the executable that produced a report, where an unknown path falls back to the package name, and `../governance-overrides/` asks for it for the layer directories it reports. The fallback belongs to the executable, not to the collapse.
 
 **How each shape renders as text**
 
@@ -74,6 +82,7 @@ Three things, and nothing else crosses the boundary: the **format check**, which
 
 **Extensions**
 
+- **A document does not end in a newline.** One is added, so the stream ends where a reader expects and a shell prompt does not land mid-line.
 - **The format is not one of the three.** An error, never a silent fallback — and the same for an absent value, which is not the same thing as the command's default.
 - **A record in a list carries a key the others do not.** The column exists for every row; the rows that lack it carry a blank cell.
 - **A value is `undefined` in a cell.** Rendered as nothing rather than as the word.
@@ -82,19 +91,24 @@ Three things, and nothing else crosses the boundary: the **format check**, which
 
 ## Control Flow
 
-Two entry points with genuinely different decisions, so one sub-graph each.
+Two sub-graphs, because the decisions are genuinely different. The result path and the document path share only the write itself, which is the point of the module owning both.
 
-### Writing a result
+### Writing a result or a document
 
 ```mermaid
 flowchart TD
+  Z[A command holds a document that already is the answer] --> Y{Does it end in a newline?}
+  Y -->|no| X[Add one]
+  Y -->|yes| W[Leave it]
+  X --> H
+  W --> H
   A[A command holds a result and the requested format] --> B{Is the format toon, json, or text?}
   B -->|no| C[Throw, naming the three formats]
   B -->|yes| D{Which one?}
   D -->|toon| E[Encode as TOON]
   D -->|json| F[Encode as JSON]
   D -->|text| G[Render each key by its shape: scalar, record, table, or list]
-  E --> H[Write the encoding to stdout, followed by one newline]
+  E --> H[Write to stdout, ending on one newline]
   F --> H
   G --> H
 ```
@@ -110,11 +124,20 @@ flowchart TD
   S -->|no| U[Use the path as it stands]
 ```
 
+The document path has one decision and no format: a document is not encoded, so there is nothing for a format to select. That is why `show`'s `text` writes the document while its other two formats build a result and take the other path.
+
 `Q`'s known-path branch carries no outcome of its own — it is settled one decision later at `S` — so the two rows there cover it rather than a row of its own manufacturing a distinction the code does not make.
 
 The two graphs never meet, and that is the point: the path is collapsed **before** the result is built rather than while it is encoded, so it is a value in the result like any other and the encoder never reads a key by name. A run with no home directory to collapse takes the same branch as a path outside it — there is no prefix to match, which is one decision rather than two.
 
 ## Scenario map
+
+### a command writing a document
+
+| Edge | Path (Given) | Scenario |
+| --- | --- | --- |
+| the document write | a Markdown body | `writes a document verbatim, with no encoding around it` |
+| the document write | a document with no trailing newline | `ends the stream on a newline even when the document does not` |
 
 ### a command writing its result
 
@@ -136,9 +159,11 @@ The two graphs never meet, and that is the point: the path is collapsed **before
 | S→T | an executable under the user's home directory | `collapses the home directory` |
 | S→U | an executable elsewhere, and a run with no home directory | `leaves a path outside the home directory alone` |
 | Q→R | no executable path at all | `falls back to the package name when the executable is unknown` |
+| S→T, S→U | a path that is not an executable | `collapses the home directory out of any path, not only the executable` |
 
 ## References
 
 - `../../../../src/command-output/command-output.ts` is the whole layer: the format check, the stdout write, the text renderer, and the home collapse.
+- `../governance-overrides/` is the caller of the document write, and states why a governance is written rather than encoded.
 - `../diagnosis-report/` states which of these formats `doctor` advertises and why the healthy answer is stated outright rather than left empty; this node states how any of it is encoded.
 - AXI §10 backs the home collapse: a path that embeds a username is one a reader cannot paste back.

@@ -10,3 +10,5 @@ The user-facing glossary at `apps/web/src/content/docs/reference/glossary.md` is
 - **harness** — a coding-agent runtime with its own skill discovery location.
 - **active harness** — the coding-agent runtime in which initialization is invoked.
 - **enabled harness** — the active harness plus any additional harnesses the user explicitly chose to install.
+- **governance** — a version-pinned Markdown rule set a skill loads, addressed by a name that is a file stem.
+- **override layer** — one of the three directories a governance can be overridden in: the project's `.agents/governances/`, the user's `~/.agents/governances/`, and the machine-wide directory. The copy a skill ships is not one.

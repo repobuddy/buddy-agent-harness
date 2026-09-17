@@ -1,4 +1,5 @@
 import { join } from 'node:path'
+import { countProjectGovernances } from '../governance-overrides/governance-overrides.ts'
 import { type HarnessName, selectHarnesses } from '../harness-registry/harness-registry.ts'
 import { countSkills, type ForceSelection, projectSkills } from '../skill-projection/skill-projection.ts'
 
@@ -18,6 +19,12 @@ export type InitializeResult = {
 	/** Enabled harnesses whose name has been superseded, as `{ name, replacedBy }`. */
 	deprecated: { name: HarnessName; replacedBy: HarnessName }[]
 	skills: number
+	/**
+	 * Documents in the project override layer, which this run creates when it is absent. Counted for
+	 * the same reason `skills` is: a fresh repository reports its zero rather than leaving a reader to
+	 * wonder whether the directory was looked at.
+	 */
+	governances: number
 	copied: boolean
 }
 
@@ -29,6 +36,7 @@ export function initializeHarnesses({
 }: InitializeOptions): InitializeResult {
 	const canonicalSkills = join(root, '.agents', 'skills')
 	const skills = countSkills(canonicalSkills)
+	const governances = countProjectGovernances(root)
 	const harnesses = selectHarnesses(root, preferred)
 	const { linked, skipped } = projectSkills({ root, canonicalSkills, harnesses, copy, force })
 
@@ -42,6 +50,7 @@ export function initializeHarnesses({
 			.filter((harness) => harness.deprecated)
 			.map((harness) => ({ name: harness.name, replacedBy: harness.deprecated as HarnessName })),
 		skills,
+		governances,
 		copied: copy,
 	}
 }

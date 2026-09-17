@@ -2,7 +2,7 @@
 
 > Descriptive index — the package's command-line product surface.
 
-The package publishes one binary with two commands: `init`, which writes a repository's canonical configuration and the bridges into it, and `doctor`, which reports what is wrong with what is already there.
+The package publishes one binary. `init` writes a repository's canonical configuration and the bridges into it, `doctor` reports what is wrong with what is already there, and `governance` reads the rule sets a repository, a person, or a machine owner has overridden.
 
 `doctor` is the larger surface, and it is **one command reporting several families of fault through one output shape**. The families are independent — each answers a different question about the same repository, and a single run reports as many as it finds, across all of them. The shape they share is a node of its own, because a field added to the report belongs to every family at once and to none of them in particular, and because the set of families grows.
 
@@ -13,14 +13,20 @@ The package publishes one binary with two commands: `init`, which writes a repos
 | [`configuration-diagnosis/`](./configuration-diagnosis/README.md) | Whether the configuration around those bridges is present and wrong |
 | [`mcp-diagnosis/`](./mcp-diagnosis/README.md) | Whether the golden MCP server set and the harness copies of it have drifted |
 | [`diagnosis-report/`](./diagnosis-report/README.md) | The one output shape every family is reported through |
+| [`governance-overrides/`](./governance-overrides/README.md) | Where a governance comes from when someone has overridden it |
 | [`entry-point/`](./entry-point/README.md) | How the package is called, and what it answers with |
-| [`command-output/`](./command-output/README.md) | How a result becomes the bytes on stdout, for both commands |
+| [`command-output/`](./command-output/README.md) | How a result becomes the bytes on stdout, for every command |
 
 The cross-surface flow these findings feed — one surface detects, another repairs — is at [`../workflows/detect-and-repair/`](../workflows/detect-and-repair/README.md).
 
+[`governance-overrides/`](./governance-overrides/README.md) is not a diagnosis. It answers a question a skill asks on the way to doing something else — *has anyone
+overridden this rule set* — and it answers it with an exit code as much as with a document. Its one
+seam into `doctor` is a report section, and its one seam into `init` is a directory; neither is a
+finding, because an override is a choice someone made rather than a fault.
+
 ## Where the boundaries fall
 
-The shared output layer is [`command-output/`](./command-output/README.md): `diagnosis-report/` states which formats `doctor` accepts, and that node states how a result becomes those bytes, for both commands rather than for either.
+The shared output layer is [`command-output/`](./command-output/README.md): `diagnosis-report/` states which formats `doctor` accepts, and that node states how a result becomes those bytes, for every command rather than for any one of them.
 
 The `init` **skill**'s write behavior is [`../skills/init/`](../skills/init/README.md) — what it consolidates, what it declines to invent, and the writes it makes without asking. [`../skills/harness-init/`](../skills/harness-init/README.md) keeps the **`init` command**: its options, its formats, and its error behavior. The skill every instruction-bridge repair routes to is a different subject, and now says what arriving there does.
 

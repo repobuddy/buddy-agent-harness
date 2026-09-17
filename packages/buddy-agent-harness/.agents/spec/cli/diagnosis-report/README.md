@@ -20,7 +20,7 @@ That shape had no owner, and the cost was concrete. When a field was added to `f
 **Key terms**
 
 - **report** — what one `doctor` run writes to stdout: one object, encoded once.
-- **section** — a top-level key of that object: `bin`, `bridges`, `instructions`, `divergence`, `findings`, `help`.
+- **section** — a top-level key of that object: `bin`, `bridges`, `instructions`, `governances`, `divergence`, `findings`, `help`.
 - **finding row** — one entry in `findings`: a `path`, a `problem` name, and a `detail` in prose. The repair is not on the row; it is in `help`.
 - **repair** — one entry in `help`: a `command` and an `instruction`. Together they say what fixes a finding and whether a program may do it.
 - **healthy answer** — what `findings` holds when nothing is wrong: a sentence stating the zero with its context, in place of the rows.
@@ -28,6 +28,7 @@ That shape had no owner, and the cost was concrete. When a field was added to `f
 **Non-goals**
 
 - **Deciding what is wrong.** Every fault is a detecting node's: `../bridge-resolution/`, `../instruction-bridges/`, `../configuration-diagnosis/`, `../mcp-diagnosis/`.
+- **Where a governance override comes from.** `../governance-overrides/` owns the layers and their order. What is stated here is only that the report carries a section for what they hold, and that nothing in it is a finding.
 - **Deciding who repairs it.** `../../workflows/detect-and-repair/`. This node states which fields exist; that node states which of them a consumer may route on.
 - **The encoder itself.** `--format` is `doctor`'s surface and is specified here, but the TOON/JSON/text encoder and its table alignment are shared with the `init` command: `../command-output/`.
 - **The `init` command's report.** A different report with a different shape.
@@ -70,6 +71,12 @@ That shape had no owner, and the cost was concrete. When a field was added to `f
 
 `divergence` and `help` are the two **conditional** sections: `divergence` is present only when a bridge has diverged, and `help` only when something is wrong. Each answers a question that has no meaning otherwise, and a consumer branches on the section being **absent** rather than empty.
 
+`governances` is the one section that reports something that is **not a fault**. An override is a choice someone made, so it is reported rather than diagnosed: it never becomes a finding row, never produces a `help` entry, and never changes the exit code. It is present on every report for the same reason `bridges` is — a reader learns that the layers were looked at rather than having to infer it — and it holds either one row per override or the sentence stating the zero.
+
+Each row is the governance's **name**, the **layer** it came from, and the **directory** it was read from, with the user's home directory collapsed to `~`. The path is on the row because the layer no longer settles it: there are two machine-wide layers, and an admin reading a row from the deprecated one has to see which directory answered before they can move it.
+
+Whether an override that **shadows** another layer's is worth calling out is open. Today it is not: a row names the layer that wins and says nothing about what it displaced.
+
 `findings` holds either the rows or the healthy sentence, never both and never neither.
 
 `help` lifts the repairs out of the finding rows, so a row stays to the diagnosis itself. Each entry is **two columns**, and the pair is what a consumer branches on:
@@ -89,6 +96,7 @@ The guard is worth keeping because it is the table that makes it unreachable, no
 
 **Extensions**
 
+- **No layer holds an override.** `governances` holds a sentence stating the zero and naming the three layers that were looked at, for the same reason the healthy `findings` answer is stated outright.
 - **Nothing is wrong.** `findings` holds a sentence stating the count and what it covers, counting the skills bridges and the instruction bridges together — a reader learns nothing is wrong from one number rather than by adding two. The count is worded for one bridge as well as for many.
 - **Findings exist.** The exit code stays **0**. The diagnosis succeeded; a non-zero code reads to an agent as "this command is broken, try something else", which sends it looking for another way to ask instead of at the report it was just handed.
 - **The diagnosis fails, the format is invalid, or a harness is not supported.** The message goes to **stderr** and the exit code is **1**. That is the only thing that distinguishes a broken tool from a broken repository.
@@ -101,7 +109,8 @@ flowchart TD
   A[Parse the format and the requested harnesses] --> B{Format supported and every harness known?}
   B -->|no| C[Write the reason to stderr and exit 1]
   B -->|yes| D[Run every family against the root]
-  D --> E{Any finding?}
+  D --> D2[Read the override layers and set governances to the rows or the stated zero]
+  D2 --> E{Any finding?}
   E -->|no| F[Set findings to the healthy sentence, counting both bridge sections]
   E -->|yes| G[Set findings to one row per finding: path, problem, detail]
   G --> H[Lift every repair into help as a command and an instruction, deduped on the pair]
@@ -130,6 +139,9 @@ flowchart TD
 | G→H | `diverged-bridge`, `diverged-both`, `diverged-unknown` | `gives a diverged bridge no command, so executing every command destroys nothing` |
 | J | a repair with no runnable command | `emits both columns always, so the tabular encoding does not degrade` |
 | I | a diverged bridge, and a report with none | `adds a divergence section only when a bridge has diverged` |
+| D2 | a repository holding a project override | `reports the overrides the layers hold without turning any of them into a finding` |
+| D2 | a repository holding a project override | `names the layer rather than the path` |
+| D2 | no override at any layer | `states the zero outright when no layer holds an override` |
 | J | each supported format | `encodes the report in the requested format and nothing else` |
 | K | findings and no findings | `exits 0 whether or not it found something` |
 | →J | any | `names the executable that produced the report, with the home directory collapsed` |
@@ -137,4 +149,5 @@ flowchart TD
 ## References
 
 - `../../../../src/command-output/command-output.ts` holds the encoder shared with the `init` command, including the `~` collapse in `bin` (AXI §10) and the text renderer's table alignment.
+- `../governance-overrides/` owns the layers this report's `governances` section is drawn from, their order, and why an override is never a finding.
 - AXI §5 backs the healthy answer: the zero is stated with its context so an agent does not re-run with other flags to confirm that an empty section really meant "nothing wrong".
