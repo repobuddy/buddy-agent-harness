@@ -20,6 +20,7 @@ Reachability has two halves, because a caller wants one of two things:
 | Layer | Answers | Consumer |
 | --- | --- | --- |
 | `diagnoseBridges` / `diagnoseInstructions` / `initializeHarnesses` | the raw diagnosis | already reachable, unchanged |
+| `listMcpServers` | a redacted inventory of configured MCP servers, project and (where documented) user scope | a consumer that wants what is configured, not a drift diagnosis, and without pulling in `clibuilder` |
 | the `doctor` report builder | the assembled report **as a value** | a consumer that wants the answer |
 | `run(argv)` | that report serialized, plus an exit code | a consumer that wants **exactly what the command prints** |
 
@@ -28,6 +29,7 @@ Each layer is a thin composition of the one below it. Before this node only the 
 **Non-goals**
 
 - **Exporting the application object.** `run` is exported; the `clibuilder` builder is not. Exporting it would make `clibuilder`'s builder shape part of this package's public API, so a `clibuilder` major would become a major here — a large surface to owe consumers for an internal convenience.
+- **Wiring `listMcpServers` through `doctor`.** It is a separate export for a separate question — an inventory, not a diagnosis — and it reads user-scope configuration `doctor` deliberately does not. Its own module and everything it imports carries no dependency on `clibuilder`, so a consumer can bundle it without pulling in this package's CLI at all.
 - **Deciding what a command prints.** Each command owns its own output and its own format handling. This node owns how a command is *reached* and how its outcome is *reported back*.
 - **Specifying the report's shape.** The rows and sections of the `doctor` report are [`../diagnosis-report/`](../diagnosis-report/README.md)'s. This node owns that the report is reachable as a value, and that passing through the export does not reshape it.
 - **Removing every `process` read from the application.** `doctor` reports the path it was invoked as, and `clibuilder` gives a command no way to learn that except `process.argv[1]`. That one read stays, and is named here so it is a stated exception rather than an unnoticed leak. What leaves the application entirely is `process.exitCode`: no command writes it after this node, and the only sources that still hold a write are `bin`, the `src/skill-scripts/*.ts` entries, and the launchers built from them.

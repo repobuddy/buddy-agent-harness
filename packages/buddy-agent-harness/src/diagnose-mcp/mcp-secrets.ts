@@ -99,3 +99,20 @@ export function credentialFields(server: McpServer): string[] {
 		...(server.url && urlHoldsCredential(server.url) ? ['url'] : []),
 	]
 }
+
+/**
+ * `args` with any `--flag=value` pair dropped whose flag names a credential and whose value is a
+ * literal rather than a reference — the same test `credentialKey` and `holdsLiteral` apply to `env`
+ * and `headers`, applied here to the one field that carries names and values in a single string
+ * instead of a map.
+ *
+ * A positional argument, or a flag with no `=`, passes through unfiltered: `-y` and a package name
+ * are not a place a credential's value is written, and there is no key in either to test.
+ */
+export function nonSecretArgs(args: readonly string[] | undefined): string[] {
+	return (args ?? []).filter((arg) => {
+		const at = arg.indexOf('=')
+		if (at === -1) return true
+		return !(credentialKey(arg.slice(0, at)) && holdsLiteral(arg.slice(at + 1)))
+	})
+}
