@@ -131,3 +131,5 @@ The golden set gets the same checks as every harness copy. A user pastes a token
 Nothing writes. `doctor` detects drift; it does not create a harness's MCP file, update a stale copy, or pull a target-side edit back into the golden set. Forward projection and reconcile are writes, they need an approval-gated home, and they are a later change. Until then, each finding names its repair and a person (or the [`doctor` skill](/skills/doctor/), as a separate approved step) carries it out.
 
 Project scope only. User-scope MCP configuration — `~/.codex/config.toml`, `~/.claude.json`, `claude_desktop_config.json` — holds much of the world's servers and stays described, never read and never written. Reading a user's home directory into output that lands in every session's transcript is a wider blast radius than diagnosis needs.
+
+This is `doctor`'s own boundary, not the package's. A consumer that explicitly wants an inventory of configured servers — project and user scope alike, and still redacted of every credential — imports `listMcpServers` from the package's library entry rather than going through `doctor`.
