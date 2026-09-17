@@ -40,16 +40,46 @@ Split the work by when it happens. No plugin needs a CLI at run time to read a g
 | When | Owner | Job |
 | --- | --- | --- |
 | Authoring | the package that owns the subject | Publishes the governance as a plain Markdown file. |
-| Build | `universal-plugin` | A plugin declares the governances its skills use. The build copies each one to `<skill>/references/governances/<name>.md` in the skill folders that reference it, from the owning package installed as a dev dependency. The copies are build output: gitignored, produced in `prepack`, and shipped in the npm package. |
-| Run | nobody | The skill reads its own copy. |
+| Build | `universal-plugin` | A plugin declares the governances its skills use. The build copies each one to `<skill>/references/governances/<name>.md` in the skill folders that reference it, from the owning package installed as a dev dependency. The copies are committed, with a check that fails when a copy differs from its source. |
+| Run | the skill | Resolves the governance in the order below; its own copy is the default. |
 | Local override | `buddy-agent-harness` | Manages `.agents/governances/` at project, user, and managed scope: `init` creates it, `doctor` reports it, and `governance list\|show` resolves a name for people and for agents working outside a skill. |
 
-The run-time rule, stated once in `skill-design`: read `.agents/governances/<name>.md` when it
-exists, otherwise `references/governances/<name>.md` inside the skill folder. An agent follows that
-with two file checks.
+### Lookup order at run time
 
-The copies sit in their own `governances/` subfolder so they never collide with a skill's
-hand-written references, read as generated at a glance, and mirror the override path.
+Stated once in `skill-design`. The skill stops at the first hit.
+
+1. `.agents/governances/<name>.md`, the project override. A file check.
+2. `buddy-agent-harness governance show <name> --overrides-only`, only when `buddy-agent-harness` is
+   already on `PATH` (`command -v`). It reads the user (`~/.agents/governances/`) and managed layers,
+   never returns the governance its own package ships, and exits non-zero when there is no override.
+   A skill that reads several governances checks `PATH` once.
+3. `references/governances/<name>.md` inside the skill, the default.
+
+Step 2 returns overrides only: the skill was tested against its own copy, and a newer or older CLI
+must not replace that copy unless someone set an override. It never runs through `npx`, which would
+pay a registry lookup, and on a cold machine a download, on a step that usually finds nothing.
+`upx` falls back to `npx` in the same case; a `--local-only` mode in `@repobuddy/upx` would make it
+usable here.
+
+### Where the copies go
+
+`<skill>/references/governances/<name>.md`. The Agent Skills specification allows any directories
+in a skill; the subfolder keeps copies apart from hand-written references, reads as generated, and
+has the same shape as the override path.
+
+The copies are committed. They are small text, and a git-sourced install needs its default to work
+offline. This is the exception to keeping build output out of git, which applies to script bundles.
+
+### Keeping references one level deep
+
+The specification asks that `SKILL.md` reference every file directly, without chains. Governances
+reference each other, so the copy step:
+
+- copies every governance a copied governance references, transitively;
+- rewrites each `governance show <other>` pointer inside a copy to "load
+  `references/governances/<other>.md` if it is not already loaded";
+- requires `SKILL.md` to list every copy under References, and its check fails when one is
+  missing.
 
 ### What each package ends up with
 
@@ -76,7 +106,7 @@ hand-written references, read as generated at a glance, and mirror the override 
 
 - A governance fix reaches a skill only when its plugin is rebuilt and released. This matches
   the pinned `npx` calls it replaces.
-- An override works only if the skill follows the two-file rule. `doctor` can report a skill that
+- An override works only if the skill follows the lookup order. `doctor` can report a skill that
   names a governance without the local lookup.
 - Every skill that uses a governance carries its own copy. The copy costs disk, not context,
   until an agent opens it.
@@ -99,23 +129,19 @@ The owner chose the bundle approach, shipped through npm:
 `min-release-age` and `init-buddy` scripts this way, and this repository's launchers are being
 replaced on branch `fix/bundle-skill-scripts`, which also rewrites the Skill Scripts page.
 
-Governance copies follow the same model, which leaves one question: a git-sourced install has no
-copy. Either the skill falls back to the human-facing command
-(`npx -y buddy-agent-harness@^<version> governance show <name>`), or the copies are committed,
-since they are small text and the size argument does not apply to them.
+Governance copies differ from script bundles: they are committed (see Where the copies go).
 
 ## Migration order
 
-1. Decide the git-install fallback for governance copies (above).
-2. Add the run-time lookup rule to `skill-design`.
-3. Add the governance copy step to `universal-plugin plugin build`, and a pack check that the copies
-   ship.
-4. Move the layered resolver to `buddy-agent-harness`; add `governance list|show` and the
-   `.agents/governances/` handling to `init` and `doctor`.
-5. Move each document to its owner.
-6. Replace `cyberplace governance` and `universal-plugin governance` with notices naming the new
+1. Add the lookup order and the copy layout to `skill-design`.
+2. Add the governance copy step to `universal-plugin plugin build`, with transitive copies, pointer
+   rewriting, the `SKILL.md` listing check, and a check mode for committed copies.
+3. Move the layered resolver to `buddy-agent-harness`; add `governance list|show`,
+   `--overrides-only`, and the `.agents/governances/` handling to `init` and `doctor`.
+4. Move each document to its owner.
+5. Replace `cyberplace governance` and `universal-plugin governance` with notices naming the new
    command; retire `cyber-skills`.
-7. Migrate the callers, one repository per change.
+6. Migrate the callers, one repository per change.
 
 ## Open questions
 
@@ -124,3 +150,4 @@ since they are small text and the size argument does not apply to them.
   scan skill bodies for references?
 - Does the managed override scope stay, and does `doctor` report a managed override that shadows
   a plugin's copy?
+- Should `@repobuddy/upx` gain a `--local-only` mode for optional steps like lookup step 2?
