@@ -8,10 +8,10 @@ Each finding names the canonical form it converts to. The direction is always th
 
 | Finding | What it means | Repair |
 | --- | --- | --- |
-| `nonstandard-instructions` | instruction content only one harness reads — AGENTS.md carries the same prose to all of them | hand <path> to `/buddy-agent-harness:init`, which consolidates it into AGENTS.md |
-| `nonstandard-rule` | a path-scoped rule only one harness reads — a skill reaches every harness where the scoping is incidental | hand <path> to `/buddy-agent-harness:init` to convert into a skill, unless the path scoping is load-bearing |
-| `nonstandard-command` | a harness command file — a skill is the portable form, and this harness reads skills too | hand <path> to `/buddy-agent-harness:init`, which moves it to .agents/skills |
-| `nonstandard-skill` | a skill under a harness directory rather than the canonical one, where only that harness finds it | hand <path> to `/buddy-agent-harness:init`, which moves it to .agents/skills |
+| `nonstandard-instructions` | instruction content only one harness reads — AGENTS.md carries the same prose to all of them | hand <path> to `/buddy-agent-harness:init-buddy-agent-harness`, which consolidates it into AGENTS.md |
+| `nonstandard-rule` | a path-scoped rule only one harness reads — a skill reaches every harness where the scoping is incidental | hand <path> to `/buddy-agent-harness:init-buddy-agent-harness` to convert into a skill, unless the path scoping is load-bearing |
+| `nonstandard-command` | a harness command file — a skill is the portable form, and this harness reads skills too | hand <path> to `/buddy-agent-harness:init-buddy-agent-harness`, which moves it to .agents/skills |
+| `nonstandard-skill` | a skill under a harness directory rather than the canonical one, where only that harness finds it | hand <path> to `/buddy-agent-harness:init-buddy-agent-harness`, which moves it to .agents/skills |
 | `nonstandard-subagent` | a subagent definition with no cross-harness form — nothing outside this harness can read it, and no canonical form exists yet | leave <path> in place — no portable form exists yet, so this is work for a person rather than a skill |
 
 ## Two of them need judgment, not a move

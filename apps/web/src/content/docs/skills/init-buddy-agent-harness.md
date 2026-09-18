@@ -3,14 +3,14 @@ title: 'Skill: init'
 description: What the init skill does, what it asks you to approve, and what it leaves alone.
 ---
 
-The `init` skill is the primary way to adopt canonical agent configuration. It is an agent skill, not a script: it reads what you already have, proposes a plan, and only then writes. The [CLI](/cli/init/) performs the mechanical linking step at the end.
+The `init-buddy-agent-harness` skill is the primary way to adopt canonical agent configuration. It is an agent skill, not a script: it reads what you already have, proposes a plan, and only then writes. The [CLI](/cli/init/) performs the mechanical linking step at the end.
 
 ## Run it
 
 In Claude Code, invoke the skill directly:
 
 ```text
-/buddy-agent-harness:init
+/buddy-agent-harness:init-buddy-agent-harness
 ```
 
 Any agent that reads `.agents/skills/` can also be asked in prose, from the repository root:
@@ -98,4 +98,4 @@ There is no way to disable a harness, and enabling one is not the same as writin
 
 Re-run after adding or changing a skill only if you need a new harness enabled. A directory-level symlink is live: a skill added to `.agents/skills/` afterwards appears in every enabled harness with no further action. A `--copy` fallback is a snapshot instead, and does need a re-run.
 
-A projection can also stop resolving later, most often on a clone that could not create the symlink. The [`doctor` skill](/skills/doctor/) is what reports that.
+A projection can also stop resolving later, most often on a clone that could not create the symlink. The [`doctor-buddy-agent-harness` skill](/skills/doctor-buddy-agent-harness/) is what reports that.

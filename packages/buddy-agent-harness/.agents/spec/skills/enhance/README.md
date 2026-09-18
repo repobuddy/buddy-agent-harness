@@ -51,7 +51,7 @@ The skill is judged on **conduct**, not on activation: its routing against `init
 - **repository owner** — approves or declines each offer; the only actor whose consent puts material content into `AGENTS.md`, or takes any out.
 - **addition author** — a maintainer of this package adding an addition or revising one's wording. Reaches the capability through the reference file rather than through a run, and is the actor whose change is what makes a consumer's copy stale.
 - **downstream agent** — every later session that loads `AGENTS.md`. Never invokes the skill, is affected by every run's outcome, and is the reason an outdated section costs something: it reads the superseded instruction on every session until someone notices. It is also whose behavior the evaluation harness measures, which is what makes a score an answer about this actor rather than about taste.
-- **`init` skill** — finishes a consolidation and offers to continue here. A sibling capability that reaches this one without being its owner.
+- **`init-buddy-agent-harness` skill** — finishes a consolidation and offers to continue here. A sibling capability that reaches this one without being its owner.
 
 **Goals, and where each is served**
 
@@ -61,7 +61,7 @@ The skill is judged on **conduct**, not on activation: its routing against `init
 | repository owner | nothing is added to my file, and nothing of mine is replaced, without my word | the approval on each offer |
 | addition author | revise a shipped wording and have repositories on the old one told, rather than silently kept there | the addition's reference file |
 | downstream agent | the guidance I load is whichever wording actually serves me better, not merely whichever is newer | the outcome of a run, and the evaluation when one is asked for |
-| `init` skill | hand a freshly consolidated repository over and have the sections it does not own considered | the offer at the end of `init`'s report |
+| `init-buddy-agent-harness` skill | hand a freshly consolidated repository over and have the sections it does not own considered | the offer at the end of `init`'s report |
 
 **Entry points**
 
@@ -218,7 +218,7 @@ flowchart TD
 | P2 | an unplaceable section and no answer from the owner | `runs no evaluation the owner did not ask for` |
 | P2→I | the owner answers that the section is an edited copy | `offers the replacement when the owner says the section came from this package` |
 | P1 | a question on the table at the end of a run | `writes nothing while the question is unanswered` |
-| G1→I | a root `AGENTS.md` carrying a retired wording verbatim | `offers the current wording where the file carries a retired one verbatim` |
+| G1→I | a root `AGENTS.md` carrying a retired wording verbatim | `offers the current wording where the file carries a retired one verbatim` | `offers the current wording where an owner filled the gap a revision added` |
 | G1→G2 | a `CLAUDE.md` carrying a retired wording and a root `AGENTS.md` that does not | `reports a retired wording outside the root file rather than replacing it` |
 | F | an addition about to be presented | `shows the addition verbatim rather than a summary of it` |
 | I | a replacement about to be presented | `shows the current text beside the section it would replace` |

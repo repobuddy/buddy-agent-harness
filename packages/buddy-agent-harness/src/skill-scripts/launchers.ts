@@ -8,8 +8,8 @@
  * added here has no home to go stale in.
  */
 export const launchers: readonly { skill: string; subcommand: string }[] = [
-	{ skill: 'doctor', subcommand: 'doctor' },
-	{ skill: 'init', subcommand: 'init' },
-	{ skill: 'init', subcommand: 'doctor' },
+	{ skill: 'doctor-buddy-agent-harness', subcommand: 'doctor' },
+	{ skill: 'init-buddy-agent-harness', subcommand: 'init' },
+	{ skill: 'init-buddy-agent-harness', subcommand: 'doctor' },
 	{ skill: 'repair', subcommand: 'doctor' },
 ]

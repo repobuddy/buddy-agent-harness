@@ -64,8 +64,8 @@ A harness fact has many plausible homes, so a partial update is the normal failu
 | Surface | What lives there |
 | --- | --- |
 | `packages/buddy-agent-harness/src/harness-registry/harness-registry.ts` | `harnessRegistry` — names, and per scope (`project`, `user`) the detection directory and projection target |
-| `packages/buddy-agent-harness/skills/init/references/harnesses/<harness>.md` | agent instructions for that harness — **instructions only, no rationale** |
-| `packages/buddy-agent-harness/skills/init/SKILL.md` | the routing table |
+| `packages/buddy-agent-harness/skills/init-buddy-agent-harness/references/harnesses/<harness>.md` | agent instructions for that harness — **instructions only, no rationale** |
+| `packages/buddy-agent-harness/skills/init-buddy-agent-harness/SKILL.md` | the routing table |
 | `apps/web/.../agent-configuration/harness-differences.md` | the support matrix, evidence confidence |
 | `apps/web/.../reference/glossary.md` | the definition of a harness term, if the change adds or renames one |
 | `apps/web/.../reference/configuration-layout.md` | owns the paths; other pages link here |

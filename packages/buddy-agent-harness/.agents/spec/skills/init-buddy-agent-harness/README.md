@@ -50,14 +50,14 @@ The skill is judged on **conduct**, not on activation. Its routing against `repa
 
 - **invoking agent** — runs the skill, surveys, composes the plan, and applies what was approved.
 - **repository owner** — approves or declines each step that touches what they wrote; the only actor whose consent moves a user-authored byte.
-- **`doctor` skill and `repair` skill** — hand this skill every instruction finding and every bridge finding a rebuild repairs. They are the reason the conduct has to be written down: they route on the promise that arriving here fixes the bridge.
+- **`doctor-buddy-agent-harness` skill and `repair` skill** — hand this skill every instruction finding and every bridge finding a rebuild repairs. They are the reason the conduct has to be written down: they route on the promise that arriving here fixes the bridge.
 - **downstream agent** — every later session in a harness the repository configured. It never invokes the skill and is what the bridges exist for: without them it reads none of the repository's instructions and says nothing about it.
 
 **Goals, and where each is served**
 
 | Actor | Goal | Entry point |
 | --- | --- | --- |
-| invoking agent | leave the repository with one canonical configuration every enabled harness can reach | `/buddy-agent-harness:init` |
+| invoking agent | leave the repository with one canonical configuration every enabled harness can reach | `/buddy-agent-harness:init-buddy-agent-harness` |
 | repository owner | nothing I wrote is replaced without my word, and nothing is asserted about my project that I did not say | the approval on each step of the plan |
 | `doctor` and `repair` | hand over an instruction finding and have the bridge actually written | the finding's repair, which names this skill |
 | downstream agent | the instructions and skills I load are the ones the repository meant | the outcome of a run |
@@ -66,7 +66,7 @@ The skill is judged on **conduct**, not on activation. Its routing against `repa
 
 | Entry point | Trigger | Inputs | Outcome |
 | --- | --- | --- | --- |
-| `/buddy-agent-harness:init` | an agent is asked to initialize, adopt, or migrate a repository's agent configuration, or arrives holding an instruction-bridge finding | the repository root, the harnesses to enable, and the flags the invocation carried | one canonical configuration, the bridges the enabled harnesses need, and a report of what was created, consolidated, linked, and left alone |
+| `/buddy-agent-harness:init-buddy-agent-harness` | an agent is asked to initialize, adopt, or migrate a repository's agent configuration, or arrives holding an instruction-bridge finding | the repository root, the harnesses to enable, and the flags the invocation carried | one canonical configuration, the bridges the enabled harnesses need, and a report of what was created, consolidated, linked, and left alone |
 
 **Surface**
 
@@ -135,7 +135,7 @@ The graph rejoins at `I` after a decline, and that edge is the shipped skill's *
 
 ## Scenario map
 
-### `/buddy-agent-harness:init`
+### `/buddy-agent-harness:init-buddy-agent-harness`
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
@@ -181,7 +181,7 @@ The graph rejoins at `I` after a decline, and that edge is the shipped skill's *
 
 ## References
 
-- `../../../../skills/init/SKILL.md` is the shipped skill: the five phases, the argument rules, and the approval carve-out this node specifies.
-- `../../../../skills/init/references/agents-md.md` draws the material line, holds the non-material region's five properties, and carries the nested-`AGENTS.md` rule.
-- `../../../../skills/init/references/frontmatter.md` backs the frontmatter repair: a missing `description` and unparseable YAML are the only two frontmatter faults that cost a harness the skill, which is why a colon is quoted and a mismatched `name` is only aligned.
+- `../../../../skills/init-buddy-agent-harness/SKILL.md` is the shipped skill: the five phases, the argument rules, and the approval carve-out this node specifies.
+- `../../../../skills/init-buddy-agent-harness/references/agents-md.md` draws the material line, holds the non-material region's five properties, and carries the nested-`AGENTS.md` rule.
+- `../../../../skills/init-buddy-agent-harness/references/frontmatter.md` backs the frontmatter repair: a missing `description` and unparseable YAML are the only two frontmatter faults that cost a harness the skill, which is why a colon is quoted and a mismatched `name` is only aligned.
 - `../../cli/instruction-bridges/` and `../../workflows/detect-and-repair/` are the other side of the seam: they route every instruction repair here, and this node states what arriving here does.

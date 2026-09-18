@@ -17,7 +17,7 @@ The contract between them is stated once, at `../../workflows/detect-and-repair/
 
 Everything else it needs — the file's current text, the before-and-after it shows, whether more than one correction is valid — it derives by reading the named path and consulting `references/classes.md`. `doctor` never enumerates correction options, so no scenario here may assume it did.
 
-`repair` acts only where correctness is the **tooling's** to decide — a harness name the registry retired, a `.gitignore` rule swallowing a bridge, a skill a harness will not load. It never corrects what the repository **means**. The line is the discriminator `init` already applies (`../../../../skills/init/references/agents-md.md`): a statement that would stop being true if the tool's output were removed describes the tool's own artifact and is **non-material**. `repair` corrects non-material configuration and reports material wrongness without offering to write it.
+`repair` acts only where correctness is the **tooling's** to decide — a harness name the registry retired, a `.gitignore` rule swallowing a bridge, a skill a harness will not load. It never corrects what the repository **means**. The line is the discriminator `init` already applies (`../../../../skills/init-buddy-agent-harness/references/agents-md.md`): a statement that would stop being true if the tool's output were removed describes the tool's own artifact and is **non-material**. `repair` corrects non-material configuration and reports material wrongness without offering to write it.
 
 Every correction is **offered with its before and after, and written only on approval** — the same shape `enhance` uses, for the same reason: the file belongs to the user.
 
@@ -141,4 +141,4 @@ Detection is the command's, so a run holds no state of its own and there is no f
 
 ## References
 
-- `../../../../skills/init/references/frontmatter.md` backs the `unloadable-skill` corrections: of the frontmatter problems a harness can meet, only unparseable YAML and a missing `description` make it skip the skill, which is why a mismatched `name` is neither reported nor corrected.
+- `../../../../skills/init-buddy-agent-harness/references/frontmatter.md` backs the `unloadable-skill` corrections: of the frontmatter problems a harness can meet, only unparseable YAML and a missing `description` make it skip the skill, which is why a mismatched `name` is neither reported nor corrected.

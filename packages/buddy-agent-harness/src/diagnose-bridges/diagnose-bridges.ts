@@ -46,7 +46,7 @@ export type DiagnoseResult = {
 	bridges: BridgeReport[]
 	/**
 	 * The instruction bridges into `AGENTS.md`, kept out of `bridges` on purpose: a different `kind`
-	 * and `status` vocabulary, and a repair that is the `init` skill rather than a command.
+	 * and `status` vocabulary, and a repair that is the `init-buddy-agent-harness` skill rather than a command.
 	 */
 	instructions: InstructionReport[]
 	divergence: DivergenceReport[]

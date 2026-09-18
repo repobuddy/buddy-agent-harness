@@ -3,7 +3,7 @@ title: 'Skill: enhance'
 description: What the enhance skill offers a repository, how it decides a section is already covered or carries an outdated version of a shipped one, and the runs behind the wording it ships.
 ---
 
-The `enhance` skill proposes guidance a repository does not have, and offers a fresh copy of guidance it took from an earlier release. [`init`](/skills/init/) is the other half: it consolidates what you already wrote and bridges the harnesses that cannot read it, and it invents nothing. Initialization has to be safe to run anywhere, so it carries no opinions. An addition is opinionated by construction.
+The `enhance` skill proposes guidance a repository does not have, and offers a fresh copy of guidance it took from an earlier release. [`init`](/skills/init-buddy-agent-harness/) is the other half: it consolidates what you already wrote and bridges the harnesses that cannot read it, and it invents nothing. Initialization has to be safe to run anywhere, so it carries no opinions. An addition is opinionated by construction.
 
 That is why `enhance` is opt-in. Every addition is offered and never written on sight, and `init` now ends by asking whether to run it.
 
@@ -23,7 +23,7 @@ Any agent that reads `.agents/skills/` can be asked in prose instead, from the r
 Add the guidance my AGENTS.md is missing.
 ```
 
-The target is the root `AGENTS.md`. If there is none, the skill stops and points at [`init`](/skills/init/), because it adds to an existing file and creating one is `init`'s job. A nested `AGENTS.md` is never a target, since none of the additions are scoped to a subtree.
+The target is the root `AGENTS.md`. If there is none, the skill stops and points at [`init`](/skills/init-buddy-agent-harness/), because it adds to an existing file and creating one is `init`'s job. A nested `AGENTS.md` is never a target, since none of the additions are scoped to a subtree.
 
 ## How it decides
 
@@ -116,7 +116,7 @@ You see the section as it stands and the text that would take its place, and not
 
 **If you have added your own paragraphs to that section, they are named before you answer.** A section that came from here is often not only what came from here — teams add their own rules under the same heading, and replacing the section would take those with it. So the offer lists every paragraph under that heading that appears in no retired wording, and says the replacement would remove it. An approval given for "refresh the wording" is not an approval to delete what you wrote. On approval only that section changes, from its heading to the next heading of the same or higher level; the rest of the file is left byte-for-byte as it was. On a decline the old section stays exactly where it is, and so does an unanswered question.
 
-A retired wording found somewhere other than the root `AGENTS.md`, in a `CLAUDE.md` or a `.cursorrules`, is reported by name and not replaced. This skill writes one file. Replacing the root copy while an older copy stayed in a harness file would leave you holding two versions of the same guidance instead of one. Run [`init`](/skills/init/) to consolidate first.
+A retired wording found somewhere other than the root `AGENTS.md`, in a `CLAUDE.md` or a `.cursorrules`, is reported by name and not replaced. This skill writes one file. Replacing the root copy while an older copy stayed in a harness file would leave you holding two versions of the same guidance instead of one. Run [`init`](/skills/init-buddy-agent-harness/) to consolidate first.
 
 ## What it never does
 
@@ -127,7 +127,7 @@ These hold regardless of what you ask for mid-run:
 - Never guess whose words a section is. Where it cannot tell an edited copy from your own prose, it asks.
 - Never edit an addition to fit a repository.
 - Never touch the managed region, a nested `AGENTS.md`, or any file other than the root `AGENTS.md`.
-- Never consolidate harness instruction files. Reading them is the coverage judgment; merging them is [`init`](/skills/init/).
+- Never consolidate harness instruction files. Reading them is the coverage judgment; merging them is [`init`](/skills/init-buddy-agent-harness/).
 - Never reach past local agent configuration into workflows, repository settings, or unrelated project files.
 
 ## What it offers today

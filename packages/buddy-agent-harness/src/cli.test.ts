@@ -176,9 +176,9 @@ describe('the process boundary', () => {
 
 		expect(writers).toEqual([
 			'bin/buddy-agent-harness.mjs',
-			'skills/doctor/scripts/doctor.mjs',
-			'skills/init/scripts/doctor.mjs',
-			'skills/init/scripts/init.mjs',
+			'skills/doctor-buddy-agent-harness/scripts/doctor.mjs',
+			'skills/init-buddy-agent-harness/scripts/doctor.mjs',
+			'skills/init-buddy-agent-harness/scripts/init.mjs',
 			'skills/repair/scripts/doctor.mjs',
 			// The sources the bundles above are built from, not a second writer of their own.
 			'src/skill-scripts/doctor.ts',

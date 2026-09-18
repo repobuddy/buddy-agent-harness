@@ -24,6 +24,6 @@ Where to look when writing or checking documentation in this repository. Pointer
 | Table naming… | Generated from |
 | --- | --- |
 | harness names, and per scope their detection directories and projection targets | `packages/buddy-agent-harness/src/harness-registry/harness-registry.ts` |
-| the `doctor` skill's finding-and-repair table | `packages/buddy-agent-harness/src/diagnose-bridges/doctor-guidance.ts` |
+| the `doctor-buddy-agent-harness` skill's finding-and-repair table | `packages/buddy-agent-harness/src/diagnose-bridges/doctor-guidance.ts` |
 | per-harness project-scope MCP file, key, and format | `packages/buddy-agent-harness/src/harness-registry/harness-registry.ts` |
 | CLI commands and options | `packages/buddy-agent-harness/src/cli.ts` |

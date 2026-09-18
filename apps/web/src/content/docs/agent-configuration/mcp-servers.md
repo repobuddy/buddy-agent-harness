@@ -5,7 +5,7 @@ description: 'The user-authored golden set of MCP servers: where it lives, how d
 
 A repository may keep one canonical list of its MCP servers in a **golden set** the user authors at `.agents/buddy-agent-harness/mcp.toml`. Where that file exists, [`doctor`](/cli/doctor/) compares it against each harness's own project-scope MCP configuration and reports drift in both directions, plus any literal credential sitting in either file. `doctor` stays what it is everywhere else: read-only. It detects and never writes.
 
-This page is the home for the golden set. The [CLI reference](/cli/doctor/) and the [`doctor` skill](/skills/doctor/) link here rather than restating it.
+This page is the home for the golden set. The [CLI reference](/cli/doctor/) and the [`doctor-buddy-agent-harness` skill](/skills/doctor-buddy-agent-harness/) link here rather than restating it.
 
 ## What a golden set changes
 
@@ -128,7 +128,7 @@ The golden set gets the same checks as every harness copy. A user pastes a token
 
 ## What is deliberately not done yet
 
-Nothing writes. `doctor` detects drift; it does not create a harness's MCP file, update a stale copy, or pull a target-side edit back into the golden set. Forward projection and reconcile are writes, they need an approval-gated home, and they are a later change. Until then, each finding names its repair and a person (or the [`doctor` skill](/skills/doctor/), as a separate approved step) carries it out.
+Nothing writes. `doctor` detects drift; it does not create a harness's MCP file, update a stale copy, or pull a target-side edit back into the golden set. Forward projection and reconcile are writes, they need an approval-gated home, and they are a later change. Until then, each finding names its repair and a person (or the [`doctor-buddy-agent-harness` skill](/skills/doctor-buddy-agent-harness/), as a separate approved step) carries it out.
 
 Project scope only. User-scope MCP configuration — `~/.codex/config.toml`, `~/.claude.json`, `claude_desktop_config.json` — holds much of the world's servers and stays described, never read and never written. Reading a user's home directory into output that lands in every session's transcript is a wider blast radius than diagnosis needs.
 
