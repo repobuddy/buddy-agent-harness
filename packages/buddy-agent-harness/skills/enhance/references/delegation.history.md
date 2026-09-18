@@ -6,7 +6,17 @@ in front of you is compared against.
 
 Nothing here is ever offered. The text to offer is in `delegation.md`.
 
-## Superseded 2026-09 — replaced by the current two-paragraph wording
+## Superseded 2026-09-14 — replaced by the wording that also picks a subagent's effort
+
+```markdown
+## Delegation
+
+If this harness can spawn subagents, delegate the mechanical work and the research whose answer is far smaller than the reading behind it. Keep the judgment calls and the decisions; anything you would finish in less time than briefing it takes, do yourself.
+
+A subagent inherits your model if you do not pick one, and none of your context either way. Pick the cheapest, unless you cannot say what a right answer looks like or could not cheaply tell a wrong one. Give it the context, the why, and what done looks like.
+```
+
+## Superseded 2026-09 — replaced by the two-paragraph wording
 
 ```markdown
 ## Delegation

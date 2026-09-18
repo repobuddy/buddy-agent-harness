@@ -218,7 +218,9 @@ flowchart TD
 | P2 | an unplaceable section and no answer from the owner | `runs no evaluation the owner did not ask for` |
 | P2→I | the owner answers that the section is an edited copy | `offers the replacement when the owner says the section came from this package` |
 | P1 | a question on the table at the end of a run | `writes nothing while the question is unanswered` |
-| G1→I | a root `AGENTS.md` carrying a retired wording verbatim | `offers the current wording where the file carries a retired one verbatim` | `offers the current wording where an owner filled the gap a revision added` |
+| G1→I | a root `AGENTS.md` carrying a retired wording verbatim | `offers the current wording where the file carries a retired one verbatim` |
+| GC→G1 | a retired wording verbatim, every sentence of which the current text still carries, because the revision only added a sentence | `does not call a retired wording current because the current text still carries all its sentences` |
+| G1→I | that retired wording with an owner's sentence at the place the revision added one | `offers the current wording where an owner filled the gap a revision added` |
 | G1→G2 | a `CLAUDE.md` carrying a retired wording and a root `AGENTS.md` that does not | `reports a retired wording outside the root file rather than replacing it` |
 | F | an addition about to be presented | `shows the addition verbatim rather than a summary of it` |
 | I | a replacement about to be presented | `shows the current text beside the section it would replace` |
