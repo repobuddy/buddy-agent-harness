@@ -15,7 +15,7 @@ import { selectHarnesses } from '../harness-registry/harness-registry.ts'
  * module is where it reads its work from. Detection has one home so the two cannot drift.
  *
  * Instruction bridges are deliberately not here: `diagnose-instructions` owns them, and every one
- * of its repairs goes back to the `init` skill rather than to `repair`.
+ * of its repairs goes back to the `init-buddy-agent-harness` skill rather than to `repair`.
  *
  * Read-only, like every other part of `doctor`.
  */
@@ -40,7 +40,7 @@ const localOverride = 'AGENTS.local.md'
 
 /**
  * The two frontmatter faults that make a harness skip a skill outright, per
- * `skills/init/references/frontmatter.md`: YAML that does not parse, and a missing `description`.
+ * `skills/init-buddy-agent-harness/references/frontmatter.md`: YAML that does not parse, and a missing `description`.
  * A `name` that mismatches the directory is a warning and still loads, so it is not reported here.
  *
  * The unquoted colon is the documented cause of the first, and is checked directly rather than by

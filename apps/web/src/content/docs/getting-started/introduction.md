@@ -33,21 +33,21 @@ It also stays out of everything that is not local agent configuration: no change
 
 ## Install
 
-In Claude Code, install the plugin and its `init` skill from the [cyberplace](https://github.com/cyberuni/cyberplace) marketplace:
+In Claude Code, install the plugin and its `init-buddy-agent-harness` skill from the [cyberplace](https://github.com/cyberuni/cyberplace) marketplace:
 
 ```text
 /plugin marketplace add cyberuni/cyberplace
 /plugin install buddy-agent-harness@cyberplace
 ```
 
-Install from the marketplace rather than from a git checkout. The `init` and `doctor` skills each run a self-contained script bundle shipped inside the skill folder, built at package time and distributed through npm — a git source does not carry it. A git-sourced install still works: both fall back to fetching the pinned version with `npx`. See [Skill Scripts](/agent-configuration/skill-scripts/) for the pattern and why the fallback stays.
+Install from the marketplace rather than from a git checkout. The `init-buddy-agent-harness` and `doctor-buddy-agent-harness` skills each run a self-contained script bundle shipped inside the skill folder, built at package time and distributed through npm — a git source does not carry it. A git-sourced install still works: both fall back to fetching the pinned version with `npx`. See [Skill Scripts](/agent-configuration/skill-scripts/) for the pattern and why the fallback stays.
 
 ## Initialize a repository
 
-From the repository root, invoke the `init` skill:
+From the repository root, invoke the `init-buddy-agent-harness` skill:
 
 ```text
-/buddy-agent-harness:init
+/buddy-agent-harness:init-buddy-agent-harness
 ```
 
 Any agent that reads `.agents/skills/` can be asked in prose instead:
@@ -56,7 +56,7 @@ Any agent that reads `.agents/skills/` can be asked in prose instead:
 Initialize this repository's agent configuration.
 ```
 
-The skill surveys what configuration you already have, proposes a consolidation plan, applies it once you approve, and runs the CLI to create the projections. That is the primary path. Start at [Skill: init](/skills/init/).
+The skill surveys what configuration you already have, proposes a consolidation plan, applies it once you approve, and runs the CLI to create the projections. That is the primary path. Start at [Skill: init-buddy-agent-harness](/skills/init-buddy-agent-harness/).
 
 The CLI alone handles only the linking step. On a repository that is already consolidated you can run it in a shell by mounting the package on `repobuddy`. See the [CLI reference](/cli/init/).
 
@@ -64,10 +64,10 @@ The CLI alone handles only the linking step. On a repository that is already con
 
 A link that a clone failed to create is silent: the harness finds no directory and loads zero project skills. Nothing here repairs anything; both halves only report.
 
-Ask the [`doctor` skill](/skills/doctor/), which runs the command and reads the report back to you:
+Ask the [`doctor-buddy-agent-harness` skill](/skills/doctor-buddy-agent-harness/), which runs the command and reads the report back to you:
 
 ```text
-/buddy-agent-harness:doctor
+/buddy-agent-harness:doctor-buddy-agent-harness
 ```
 
 Or run the [command](/cli/doctor/) yourself, on any clone, with the plugin installed or not:

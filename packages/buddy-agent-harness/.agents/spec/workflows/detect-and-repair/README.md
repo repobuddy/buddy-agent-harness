@@ -28,7 +28,7 @@ So a consumer's question is not "which of the two skills?" but "does this findin
 
 - **finding** — one reported fault, carrying a `problem` name, a `path`, a `detail` in prose, and a repair.
 - **detecting surface** — the `doctor` command. The only place a check lives.
-- **repairing surface** — the `init` skill or the `repair` skill. The only places a write happens.
+- **repairing surface** — the `init-buddy-agent-harness` skill or the `repair` skill. The only places a write happens.
 - **family** — which detecting node a `problem` belongs to. Some families are uniform in their owner and some are not, and a family says nothing else about the finding.
 - **routable field** — a field a consumer may branch on. There is exactly one: `problem`. `path` is an input to the repair rather than something to branch on, and `detail` is prose.
 
@@ -44,9 +44,9 @@ So a consumer's question is not "which of the two skills?" but "does this findin
 
 **Actors**
 
-- **`doctor` skill** — reads the report and routes each finding to the skill that owns it. The consumer this contract is written for.
+- **`doctor-buddy-agent-harness` skill** — reads the report and routes each finding to the skill that owns it. The consumer this contract is written for.
 - **`repair` skill** — acts on the findings it owns and hands on the ones it does not.
-- **`init` skill** — owns every instruction repair, and every bridge repair that rebuilding fixes. Its conduct once it holds one is `../../skills/init/`.
+- **`init-buddy-agent-harness` skill** — owns every instruction repair, and every bridge repair that rebuilding fixes. Its conduct once it holds one is `../../skills/init-buddy-agent-harness/`.
 - **person at a shell** — the consumer who routes by reading rather than by parsing, and for whom the repair must still be an instruction they can follow.
 - **session-start hook** — never routes anything, and is the reason the detecting surface must stay read-only.
 
@@ -54,9 +54,9 @@ So a consumer's question is not "which of the two skills?" but "does this findin
 
 | Actor | Goal | Entry point |
 | --- | --- | --- |
-| `doctor` skill | send every finding to the surface that repairs it, or to a person where none does | the `problem` name |
+| `doctor-buddy-agent-harness` skill | send every finding to the surface that repairs it, or to a person where none does | the `problem` name |
 | `repair` skill | tell a finding it owns from one it must hand on, without inspecting the repository | the `problem` name |
-| `init` skill | receive the findings rebuilding repairs, and no other | the repair each finding carries |
+| `init-buddy-agent-harness` skill | receive the findings rebuilding repairs, and no other | the repair each finding carries |
 | person at a shell | know what to do about a fault without running anything else | the repair each finding carries |
 | session-start hook | run the detecting surface with no risk of a write | `buddy-agent-harness doctor` |
 
@@ -72,9 +72,9 @@ The contract is **four things per finding**, and a consumer may rely on no other
 
 Every problem the command can report has exactly one repair, and every finding carries it. The two may not be separated: a fault reported without its repair asks a consumer to invent one, which is how a second, drifting classifier gets written.
 
-That one repair is **rendered twice**, for the two consumers, and the renderings disagree about who acts. The **command** rendering is what `doctor` prints into `help`; the **skill** rendering is what the shipped `doctor` skill states. Both come from one table entry, so they cannot disagree about which problem they repair.
+That one repair is **rendered twice**, for the two consumers, and the renderings disagree about who acts. The **command** rendering is what `doctor` prints into `help`; the **skill** rendering is what the shipped `doctor-buddy-agent-harness` skill states. Both come from one table entry, so they cannot disagree about which problem they repair.
 
-Where they part is the bridge family. The skill rendering sends every bridge problem a rebuild fixes to `/buddy-agent-harness:init`, because a skill must not run `init` itself. The command rendering gives those same problems a **runnable `command`** and names no skill at all, because a caller reading the command's output can simply run it. Neither is wrong; they answer different questions for different readers.
+Where they part is the bridge family. The skill rendering sends every bridge problem a rebuild fixes to `/buddy-agent-harness:init-buddy-agent-harness`, because a skill must not run `init` itself. The command rendering gives those same problems a **runnable `command`** and names no skill at all, because a caller reading the command's output can simply run it. Neither is wrong; they answer different questions for different readers.
 
 So **an owner is not something a consumer can always read off the report.** In `help`, the instruction names a skill for the eight problems in the instruction and configuration families and for none of the nineteen bridge and MCP problems. Route on `problem`, which every finding carries, rather than on a skill name in `help`.
 
@@ -130,5 +130,5 @@ Routing reads the `problem` name only. Nothing on this path reads `detail`, and 
 
 ## References
 
-- `../../../../src/diagnose-bridges/doctor-guidance.ts` is the single table both surfaces are generated from: the command's `detail` and repair, and the shipped `doctor` skill's guidance, come from one source, so the report and the skill that reads it cannot drift.
+- `../../../../src/diagnose-bridges/doctor-guidance.ts` is the single table both surfaces are generated from: the command's `detail` and repair, and the shipped `doctor-buddy-agent-harness` skill's guidance, come from one source, so the report and the skill that reads it cannot drift.
 - `../../skills/repair/` holds the other side of this seam — what a repairing skill does once it has a finding.

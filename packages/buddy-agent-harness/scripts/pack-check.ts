@@ -18,7 +18,7 @@ import { cpSync, existsSync, mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { launcherFor } from '../src/diagnose-bridges/doctor-guidance.ts'
+import { doctorSkill, launcherFor } from '../src/diagnose-bridges/doctor-guidance.ts'
 import { launchers } from '../src/skill-scripts/launchers.ts'
 
 const packageRoot = dirname(dirname(fileURLToPath(import.meta.url)))
@@ -53,8 +53,8 @@ try {
 
 	// Copy one skill folder out on its own — no `dist/`, no `node_modules` anywhere above it — the
 	// state an installer that copies only that folder leaves it in, and run its script from there.
-	const doctorSkillDir = join(runDir, 'doctor')
-	cpSync(join(pkgDir, 'skills', 'doctor'), doctorSkillDir, { recursive: true })
+	const doctorSkillDir = join(runDir, doctorSkill.name)
+	cpSync(join(pkgDir, 'skills', doctorSkill.name), doctorSkillDir, { recursive: true })
 	const scriptPath = join(doctorSkillDir, ...launcherFor('doctor').split('/'))
 
 	const stdout = execFileSync(process.execPath, [scriptPath, '--format', 'json'], {

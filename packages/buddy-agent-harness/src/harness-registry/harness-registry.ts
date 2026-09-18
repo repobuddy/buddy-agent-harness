@@ -48,7 +48,7 @@ export type HarnessScopeName = 'project' | 'user'
  *
  * `instructionBridge` is the same question for `AGENTS.md`: what the harness needs at this scope in
  * order to read it. It belongs per scope for the same reason `skillsDirectory` does — the file
- * differs. Unlike `skillsDirectory`, the `init` command does not write it; the `init` skill does. It
+ * differs. Unlike `skillsDirectory`, the `init` command does not write it; the `init-buddy-agent-harness` skill does. It
  * is recorded here to be diagnosed and gated per harness, not to be projected.
  */
 export type HarnessScope = {

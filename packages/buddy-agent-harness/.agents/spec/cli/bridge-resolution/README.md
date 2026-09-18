@@ -25,7 +25,7 @@ It exists because the failure is **invisible at the point of use**. A person who
 
 **Non-goals**
 
-- **Repairing.** The command never writes. No repair here is the command's to perform, and which surface owns each one is `../../workflows/detect-and-repair/`'s — six of the nine name the `init` skill, and three name nobody.
+- **Repairing.** The command never writes. No repair here is the command's to perform, and which surface owns each one is `../../workflows/detect-and-repair/`'s — six of the nine name the `init-buddy-agent-harness` skill, and three name nobody.
 - **Judging what a bridge contains.** A resolving bridge full of skills no harness will load is the configuration sibling's finding, at `../configuration-diagnosis/`. Nothing here reads a `SKILL.md`.
 - **Instruction bridges.** `AGENTS.md` is reached by a different mechanism with its own status vocabulary; it is `../instruction-bridges/`.
 - **The shape of the report.** Which sections exist and what a finding row carries is `../diagnosis-report/`. This node decides *what is wrong*, not *how it is said*.
@@ -36,21 +36,21 @@ It exists because the failure is **invisible at the point of use**. A person who
 
 **Actors**
 
-- **`doctor` skill** — presents the report to an agent and routes each finding to the skill that owns its repair.
+- **`doctor-buddy-agent-harness` skill** — presents the report to an agent and routes each finding to the skill that owns its repair.
 - **person at a shell** — runs the command after a clone that "did not work" and reads what is wrong.
 - **session-start hook** — runs the command unattended at the start of every session; affected by the outcome without reading it, and the reason the command must never write.
 - **`repair` skill** — reads the findings and hands every one of these on to `init`. It is an actor here only in that this node's findings must be **recognisable as bridge findings** without being repaired.
-- **`init` skill** — owns the repair for every problem here that rebuilding the bridge fixes, which is six of the nine.
+- **`init-buddy-agent-harness` skill** — owns the repair for every problem here that rebuilding the bridge fixes, which is six of the nine.
 
 **Goals, and where each is served**
 
 | Actor | Goal | Entry point |
 | --- | --- | --- |
-| `doctor` skill | learn which bridges do not resolve, and hand each to the skill that rebuilds it | `buddy-agent-harness doctor` |
+| `doctor-buddy-agent-harness` skill | learn which bridges do not resolve, and hand each to the skill that rebuilds it | `buddy-agent-harness doctor` |
 | person at a shell | find out why a freshly cloned repository loads no skills | `buddy-agent-harness doctor --format text` |
 | session-start hook | learn of a broken bridge with no risk of a write | `buddy-agent-harness doctor` |
 | `repair` skill | tell a bridge finding from one it owns, without inspecting the bridge | the `problem` name each finding carries |
-| `init` skill | be named as the owner of the repairs rebuilding fixes | the repair each finding carries |
+| `init-buddy-agent-harness` skill | be named as the owner of the repairs rebuilding fixes | the repair each finding carries |
 
 **Entry point**
 

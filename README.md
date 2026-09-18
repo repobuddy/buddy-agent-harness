@@ -9,7 +9,7 @@ Initialize or update a consumer repository's standards-based agent configuration
 
 ## Install the plugin
 
-In Claude Code, add the [cyberplace](https://github.com/cyberuni/cyberplace) marketplace and install the plugin and its `init` skill:
+In Claude Code, add the [cyberplace](https://github.com/cyberuni/cyberplace) marketplace and install the plugin and its `init-buddy-agent-harness` skill:
 
 ```text
 /plugin marketplace add cyberuni/cyberplace
@@ -24,7 +24,7 @@ In Claude Code, add the [cyberplace](https://github.com/cyberuni/cyberplace) mar
 npx -y buddy-agent-harness doctor
 ```
 
-`init` runs behind the `init` skill, which sorts the configuration you already wrote before the command links anything.
+`init` runs behind the `init-buddy-agent-harness` skill, which sorts the configuration you already wrote before the command links anything.
 
 `dep-plugins` derives a marketplace catalog for plugins shipped by this repository's own dependencies, so a harness can install them:
 
@@ -50,6 +50,6 @@ Codex, Cursor, GitHub Copilot CLI, Gemini CLI, and Devin Desktop read `.agents/s
 
 `init` takes `--root`, `--harness`, `--copy`, `--force`, and `--format`; `--help` lists them.
 
-`buddy-agent-harness doctor` is the read-only check that those bridges still resolve after a clone. It reports every bridge with a status, names the `init` command that repairs each finding, and always exits `0` — the diagnosis succeeding is not the same as the repository being healthy. See [`skills/doctor/SKILL.md`](packages/buddy-agent-harness/skills/doctor/SKILL.md).
+`buddy-agent-harness doctor` is the read-only check that those bridges still resolve after a clone. It reports every bridge with a status, names the `init` command that repairs each finding, and always exits `0` — the diagnosis succeeding is not the same as the repository being healthy. See [`skills/doctor-buddy-agent-harness/SKILL.md`](packages/buddy-agent-harness/skills/doctor-buddy-agent-harness/SKILL.md).
 
-The `init` skill goes further than the CLI: it surveys agent configuration the repository already has, consolidates it into the canonical source with your approval, and then links. See [`skills/init/SKILL.md`](packages/buddy-agent-harness/skills/init/SKILL.md).
+The `init-buddy-agent-harness` skill goes further than the CLI: it surveys agent configuration the repository already has, consolidates it into the canonical source with your approval, and then links. See [`skills/init-buddy-agent-harness/SKILL.md`](packages/buddy-agent-harness/skills/init-buddy-agent-harness/SKILL.md).

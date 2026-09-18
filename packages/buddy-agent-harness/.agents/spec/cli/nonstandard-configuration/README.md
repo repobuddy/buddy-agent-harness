@@ -101,4 +101,4 @@ A path named by two harnesses is one artifact and yields one finding. The enable
 ## References
 
 - `../../../../src/harness-registry/nonstandard-artifact.ts` declares the artifact shape and the five kinds; the per-harness lists live beside each harness's other paths in `../../../../src/harness-registry/harness-registry.ts`.
-- `../../../../skills/init/references/detection.md` is where these dispositions were first written down, as the survey `init` runs. This node reports the same classes from the read-only side.
+- `../../../../skills/init-buddy-agent-harness/references/detection.md` is where these dispositions were first written down, as the survey `init` runs. This node reports the same classes from the read-only side.

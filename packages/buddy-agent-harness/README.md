@@ -9,7 +9,7 @@ An agent plugin and CLI for initializing or updating a consumer repository's sta
 
 ## Install the plugin
 
-In Claude Code, add the [cyberplace](https://github.com/cyberuni/cyberplace) marketplace and install the plugin and its `init` skill:
+In Claude Code, add the [cyberplace](https://github.com/cyberuni/cyberplace) marketplace and install the plugin and its `init-buddy-agent-harness` skill:
 
 ```text
 /plugin marketplace add cyberuni/cyberplace
@@ -18,7 +18,7 @@ In Claude Code, add the [cyberplace](https://github.com/cyberuni/cyberplace) mar
 
 ## CLI
 
-`init` runs behind the `init` skill, which sorts the configuration you already wrote before the command links anything. Install the package alongside `repobuddy` to mount every command on `buddy`, as `buddy agent-harness doctor`, `buddy agent-harness init`, and `buddy agent-harness dep-plugins`.
+`init` runs behind the `init-buddy-agent-harness` skill, which sorts the configuration you already wrote before the command links anything. Install the package alongside `repobuddy` to mount every command on `buddy`, as `buddy agent-harness doctor`, `buddy agent-harness init`, and `buddy agent-harness dep-plugins`.
 
 The repository root's `AGENTS.md` and `.agents/` tree are canonical: `.agents/AGENTS.md` holds shared behavior, `.agents/skills/**/SKILL.md` holds capabilities, and separately named files hold tool settings. The active harness is enabled by default; explicit user preferences add others. The command preserves user-authored configuration and projects only supported mappings; it records nothing on disk.
 

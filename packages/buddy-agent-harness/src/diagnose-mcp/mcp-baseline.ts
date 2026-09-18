@@ -64,7 +64,7 @@ export class McpBaseline {
 	 * `lastAgreed` runs per (config, server, field) that diverges without a projection record, and
 	 * every one of those walks reads the same two files at the same commits. Unmemoized, three
 	 * targets against five servers with two diverged fields each over fifty commits of history is
-	 * three thousand `git show` calls and as many parses — on the command the `doctor` skill says is
+	 * three thousand `git show` calls and as many parses — on the command the `doctor-buddy-agent-harness` skill says is
 	 * cheap enough for a session-start hook. One instance serves one diagnosis, so the memo lives and
 	 * dies with it and can never answer for a working tree that has moved on.
 	 */

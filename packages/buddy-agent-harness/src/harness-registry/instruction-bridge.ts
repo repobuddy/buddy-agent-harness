@@ -7,7 +7,7 @@
  * settings file. A second bare path field would describe the first and lie about the second, so the
  * variant carries what its own check needs.
  *
- * The `init` command writes none of these. They are the `init` skill's work, which is why every
+ * The `init` command writes none of these. They are the `init-buddy-agent-harness` skill's work, which is why every
  * finding against one names the skill rather than a flag.
  */
 export type InstructionBridge =

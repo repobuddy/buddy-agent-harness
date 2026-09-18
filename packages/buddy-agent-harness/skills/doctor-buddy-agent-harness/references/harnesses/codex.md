@@ -34,4 +34,4 @@ Reported by `doctor` so it can be converted; see `../nonstandard.md` for what ea
 
 ## Judgment about this harness
 
-What to generate for it, what to leave alone, and which claims are contested: `../../../init/references/harnesses/codex.md`. That page is hand-written and is the one to read before writing anything for this harness.
+What to generate for it, what to leave alone, and which claims are contested: `../../../init-buddy-agent-harness/references/harnesses/codex.md`. That page is hand-written and is the one to read before writing anything for this harness.

@@ -13,7 +13,7 @@ Feature: Hand every doctor finding to the one surface that repairs it
     Given both renderings of one problem's repair
     When each problem's repair is rendered for the command and for the shipped skill
     Then both renderings come from one entry, so they cannot disagree about which problem they repair
-    And a bridge problem a rebuild fixes names the `init` skill for the skill reader and a runnable command for the shell reader
+    And a bridge problem a rebuild fixes names the `init-buddy-agent-harness` skill for the skill reader and a runnable command for the shell reader
 
   @behavior
   Scenario: carries a repair with every finding it reports
@@ -31,7 +31,7 @@ Feature: Hand every doctor finding to the one surface that repairs it
   Scenario: sends a bridge finding to the init skill wherever rebuilding is the repair
     Given the bridge-resolution problems that rebuilding the bridge repairs
     When each repair is read as the shipped skill states it
-    Then each names the `init` skill as the surface that repairs it
+    Then each names the `init-buddy-agent-harness` skill as the surface that repairs it
 
   @behavior
   Scenario: names no skill for a finding that rebuilding would not repair
@@ -44,7 +44,7 @@ Feature: Hand every doctor finding to the one surface that repairs it
   Scenario: sends every instruction finding to the init skill
     Given every problem belonging to the instruction-bridge family
     When each repair is read as the shipped skill states it
-    Then each names the `init` skill as the surface that repairs it
+    Then each names the `init-buddy-agent-harness` skill as the surface that repairs it
 
   @behavior
   Scenario: sends every configuration finding to the repair skill
@@ -70,7 +70,7 @@ Feature: Hand every doctor finding to the one surface that repairs it
   Scenario: never tells the skill to run the init command
     Given a repair the `init` command would satisfy
     When the shipped skill's rendering of it is read
-    Then it invokes the `init` skill rather than the `init` command
+    Then it invokes the `init-buddy-agent-harness` skill rather than the `init` command
 
   @behavior
   Scenario: never points the skill at a bare binary invocation

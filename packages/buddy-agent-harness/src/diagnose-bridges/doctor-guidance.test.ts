@@ -10,6 +10,7 @@ import {
 	commandInvocation,
 	type DoctorProblem,
 	doctorRepairs,
+	doctorSkill,
 	handWrittenPinTargets,
 	initSkillInvocation,
 	instructionRepairs,
@@ -76,7 +77,7 @@ describe('doctor guidance', () => {
 		expect(repairFor('diverged-both').repair({ file: '<path>' }, 'bah').instruction).toContain('git diff --no-index')
 	})
 
-	// A skill invocation is not a command: nothing in a shell runs `/buddy-agent-harness:init`. Every
+	// A skill invocation is not a command: nothing in a shell runs `/buddy-agent-harness:init-buddy-agent-harness`. Every
 	// instruction-bridge repair is one, which is why none of them offers a command either.
 	it('never offers a skill invocation as a runnable command', () => {
 		for (const entry of doctorRepairs) {
@@ -133,14 +134,18 @@ describe('doctor guidance', () => {
 	// The build step that keeps them in step is `pnpm skill:gen:check`; this catches the drift
 	// during an ordinary test run as well.
 	it('matches the committed skill', () => {
-		expect(readFileSync(join(packageRoot, 'skills', 'doctor', 'SKILL.md'), 'utf8')).toBe(renderDoctorSkill(version))
+		expect(readFileSync(join(packageRoot, 'skills', 'doctor-buddy-agent-harness', 'SKILL.md'), 'utf8')).toBe(
+			renderDoctorSkill(version),
+		)
 	})
 
 	it('matches every committed reference page', () => {
 		const docs = renderDoctorReferences(initHarnessReferences())
 		expect(docs.length).toBeGreaterThan(0)
 		for (const doc of docs) {
-			expect(readFileSync(join(packageRoot, 'skills', 'doctor', ...doc.path.split('/')), 'utf8')).toBe(doc.content)
+			expect(
+				readFileSync(join(packageRoot, 'skills', 'doctor-buddy-agent-harness', ...doc.path.split('/')), 'utf8'),
+			).toBe(doc.content)
 		}
 	})
 
@@ -148,11 +153,13 @@ describe('doctor guidance', () => {
 	// exist costs the reader the whole lookup and teaches them to stop following the table.
 	it('ships every reference page its own pointer table names', () => {
 		for (const [, path] of renderDoctorSkill(version).matchAll(/`(references\/[a-z-]+\.md)`/g)) {
-			expect(existsSync(join(packageRoot, 'skills', 'doctor', ...(path as string).split('/')))).toBe(true)
+			expect(
+				existsSync(join(packageRoot, 'skills', 'doctor-buddy-agent-harness', ...(path as string).split('/'))),
+			).toBe(true)
 		}
 	})
 
-	// A harness page hands editorial judgment to the `init` skill by relative path. Resolved here
+	// A harness page hands editorial judgment to the `init-buddy-agent-harness` skill by relative path. Resolved here
 	// rather than eyeballed: the depth is three levels up and reads as plausible at any of them.
 	it('resolves every cross-reference into the init skill', () => {
 		const harnessPages = renderDoctorReferences(initHarnessReferences()).filter((doc) =>
@@ -163,7 +170,7 @@ describe('doctor guidance', () => {
 		)
 		expect(links.length).toBeGreaterThan(0)
 		for (const { doc, target } of links) {
-			const from = dirname(join(packageRoot, 'skills', 'doctor', ...doc.path.split('/')))
+			const from = dirname(join(packageRoot, 'skills', 'doctor-buddy-agent-harness', ...doc.path.split('/')))
 			expect(existsSync(resolve(from, target))).toBe(true)
 		}
 	})
@@ -172,7 +179,7 @@ describe('doctor guidance', () => {
 /** The same filesystem read the generator does, so the test is not a second copy of the list. */
 function initHarnessReferences(): Set<string> {
 	return new Set(
-		readdirSync(join(packageRoot, 'skills', 'init', 'references', 'harnesses'))
+		readdirSync(join(packageRoot, 'skills', 'init-buddy-agent-harness', 'references', 'harnesses'))
 			.filter((entry) => entry.endsWith('.md'))
 			.map((entry) => entry.slice(0, -'.md'.length)),
 	)
@@ -185,7 +192,7 @@ describe('hand-written skill pins', () => {
 	it('targets every shipped SKILL.md that names an npx invocation of this package, doctor excepted', () => {
 		const skillsRoot = join(packageRoot, 'skills')
 		const onDisk = readdirSync(skillsRoot, { withFileTypes: true })
-			.filter((entry) => entry.isDirectory() && entry.name !== 'doctor')
+			.filter((entry) => entry.isDirectory() && entry.name !== doctorSkill.name)
 			.map((entry) => join(skillsRoot, entry.name, 'SKILL.md'))
 			.filter((path) => existsSync(path) && readFileSync(path, 'utf8').includes(`npx -y ${commandInvocation}`))
 
@@ -201,8 +208,11 @@ describe('hand-written skill pins', () => {
 		const skillsRoot = mkdtempSync(join(tmpdir(), 'buddy-agent-harness-pins-'))
 		mkdirSync(join(skillsRoot, 'repair'), { recursive: true })
 		writeFileSync(join(skillsRoot, 'repair', 'SKILL.md'), 'Fall back to `npx -y buddy-agent-harness@^0.1.0 doctor`.\n')
-		mkdirSync(join(skillsRoot, 'doctor'), { recursive: true })
-		writeFileSync(join(skillsRoot, 'doctor', 'SKILL.md'), 'Fall back to `npx -y buddy-agent-harness@^0.1.0 doctor`.\n')
+		mkdirSync(join(skillsRoot, doctorSkill.name), { recursive: true })
+		writeFileSync(
+			join(skillsRoot, doctorSkill.name, 'SKILL.md'),
+			'Fall back to `npx -y buddy-agent-harness@^0.1.0 doctor`.\n',
+		)
 		mkdirSync(join(skillsRoot, 'enhance'), { recursive: true })
 		writeFileSync(join(skillsRoot, 'enhance', 'SKILL.md'), 'No npx fallback here.\n')
 		mkdirSync(join(skillsRoot, 'no-skill-file'), { recursive: true })
@@ -273,8 +283,8 @@ describe('skill script', () => {
 	// root that is nowhere near the skill and downloads nothing. `scripts/pack-check.ts` covers the
 	// stronger claim — that it also runs with no `node_modules` anywhere above it, once packed.
 	it('runs the shipped CLI against the working directory, not its own', () => {
-		const script = join(packageRoot, 'skills', 'doctor', launcherFor('doctor'))
-		const stdout = execFileSync(process.execPath, [script, '--format', 'json'], {
+		const launcher = join(packageRoot, 'skills', 'doctor-buddy-agent-harness', launcherFor('doctor'))
+		const stdout = execFileSync(process.execPath, [launcher, '--format', 'json'], {
 			cwd: packageRoot,
 			encoding: 'utf8',
 		})
@@ -297,7 +307,7 @@ const byHand = ['diverged-both', 'diverged-unknown', 'unpinned-copy']
 
 describe('the detect-and-repair seam', () => {
 	// One entry, two renderings, for two readers. A skill must not run `init` itself, so the skill
-	// rendering hands the work to the `init` skill; a caller reading the command's output can just
+	// rendering hands the work to the `init-buddy-agent-harness` skill; a caller reading the command's output can just
 	// run the invocation, so the command rendering gives it one and names no skill.
 	it('renders every repair twice, and the two disagree about who acts', () => {
 		for (const entry of doctorRepairs) expect(repairFor(entry.problem)).toEqual(entry)
@@ -488,7 +498,7 @@ const initOwned: DoctorProblem[] = [
 ]
 
 // The `repair` skill decides who to hand a finding to by asking whether its repair names `init` at
-// all — the `/buddy-agent-harness:init` skill or a `buddy-agent-harness init` command line, since
+// all — the `/buddy-agent-harness:init-buddy-agent-harness` skill or a `buddy-agent-harness init` command line, since
 // the command rendering uses the second form for every bridge repair and the first for every
 // instruction repair. That question is only answerable from the report if the two sets coincide
 // exactly, so the shipped guidance is pinned to the table here: a repair that stopped naming `init`

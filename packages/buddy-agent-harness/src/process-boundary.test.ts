@@ -66,11 +66,11 @@ describe('a generated launcher', () => {
 	})
 
 	it('leaves a usage code clibuilder recorded on the process alone', () => {
-		expect(launcher('doctor', 'doctor.mjs', '--nope').status).toBe(2)
+		expect(launcher('doctor-buddy-agent-harness', 'doctor.mjs', '--nope').status).toBe(2)
 	})
 
 	it('reports the diagnosis of the working directory when asked correctly', () => {
-		const { status, stdout } = launcher('doctor', 'doctor.mjs', '--format', 'json')
+		const { status, stdout } = launcher('doctor-buddy-agent-harness', 'doctor.mjs', '--format', 'json')
 
 		expect(status).toBe(0)
 		expect(() => JSON.parse(stdout)).not.toThrow()

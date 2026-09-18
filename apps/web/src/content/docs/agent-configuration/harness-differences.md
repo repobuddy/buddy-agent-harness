@@ -64,7 +64,7 @@ Two harnesses keep project-scope configuration in a file named `settings.json`, 
 
 Both halves matter when something edits one of these files for you. On the Gemini CLI side, the obvious implementation — read the file, `JSON.parse` it, add the entry, write the object back — is silent data loss: every comment the author wrote disappears, along with their key order and indentation. Edit the one array in place instead. On the Claude Code side the failure is the reverse and louder: a comment added to annotate a permission or hook entry invalidates the entire file.
 
-The rule that survives both is to treat a user-authored settings file as text to amend rather than an object to round-trip. [Skill: init](/skills/init/#rules-the-skill-follows) states it as a rule for that reason.
+The rule that survives both is to treat a user-authored settings file as text to amend rather than an object to round-trip. [Skill: init-buddy-agent-harness](/skills/init-buddy-agent-harness/#rules-the-skill-follows) states it as a rule for that reason.
 
 Confidence for both rows is recorded in [Sources & Confidence](/sources/).
 
@@ -86,7 +86,7 @@ Neither has a safe project-scope detection marker. Antigravity documents no proj
 
 Enabling a harness is a statement about what the repository supports. For the five native harnesses above, no files are written at all. The CLI result separates `native` from `linked` so it is clear what actually changed on disk.
 
-Which harnesses get enabled, and why a detected directory does not by itself mean you want that harness maintained, is covered in [Skill: init](/skills/init/#which-harnesses-get-enabled).
+Which harnesses get enabled, and why a detected directory does not by itself mean you want that harness maintained, is covered in [Skill: init-buddy-agent-harness](/skills/init-buddy-agent-harness/#which-harnesses-get-enabled).
 
 ## Harnesses supported by `npx skills`
 

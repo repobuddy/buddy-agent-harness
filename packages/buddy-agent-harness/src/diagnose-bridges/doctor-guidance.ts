@@ -7,7 +7,7 @@ import { type Locator, locatorText } from './locator.ts'
 
 /**
  * The one place `doctor`'s guidance is written. The command reads `detail` and `repair` to fill its
- * `findings` and `help` sections; `skills/doctor/SKILL.md` is generated from the same table by
+ * `findings` and `help` sections; `skills/doctor-buddy-agent-harness/SKILL.md` is generated from the same table by
  * `scripts/generate-skills.ts`, so the shipped skill cannot drift from what the command says.
  */
 
@@ -26,7 +26,7 @@ export type BridgeProblem =
 /**
  * Every way an instruction bridge can fail. Separate from `BridgeProblem` because the two share no
  * repair: a skills bridge is rebuilt with `init` flags, and an instruction bridge is a file whose
- * content is the user's, so every repair here goes back to the `init` skill.
+ * content is the user's, so every repair here goes back to the `init-buddy-agent-harness` skill.
  */
 /**
  * Configuration that is present and **wrong**, as against a bridge that does not resolve. These are
@@ -97,7 +97,7 @@ export type ConfigurationProblem = DoctorProblem
  * `git diff --no-index …` is perfectly runnable: the diff shows what differs, it does not reconcile
  * anything. That is what stops an agent executing every `command` it is handed from rebuilding a
  * diverged bridge over whichever side holds the newer edit. A skill invocation is not a `command`
- * either — nothing in a shell runs `/buddy-agent-harness:init`.
+ * either — nothing in a shell runs `/buddy-agent-harness:init-buddy-agent-harness`.
  */
 export type RepairAction = {
 	/** A shell invocation that completes the repair, or empty when none does. */
@@ -119,8 +119,8 @@ export type Repair = {
 	repair(at: Locator, cli: string): RepairAction
 	/**
 	 * What the shipped skill tells an agent to do instead. A repair that rebuilds a bridge delegates
-	 * to the `init` skill rather than calling the `init` command, because rebuilding can move
-	 * user-authored skills and that judgment is the `init` skill's, not `doctor`'s.
+	 * to the `init-buddy-agent-harness` skill rather than calling the `init` command, because rebuilding can move
+	 * user-authored skills and that judgment is the `init-buddy-agent-harness` skill's, not `doctor`'s.
 	 */
 	skillRepair(at: Locator): string
 }
@@ -220,7 +220,7 @@ export const launcherInvocation = (subcommand: string) => `node ${launcherFor(su
 export const repairSkillInvocation = '/buddy-agent-harness:repair'
 
 /** How the skill hands a repair back to `init`. */
-export const initSkillInvocation = '/buddy-agent-harness:init'
+export const initSkillInvocation = '/buddy-agent-harness:init-buddy-agent-harness'
 
 /** Where the user authors the golden MCP server set, named in every MCP repair that points at it. */
 const goldenSet = '.agents/buddy-agent-harness/mcp.toml'
@@ -310,7 +310,7 @@ const bridgeTable: Record<BridgeProblem, RepairRow> = {
 export const bridgeRepairs: readonly Repair[] = repairsOf(bridgeTable)
 
 /**
- * The instruction bridges, reported in `instructions`. Every repair is the `init` skill: these are
+ * The instruction bridges, reported in `instructions`. Every repair is the `init-buddy-agent-harness` skill: these are
  * files a person wrote, or files carrying content beside the bridge, and deciding what to preserve
  * while restoring the bridge is judgment no flag carries. `repair` therefore names the skill in
  * both places rather than pretending a shell command exists.
@@ -483,7 +483,7 @@ const mcpRepairs: readonly Repair[] = repairsOf(mcpTable)
 
 /**
  * Configuration only one harness can read. Every repair here is a **conversion**, and every one of
- * them is the `init` skill's: consolidating what a repository already has is exactly its remit, and
+ * them is the `init-buddy-agent-harness` skill's: consolidating what a repository already has is exactly its remit, and
  * the content is the user's, so it is offered and never written on sight. `repair` owns none of
  * them — it corrects configuration that is wrong, and none of this is wrong.
  *
@@ -558,7 +558,7 @@ export function repairFor(problem: DoctorProblem): Repair {
 }
 
 export const doctorSkill = {
-	name: 'doctor',
+	name: 'doctor-buddy-agent-harness',
 	description:
 		'Use this skill when a repository loads no project skills, when skills are missing after a clone, when a harness appears to be ignoring AGENTS.md, or when checking whether the agent configuration bridges into .claude/skills, CLAUDE.md, and the other harness files still resolve.',
 } as const
@@ -568,7 +568,7 @@ export const generatedSkillWarning =
 	'<!-- Generated from src/diagnose-bridges/doctor-guidance.ts by scripts/generate-skills.ts. Do not edit by hand. -->'
 
 /**
- * A file the generator writes under `skills/doctor/`, path relative to that directory. The skill is
+ * A file the generator writes under `skills/doctor-buddy-agent-harness/`, path relative to that directory. The skill is
  * split the way `init`'s is: a lean `SKILL.md` an agent always reads, and reference pages it loads
  * only for the family it is acting on. One flat file made every reader of one finding pay for the
  * prose behind all five.
@@ -587,7 +587,7 @@ ${repairs
 }
 
 /**
- * The shipped `doctor` skill, rendered from the same table the command prints. `version` is the
+ * The shipped `doctor-buddy-agent-harness` skill, rendered from the same table the command prints. `version` is the
  * package version the skill ships with; it pins the `npx` invocation so the table and the CLI that
  * produced it stay on the same breaking line.
  *
@@ -631,7 +631,7 @@ The command is read-only. It never repairs anything, so it is safe to run at any
 
 Nothing in \`help\` is wrapped. An earlier version prefixed every repair with \`Run\`, which read as an instruction to paste prose into a shell.
 
-Do not run an \`init\` command yourself. Rebuilding a skills bridge can move skills a user wrote, and rewriting an instruction file touches prose a person authored — both are the \`init\` skill's judgment, so hand the repair to \`${initSkillInvocation}\` instead. Every such repair carries an empty \`command\`: a skill invocation has no shell equivalent at all.
+Do not run an \`init\` command yourself. Rebuilding a skills bridge can move skills a user wrote, and rewriting an instruction file touches prose a person authored — both are the \`init-buddy-agent-harness\` skill's judgment, so hand the repair to \`${initSkillInvocation}\` instead. Every such repair carries an empty \`command\`: a skill invocation has no shell equivalent at all.
 
 When every bridge resolves, \`findings\` says so outright rather than being empty.
 
@@ -698,7 +698,7 @@ function scopeRows(scope: HarnessScope): string {
  * One page per harness, generated from the registry rather than written by hand. These are the
  * paths the detectors actually use, so a page written beside them would drift the first time a
  * harness moved a file. Editorial judgment about a harness — what is contested, what not to
- * generate — stays in the `init` skill's own reference pages, which these link to where one exists.
+ * generate — stays in the `init-buddy-agent-harness` skill's own reference pages, which these link to where one exists.
  */
 function harnessPage(harness: Harness, hasInitReference: boolean): GeneratedDoc {
 	const deprecated =
@@ -737,7 +737,7 @@ ${artifacts
 `
 
 	const editorial = hasInitReference
-		? `\n## Judgment about this harness\n\nWhat to generate for it, what to leave alone, and which claims are contested: \`../../../init/references/harnesses/${harness.name}.md\`. That page is hand-written and is the one to read before writing anything for this harness.\n`
+		? `\n## Judgment about this harness\n\nWhat to generate for it, what to leave alone, and which claims are contested: \`../../../init-buddy-agent-harness/references/harnesses/${harness.name}.md\`. That page is hand-written and is the one to read before writing anything for this harness.\n`
 		: ''
 
 	return {
@@ -759,7 +759,7 @@ ${user}${nonstandard}${editorial}`,
 
 /**
  * The reference pages, split by finding family plus one per harness. `initReferences` names the
- * harnesses the `init` skill has a hand-written page for; it is read off the filesystem by the
+ * harnesses the `init-buddy-agent-harness` skill has a hand-written page for; it is read off the filesystem by the
  * generator rather than written down here, so a page added there is linked without a second edit.
  */
 export function renderDoctorReferences(initReferences: ReadonlySet<string>): GeneratedDoc[] {

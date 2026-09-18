@@ -7,7 +7,7 @@ description: 'CLI reference for buddy-agent-harness doctor: flags, statuses, fin
 buddy-agent-harness doctor [--root <directory>] [--harness <names>] [--format toon|json|text]
 ```
 
-`doctor` reports whether a repository's harness bridges still resolve: the skill bridges [`init`](/cli/init/) creates into `.agents/skills`, and the instruction bridges the [`init` skill](/skills/init/) writes into `AGENTS.md`. It is read-only: it never creates, moves, or repairs anything, so it is safe to run at any point, including from a session-start hook.
+`doctor` reports whether a repository's harness bridges still resolve: the skill bridges [`init`](/cli/init/) creates into `.agents/skills`, and the instruction bridges the [`init-buddy-agent-harness` skill](/skills/init-buddy-agent-harness/) writes into `AGENTS.md`. It is read-only: it never creates, moves, or repairs anything, so it is safe to run at any point, including from a session-start hook.
 
 ## No install needed
 
@@ -17,7 +17,7 @@ Nothing has to be installed to diagnose a repository. Run it from npm in the rep
 npx -y buddy-agent-harness doctor --format text
 ```
 
-That is the whole dependency: one npx invocation, on a repository you cloned rather than one you set up. The plugin and its [`doctor` skill](/skills/doctor/) add an agent that runs this for you and reads the report, not a capability the command lacks.
+That is the whole dependency: one npx invocation, on a repository you cloned rather than one you set up. The plugin and its [`doctor-buddy-agent-harness` skill](/skills/doctor-buddy-agent-harness/) add an agent that runs this for you and reads the report, not a capability the command lacks.
 
 ## Why it exists
 
@@ -56,10 +56,10 @@ findings[3]{path,problem,detail}:
 help[3]{command,instruction}:
   buddy-agent-harness init --copy --force,run `buddy-agent-harness init --copy --force` to rebuild .claude/skills as a real directory
   buddy-agent-harness init,run `buddy-agent-harness init` to create the bridge at .windsurf/skills
-  "","hand .gemini/settings.json to `/buddy-agent-harness:init`, which writes the bridge into it"
+  "","hand .gemini/settings.json to `/buddy-agent-harness:init-buddy-agent-harness`, which writes the bridge into it"
 ```
 
-Each `help` row is one repair, in two columns. `command` is a shell invocation that runs exactly as given and **completes** the repair; `instruction` is the same repair in the imperative. `command` is empty when no single invocation does the job — the third row above, where the repair is the [`init` skill](/skills/init/)'s judgment and nothing in a shell does it.
+Each `help` row is one repair, in two columns. `command` is a shell invocation that runs exactly as given and **completes** the repair; `instruction` is the same repair in the imperative. `command` is empty when no single invocation does the job — the third row above, where the repair is the [`init-buddy-agent-harness` skill](/skills/init-buddy-agent-harness/)'s judgment and nothing in a shell does it.
 
 That emptiness is the whole point of the split: a caller can tell an executable repair from an instruction without parsing prose. A runnable invocation quoted *inside* an `instruction` is not a command either — `diverged-both` names `git diff --no-index` because the diff shows you what differs, not because running it reconciles anything.
 
@@ -119,7 +119,7 @@ help:
   command                                  instruction
   buddy-agent-harness init --copy --force  run `buddy-agent-harness init --copy --force` to rebuild .claude/skills as a real directory
   buddy-agent-harness init                 run `buddy-agent-harness init` to create the bridge at .windsurf/skills
-                                           hand .gemini/settings.json to `/buddy-agent-harness:init`, which writes the bridge into it
+                                           hand .gemini/settings.json to `/buddy-agent-harness:init-buddy-agent-harness`, which writes the bridge into it
 ```
 
 `init` accepts the same flag.
@@ -133,7 +133,7 @@ These fail as silently as a skills bridge and cost more. Losing a skills bridge 
 They are a separate `instructions` section rather than more `bridges` rows, because nothing about them is shared:
 
 - The `kind` and `status` vocabularies differ. `stale` and `diverged` describe a directory projection and mean nothing for a Markdown import or a JSON array entry.
-- The repair is never a command. `init` writes skills projections; the instruction files carry prose a person authored, so restoring a bridge without discarding what displaced it is the [`init` skill](/skills/init/)'s judgment.
+- The repair is never a command. `init` writes skills projections; the instruction files carry prose a person authored, so restoring a bridge without discarding what displaced it is the [`init-buddy-agent-harness` skill](/skills/init-buddy-agent-harness/)'s judgment.
 - A `bridges` row is a directory the CLI wrote. An `instructions` row is a file the skill wrote. Merging them would make one section mean two things.
 
 | Status | Meaning |
@@ -231,10 +231,10 @@ Every repair is already expressible with existing `init` flags, and each finding
 | `stale` | `buddy-agent-harness init --force` |
 | `diverged` | Depends on the direction; see above. |
 | `unpinned-copy` | `git ls-files -z <path> \| xargs -0 git update-index --skip-worktree` |
-| `no-instructions` | `/buddy-agent-harness:init` |
-| `instructions-missing` | `/buddy-agent-harness:init` |
-| `instructions-unbridged` | `/buddy-agent-harness:init` |
-| `instructions-unreadable` | Fix the JSON by hand, then `/buddy-agent-harness:init` |
+| `no-instructions` | `/buddy-agent-harness:init-buddy-agent-harness` |
+| `instructions-missing` | `/buddy-agent-harness:init-buddy-agent-harness` |
+| `instructions-unbridged` | `/buddy-agent-harness:init-buddy-agent-harness` |
+| `instructions-unreadable` | Fix the JSON by hand, then `/buddy-agent-harness:init-buddy-agent-harness` |
 
 `no-canonical` is the one finding that is not about a bridge: `.agents/skills` itself is absent, so nothing can resolve into it. `no-instructions` is its counterpart for `AGENTS.md`. `unpinned-copy` is the [skip-worktree](#the-skip-worktree-bit) case, and it is reported against a bridge whose status is still `ok`.
 

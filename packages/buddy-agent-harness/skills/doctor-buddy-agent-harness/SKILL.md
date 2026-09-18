@@ -1,5 +1,5 @@
 ---
-name: doctor
+name: doctor-buddy-agent-harness
 description: Use this skill when a repository loads no project skills, when skills are missing after a clone, when a harness appears to be ignoring AGENTS.md, or when checking whether the agent configuration bridges into .claude/skills, CLAUDE.md, and the other harness files still resolve.
 ---
 
@@ -34,7 +34,7 @@ The command is read-only. It never repairs anything, so it is safe to run at any
 
 Nothing in `help` is wrapped. An earlier version prefixed every repair with `Run`, which read as an instruction to paste prose into a shell.
 
-Do not run an `init` command yourself. Rebuilding a skills bridge can move skills a user wrote, and rewriting an instruction file touches prose a person authored — both are the `init` skill's judgment, so hand the repair to `/buddy-agent-harness:init` instead. Every such repair carries an empty `command`: a skill invocation has no shell equivalent at all.
+Do not run an `init` command yourself. Rebuilding a skills bridge can move skills a user wrote, and rewriting an instruction file touches prose a person authored — both are the `init-buddy-agent-harness` skill's judgment, so hand the repair to `/buddy-agent-harness:init-buddy-agent-harness` instead. Every such repair carries an empty `command`: a skill invocation has no shell equivalent at all.
 
 When every bridge resolves, `findings` says so outright rather than being empty.
 
