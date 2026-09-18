@@ -212,6 +212,24 @@ Feature: Offer the current wording of a vetted section to a repository that alre
     And `AGENTS.md` is unchanged until the owner answers
 
   @behavior
+  Scenario: does not call a retired wording current because the current text still carries all its sentences
+    Given a root `AGENTS.md` holding a `## Delegation` section identical to a wording in `references/delegation.history.md`
+    And every sentence of that wording appears verbatim, in order, in the text `references/delegation.md` offers
+    And the text `references/delegation.md` offers carries a sentence that wording does not
+    When the agent runs the `enhance` skill
+    Then the report does not say the section is already current
+    And the current `## Delegation` text is offered as a replacement for that section
+
+  @behavior
+  Scenario: offers the current wording where an owner filled the gap a revision added
+    Given a root `AGENTS.md` holding a `## Delegation` section carrying a wording in `references/delegation.history.md` whole and in order
+    And one sentence of the owner's own sits at the place where the text `references/delegation.md` offers adds a sentence to that wording
+    And that sentence appears in no wording the addition has offered
+    When the agent runs the `enhance` skill
+    Then the report does not say the section is already current
+    And the current `## Delegation` text is offered as a replacement for that section
+
+  @behavior
   Scenario: reports a retired wording outside the root file rather than replacing it
     Given a `CLAUDE.md` holding a `## Delegation` section identical to a wording in `references/delegation.history.md`
     And a root `AGENTS.md` holding a build-commands section and no `## Delegation` section

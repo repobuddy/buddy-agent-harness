@@ -71,7 +71,7 @@ questions decide, and they decide against the texts themselves.
 
 If this harness can spawn subagents, delegate the mechanical work and the research whose answer is far smaller than the reading behind it. Keep the judgment calls and the decisions; anything you would finish in less time than briefing it takes, do yourself.
 
-A subagent inherits your model if you do not pick one, and none of your context either way. Pick the cheapest, unless you cannot say what a right answer looks like or could not cheaply tell a wrong one. Give it the context, the why, and what done looks like.
+A subagent inherits your model if you do not pick one, and none of your context either way. Pick the cheapest, unless you cannot say what a right answer looks like or could not cheaply tell a wrong one. Where you can set its effort, pick the lowest, unless you could not write down the steps that reach that answer. Give it the context, the why, and what done looks like.
 ```
 
 ## Do not edit it

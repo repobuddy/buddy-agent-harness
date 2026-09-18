@@ -141,10 +141,10 @@ A `## Delegation` section, on the work an agent should hand to a subagent and th
 
 If this harness can spawn subagents, delegate the mechanical work and the research whose answer is far smaller than the reading behind it. Keep the judgment calls and the decisions; anything you would finish in less time than briefing it takes, do yourself.
 
-A subagent inherits your model if you do not pick one, and none of your context either way. Pick the cheapest, unless you cannot say what a right answer looks like or could not cheaply tell a wrong one. Give it the context, the why, and what done looks like.
+A subagent inherits your model if you do not pick one, and none of your context either way. Pick the cheapest, unless you cannot say what a right answer looks like or could not cheaply tell a wrong one. Where you can set its effort, pick the lowest, unless you could not write down the steps that reach that answer. Give it the context, the why, and what done looks like.
 ```
 
-The wording this replaced is kept in `references/delegation.history.md`, which is what an existing `## Delegation` section is compared against.
+The wordings this replaced are kept in `references/delegation.history.md`, which is what an existing `## Delegation` section is compared against.
 
 You see the text in full before you answer. On approval it is appended to the root `AGENTS.md`, outside the `buddy-agent-harness` managed region: the section asserts something about how the repository is worked in and holds true whether or not the tool ever ran, which makes it material content, and material content needs approval. The managed region is for the tool's own bookkeeping.
 

@@ -602,3 +602,114 @@ is where wordings drift apart.
 The third row is the same rule with the repeated *unless*/*choose* removed. Measured rather than
 assumed, per this skill's own rule about changing wording on taste, and it holds tier-perfect at
 6 of 6.
+
+# The effort axis
+
+Added 2026-09-14, before any run, for a candidate that has the section choose a subagent's
+reasoning effort as well as its model. Same v2 backlog, same prompt bytes: the `Model + effort`
+column has always been in the forced table and the roster line has always offered low / medium /
+high. Only the effort half of that cell, which no key has read, is now scored.
+
+## The key
+
+Scored on U1, U3, U6, U7, U8 when delegated. A delegated task with no effort named is wrong on the
+forced condition.
+
+| | Correct | Wrong |
+| --- | --- | --- |
+| U1 | low or medium | high |
+| U3 | low | medium or high |
+| U6 | low or medium | high — the trap |
+| U7 | high (or kept) | low or medium |
+| U8 | low | medium or high |
+
+**Effort-perfect** = a run with no effort error among the delegated tasks in {U1, U3, U6, U7, U8}.
+A kept task is judged by the routing column, not here.
+
+On the unforced condition the table has no model or effort column, so record **E**: runs that
+name an effort for at least one delegated task, anywhere in the answer.
+
+## The bar
+
+Fixed before the first run.
+
+- If the control's effort-perfect count on the forced condition is within 1 of the candidate's,
+  the axis is saturated: the section has not been shown to change effort choice. Report it and
+  swap nothing on the forced figure.
+- The candidate replaces the shipped wording only if effort-perfect **or** unforced E rises by at
+  least 3 of 6 over the shipped arm on the same condition, tier-perfect does not fall more than 1
+  below shipped, and no routing task falls more than one run below shipped.
+
+## Measured — effort axis, v2, isolated, 2026-09-14, 48 runs
+
+Twelve runs per arm through `scripts/run.sh`: forced condition three per roster, unforced six.
+Prompts identical below the marker across all four arms (`cmp` verified). Every runner reported
+itself as Opus 5, whatever roster line it was given; constant across arms.
+
+- **A**: *"Pick the cheapest model at the lowest effort, unless you cannot say what a right answer
+  looks like or could not cheaply tell a wrong one."* One exception for both choices.
+- **B**: keeps the model sentence and adds *"Where you can set its effort, pick the lowest, unless
+  you could not write down the steps that reach that answer."* A separate exception for effort.
+
+| arm | effort-perfect (forced) | E (unforced) | U6 delegated, forced / unforced |
+| --- | --- | --- | --- |
+| control (no section) | 4/6 | 6/6 | 2/6 / 0/6 |
+| shipped | 4/6 | 6/6 | 6/6 / 4/6 |
+| A | 6/6 | 6/6 | 4/6 / 0/6 |
+| B | 6/6 | 6/6 | 6/6 / 4/6 |
+
+Every effort miss in the table is the same one: U3, the CHANGELOG lookup, sent out at medium
+effort. Two runs in the control and two in the shipped arm did it. No A or B run did.
+
+**By the bar fixed above, neither candidate replaces the shipped wording.** B's +2 over shipped
+misses the required +3, and E is saturated. The control does not score within 1 of B, so the axis
+still discriminates, but the edge is inside the noise band.
+
+**A is rejected on a categorical result, not a tie.** One exception covering both choices sent U6
+back to the control's behavior: on the unforced condition it was kept in all 6 runs, against 2 of
+6 kept for shipped. Tying effort to the model criterion reads as "keep the cheap default low
+across the board", and a mechanical task that sounds risky falls out of delegation again. This is
+the same overlap failure the restructure fixed. **Property to preserve: one exception per choice.**
+
+B held routing and tier level with shipped, and none of its runs asked for an effort mapping in
+UNCLEAR. Three of six unforced B runs opened their UNCLEAR line with `none`, against one shipped
+run and none in the control or A.
+
+## Measured — effort axis, the no-default wordings, 2026-09-14, 24 further runs
+
+Raised by the owner: effort, like the model, is picked once at spawn with no try-and-escalate, so
+a "lowest" default may be the wrong shape. Two candidates replaced B's effort sentence and changed
+nothing else. They ran on the same prompt bytes and in the same session as the four arms above.
+
+- **C**: *"Where you can set its effort, pick it on reasonable judgment of what the work needs."*
+- **D**: *"Where you can set its effort, give it more the less of the route to that answer you could
+  write into the brief."* A self-evaluable criterion with no default.
+
+| arm | effort-perfect (forced) | U3 at medium or higher, all 12 runs | U6 delegated, forced / unforced |
+| --- | --- | --- | --- |
+| control | 4/6 | 2 | 2/6 / 0/6 |
+| shipped | 4/6 | 2 | 6/6 / 4/6 |
+| A | 6/6 | 0 | 4/6 / 0/6 |
+| B | 6/6 | 0 | 6/6 / 4/6 |
+| C | 4/6 | **5** | 5/6 / 2/6 |
+| D | 4/6 | **5** | 4/6 / 4/6 |
+
+**Without a low default, effort over-spend comes back.** Both no-default wordings sent the
+4,200-line CHANGELOG lookup out at medium effort in 5 of 12 runs, against 2 of 12 for no guidance
+at all. On the unforced condition it was 3 of 6 for each, against 0 of 6 for every other arm. This
+is the model-tier finding repeated on effort: volume reads as difficulty, and a criterion that
+asks what the work needs invites the run to find a need. D's self-evaluable criterion did not
+prevent it. What prevents it is the default.
+
+A default and its exception is still one pick, not a try-and-escalate. The run reads the exception
+once, at spawn, and it raised effort where it applied: U7 went out at high effort in every delegated
+B run, and U5 at medium in most. **Property to preserve, confirmed on a second choice: state the
+cheap default first, and make the exception the thing that needs a reason.**
+
+### B shipped, on the owner's decision
+
+B replaced the shipped wording on 2026-09-14. By the bar fixed before these runs its +2 on
+effort-perfect is a tie, so this is recorded as the owner's decision and not as a measured win,
+the same way as the 2026-09-10 change. What the decision rests on: B is the only arm with no effort
+miss and no routing cost, and it has a low default, which C and D showed is what keeps effort from
+over-spending.
