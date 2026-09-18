@@ -6,9 +6,10 @@
  *     — copied from `dist/skill-scripts/<subcommand>.mjs`, which `pnpm build` produces. The bundle
  *     is never committed (see `.gitignore`) and ships through the npm package instead, so it is
  *     copied on every run rather than compared for staleness the way the targets below are.
- *   - `skills/doctor/SKILL.md` is written whole from the guidance the `doctor` command prints.
- *   - `skills/doctor/references/**` is written whole from the same guidance and the harness registry,
- *     so an agent loads one finding family rather than all of them.
+ *   - `skills/doctor-buddy-agent-harness/SKILL.md` is written whole from the guidance the `doctor`
+ *     command prints.
+ *   - `skills/doctor-buddy-agent-harness/references/**` is written whole from the same guidance and
+ *     the harness registry, so an agent loads one finding family rather than all of them.
  *   - every other `skills/<skill>/SKILL.md` is hand-written prose, so only its `npx` fallback is
  *     rewritten, if it has one. Which files those are is read off the `skills/` directory rather than
  *     listed here, so a new hand-written skill with a pin is covered with no edit to this script.
@@ -27,7 +28,9 @@ import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import {
+	doctorSkill,
 	handWrittenPinTargets,
+	initSkillName,
 	launcherFor,
 	renderDoctorReferences,
 	renderDoctorSkill,
@@ -55,17 +58,18 @@ function bundlePath(subcommand: string): string {
 
 const targets: { path: string; expected: string | undefined }[] = []
 
-targets.push({ path: skillPath('doctor', 'SKILL.md'), expected: renderDoctorSkill(version) })
+targets.push({ path: skillPath(doctorSkill.name, 'SKILL.md'), expected: renderDoctorSkill(version) })
 
 /**
- * Which harnesses the `init` skill has a hand-written page for, read off the filesystem rather than
- * listed here: a page added there is then linked from `doctor`'s own harness page with no second
- * edit, and a list written down here could only go stale against the directory it describes.
+ * Which harnesses the `init-buddy-agent-harness` skill has a hand-written page for, read off the
+ * filesystem rather than listed here: a page added there is then linked from `doctor`'s own harness
+ * page with no second edit, and a list written down here could only go stale against the directory it
+ * describes.
  */
 function initHarnessReferences(): Set<string> {
 	try {
 		return new Set(
-			readdirSync(skillPath('init', 'references', 'harnesses'))
+			readdirSync(skillPath(initSkillName, 'references', 'harnesses'))
 				.filter((entry) => entry.endsWith('.md'))
 				.map((entry) => entry.slice(0, -'.md'.length)),
 		)
@@ -75,7 +79,7 @@ function initHarnessReferences(): Set<string> {
 }
 
 for (const doc of renderDoctorReferences(initHarnessReferences())) {
-	targets.push({ path: skillPath('doctor', ...doc.path.split('/')), expected: doc.content })
+	targets.push({ path: skillPath(doctorSkill.name, ...doc.path.split('/')), expected: doc.content })
 }
 
 // Every other hand-written SKILL.md that names an `npx` fallback. Only the pin is generated, so an

@@ -76,7 +76,7 @@ now wrong, and nothing says so.
   reconcile; it detects nothing itself.
 - **session-start hook** — runs the command unattended on every session. It is why nothing here
   writes, and why no secret may enter a finding.
-- **`doctor` skill** — presents the report and routes each finding.
+- **`doctor-buddy-agent-harness` skill** — presents the report and routes each finding.
 
 **Goals, and where each is served**
 
@@ -86,7 +86,7 @@ now wrong, and nothing says so.
 | person authoring the golden set | learn that a credential is sitting in a config file, without being shown it again | `buddy-agent-harness doctor` |
 | the write-capable repair surface | know every drifted server and which side moved | `buddy-agent-harness doctor` |
 | session-start hook | learn of drift with no risk of a write and no secret in the transcript | `buddy-agent-harness doctor` |
-| `doctor` skill | route each finding to whoever repairs it, and know not to read a withheld value back | the repair each finding carries |
+| `doctor-buddy-agent-harness` skill | route each finding to whoever repairs it, and know not to read a withheld value back | the repair each finding carries |
 
 **Entry point**
 

@@ -1,6 +1,7 @@
 import { run } from '../cli.ts'
 
-// Bundled into skills/init/scripts/init.mjs by scripts/generate-skills.ts (via `pnpm build`). The
+// Bundled into skills/init-buddy-agent-harness/scripts/init.mjs by scripts/generate-skills.ts (via
+// `pnpm build`). The
 // bundle is what ships inside the skill folder — nothing here reaches outside it at runtime.
 //
 // The subcommand is composed into a fresh argv rather than spliced into the global one, so nothing

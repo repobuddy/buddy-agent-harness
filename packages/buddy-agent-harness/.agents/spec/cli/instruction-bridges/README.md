@@ -35,20 +35,20 @@ It is a separate node from `../bridge-resolution/` rather than a case of it, and
 
 **Actors**
 
-- **`doctor` skill** — presents the report and routes each finding to the skill that owns it.
+- **`doctor-buddy-agent-harness` skill** — presents the report and routes each finding to the skill that owns it.
 - **person at a shell** — runs the command when a harness "is ignoring `AGENTS.md`".
 - **session-start hook** — runs the command unattended; affected by the outcome without reading it.
-- **`init` skill** — owns every repair here, and is the reason each finding names a skill rather than a command. What it does on arrival is `../../skills/init/`.
+- **`init-buddy-agent-harness` skill** — owns every repair here, and is the reason each finding names a skill rather than a command. What it does on arrival is `../../skills/init-buddy-agent-harness/`.
 - **downstream agent** — every later session started in a harness whose bridge is broken. It never invokes the command and is the actor the findings exist for: it silently loads none of the repository's instructions, and the session that suffers it is not the session that broke the bridge.
 
 **Goals, and where each is served**
 
 | Actor | Goal | Entry point |
 | --- | --- | --- |
-| `doctor` skill | learn which harnesses cannot reach `AGENTS.md` | `buddy-agent-harness doctor` |
+| `doctor-buddy-agent-harness` skill | learn which harnesses cannot reach `AGENTS.md` | `buddy-agent-harness doctor` |
 | person at a shell | find out why a harness is ignoring the repository's instructions | `buddy-agent-harness doctor --format text` |
 | session-start hook | learn of a broken instruction bridge with no risk of a write | `buddy-agent-harness doctor` |
-| `init` skill | be named as the owner of every repair here | the repair each finding carries |
+| `init-buddy-agent-harness` skill | be named as the owner of every repair here | the repair each finding carries |
 
 **Entry point**
 

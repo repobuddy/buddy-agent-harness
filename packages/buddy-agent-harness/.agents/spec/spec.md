@@ -39,7 +39,7 @@ This project mirrors its source surfaces so a contributor can find a spec beside
 | Node | Subject |
 | --- | --- |
 | [`skills/harness-init/`](./skills/harness-init/README.md) | Initialize canonical skills across enabled agent harnesses |
-| [`skills/init/`](./skills/init/README.md) | What the `init` skill consolidates, declines to invent, and writes without asking |
+| [`skills/init-buddy-agent-harness/`](./skills/init-buddy-agent-harness/README.md) | What the `init-buddy-agent-harness` skill consolidates, declines to invent, and writes without asking |
 | [`skills/enhance/`](./skills/enhance/README.md) | Which vetted sections the `enhance` skill offers, when it offers a current wording in place of one it has retired, and when it asks rather than deciding |
 | [`skills/repair/`](./skills/repair/README.md) | Correct agent configuration that is present and wrong |
 | [`cli/`](./cli/README.md) | Index over the package's command-line product surface |
@@ -59,12 +59,12 @@ This project mirrors its source surfaces so a contributor can find a spec beside
 
 The project implementation predates this SDD spec. `harness-init` was the first backfilled behavioral node.
 
-The `doctor` command is now described in full: every finding family under `cli/`, the output shape they share at `cli/diagnosis-report/`, and the cross-surface flow they feed at `workflows/detect-and-repair/`. How that command is reached at all is at `cli/entry-point/`, and how any command's result becomes bytes is at `cli/command-output/`. The `init` skill — as distinct from the `init` command at `skills/harness-init/` — is at `skills/init/`.
+The `doctor` command is now described in full: every finding family under `cli/`, the output shape they share at `cli/diagnosis-report/`, and the cross-surface flow they feed at `workflows/detect-and-repair/`. How that command is reached at all is at `cli/entry-point/`, and how any command's result becomes bytes is at `cli/command-output/`. The `init-buddy-agent-harness` skill — as distinct from the `init` command at `skills/harness-init/` — is at `skills/init-buddy-agent-harness/`.
 
 What is still outstanding:
 
 - **`tooling/`**, still a reference stub over the build, packaging, and release surfaces.
-- **`skills/doctor/`**, a shipped skill with no node of its own; its content is generated from the same guidance table the command reports from.
+- **`skills/doctor-buddy-agent-harness/`**, a shipped skill with no node of its own; its content is generated from the same guidance table the command reports from.
 
 <!-- BEGIN generated: by-concept (project-spec/concept-index) -->
 

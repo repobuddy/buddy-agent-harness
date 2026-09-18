@@ -37,7 +37,7 @@ What separates this capability from its two siblings is that every fault here re
 - **`repair` skill** — reads the findings to know what to correct; the primary consumer.
 - **person at a shell** — runs the command directly and reads the repair text.
 - **session-start hook** — runs the command unattended on every session; affected by the outcome without reading it, and the reason the command must never write.
-- **`doctor` skill** — presents the report to an agent, and routes each finding to `init` or `repair` by family.
+- **`doctor-buddy-agent-harness` skill** — presents the report to an agent, and routes each finding to `init` or `repair` by family.
 
 **Goals, and where each is served**
 
@@ -46,7 +46,7 @@ What separates this capability from its two siblings is that every fault here re
 | `repair` skill | know every correctable fault without detecting anything itself | `buddy-agent-harness doctor` |
 | person at a shell | see what is wrong and what fixes it | `buddy-agent-harness doctor --format text` |
 | session-start hook | learn of a fault without any risk of a write | `buddy-agent-harness doctor` |
-| `doctor` skill | route each finding to the skill that repairs it | the repair each finding carries |
+| `doctor-buddy-agent-harness` skill | route each finding to the skill that repairs it | the repair each finding carries |
 
 **Entry point**
 
@@ -116,4 +116,4 @@ Each check is independent, so one run reports as many faults as it finds, across
 
 ## References
 
-- `../../../../skills/init/references/frontmatter.md` backs the `unloadable-skill` fault set: of the frontmatter problems a harness can meet, only unparseable YAML and a missing `description` cause it to skip the skill. A mismatched or over-long `name` is a warning and still loads, which is why neither is reported.
+- `../../../../skills/init-buddy-agent-harness/references/frontmatter.md` backs the `unloadable-skill` fault set: of the frontmatter problems a harness can meet, only unparseable YAML and a missing `description` cause it to skip the skill. A mismatched or over-long `name` is a warning and still loads, which is why neither is reported.

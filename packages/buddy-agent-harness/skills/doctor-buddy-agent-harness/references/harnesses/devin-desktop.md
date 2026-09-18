@@ -17,4 +17,4 @@ No user-scope paths are primary-sourced for this harness, so `doctor` describes 
 
 ## Judgment about this harness
 
-What to generate for it, what to leave alone, and which claims are contested: `../../../init/references/harnesses/devin-desktop.md`. That page is hand-written and is the one to read before writing anything for this harness.
+What to generate for it, what to leave alone, and which claims are contested: `../../../init-buddy-agent-harness/references/harnesses/devin-desktop.md`. That page is hand-written and is the one to read before writing anything for this harness.

@@ -1,5 +1,5 @@
 ---
-name: init
+name: init-buddy-agent-harness
 description: Use this skill when initializing, adopting, or migrating a repository's agent configuration to the open AGENTS.md and Agent Skills standards, so one canonical source works across Claude Code, Codex, Cursor, Copilot CLI, and other agent harnesses.
 argument-hint: '[--root <dir>] [--harness <names>] [--copy] [--force <targets>]'
 ---
@@ -27,7 +27,7 @@ Skills and instructions are separate questions. Gemini CLI reads the canonical s
 
 ## Arguments
 
-An invocation may carry the command's own flags, most often when `doctor` hands back a repair: `/buddy-agent-harness:init --copy --force .claude/skills`.
+An invocation may carry the command's own flags, most often when `doctor-buddy-agent-harness` hands back a repair: `/buddy-agent-harness:init-buddy-agent-harness --copy --force .claude/skills`.
 
 Read them from the invocation itself rather than from a placeholder. Claude Code appends what the caller typed as `ARGUMENTS: <value>`, and Codex substitutes nothing at all, so on every harness the flags arrive as text you can read. Writing `$ARGUMENTS` into this body would resolve on Claude Code and stay literal everywhere else.
 

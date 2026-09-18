@@ -42,8 +42,10 @@ export default defineConfig({
 			'/concepts/harness-selection': '/agent-configuration/harness-differences/',
 			'/reference/standards': '/agent-configuration/open-standards/',
 			'/reference/harness-support': '/agent-configuration/harness-differences/',
-			'/guides/initialize': '/skills/init/',
+			'/guides/initialize': '/skills/init-buddy-agent-harness/',
 			'/guides/migrating': '/getting-started/migrating/',
+			'/skills/init': '/skills/init-buddy-agent-harness/',
+			'/skills/doctor': '/skills/doctor-buddy-agent-harness/',
 		}).map(([from, to]) => [from, base.replace(/\/$/, '') + to]),
 	),
 	integrations: [
@@ -89,8 +91,8 @@ export default defineConfig({
 					label: 'Skills',
 					items: [
 						{ label: 'Overview', slug: 'skills' },
-						{ label: 'init', slug: 'skills/init' },
-						{ label: 'doctor', slug: 'skills/doctor' },
+						{ label: 'init-buddy-agent-harness', slug: 'skills/init-buddy-agent-harness' },
+						{ label: 'doctor-buddy-agent-harness', slug: 'skills/doctor-buddy-agent-harness' },
 						{ label: 'enhance', slug: 'skills/enhance' },
 						{ label: 'repair', slug: 'skills/repair' },
 					],

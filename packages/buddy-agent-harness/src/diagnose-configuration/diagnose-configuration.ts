@@ -40,7 +40,7 @@ const localOverride = 'AGENTS.local.md'
 
 /**
  * The two frontmatter faults that make a harness skip a skill outright, per
- * `skills/init/references/frontmatter.md`: YAML that does not parse, and a missing `description`.
+ * `skills/init-buddy-agent-harness/references/frontmatter.md`: YAML that does not parse, and a missing `description`.
  * A `name` that mismatches the directory is a warning and still loads, so it is not reported here.
  *
  * The unquoted colon is the documented cause of the first, and is checked directly rather than by

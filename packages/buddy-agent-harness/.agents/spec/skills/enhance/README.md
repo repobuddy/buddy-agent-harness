@@ -51,7 +51,7 @@ The skill is judged on **conduct**, not on activation: its routing against `init
 - **repository owner** — approves or declines each offer; the only actor whose consent puts material content into `AGENTS.md`, or takes any out.
 - **addition author** — a maintainer of this package adding an addition or revising one's wording. Reaches the capability through the reference file rather than through a run, and is the actor whose change is what makes a consumer's copy stale.
 - **downstream agent** — every later session that loads `AGENTS.md`. Never invokes the skill, is affected by every run's outcome, and is the reason an outdated section costs something: it reads the superseded instruction on every session until someone notices. It is also whose behavior the evaluation harness measures, which is what makes a score an answer about this actor rather than about taste.
-- **`init` skill** — finishes a consolidation and offers to continue here. A sibling capability that reaches this one without being its owner.
+- **`init-buddy-agent-harness` skill** — finishes a consolidation and offers to continue here. A sibling capability that reaches this one without being its owner.
 
 **Goals, and where each is served**
 
@@ -61,7 +61,7 @@ The skill is judged on **conduct**, not on activation: its routing against `init
 | repository owner | nothing is added to my file, and nothing of mine is replaced, without my word | the approval on each offer |
 | addition author | revise a shipped wording and have repositories on the old one told, rather than silently kept there | the addition's reference file |
 | downstream agent | the guidance I load is whichever wording actually serves me better, not merely whichever is newer | the outcome of a run, and the evaluation when one is asked for |
-| `init` skill | hand a freshly consolidated repository over and have the sections it does not own considered | the offer at the end of `init`'s report |
+| `init-buddy-agent-harness` skill | hand a freshly consolidated repository over and have the sections it does not own considered | the offer at the end of `init`'s report |
 
 **Entry points**
 

@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
+import { doctorSkill } from './diagnose-bridges/doctor-guidance.ts'
 
 const packageRoot = dirname(dirname(fileURLToPath(import.meta.url)))
 
@@ -66,11 +67,11 @@ describe('a generated launcher', () => {
 	})
 
 	it('leaves a usage code clibuilder recorded on the process alone', () => {
-		expect(launcher('doctor', 'doctor.mjs', '--nope').status).toBe(2)
+		expect(launcher(doctorSkill.name, 'doctor.mjs', '--nope').status).toBe(2)
 	})
 
 	it('reports the diagnosis of the working directory when asked correctly', () => {
-		const { status, stdout } = launcher('doctor', 'doctor.mjs', '--format', 'json')
+		const { status, stdout } = launcher(doctorSkill.name, 'doctor.mjs', '--format', 'json')
 
 		expect(status).toBe(0)
 		expect(() => JSON.parse(stdout)).not.toThrow()

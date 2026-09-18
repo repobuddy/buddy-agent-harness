@@ -1,6 +1,6 @@
 # Harness Init
 
-Give a repository one canonical agent configuration — a root `AGENTS.md` and an `.agents/` tree — and bridge the harnesses that cannot read it directly.
+The `init-buddy-agent-harness` skill. Give a repository one canonical agent configuration — a root `AGENTS.md` and an `.agents/` tree — and bridge the harnesses that cannot read it directly.
 
 ## What it does
 

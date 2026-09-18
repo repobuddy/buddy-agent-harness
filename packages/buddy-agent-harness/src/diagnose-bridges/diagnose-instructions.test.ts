@@ -7,7 +7,7 @@ import { diagnoseBridges } from './diagnose-bridges.ts'
 import { diagnoseInstructions } from './diagnose-instructions.ts'
 
 const cli = 'bah'
-const initSkill = '/buddy-agent-harness:init'
+const initSkill = '/buddy-agent-harness:init-buddy-agent-harness'
 
 /** A repository whose skills side is healthy, so only the instruction bridges can produce findings. */
 function repository(): string {
@@ -81,7 +81,7 @@ describe('the import bridge', () => {
 				detail: 'no instruction bridge at this path — the harness reads none of AGENTS.md',
 				repair: {
 					command: '',
-					instruction: 'hand CLAUDE.md to `/buddy-agent-harness:init`, which writes the bridge into it',
+					instruction: `hand CLAUDE.md to \`${initSkill}\`, which writes the bridge into it`,
 				},
 			},
 		])
@@ -98,8 +98,7 @@ describe('the import bridge', () => {
 			detail: 'the file is present but names AGENTS.md nowhere — the harness reads none of it',
 			repair: {
 				command: '',
-				instruction:
-					'hand CLAUDE.md to `/buddy-agent-harness:init`, which adds the bridge without discarding what the file already says',
+				instruction: `hand CLAUDE.md to \`${initSkill}\`, which adds the bridge without discarding what the file already says`,
 			},
 		})
 	})
@@ -143,7 +142,7 @@ describe('the import bridge', () => {
 				detail: 'no AGENTS.md at the repository root, so every instruction bridge points at nothing',
 				repair: {
 					command: '',
-					instruction: 'hand this to `/buddy-agent-harness:init`, which derives AGENTS.md and the bridges to it',
+					instruction: `hand this to \`${initSkill}\`, which derives AGENTS.md and the bridges to it`,
 				},
 			},
 		])

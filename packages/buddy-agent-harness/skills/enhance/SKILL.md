@@ -1,16 +1,16 @@
 ---
 name: enhance
-description: Use this skill when a repository already has an AGENTS.md and you want to add guidance it is missing, or to refresh a vetted section it carries in an outdated form — offering each one at a time and writing only what the user approves. Runs on its own or straight after init.
+description: Use this skill when a repository already has an AGENTS.md and you want to add guidance it is missing, or to refresh a vetted section it carries in an outdated form — offering each one at a time and writing only what the user approves. Runs on its own or straight after init-buddy-agent-harness.
 argument-hint: '[--root <dir>]'
 ---
 
 # Harness Enhance
 
-`init` consolidates what a repository already has. `enhance` proposes what it does not.
+`init-buddy-agent-harness` consolidates what a repository already has. `enhance` proposes what it does not.
 
-The split matters: initialization has to run everywhere and invent nothing, so it carries no opinions. An addition is opinionated by construction, and worth having only where its subject is missing. Keeping them apart is what lets `init` stay safe to run on any repository.
+The split matters: initialization has to run everywhere and invent nothing, so it carries no opinions. An addition is opinionated by construction, and worth having only where its subject is missing. Keeping them apart is what lets `init-buddy-agent-harness` stay safe to run on any repository.
 
-Every addition is **offered, never written on sight**. An addition asserts something about how the repository is worked in — it stays true whether or not this tool ever ran — so it is material under the rule in `../init/references/agents-md.md`, and material content needs approval. Nothing here goes inside the `buddy-agent-harness` managed region; that region is for the tool's own bookkeeping.
+Every addition is **offered, never written on sight**. An addition asserts something about how the repository is worked in — it stays true whether or not this tool ever ran — so it is material under the rule in `../init-buddy-agent-harness/references/agents-md.md`, and material content needs approval. Nothing here goes inside the `buddy-agent-harness` managed region; that region is for the tool's own bookkeeping.
 
 One addition ships today: `references/delegation.md`. Each addition's reference file carries the text to offer, a `## Covered when` criterion for the subject already being present, and a `## Stale when` criterion for the file already carrying a **wording this addition has since retired**. The retired wordings themselves are kept beside it — for delegation, `references/delegation.history.md` — and are what a present section is compared against.
 
@@ -18,17 +18,17 @@ One addition ships today: `references/delegation.md`. Each addition's reference 
 
 Where the invocation names `--root <dir>`, that directory is the repository: read and write inside it only. Otherwise locate the Git repository root. The target is the root `AGENTS.md`.
 
-If there is no root `AGENTS.md`, stop and say so. This skill adds to an existing file; creating one is `init`'s job, so point there and write nothing.
+If there is no root `AGENTS.md`, stop and say so. This skill adds to an existing file; creating one is `init-buddy-agent-harness`'s job, so point there and write nothing.
 
 A nested `AGENTS.md` is never a target. It governs its own subtree, and none of these additions are subtree-scoped.
 
 ## 2. Read the merged view
 
-Read the root `AGENTS.md`. Then read any harness instruction file whose content still belongs in it — `CLAUDE.md` with a body of its own, `.cursorrules`, `.cursor/rules/**`, `.github/copilot-instructions.md`, `GEMINI.md`, `.windsurfrules`. `../init/references/detection.md` lists them.
+Read the root `AGENTS.md`. Then read any harness instruction file whose content still belongs in it — `CLAUDE.md` with a body of its own, `.cursorrules`, `.cursor/rules/**`, `.github/copilot-instructions.md`, `GEMINI.md`, `.windsurfrules`. `../init-buddy-agent-harness/references/detection.md` lists them.
 
 Judge against all of it together. That combined text is what an agent effectively reads, so guidance living in a Cursor always-on rule counts as present even though `AGENTS.md` does not carry it yet.
 
-**Read those files; do not consolidate them.** Merging them into `AGENTS.md` is `init`'s work and belongs to `init` alone. If you find content that should be consolidated, say so and recommend `init` — then carry on with the coverage judgment.
+**Read those files; do not consolidate them.** Merging them into `AGENTS.md` is `init-buddy-agent-harness`'s work and belongs to that skill alone. If you find content that should be consolidated, say so and recommend `init-buddy-agent-harness` — then carry on with the coverage judgment.
 
 ## 3. Classify each addition
 
@@ -56,7 +56,7 @@ Each addition ends this step in one of five states:
 - **the owner's own** — offer nothing, and name what covers it.
 - **you cannot tell** — do not decide it either way. Put it to the owner (step 4).
 
-A section from a retired wording in a file that is **not** the root `AGENTS.md` — a `CLAUDE.md`, a `.cursorrules` — is reported by name and offered nothing. This skill writes one file; replacing the root copy while an older copy stays in a harness file leaves the repository holding two versions instead of one. Recommend `init` and carry on.
+A section from a retired wording in a file that is **not** the root `AGENTS.md` — a `CLAUDE.md`, a `.cursorrules` — is reported by name and offered nothing. This skill writes one file; replacing the root copy while an older copy stays in a harness file leaves the repository holding two versions instead of one. Recommend `init-buddy-agent-harness` and carry on.
 
 ## 4. Offer
 
@@ -101,7 +101,7 @@ Report every run, whichever way it went: what you read, the verdict for each add
 
 ## Rules
 
-- **Detection decides every run.** There is no first-run path and no memory of a previous decline; run the same way every time. A section the user deleted reads as absent and is offered again, because absence is the whole state. If that becomes annoying, the fix is the user declining `init`'s offer to run this skill, not a flag here.
+- **Detection decides every run.** There is no first-run path and no memory of a previous decline; run the same way every time. A section the user deleted reads as absent and is offered again, because absence is the whole state. If that becomes annoying, the fix is the user declining `init-buddy-agent-harness`'s offer to run this skill, not a flag here.
 - **Never write without approval.** The offer is the whole point.
 - **Never silently overwrite.** A replacement is an offer like any other; the same gate that governs an addition governs it, word for word.
 - **Never guess whose words they are.** Where you cannot tell an edited copy of a retired wording from the owner's own prose, say so and ask. Deciding it silently in either direction is the one failure this path exists to avoid.

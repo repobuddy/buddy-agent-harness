@@ -29,7 +29,7 @@ Feature: Repair agent configuration that doctor reported as wrong
   Scenario: hands a bridge finding to init and writes nothing
     Given a `doctor` report carrying a `degraded` finding for `.claude/skills`
     When the agent runs the `repair` skill
-    Then the report hands that finding to the `init` skill
+    Then the report hands that finding to the `init-buddy-agent-harness` skill
     And the report offers no correction for it
     And `.claude/skills` is unchanged
 
@@ -61,7 +61,7 @@ Feature: Repair agent configuration that doctor reported as wrong
     Given a `doctor` report carrying an `instructions-unbridged` finding for `CLAUDE.md`
     And a `CLAUDE.md` whose entire body is a project overview
     When the agent runs the `repair` skill
-    Then the report hands that finding to the `init` skill
+    Then the report hands that finding to the `init-buddy-agent-harness` skill
     And no line is added to `CLAUDE.md`
 
   @behavior

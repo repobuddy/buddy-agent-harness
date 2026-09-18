@@ -61,9 +61,9 @@ describe('the layer directories', () => {
 
 	it('finds the package layer beside the nearest manifest, from src and from a bundle alike', () => {
 		expect(packageGovernancesDir()).toBe(join(process.cwd(), 'governances'))
-		expect(packageGovernancesDir(join(process.cwd(), 'skills', 'doctor', 'scripts', 'doctor.mjs'))).toBe(
-			join(process.cwd(), 'governances'),
-		)
+		expect(
+			packageGovernancesDir(join(process.cwd(), 'skills', 'doctor-buddy-agent-harness', 'scripts', 'doctor.mjs')),
+		).toBe(join(process.cwd(), 'governances'))
 	})
 
 	it('ships nothing from a tree with no manifest above it at all', () => {

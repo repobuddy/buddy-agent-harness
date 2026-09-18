@@ -5,7 +5,7 @@ description: What the repair skill corrects, why doctor detects and repair repai
 
 The `repair` skill corrects agent configuration a repository already has that is **wrong or outdated**.
 
-The other three skills each refuse this work on purpose. [`init`](/skills/init/) consolidates what you already wrote and invents nothing, so it never clobbers a file you authored. [`enhance`](/skills/enhance/) offers guidance the repository is **missing**. [`doctor`](/skills/doctor/) never writes, which is what makes it safe to run from a session-start hook. Configuration that is present but wrong falls between all three.
+The other three skills each refuse this work on purpose. [`init-buddy-agent-harness`](/skills/init-buddy-agent-harness/) consolidates what you already wrote and invents nothing, so it never clobbers a file you authored. [`enhance`](/skills/enhance/) offers guidance the repository is **missing**. [`doctor-buddy-agent-harness`](/skills/doctor-buddy-agent-harness/) never writes, which is what makes it safe to run from a session-start hook. Configuration that is present but wrong falls between all three.
 
 ## `doctor` detects, `repair` repairs
 
@@ -31,7 +31,7 @@ Our agent config is out of date — check it and fix what's wrong.
 
 `doctor` reports several families of finding, and only one is the skill's.
 
-**Bridge and instruction findings** — the `missing` / `degraded` / `stale` / `diverged-*` / `unpinned-copy` set, and the `instructions-*` set — are about a bridge, whether it stopped resolving or was never completed. Most go to [`init`](/skills/init/), which is what builds every bridge in the first place. A few go to nobody: a divergence with edits on both sides, one where no baseline says which side moved, and a bridge whose only fault is the git index. Rebuilding those would destroy work rather than repair it, so they are yours to settle by hand. Either way the skill reports them and hands them on.
+**Bridge and instruction findings** — the `missing` / `degraded` / `stale` / `diverged-*` / `unpinned-copy` set, and the `instructions-*` set — are about a bridge, whether it stopped resolving or was never completed. Most go to [`init-buddy-agent-harness`](/skills/init-buddy-agent-harness/), which is what builds every bridge in the first place. A few go to nobody: a divergence with edits on both sides, one where no baseline says which side moved, and a bridge whose only fault is the git index. Rebuilding those would destroy work rather than repair it, so they are yours to settle by hand. Either way the skill reports them and hands them on.
 
 The instruction bridges are worth a note, because they look like configuration faults. A `CLAUDE.md` that names `AGENTS.md` nowhere is a bridge that was never finished, and `init` writes that import itself. `init` also writes the `CLAUDE.md` stub *without* asking, where `repair` asks before every write — and one line cannot have two homes and two contradictory approval rules.
 
@@ -70,7 +70,7 @@ These hold regardless of what you ask for mid-run:
 
 - Never write without approval. There is no flag that skips it.
 - Never detect. `doctor` owns detection; a check here would be a second home for it.
-- Never rebuild a bridge. That is `doctor`'s diagnosis and [`init`](/skills/init/)'s repair.
+- Never rebuild a bridge. That is `doctor`'s diagnosis and [`init-buddy-agent-harness`](/skills/init-buddy-agent-harness/)'s repair.
 - Never invent an owner. A finding whose repair names no skill is work for a person, and the skill says so rather than picking one.
 - Never consolidate. Moving content into `AGENTS.md` is `init`'s.
 - Local agent configuration only: no workflows, repository settings, or unrelated project files. A retired harness name in a workflow file is not the skill's to rename.

@@ -1,12 +1,12 @@
 @frozen
 Feature: Consolidate a repository's agent configuration and bridge the harnesses that cannot read it
 
-  # ── /buddy-agent-harness:init ──
+  # ── /buddy-agent-harness:init-buddy-agent-harness ──
 
   @behavior
   Scenario: writes nothing while surveying the repository
     Given a repository holding a `.cursorrules` and a `.claude/skills` directory
-    When the agent runs the `init` skill
+    When the agent runs the `init-buddy-agent-harness` skill
     Then no file is created or modified before the plan is presented
     And every artifact the plan names was read from the repository rather than written to it
 
@@ -14,7 +14,7 @@ Feature: Consolidate a repository's agent configuration and bridge the harnesses
   Scenario: skips a bridge a previous run already wrote
     Given a `CLAUDE.md` whose entire body is the `AGENTS.md` import
     And a `.claude/skills` symlink that resolves into `.agents/skills`
-    When the agent runs the `init` skill
+    When the agent runs the `init-buddy-agent-harness` skill
     Then neither of them is treated as instruction content to consolidate
     And neither of them is reported as a conflict
     And `CLAUDE.md` is unchanged
@@ -22,7 +22,7 @@ Feature: Consolidate a repository's agent configuration and bridge the harnesses
   @behavior
   Scenario: treats a heading-only AGENTS.md as absent and derives against it
     Given a root `AGENTS.md` holding a single heading and no body
-    When the agent runs the `init` skill
+    When the agent runs the `init-buddy-agent-harness` skill
     Then the file is treated as a placeholder rather than as canonical content
     And the derived lines are confirmed with the owner before any of them is written
     And a root `AGENTS.md` carrying authored content would instead be left as it stands
@@ -30,21 +30,21 @@ Feature: Consolidate a repository's agent configuration and bridge the harnesses
   @behavior
   Scenario: offers no consolidation that would leave fewer readers than before
     Given a `.cursorrules` a person wrote, for a harness that reads `AGENTS.md` in one mode only
-    When the agent runs the `init` skill
+    When the agent runs the `init-buddy-agent-harness` skill
     Then the offer is to consolidate into `AGENTS.md` and leave a generated copy behind
     And no offer is made to consolidate the file and delete it
 
   @behavior
   Scenario: asks about each artifact separately rather than about the set
     Given two artifacts only one harness reads, each with a different candidate
-    When the agent runs the `init` skill
+    When the agent runs the `init-buddy-agent-harness` skill
     Then approval is asked for each of them on its own
     And approving one converts only that one
 
   @behavior
   Scenario: lists every artifact only one harness reads, and converts none unasked
     Given a `.claude/agents/` directory and a `.cursor/rules/` directory
-    When the agent runs the `init` skill
+    When the agent runs the `init-buddy-agent-harness` skill
     Then each is listed with the canonical form it is a candidate for
     And the subagent is reported as having no candidate at all
     And neither is converted into another harness's format without approval
@@ -54,7 +54,7 @@ Feature: Consolidate a repository's agent configuration and bridge the harnesses
   Scenario: refuses an MCP conversion the mapping cannot carry losslessly
     Given an MCP server defined in one harness's settings file
     And a second enabled harness with its own MCP format
-    When the agent runs the `init` skill
+    When the agent runs the `init-buddy-agent-harness` skill
     Then the server is reported as canonical-only
     And it is not written into the second harness's format
     And the report states that the mapping would mean supplying fields the source never carried
@@ -62,7 +62,7 @@ Feature: Consolidate a repository's agent configuration and bridge the harnesses
   @behavior
   Scenario: leaves a nested AGENTS.md where it is rather than merging it upward
     Given a nested `AGENTS.md` under a package directory
-    When the agent runs the `init` skill
+    When the agent runs the `init-buddy-agent-harness` skill
     Then its content is not appended to the root `AGENTS.md`
     And the nested file is reported and left in place
 
@@ -92,21 +92,21 @@ Feature: Consolidate a repository's agent configuration and bridge the harnesses
   @behavior
   Scenario: asks before replacing an authored instruction file with a pointer
     Given a `.cursorrules` a person wrote
-    When the agent runs the `init` skill
+    When the agent runs the `init-buddy-agent-harness` skill
     Then replacing it with a pointer is presented for approval
     And `.cursorrules` is unchanged until that approval is given
 
   @behavior
   Scenario: asks before editing a settings file a person wrote
     Given a `.gemini/settings.json` a person wrote, holding settings this skill did not come for
-    When the agent runs the `init` skill
+    When the agent runs the `init-buddy-agent-harness` skill
     Then adding `AGENTS.md` to `context.fileName` is presented for approval
     And the file is unchanged until that approval is given
 
   @behavior
   Scenario: asks before bridging a nested file that reverses a root rule
     Given a nested `AGENTS.md` stating a rule that negates one in the root `AGENTS.md`
-    When the agent runs the `init` skill
+    When the agent runs the `init-buddy-agent-harness` skill
     Then that one file is raised with the owner before it is bridged
     And the offer carries the option to bridge it anyway, to reword it as additive, and to leave it unbridged
     And no stub is written in its directory until the owner answers
@@ -114,7 +114,7 @@ Feature: Consolidate a repository's agent configuration and bridge the harnesses
   @behavior
   Scenario: creates a missing directory and a missing AGENTS.md without asking
     Given a repository with no `.agents/` directory and no root `AGENTS.md`
-    When the agent runs the `init` skill
+    When the agent runs the `init-buddy-agent-harness` skill
     Then `.agents/` and `.agents/skills/` are created without an approval being asked for
     And the root `AGENTS.md` is created the same way
     And every one of those creations is reported
@@ -122,7 +122,7 @@ Feature: Consolidate a repository's agent configuration and bridge the harnesses
   @behavior
   Scenario: writes the CLAUDE.md import stub without asking
     Given Claude Code among the enabled harnesses and no `CLAUDE.md` at the root
-    When the agent runs the `init` skill
+    When the agent runs the `init-buddy-agent-harness` skill
     Then a `CLAUDE.md` importing `AGENTS.md` is written without an approval being asked for
     And it carries the import and nothing copied out of `AGENTS.md`
     And the write is reported
@@ -130,14 +130,14 @@ Feature: Consolidate a repository's agent configuration and bridge the harnesses
   @behavior
   Scenario: writes the Gemini entry unasked where no settings file exists
     Given Gemini CLI among the enabled harnesses and no `.gemini/settings.json`
-    When the agent runs the `init` skill
+    When the agent runs the `init-buddy-agent-harness` skill
     Then the file is created carrying `AGENTS.md` in `context.fileName`
     And no approval is asked for before it is written
 
   @behavior
   Scenario: bridges every additive nested file unasked and names each one it judged
     Given two package directories each holding an `AGENTS.md` that adds to the root rules
-    When the agent runs the `init` skill
+    When the agent runs the `init-buddy-agent-harness` skill
     Then a stub is written in each of those directories without an approval being asked for
     And the report names each nested file and states that it was judged additive
     And the report does not state the outcome as a count alone
@@ -190,7 +190,7 @@ Feature: Consolidate a repository's agent configuration and bridge the harnesses
   @behavior
   Scenario: applies a flag from the invocation without letting it skip the plan
     Given an invocation naming `--force` and a target that already holds something
-    When the agent runs the `init` skill
+    When the agent runs the `init-buddy-agent-harness` skill
     Then the replacement is still presented for approval before the command is run
     And the survey is still run first
     And an invocation asking in prose that the bridge be replaced is read the same way
@@ -198,7 +198,7 @@ Feature: Consolidate a repository's agent configuration and bridge the harnesses
   @behavior
   Scenario: names what it did not recognize rather than guessing at a flag
     Given an invocation naming an argument that is not one of the command's flags
-    When the agent runs the `init` skill
+    When the agent runs the `init-buddy-agent-harness` skill
     Then the report states what was not recognized
     And no flag is passed to the command on the strength of it
     And the rest of the run still happens
@@ -219,7 +219,7 @@ Feature: Consolidate a repository's agent configuration and bridge the harnesses
   @behavior
   Scenario: restores a removed region and rewrites an existing one in place
     Given an `AGENTS.md` whose non-material region and its markers are gone
-    When the agent runs the `init` skill
+    When the agent runs the `init-buddy-agent-harness` skill
     Then the region is written again at the end of the file
     And a re-run rewrites that region in place rather than adding a second one
     And nothing the user wrote above it is reordered or removed
@@ -227,14 +227,14 @@ Feature: Consolidate a repository's agent configuration and bridge the harnesses
   @behavior
   Scenario: leaves emptied markers empty
     Given an `AGENTS.md` holding the region markers with nothing between them
-    When the agent runs the `init` skill
+    When the agent runs the `init-buddy-agent-harness` skill
     Then the markers are left with nothing between them
     And the region is not written back
 
   @behavior
   Scenario: writes no region into a repository that has no bridge
     Given a repository whose every enabled harness reads `.agents/skills` and `AGENTS.md` natively
-    When the agent runs the `init` skill
+    When the agent runs the `init-buddy-agent-harness` skill
     Then no non-material region is written
     And a later run does not restore one either
 
@@ -276,20 +276,20 @@ Feature: Consolidate a repository's agent configuration and bridge the harnesses
   @behavior
   Scenario: invents no canonical directory beyond the one convention
     Given a repository with no `.agents/` tree and rules, commands, and subagents to place
-    When the agent runs the `init` skill
+    When the agent runs the `init-buddy-agent-harness` skill
     Then no `.agents/rules/`, `.agents/commands/`, or `.agents/agents/` directory is created
     And `.agents/` is described as a convention rather than as a standard
 
   @behavior
   Scenario: writes no AGENTS.local.md
     Given a request to keep personal instructions out of version control
-    When the agent runs the `init` skill
+    When the agent runs the `init-buddy-agent-harness` skill
     Then no `AGENTS.local.md` is created
     And the personal instructions are pointed at a gitignored harness-local file instead
 
   @behavior
   Scenario: changes no file outside the repository's agent configuration
     Given a repository whose CI workflow names a harness
-    When the agent runs the `init` skill
+    When the agent runs the `init-buddy-agent-harness` skill
     Then the workflow file is unchanged
     And no repository setting, branch rule, or unrelated project file is changed

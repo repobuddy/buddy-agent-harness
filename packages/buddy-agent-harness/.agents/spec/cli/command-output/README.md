@@ -41,7 +41,7 @@ Both commands the package publishes end the same way: they build a plain object 
 **Actors**
 
 - **`doctor` command and `init` command** — the callers of the encoder. They hand over a result and a format string and write nothing themselves. The executable path is asked for by `doctor` alone today, because it is the only report that names the binary that produced it; it lives here because collapsing a path is a formatting decision rather than a diagnostic one.
-- **`doctor` skill** — parses the default TOON output. The consumer the default exists for, and the reason an unknown format is not quietly satisfied.
+- **`doctor-buddy-agent-harness` skill** — parses the default TOON output. The consumer the default exists for, and the reason an unknown format is not quietly satisfied.
 - **person at a shell** — reads `--format text`, and is the only reason the text renderer exists at all. Also the reader who has to **act on** a report produced somewhere else: a path carrying someone's home directory is one they cannot paste, and a report naming no binary at all is one they cannot reproduce.
 - **another program** — reads `--format json`, and needs the stream to hold the encoded result and nothing else.
 - **`governance show`** — the one caller with a document rather than a result, and the one reason the verbatim write exists. What it puts on stdout is what an agent is about to follow, so nothing may be added to it or escaped inside it.
@@ -51,7 +51,7 @@ Both commands the package publishes end the same way: they build a plain object 
 | Actor | Goal | Entry point |
 | --- | --- | --- |
 | both commands | encode a result without knowing how any format is spelled | the result and the format |
-| `doctor` skill | parse one document per run, in the format it asked for | the encoded line on stdout |
+| `doctor-buddy-agent-harness` skill | parse one document per run, in the format it asked for | the encoded line on stdout |
 | person at a shell | read the same result as aligned columns rather than as a wire format | `--format text` |
 | another program | never be handed a format it did not ask for | the refusal of an unsupported format |
 | `governance show` | hand over a Markdown document unchanged | the document write |

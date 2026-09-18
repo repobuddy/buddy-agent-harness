@@ -5,9 +5,9 @@ description: Use this skill when a repository's agent configuration is present b
 
 # Harness Repair
 
-`init` consolidates what a repository has. `enhance` proposes what it does not. `doctor` reports what is wrong. `repair` corrects it.
+`init-buddy-agent-harness` consolidates what a repository has. `enhance` proposes what it does not. `doctor-buddy-agent-harness` reports what is wrong. `repair` corrects it.
 
-Each of the other three refuses this work deliberately. `init` has to run anywhere and invent nothing, so it never clobbers a file the user wrote. `enhance` only offers what is **missing**. `doctor` never writes, which is what makes it safe in a session-start hook. Configuration that is present but wrong falls between them.
+Each of the other three refuses this work deliberately. `init-buddy-agent-harness` has to run anywhere and invent nothing, so it never clobbers a file the user wrote. `enhance` only offers what is **missing**. `doctor` never writes, which is what makes it safe in a session-start hook. Configuration that is present but wrong falls between them.
 
 **`doctor` detects; this skill repairs.** Detection has one home, so the two cannot drift and the finding set can grow without touching this file. Do not detect anything yourself — run the command and repair what it reports.
 
@@ -34,13 +34,13 @@ That rule holds for every finding `doctor` reports today and for the ones it rep
 **Do not read ownership off a skill name in `help`.** Most repairs name no skill — some are a shell invocation, some a `git` command, some a reconciliation by hand — and only the instruction and configuration families name one at all. An owner is not something the report can always be asked for.
 
 - **Findings that are yours.** Look the `problem` up in `references/classes.md`, which carries the correction and the stopping point for each.
-- **Findings that are not yours.** Report each one and pass on the repair `doctor` states for it, unchanged. **Who to hand it to is read off that repair, and the question is whether it names `init`.** Some name the `/buddy-agent-harness:init` skill and some name a `buddy-agent-harness init` command line; both mean the same thing — the finding is `init`'s, because `init` writes both kinds of bridge in the first place, and it writes the `CLAUDE.md` stub *without* asking, where everything here needs approval, and one write cannot have two homes and two contradictory approval rules. Hand it to the **skill** and never run the command yourself: rebuilding a projection can relocate skills a user wrote, and on the Windows case the naive repair is to recreate the link, the operation that already failed on that machine. A repair naming `init` in **neither** form — a `git` invocation, a reconciliation by hand, every MCP finding — is work for a person; say that rather than inferring an owner, and never rebuild over a two-sided divergence, which discards whichever side holds the newer edit.
+- **Findings that are not yours.** Report each one and pass on the repair `doctor` states for it, unchanged. **Who to hand it to is read off that repair, and the question is whether it names `init`.** Some name the `/buddy-agent-harness:init-buddy-agent-harness` skill and some name a `buddy-agent-harness init` command line; both mean the same thing — the finding is `init`'s, because `init` writes both kinds of bridge in the first place, and it writes the `CLAUDE.md` stub *without* asking, where everything here needs approval, and one write cannot have two homes and two contradictory approval rules. Hand it to the **skill** and never run the command yourself: rebuilding a projection can relocate skills a user wrote, and on the Windows case the naive repair is to recreate the link, the operation that already failed on that machine. A repair naming `init` in **neither** form — a `git` invocation, a reconciliation by hand, every MCP finding — is work for a person; say that rather than inferring an owner, and never rebuild over a two-sided divergence, which discards whichever side holds the newer edit.
 
 ## 3. Draw the line at material content
 
 You correct what the **tooling** decides is wrong, never what the repository means.
 
-`../init/references/agents-md.md` draws the line: content that would stop being true if this tool's output were removed is **non-material**, and non-material content is all you may correct. A statement about how the repository is worked in is the user's, even when it is out of date — report it and offer no write.
+`../init-buddy-agent-harness/references/agents-md.md` draws the line: content that would stop being true if this tool's output were removed is **non-material**, and non-material content is all you may correct. A statement about how the repository is worked in is the user's, even when it is out of date — report it and offer no write.
 
 The clearest case is `unloadable-skill`. A `description` broken by an unquoted colon is a quoting fault — correct it. A `description` that is **missing** cannot be written without asserting what a skill you did not author does, and that claim holds whether or not this tool ever ran. Report it and ask.
 
@@ -60,7 +60,7 @@ Then **run `doctor` again**. A correction can fail to hold — a second `.gitign
 
 ## 6. Report
 
-Report every run, whichever way it went. One row per finding, naming its **path**, what was wrong, and its **outcome** — corrected, declined, handed to `init`, reported as material, or still open.
+Report every run, whichever way it went. One row per finding, naming its **path**, what was wrong, and its **outcome** — corrected, declined, handed to `init-buddy-agent-harness`, reported as material, or still open.
 
 A run that finds nothing still reports. "Nothing found" without saying `doctor` ran clean is indistinguishable from not having looked.
 
@@ -68,7 +68,7 @@ A run that finds nothing still reports. "Nothing found" without saying `doctor` 
 
 - **Never write without approval.** There is no flag that skips it and none should be added.
 - **Never detect.** `doctor` owns detection. A check written here is a second home for it, and two homes drift.
-- **Never rebuild a bridge.** That is `doctor`'s diagnosis and `init`'s repair.
-- **Never consolidate.** Moving content into `AGENTS.md` is `init`'s and has one home.
+- **Never rebuild a bridge.** That is `doctor`'s diagnosis and `init-buddy-agent-harness`'s repair.
+- **Never consolidate.** Moving content into `AGENTS.md` is `init-buddy-agent-harness`'s and has one home.
 - **Correct only non-material content.** Project policy is the user's, even when it is wrong.
 - Local agent configuration only. Do not change workflows, GitHub Actions, repository settings, security scanning, branch rules, or unrelated project files — a retired harness name in a workflow file is not yours to rename.

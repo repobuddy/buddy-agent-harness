@@ -19,7 +19,7 @@ Claude Code documents symlinks at the *per-skill* level: a `<skill-name>` entry 
 
 ## Bridge 2: instructions
 
-The CLI does **not** write this one. Create it by hand, or let the [`init` skill](/skills/init/) do it:
+The CLI does **not** write this one. Create it by hand, or let the [`init-buddy-agent-harness` skill](/skills/init-buddy-agent-harness/) do it:
 
 ```markdown
 <!-- CLAUDE.md -->

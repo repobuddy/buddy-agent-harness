@@ -37,7 +37,7 @@ That shape had no owner, and the cost was concrete. When a field was added to `f
 
 **Actors**
 
-- **`doctor` skill** — parses the default TOON output. The consumer the shape is designed for.
+- **`doctor-buddy-agent-harness` skill** — parses the default TOON output. The consumer the shape is designed for.
 - **`repair` skill** — reads the same report to learn what to correct.
 - **person at a shell** — reads `--format text`, and is the reason the report is legible at all rather than only parseable.
 - **session-start hook** — runs the command and is affected by its **exit code** without reading a byte of the report.
@@ -46,7 +46,7 @@ That shape had no owner, and the cost was concrete. When a field was added to `f
 
 | Actor | Goal | Entry point |
 | --- | --- | --- |
-| `doctor` skill | branch on the report without parsing prose | the sections and the `problem` name |
+| `doctor-buddy-agent-harness` skill | branch on the report without parsing prose | the sections and the `problem` name |
 | `repair` skill | read one report covering every family | `buddy-agent-harness doctor` |
 | person at a shell | read the same report without parsing it | `buddy-agent-harness doctor --format text` |
 | session-start hook | not be told the tool is broken when the repository is | the exit code |

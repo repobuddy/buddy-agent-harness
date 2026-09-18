@@ -17,7 +17,7 @@ Feature: Offer the current wording of a vetted section to a repository that alre
     When the agent runs the `enhance` skill
     Then the report names the `.cursorrules` paragraph as what covers the subject
     And the `.cursorrules` file is unchanged
-    And the report recommends the `init` skill for consolidating it
+    And the report recommends the `init-buddy-agent-harness` skill for consolidating it
 
   @behavior
   Scenario: offers an addition the merged view does not cover
