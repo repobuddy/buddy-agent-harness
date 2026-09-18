@@ -226,8 +226,15 @@ export const launcherInvocation = (subcommand: string) => `node ${launcherFor(su
  */
 export const repairSkillInvocation = '/buddy-agent-harness:repair'
 
-/** How the skill hands a repair back to `init`. */
-export const initSkillInvocation = '/buddy-agent-harness:init-buddy-agent-harness'
+/**
+ * The shipped skill every consolidation repair routes to. The name is qualified rather than a bare
+ * `init` because a skill name is global to the harness that loads it, where the subcommand it runs is
+ * scoped to this CLI — so the two are deliberately not the same string.
+ */
+export const initSkillName = 'init-buddy-agent-harness'
+
+/** How the skill hands a repair back to `init-buddy-agent-harness`. */
+export const initSkillInvocation: string = `/buddy-agent-harness:${initSkillName}`
 
 /** Where the user authors the golden MCP server set, named in every MCP repair that points at it. */
 const goldenSet = '.agents/buddy-agent-harness/mcp.toml'
@@ -770,7 +777,7 @@ ${artifacts
 `
 
 	const editorial = hasInitReference
-		? `\n## Judgment about this harness\n\nWhat to generate for it, what to leave alone, and which claims are contested: \`../../../init-buddy-agent-harness/references/harnesses/${harness.name}.md\`. That page is hand-written and is the one to read before writing anything for this harness.\n`
+		? `\n## Judgment about this harness\n\nWhat to generate for it, what to leave alone, and which claims are contested: \`../../../${initSkillName}/references/harnesses/${harness.name}.md\`. That page is hand-written and is the one to read before writing anything for this harness.\n`
 		: ''
 
 	return {
