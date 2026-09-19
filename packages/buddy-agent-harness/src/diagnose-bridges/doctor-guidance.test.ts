@@ -476,7 +476,7 @@ it('gives two findings of one problem at two paths their own help entry each', (
 })
 
 /**
- * The repairs `init` owns: every instruction bridge, every skills bridge a rebuild fixes, and every
+ * The repairs `init` owns: every instruction finding, every skills bridge a rebuild fixes, and every
  * non-standard artifact with a canonical form to convert to. The rest name no owner and are work
  * for a person — including `nonstandard-subagent`, which has no portable form to convert into.
  */
@@ -490,6 +490,8 @@ const initOwned: DoctorProblem[] = [
 	'no-instructions',
 	'instructions-missing',
 	'instructions-unbridged',
+	'instructions-shadowing',
+	'instructions-superseded',
 	'instructions-unreadable',
 	'nonstandard-instructions',
 	'nonstandard-rule',

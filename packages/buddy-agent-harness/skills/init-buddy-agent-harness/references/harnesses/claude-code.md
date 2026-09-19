@@ -1,8 +1,8 @@
 # Claude Code
 
-Reads neither `.agents/skills/` nor `AGENTS.md`. **Both bridges are required.**
+Reads `AGENTS.md`, and does not read `.agents/skills/`. **One bridge is required, and one file has to be got out of the way.**
 
-## Bridge 1 — skills
+## Bridge — skills
 
 `buddy-agent-harness init` creates this:
 
@@ -12,24 +12,34 @@ Reads neither `.agents/skills/` nor `AGENTS.md`. **Both bridges are required.**
 
 If the directory-level link ever fails, fall back to documented per-skill symlinks (`.claude/skills/<name>` → the canonical skill directory).
 
-## Bridge 2 — instructions
+## Instructions — no bridge, one file to clear
 
-`init` does **not** do this. Create by hand:
+From v2.1.277 Claude Code reads `AGENTS.md` as its project instructions, with no import, no symlink, and no setting. **Never write a `CLAUDE.md`.**
 
-```markdown
-<!-- CLAUDE.md -->
-@AGENTS.md
-```
+It reads it *conditionally*, and the condition is the whole of what this skill has to act on. Claude Code reads `AGENTS.md` only where it finds none of these in the working directory or any directory above it:
 
-Claude-specific notes may follow below the import.
+| File | What it does to `AGENTS.md` |
+| --- | --- |
+| `CLAUDE.md` | read instead of it |
+| `.claude/CLAUDE.md` | read instead of it |
+| `CLAUDE.local.md` | read instead of it |
+| `~/.claude/CLAUDE.md`, a managed `CLAUDE.md`, `.claude/rules/` | nothing — these load alongside |
 
-`ln -s AGENTS.md CLAUDE.md` also works, but **prefer the import** — on Windows a symlink needs Administrator or Developer Mode.
+A file carrying an `@AGENTS.md` import is the exception that costs nothing: the canonical file arrives through the import, and Claude Code never reads it twice. So the three dispositions are:
+
+- **a body of its own** — consolidate it into `AGENTS.md` and remove it, or leave it holding an import above whatever is genuinely Claude-only.
+- **only `@AGENTS.md`, or a symlink to it** — the bridge this tool used to write. Offer to remove it; it is not wrong to keep.
+- **`CLAUDE.local.md`** — personal and not yours to move. Offer an `@AGENTS.md` import at the top of it, and nothing else.
+
+**Sessions that still need the import.** Reading `AGENTS.md` directly is unavailable on a Claude Code before v2.1.277, on a third-party provider such as Amazon Bedrock, with telemetry disabled, in the first session after an install or upgrade, and where hooks or the built-in `agents-md` plugin are disabled. There the import is the only way in — which is why a superseded file is offered for removal rather than removed.
+
+The **Project instructions** setting changes which of the two files load, and Claude Code reads it only from the user's own `~/.claude/settings.json` or from managed settings — never from a project settings file. A repository cannot set it for its contributors: never write it, and never offer it as the fix.
 
 ## Nested instruction files
 
-Claude Code concatenates every `CLAUDE.md` from the filesystem root down to the working directory; the nearest is read last but does not win. The `AGENTS.md` standard says the nearest file wins. Conflicts are undefined here — the docs say Claude may pick one arbitrarily.
+Nested `AGENTS.md` files need nothing written beside them. Claude Code reads every `AGENTS.md` from the working directory upward at session start, and a subdirectory's `AGENTS.md` when it opens a file there — the same lazy-on-read rule `CLAUDE.md` gets — provided that subdirectory holds none of the three files above.
 
-So a nested `AGENTS.md` needs its own `CLAUDE.md` stub to be visible at all, and gets additive rather than override semantics once it has one. `references/agents-md.md` has the rule; do not bridge a nested file that reverses a root instruction without saying what will happen.
+Conflict semantics still differ from the standard's. Claude Code concatenates what it discovers from the filesystem root down; the nearest file is read last but does not win, and the docs say Claude may pick one arbitrarily where two rules contradict. The `AGENTS.md` standard says the nearest file wins. A nested file that *reverses* a root rule is therefore an override for Codex and an ambiguity here — worth saying out loud, and not something writing anything would fix.
 
 ## Frontmatter
 

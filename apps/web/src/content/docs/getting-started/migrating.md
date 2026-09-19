@@ -21,12 +21,9 @@ Most repositories do not start empty. They have a `CLAUDE.md`, a `.cursor/rules/
 
 Harness instruction files are prose, and prose merges. Their content moves into the root `AGENTS.md` with the author's wording preserved, appended rather than restructured. The harness file is replaced with a pointer only where you approve it.
 
-The two harnesses that cannot read `AGENTS.md` keep a real file:
+`CLAUDE.md` is the one instruction file where consolidating is not optional. Claude Code [reads `AGENTS.md` itself, unless a `CLAUDE.md` sits beside it](/agent-configuration/harnesses/claude-code/#a-claudemd-beside-it-suppresses-it), so a leftover copy is read *instead* of everything you just consolidated. Its content moves into `AGENTS.md` and the file goes, or keeps an `@AGENTS.md` import above whatever genuinely has to stay Claude-only. A `CLAUDE.md` that is already nothing but that import, or a symlink, still works: removal is offered, never taken unasked. A `CLAUDE.local.md` is personal and is neither consolidated nor deleted, so it is offered the import instead.
 
-- **Claude Code** reads `CLAUDE.md`. The bridge is a `CLAUDE.md` containing `@AGENTS.md`, with any Claude-specific notes below the import.
-- **Gemini CLI** defaults to `GEMINI.md`. The bridge is adding `AGENTS.md` to `context.fileName` in `.gemini/settings.json`.
-
-Neither is written by the CLI. See [Claude Code](/agent-configuration/harnesses/claude-code/) and [Gemini CLI](/agent-configuration/harnesses/gemini-cli/).
+**Gemini CLI** is the one harness left needing a bridge: it defaults to `GEMINI.md`, and `AGENTS.md` has to be added to `context.fileName` in `.gemini/settings.json`. The CLI does not write it. See [Gemini CLI](/agent-configuration/harnesses/gemini-cli/).
 
 ## Commands become skills
 

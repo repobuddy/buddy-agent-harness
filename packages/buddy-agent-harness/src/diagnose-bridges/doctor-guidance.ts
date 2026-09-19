@@ -24,9 +24,14 @@ export type BridgeProblem =
 	| 'unpinned-copy'
 
 /**
- * Every way an instruction bridge can fail. Separate from `BridgeProblem` because the two share no
- * repair: a skills bridge is rebuilt with `init` flags, and an instruction bridge is a file whose
- * content is the user's, so every repair here goes back to the `init-buddy-agent-harness` skill.
+ * Every way a harness can end up reading none of `AGENTS.md`. Separate from `BridgeProblem` because
+ * the two share no repair: a skills bridge is rebuilt with `init` flags, and every file here holds
+ * content that is the user's, so every repair goes back to the `init-buddy-agent-harness` skill.
+ *
+ * Two of them are the reverse of a missing bridge. A harness that reads `AGENTS.md` natively needs
+ * nothing written, and can still be stopped — by a file that sits where it looks and says something
+ * else. `instructions-shadowing` is that file; `instructions-superseded` is the same file still
+ * carrying the import that used to be the only way in, which costs nothing and is now optional.
  */
 /**
  * Configuration that is present and **wrong**, as against a bridge that does not resolve. These are
@@ -75,6 +80,8 @@ export type InstructionProblem =
 	| 'instructions-missing'
 	| 'instructions-unbridged'
 	| 'instructions-unreadable'
+	| 'instructions-shadowing'
+	| 'instructions-superseded'
 
 /** Everything `doctor` can report against, across every section. */
 export type DoctorProblem = BridgeProblem | InstructionProblem | ConfigurationFault | McpProblem | NonstandardProblem
@@ -310,19 +317,21 @@ const bridgeTable: Record<BridgeProblem, RepairRow> = {
 export const bridgeRepairs: readonly Repair[] = repairsOf(bridgeTable)
 
 /**
- * The instruction bridges, reported in `instructions`. Every repair is the `init-buddy-agent-harness` skill: these are
- * files a person wrote, or files carrying content beside the bridge, and deciding what to preserve
- * while restoring the bridge is judgment no flag carries. `repair` therefore names the skill in
- * both places rather than pretending a shell command exists.
+ * Everything reported in `instructions`: the bridges into `AGENTS.md`, and the files that suppress
+ * it where a harness reads it natively. Every repair is the `init-buddy-agent-harness` skill: these are files a
+ * person wrote, or files carrying content beside the bridge, and deciding what to preserve while
+ * restoring the bridge — or whether a redundant one is being kept on purpose — is judgment no flag
+ * carries. `repair` therefore names the skill in both places rather than pretending a shell command
+ * exists.
  */
 const instructionTable: Record<InstructionProblem, RepairRow> = {
 	'no-instructions': {
-		detail: 'no AGENTS.md at the repository root, so every instruction bridge points at nothing',
+		detail: 'no AGENTS.md at the repository root, so the instructions this repository has reach one harness at most',
 		repair: () => ({
 			command: '',
-			instruction: `hand this to \`${initSkillInvocation}\`, which derives AGENTS.md and the bridges to it`,
+			instruction: `hand this to \`${initSkillInvocation}\`, which consolidates what the repository has into AGENTS.md, or derives it`,
 		}),
-		skillRepair: () => `run \`${initSkillInvocation}\`, which derives AGENTS.md and the bridges to it`,
+		skillRepair: () => `run \`${initSkillInvocation}\`, which consolidates or derives AGENTS.md`,
 	},
 	'instructions-missing': {
 		detail: 'no instruction bridge at this path — the harness reads none of AGENTS.md',
@@ -340,6 +349,23 @@ const instructionTable: Record<InstructionProblem, RepairRow> = {
 		}),
 		skillRepair: () =>
 			`run \`${initSkillInvocation}\`, which adds the bridge without discarding what the file already says`,
+	},
+	'instructions-shadowing': {
+		detail: 'this file suppresses the AGENTS.md beside it — the harness reads this instead, and none of AGENTS.md',
+		repair: ({ file }) => ({
+			command: '',
+			instruction: `hand ${file} to \`${initSkillInvocation}\`, which consolidates what it says into AGENTS.md, or adds an @AGENTS.md import above it where the file has to stay`,
+		}),
+		skillRepair: () =>
+			`run \`${initSkillInvocation}\`, which consolidates the file into AGENTS.md or imports AGENTS.md from it`,
+	},
+	'instructions-superseded': {
+		detail: 'a bridge from before the harness read AGENTS.md itself — it still works, and nothing needs it',
+		repair: ({ file }) => ({
+			command: '',
+			instruction: `remove ${file}, or keep it for sessions that cannot read AGENTS.md directly — \`${initSkillInvocation}\` offers the choice`,
+		}),
+		skillRepair: () => `run \`${initSkillInvocation}\`, which offers to remove it`,
 	},
 	'instructions-unreadable': {
 		detail: 'the settings file does not parse, so the harness reads none of it',
@@ -560,7 +586,7 @@ export function repairFor(problem: DoctorProblem): Repair {
 export const doctorSkill = {
 	name: 'doctor-buddy-agent-harness',
 	description:
-		'Use this skill when a repository loads no project skills, when skills are missing after a clone, when a harness appears to be ignoring AGENTS.md, or when checking whether the agent configuration bridges into .claude/skills, CLAUDE.md, and the other harness files still resolve.',
+		'Use this skill when a repository loads no project skills, when skills are missing after a clone, when a harness appears to be ignoring AGENTS.md, or when checking whether the agent configuration bridges into .claude/skills and the other harness files still resolve.',
 } as const
 
 /** Written into the generated skill so a reader knows not to edit it in place. */
@@ -604,7 +630,9 @@ ${generatedSkillWarning}
 
 # Harness Doctor
 
-A repository keeps one canonical configuration: \`.agents/skills\` for its skills and \`AGENTS.md\` for its instructions. Harnesses that cannot read those get bridges pointing at them: Claude Code needs both, and Gemini CLI needs the instruction bridge only — it reads \`.agents/skills\` itself. A bridge that stops resolving is silent: the harness finds nothing and loads zero project skills, with no warning anywhere. An instruction bridge fails the same way and costs more, because the harness then reads none of the repository's instructions at all.
+A repository keeps one canonical configuration: \`.agents/skills\` for its skills and \`AGENTS.md\` for its instructions. Harnesses that cannot read those get bridges pointing at them: Claude Code needs the skills projection, and Gemini CLI needs the instruction bridge — each reads the other canonical path itself. A bridge that stops resolving is silent: the harness finds nothing and loads zero project skills, with no warning anywhere.
+
+Instructions fail two ways, both as quiet. A bridge that stops resolving costs more than a skills one, because the harness then reads none of the repository's instructions at all. And a harness that reads \`AGENTS.md\` natively still reads none of it when a file it prefers sits beside it — a \`CLAUDE.md\` next to an \`AGENTS.md\` is read *instead of* it, unless it imports it.
 
 Diagnose it:
 
@@ -620,7 +648,7 @@ The command is read-only. It never repairs anything, so it is safe to run at any
 
 \`bridges\` lists every skills bridge \`init\` would create for this repository, each with a \`status\` of \`ok\`, \`missing\`, \`degraded\`, \`stale\`, or \`diverged\`.
 
-\`instructions\` lists every instruction bridge into \`AGENTS.md\`, with a \`status\` of \`ok\`, \`missing\`, \`unbridged\`, or \`unreadable\`. They are a separate section because nothing about them is shared: a different \`kind\`, a different status vocabulary, and a repair that is never a command.
+\`instructions\` is everything standing between a harness and \`AGENTS.md\`, with a \`status\` of \`ok\`, \`missing\`, \`unbridged\`, \`unreadable\`, \`shadowing\`, or \`superseded\`. The last two are not bridges: they are files that suppress an \`AGENTS.md\` the harness would otherwise read by itself. A separate section because nothing about any of them is shared with \`bridges\`: a different \`kind\`, a different status vocabulary, and a repair that is never a command.
 
 \`findings\` explains each problem and carries more than the two sections above: the configuration, MCP, and non-standard findings have no section of their own, because they are about files rather than about bridges. \`help\` carries each repair, one row per distinct repair, with two columns:
 
@@ -656,7 +684,7 @@ Every \`problem\` name routes to exactly one page. Load the page for the finding
 - Edit skills at \`.agents/skills/<name>/SKILL.md\`. Editing through a bridge is only safe when that bridge is a symlink.
 - Do not add bridges to \`.gitignore\`. An untracked bridge swallows a real edit silently.
 - Never repeat a value from a file an \`mcp-literal-secret\` or \`mcp-committed-secret\` finding points at. The report withheld it on purpose, and quoting it back puts it in the transcript anyway.
-- Write instructions in \`AGENTS.md\`, never in \`CLAUDE.md\`. A bridge file holds the import and any harness-specific notes; content written there reaches one harness and drifts from the canonical file.
+- Write instructions in \`AGENTS.md\`, never in \`CLAUDE.md\`. Content written there reaches one harness, drifts from the canonical file, and — because Claude Code prefers it — takes \`AGENTS.md\` out of that harness's context entirely.
 `
 }
 
@@ -684,12 +712,17 @@ function scopeRows(scope: HarnessScope): string {
 		`| detection directory | \`${scope.detect}\` |`,
 		`| skills projection | ${scope.skillsDirectory ? `\`${scope.skillsDirectory}\` — written by \`init\`` : 'none — reads `.agents/skills` natively'} |`,
 		`| instruction bridge | ${
-			bridge === undefined
-				? 'none'
-				: bridge.kind === 'import'
-					? `\`${bridge.path}\` — an import of \`AGENTS.md\``
-					: `\`${bridge.path}\` — \`AGENTS.md\` in the \`${bridge.key}\` entry`
+			bridge === undefined ? 'none' : `\`${bridge.path}\` — \`AGENTS.md\` in the \`${bridge.key}\` entry`
 		} |`,
+		...(scope.shadowedBy
+			? [
+					`| suppresses \`AGENTS.md\` | ${scope.shadowedBy
+						.map((path) => `\`${path}\``)
+						.join(
+							', ',
+						)} — this harness reads \`AGENTS.md\` itself, and reads one of these instead where it finds one |`,
+				]
+			: []),
 		`| MCP configuration | ${mcp === undefined ? 'none' : `\`${mcp.path}\` — the \`${mcp.key}\` key, ${mcp.format}${mcp.shared ? ', shared with other settings' : ''}`} |`,
 	].join('\n')
 }
@@ -785,13 +818,19 @@ A copy is a snapshot rather than a live projection, and an agent that edits a sk
 			path: 'references/instructions.md',
 			content: `${generatedSkillWarning}
 
-# Instruction bridge findings
+# Instruction findings
+
+Two shapes, one section. A **bridge** is what a harness needs before it can read \`AGENTS.md\` at all — Gemini CLI is the only one left that needs one. A **shadow** is the reverse: a file sitting beside an \`AGENTS.md\` that a harness reading it natively prefers, so the canonical file is never read. Claude Code is the case, and the files are \`CLAUDE.md\`, \`.claude/CLAUDE.md\`, and \`CLAUDE.local.md\`.
 
 ${repairTable(instructionRepairs)}
 
-\`unbridged\` is the one to read carefully. The file is there and looks fine, and it names \`AGENTS.md\` nowhere — a \`CLAUDE.md\` someone overwrote with real content, or a \`.gemini/settings.json\` another tool rewrote without \`AGENTS.md\` in \`context.fileName\`. Never fix it by replacing the file: the content that displaced the bridge may be the only copy of something.
+\`unbridged\` is the one to read carefully. The file is there and looks fine, and it names \`AGENTS.md\` nowhere — a \`.gemini/settings.json\` another tool rewrote without \`AGENTS.md\` in \`context.fileName\`. Never fix it by replacing the file: the content that displaced the bridge may be the only copy of something.
 
-An instruction bridge is reported per file, so a monorepo gets one row per \`AGENTS.md\` in the tree. Each nested \`AGENTS.md\` needs its own stub — an import bridges the file beside it and nothing deeper.
+\`shadowing\` is the same failure from the other direction, and the most expensive finding in this section: nothing is missing, nothing looks wrong, and the harness is reading a file the rest of the repository does not maintain. Consolidate what the file says into \`AGENTS.md\`, or — where the file has to stay, as a gitignored \`CLAUDE.local.md\` does — put an \`@AGENTS.md\` import in it so both load.
+
+\`superseded\` is not a fault. It is the bridge this tool used to write, still working and no longer needed, and there is one reason to keep it: sessions that cannot read \`AGENTS.md\` directly — a Claude Code before v2.1.277, a third-party provider such as Amazon Bedrock, telemetry disabled, or hooks disabled. Offer the removal; do not make it.
+
+Shadows are reported per directory holding an \`AGENTS.md\`, so a monorepo gets one row per suppressed file rather than one per repository. A \`CLAUDE.md\` in one subtree says nothing about another.
 `,
 		},
 		{

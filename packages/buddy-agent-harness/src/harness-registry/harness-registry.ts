@@ -50,11 +50,17 @@ export type HarnessScopeName = 'project' | 'user'
  * order to read it. It belongs per scope for the same reason `skillsDirectory` does — the file
  * differs. Unlike `skillsDirectory`, the `init` command does not write it; the `init-buddy-agent-harness` skill does. It
  * is recorded here to be diagnosed and gated per harness, not to be projected.
+ *
+ * `shadowedBy` is the opposite axis, and only a harness that reads `AGENTS.md` natively can have
+ * one: the files whose presence in a directory stop it reading the `AGENTS.md` beside them. A
+ * harness needing a bridge has none — there is nothing to suppress — so the two fields never appear
+ * together, and a harness with neither reads `AGENTS.md` unconditionally.
  */
 export type HarnessScope = {
 	detect: string
 	skillsDirectory?: string
 	instructionBridge?: InstructionBridge
+	shadowedBy?: readonly string[]
 	mcpConfig?: McpConfig
 	nonstandard?: readonly NonstandardArtifact[]
 }
@@ -86,6 +92,11 @@ export type Harness = {
  * Instruction bridges are recorded at project scope only. The user-scope equivalents exist, but
  * nothing writes or reads them yet: `init` works inside a repository, and so does `doctor`.
  *
+ * Claude Code carried one until E-CC-14: from v2.1.277 it reads `AGENTS.md` itself, so `CLAUDE.md`
+ * stops being a bridge to write and becomes a file to watch — present beside an `AGENTS.md`, it
+ * suppresses it. That is `shadowedBy`. Gemini CLI is now the only harness in the registry needing
+ * an instruction bridge at all.
+ *
  * `windsurf` is the former name of Devin Desktop, rebranded 2026-06-02. It is retained as a
  * deprecated alias: Devin still scans the legacy `.windsurf/skills` path, so its projection keeps
  * working, but new repositories should enable `devin-desktop` and have nothing written for them.
@@ -98,7 +109,7 @@ export const harnessRegistry: readonly Harness[] = [
 		project: {
 			detect: '.claude',
 			skillsDirectory: '.claude/skills',
-			instructionBridge: { kind: 'import', path: 'CLAUDE.md' },
+			shadowedBy: ['CLAUDE.md', '.claude/CLAUDE.md', 'CLAUDE.local.md'],
 			mcpConfig: { path: '.mcp.json', key: 'mcpServers', format: 'json' },
 			nonstandard: [
 				{ path: '.claude/commands', shape: 'directory', kind: 'command' },

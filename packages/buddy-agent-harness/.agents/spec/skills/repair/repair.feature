@@ -57,12 +57,12 @@ Feature: Repair agent configuration that doctor reported as wrong
     And the report names no skill as that finding's owner
 
   @behavior
-  Scenario: hands an unbridged instruction file to init rather than adding the import
-    Given a `doctor` report carrying an `instructions-unbridged` finding for `CLAUDE.md`
+  Scenario: hands a shadowing instruction file to init rather than editing it
+    Given a `doctor` report carrying an `instructions-shadowing` finding for `CLAUDE.md`
     And a `CLAUDE.md` whose entire body is a project overview
     When the agent runs the `repair` skill
     Then the report hands that finding to the `init-buddy-agent-harness` skill
-    And no line is added to `CLAUDE.md`
+    And no line is added to `CLAUDE.md`, and none is taken out of it
 
   @behavior
   Scenario: presents the options and leaves the choice to the owner

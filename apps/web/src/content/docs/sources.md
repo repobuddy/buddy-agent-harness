@@ -8,7 +8,8 @@ The harness claims across this site are not equally well-sourced, and the differ
 | Claim | Confidence | Basis |
 | --- | --- | --- |
 | Codex, Copilot CLI, and Cursor skill discovery paths | High | primary vendor documentation |
-| Claude Code reads neither canonical format | High | primary vendor documentation, plus an independent bug report at user scope |
+| Claude Code reading neither `.agents/skills` nor `~/.agents/skills` | High | primary vendor documentation, plus an independent bug report at user scope |
+| Claude Code reading `AGENTS.md` from v2.1.277, and a `CLAUDE.md` beside it suppressing that | High | primary vendor documentation, including the vendor's own table of which file is read |
 | Frontmatter field origins | High | primary vendor documentation |
 | Devin Desktop skill paths and the rebrand | High | official vendor announcement and documentation |
 | Antigravity and VS Code skill paths | High / Medium | primary vendor documentation |
@@ -87,6 +88,14 @@ Corrected at [Output](/cli/doctor/#output), and the behavior changed with it: `h
 [Skill Scripts](/agent-configuration/skill-scripts/) said the choice was between an npm-sourced install, which carries a plugin's dependency tree, and a git-sourced one, which does not — so a script with dependencies "wants the npm route" because that route alone happened to carry `node_modules`. That claim was itself only low-confidence direct observation (see the removed "Plugin dependencies installed for an npm source but not a git source" row above), and this project's own shipped skills have since stopped relying on it: `doctor`, `init`, and `repair` each now run a bundle — built from the package's source, with every runtime dependency inlined — that ships inside the skill folder itself rather than depending on a `node_modules` sitting above it.
 
 Corrected at the same page, which now advises bundling the script per skill at build time and shipping the result through whichever channel already ships the rest of your code, rather than choosing a distribution channel for the sake of carrying a dependency tree. Project behavior changed with it: the shipped launchers are now self-contained bundles, built and packed by `prepack`, gitignored rather than committed, with the pinned `npx` fallback reserved for a git-sourced install or a path the agent cannot resolve.
+
+### 2026-09-19 — Claude Code was said not to read AGENTS.md
+
+Six pages stated that Claude Code "reads `CLAUDE.md`, not `AGENTS.md`", and prescribed a `CLAUDE.md` containing `@AGENTS.md` as the instruction bridge for it. From Claude Code v2.1.277 that is wrong: it reads `AGENTS.md` as the project's instructions with no import, no symlink, and no setting. What is true instead is the condition on that default — a `CLAUDE.md`, `.claude/CLAUDE.md`, or `CLAUDE.local.md` in the working directory or above it is read **instead**, and `AGENTS.md` is then never seen. So the file this project used to prescribe is now the thing that costs a repository its instructions, unless it is an `@AGENTS.md` import or a symlink, which still deliver the canonical file.
+
+Corrected at [Claude Code](/agent-configuration/harnesses/claude-code/#instructions-need-nothing-written), which is the one home for the rule, the sessions where the import is still required, and the setting a repository cannot set for its contributors. The other pages link there. Gemini CLI is now the only harness in the registry needing an instruction bridge; the Claude Code skills projection is unaffected.
+
+Project behavior changed with it. `init` no longer writes a `CLAUDE.md`, at the root or beside a nested `AGENTS.md`: a generated copy would be read in place of the file it was copied from. An existing `CLAUDE.md` with content of its own is consolidated into `AGENTS.md` on approval and then removed, and one that is only an import or a symlink is offered for removal rather than removed, because the sessions above still need it. `doctor` gained two findings in the `instructions` family, `instructions-shadowing` and `instructions-superseded`, and the section's statuses are now `ok`, `missing`, `unbridged`, `unreadable`, `shadowing`, and `superseded`.
 
 ## Undocumented but verified
 

@@ -18,7 +18,6 @@ function repository(): string {
 	const root = mkdtempSync(join(tmpdir(), 'buddy-agent-harness-config-'))
 	write(root, 'AGENTS.md', '# Agents\n')
 	write(root, '.agents/skills/review/SKILL.md', '---\nname: review\ndescription: Reviews things.\n---\n')
-	write(root, 'CLAUDE.md', '@AGENTS.md\n')
 	return root
 }
 

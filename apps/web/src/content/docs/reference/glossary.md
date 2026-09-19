@@ -37,7 +37,9 @@ Each entry gives the short definition and links to the page that owns the topic.
 
 **projection**: a directory-level symlink from a harness path to `.agents/skills`, such as `.claude/skills → ../.agents/skills`. Only Claude Code needs one. Where symlinks are unavailable the initializer copies instead, which is a snapshot rather than a live projection.
 
-**bridge**: the harness-specific edit that lets a harness reach `AGENTS.md` when it cannot read that file directly. Two exist: the Claude Code `CLAUDE.md` import and the Gemini CLI `context.fileName` setting. The CLI writes neither, because both need judgment about user-authored content. The [`init-buddy-agent-harness` skill](/skills/init-buddy-agent-harness/) handles them.
+**bridge**: the harness-specific edit that lets a harness reach `AGENTS.md` when it cannot read that file directly. One is left: the Gemini CLI `context.fileName` setting. The CLI does not write it, because it needs judgment about user-authored content. The [`init-buddy-agent-harness` skill](/skills/init-buddy-agent-harness/) handles it.
+
+**shadow**: a file that suppresses an `AGENTS.md` a harness would otherwise read, because the harness prefers its own filename where both are present. A `CLAUDE.md`, `.claude/CLAUDE.md`, or `CLAUDE.local.md` beside an `AGENTS.md` is the case, and [Claude Code](/agent-configuration/harnesses/claude-code/#a-claudemd-beside-it-suppresses-it) covers it. The opposite of a bridge: nothing has to be written for the harness to read `AGENTS.md`, and something has to be dealt with before it can.
 
 **skill bridge**: whatever points a harness at `.agents/skills`, whether a symlink or a copy. This is the sense the `doctor` command prints, where each row of its `bridges` list is one harness path it checked. A working skill bridge is a projection; the word covers the broken states too, which is why the diagnostic uses it. See [`doctor`](/cli/doctor/).
 

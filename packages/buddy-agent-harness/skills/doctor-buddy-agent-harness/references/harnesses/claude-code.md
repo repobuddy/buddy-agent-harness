@@ -10,7 +10,8 @@ Where `doctor` looks inside a repository.
 | --- | --- |
 | detection directory | `.claude` |
 | skills projection | `.claude/skills` — written by `init` |
-| instruction bridge | `CLAUDE.md` — an import of `AGENTS.md` |
+| instruction bridge | none |
+| suppresses `AGENTS.md` | `CLAUDE.md`, `.claude/CLAUDE.md`, `CLAUDE.local.md` — this harness reads `AGENTS.md` itself, and reads one of these instead where it finds one |
 | MCP configuration | `.mcp.json` — the `mcpServers` key, json |
 
 ## User scope

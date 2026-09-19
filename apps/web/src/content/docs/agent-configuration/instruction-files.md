@@ -54,13 +54,9 @@ The `init-buddy-agent-harness` skill follows this procedure; it is specified in 
 
 ## CLAUDE.md
 
-Claude Code reads `CLAUDE.md`, not `AGENTS.md`, so a bridge is required. See [Harness Differences](/agent-configuration/harness-differences/). Make it an import:
+Claude Code reads `AGENTS.md` itself, so a repository needs no `CLAUDE.md` at all. What it needs is for one not to be sitting beside `AGENTS.md`: such a file is read *instead*, and the canonical file never loads. [Claude Code](/agent-configuration/harnesses/claude-code/#a-claudemd-beside-it-suppresses-it) has the rule and its exceptions.
 
-```markdown
-@AGENTS.md
-```
-
-Claude-specific notes may follow below it. Do not copy `AGENTS.md` content into it; two homes for one instruction is how they diverge.
+Where a `CLAUDE.md` has to stay, open it with an `@AGENTS.md` import and keep only Claude-specific notes below. Do not copy `AGENTS.md` content into it; two homes for one instruction is how they diverge.
 
 ## Sources
 

@@ -13,11 +13,13 @@ The **command** is a different subject and has its own node. `buddy-agent-harnes
 
 Two properties are why it is a node rather than a paragraph inside the command's.
 
-**It is the owner every instruction repair routes to.** `../../cli/instruction-bridges/` names this skill as the owner of all four of its problems, and `../../workflows/detect-and-repair/` states that every instruction finding repairs through it. Both said so on the strength of behavior nothing described. A finding handed to an owner whose conduct is unwritten is a route to nowhere: the consumer learns which skill to call and not what that skill will do when it arrives.
+**It is the owner every instruction repair routes to.** `../../cli/instruction-bridges/` names this skill as the owner of every one of its problems, and `../../workflows/detect-and-repair/` states that every instruction finding repairs through it. Both said so on the strength of behavior nothing described. A finding handed to an owner whose conduct is unwritten is a route to nowhere: the consumer learns which skill to call and not what that skill will do when it arrives.
 
-**Its approval rule is the one that differs from the other writing skill's.** `../repair/` gates **every** correction on approval, and says so by contrasting itself with this skill. The contrast is only meaningful if this side is written down: `init` writes the `CLAUDE.md` import stub **without asking**, and asks about everything a person authored. One write cannot have two homes and two contradictory approval rules, so the rule lives on the side that does the writing.
+**Its approval rule is the one that differs from the other writing skill's.** `../repair/` gates **every** correction on approval, and says so by contrasting itself with this skill. The contrast is only meaningful if this side is written down: `init` creates what is absent — a directory, a missing `AGENTS.md`, a settings file — **without asking**, and asks about everything a person authored. One write cannot have two homes and two contradictory approval rules, so the rule lives on the side that does the writing.
 
-**The discriminator is authorship, not the kind of file.** What decides whether a write needs approval is whether the bytes being replaced were written by a person, not whether the write is a bridge, a directory, or a line of instruction. Creating a file that is absent asks nobody; rewriting one that exists asks first. That is why the `CLAUDE.md` stub and the `.gemini/settings.json` entry — both instruction bridges, both this skill's to write — behave differently the moment the settings file already exists: the stub is a file this skill owns end to end, and the settings file is a person's, holding keys this skill never came for.
+**The discriminator is authorship, not the kind of file.** What decides whether a write needs approval is whether the bytes being replaced were written by a person, not whether the write is a bridge, a directory, or a line of instruction. Creating a file that is absent asks nobody; rewriting one that exists asks first. That is why the `.gemini/settings.json` entry behaves differently the moment the settings file already exists: an absent file is this skill's to create end to end, and an existing one is a person's, holding keys this skill never came for.
+
+**Removal is the one write that always asks, however the file got there.** A `CLAUDE.md` this tool itself wrote is still a file in a repository someone may be keeping deliberately — the sessions that cannot read `AGENTS.md` directly are exactly the ones it was written for — so the superseded bridge is offered and never cleared. Creating asks nobody; deleting asks always.
 
 **Key terms**
 
@@ -26,7 +28,8 @@ Two properties are why it is a node rather than a paragraph inside the command's
 - **canonical-only** — an artifact with no cross-harness format to convert into, or none that is lossless: subagents, hooks, output styles, MCP server definitions. Reported, never converted.
 - **convertible with judgment** — a rule only one harness reads. A skill carries it everywhere where the paths it names are incidental to what it says, and nothing reproduces it where the scoping is the point. Which of the two a given rule is cannot be read off the file, so it is listed with its candidate and converted only on approval.
 - **candidate** — the canonical form an artifact would convert to, named alongside it when it is listed. An artifact with none is reported as having none, so a list of them is not read as a queue of pending work.
-- **bridge** — what a harness that cannot read the canonical source is given instead: a skills projection (the command's write) or an instruction bridge — a `CLAUDE.md` importing `AGENTS.md`, or an `AGENTS.md` entry in `.gemini/settings.json` (this skill's write).
+- **bridge** — what a harness that cannot read the canonical source is given instead: a skills projection (the command's write) or an instruction bridge — an `AGENTS.md` entry in `.gemini/settings.json` (this skill's write).
+- **shadow** — a file a harness reads *instead of* the `AGENTS.md` beside it: for Claude Code, a `CLAUDE.md`, `.claude/CLAUDE.md`, or `CLAUDE.local.md`. Consolidated away where it holds content, offered for removal where it holds only the import, and never written.
 - **material** — content that stays true whether or not this tool ever ran. Material content is the user's: derived, approved, and never invented.
 - **non-material region** — the marked block in `AGENTS.md` describing the bridges this run created. Written and re-written unasked, because every line in it stops being true when the tool's output is removed.
 - **existing instruction content** — a file a **person** authored **carrying content**. A file a previous run wrote, and a file holding nothing but a heading, are both absent for this purpose.
@@ -81,13 +84,15 @@ Three rules, and each closes a different failure:
 **Extensions**
 
 - **No `.gemini/settings.json` at all, and Gemini CLI enabled.** The file is created with the entry in it and nobody is asked, because nothing a person wrote is being replaced. The same edit against a file that already exists is presented for approval — the discriminator is authorship, and it is the only thing that separates the two.
-- **A `CLAUDE.md` whose whole body is the import, or a symlink already resolving into `.agents/`.** Not content, and not a conflict — a previous run's work. Skipped, which is what makes a re-run idempotent.
+- **A `CLAUDE.md` whose whole body is the import, or a symlink already resolving into `.agents/`.** Not content, and not a conflict — a previous run's work. Skipped as content, which is what makes a re-run idempotent, and offered for removal because nothing needs it now.
+- **A `CLAUDE.md` holding content of its own.** Consolidated on approval and then removed, or left holding an `@AGENTS.md` import above what is genuinely Claude-only. Never left as a generated copy: a copy of `AGENTS.md` under that filename is read *instead of* it.
+- **A `CLAUDE.local.md`.** Someone's personal file. Never consolidated, never removed; offered the import and nothing else.
 - **A root `AGENTS.md` holding nothing but a heading.** A placeholder, treated as absent: derive against it and confirm before filling it. A file that carries authored content is never rewritten, whatever else the run does.
 - **Nothing survives derivation.** Write the heading and one line stating what the repository is, and stop. Padding a file that is read on every session costs context on every session.
-- **A nested `AGENTS.md`.** Left where it is and never merged upward — merging changes which files it governs. Bridged in place with the same stub, and reported by name as judged additive rather than counted.
-- **A nested `AGENTS.md` that reverses a root rule.** The one creation that stops to ask, even though it only creates a file. Bridging hands Claude Code two instructions and no rule for choosing between them, so the three options are put to the owner: bridge it anyway, reword it as additive, or leave it unbridged. The rest are bridged without waiting on the answer.
+- **A nested `AGENTS.md`.** Left where it is and never merged upward — merging changes which files it governs. Nothing is written beside it: every harness reads a nested file where it lies. Reported by name as judged additive rather than counted.
+- **A nested `AGENTS.md` that reverses a root rule.** Named, with what each harness will do with it: an override under the standard's nearest-wins rule, an ambiguity in a harness that concatenates. Rewording it as additive is offered; the file is not changed either way, because which behavior the owner wants is policy.
 - **The command reports a conflict.** Resolve the named target and retry. `--force` is reached for only to replace that exact projection — the flag itself replaces every conflicting target, so the narrowness is the skill's discipline rather than the command's guarantee (issue #80). `--copy` is a snapshot rather than a live projection, and a run that falls back to one says so.
-- **Every enabled harness reads the canonical directory natively.** No bridge exists, so no non-material region is written: a warning about a path this repository does not have teaches the next agent to distrust the rest of the file. This is a rule the skill states rather than a state a default run reaches — Claude Code is enabled unconditionally and needs both bridges — and it is specified as it ships rather than normalized away.
+- **Every enabled harness reads the canonical directory natively.** No bridge exists, so no non-material region is written: a warning about a path this repository does not have teaches the next agent to distrust the rest of the file. This is a rule the skill states rather than a state a default run reaches — Claude Code is enabled unconditionally and needs the skills projection — and it is specified as it ships rather than normalized away.
 - **The non-material region's markers are present and empty.** A deliberate opt-out; left empty. Markers that are **gone** are not an opt-out — the region is far more often lost to a rewrite or a merge than removed on purpose — so it is restored.
 - **The repository has a formatter.** It is run over the written files and the run says so. The skill is not itself a formatter.
 
@@ -115,9 +120,9 @@ flowchart TD
   J --> K[Run the init command to write the skills projections]
   K --> L{A conflict reported?}
   L -->|yes| M[Resolve the named target and retry]
-  L -->|no| N[Write the instruction bridges the command does not]
+  L -->|no| N[Write the one instruction bridge the command does not, and remove the approved superseded files]
   M --> N
-  N --> O{Does the repository now have a bridge?}
+  N --> O{Does the repository now have a skills bridge?}
   O -->|yes| P[Write or restore the non-material region in AGENTS.md]
   O -->|no| Q[Verify every projection resolves and every migrated skill parses]
   P --> Q
@@ -141,6 +146,9 @@ The graph rejoins at `I` after a decline, and that edge is the shipped skill's *
 | --- | --- | --- |
 | A | a repository holding harness artifacts | `writes nothing while surveying the repository` |
 | B | a `CLAUDE.md` whose whole body is the import | `skips a bridge a previous run already wrote` |
+| D→E | a `CLAUDE.md` whose whole body is the import | `offers to remove a superseded pointer rather than removing it` |
+| D→E | a `CLAUDE.md` holding instructions of its own | `consolidates an instruction file that suppresses AGENTS.md rather than leaving a copy` |
+| B | a `CLAUDE.local.md` beside the root `AGENTS.md` | `leaves a personal override in place and offers it the import` |
 | B | a root `AGENTS.md` holding nothing but a heading | `treats a heading-only AGENTS.md as absent and derives against it` |
 | B | a `.claude/agents/` directory and a `.cursor/rules/` directory | `lists every artifact only one harness reads, and converts none unasked` |
 | C | a `.cursorrules` for a harness that reads `AGENTS.md` in one mode only | `offers no consolidation that would leave fewer readers than before` |
@@ -152,11 +160,11 @@ The graph rejoins at `I` after a decline, and that edge is the shipped skill's *
 | B1→B2 | no candidate survives the test | `writes a heading and one line when nothing survives derivation` |
 | D→E | a `.cursorrules` a person wrote | `asks before replacing an authored instruction file with a pointer` |
 | D→E | a `.gemini/settings.json` a person wrote | `asks before editing a settings file a person wrote` |
-| D→E | a nested `AGENTS.md` that reverses a root rule | `asks before bridging a nested file that reverses a root rule` |
+| C | a nested `AGENTS.md` that reverses a root rule | `says what a nested file that reverses a root rule will do in each harness` |
 | D→F | no `.agents/` directory and no root `AGENTS.md` | `creates a missing directory and a missing AGENTS.md without asking` |
-| D→F | Claude Code enabled and no `CLAUDE.md` | `writes the CLAUDE.md import stub without asking` |
+| N | Claude Code enabled and no `CLAUDE.md` | `writes no CLAUDE.md, at the root or beside a nested file` |
 | D→F | Gemini CLI enabled and no `.gemini/settings.json` | `writes the Gemini entry unasked where no settings file exists` |
-| D→F | two packages holding a nested `AGENTS.md` each | `bridges every additive nested file unasked and names each one it judged` |
+| C | two packages holding a nested `AGENTS.md` each | `names every nested file it judged rather than reporting a count` |
 | G→H | a presented step replacing an authored instruction file | `leaves a declined step's file as it stands` |
 | I | a skill directory moving into the canonical directory | `preserves the history of a skill it moves` |
 | I | a skill whose `description` carries an unquoted colon | `fixes the frontmatter that decides whether a harness loads the skill` |
