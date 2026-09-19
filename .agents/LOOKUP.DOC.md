@@ -14,6 +14,7 @@ Where to look when writing or checking documentation in this repository. Pointer
 | a score, run count, or task from the Delegation wording evaluation | `.agents/skills/eval-delegation/references/backlog.md` |
 | a term the spec suite binds | `packages/buddy-agent-harness/.agents/spec/glossary.md` |
 | a correction to a claim already published | `apps/web/src/content/docs/sources.md`, Corrections section (rule in `CONTRIBUTING.md`) |
+| which command gates a change before it ships | `turbo.json`, the `verify` task — `pnpm verify` runs every step in it, the docs-site build included |
 | whether a harness's JSON config accepts comments | `apps/web/src/content/docs/agent-configuration/harness-differences.md` |
 | where a harness keeps its MCP servers, and what the golden set is | `apps/web/src/content/docs/agent-configuration/mcp-servers.md` |
 | whether an MCP configuration location is standardizing | `.research/mcp-canonical-location/evidence.md` |
