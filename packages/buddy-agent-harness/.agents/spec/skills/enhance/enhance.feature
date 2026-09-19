@@ -26,6 +26,38 @@ Feature: Offer the current wording of a vetted section to a repository that alre
     Then the `## Delegation` section is offered
 
   @behavior
+  Scenario: recommends the destination the addition names, not the repository by default
+    Given a root `AGENTS.md` the `## Delegation` section is absent from
+    When the `## Delegation` section is offered
+    Then the owner's own global instruction file is recommended over the repository's `AGENTS.md`
+    And the reason given is that the text holds in every repository the owner opens
+    And the repository's `AGENTS.md` is named as the alternative, with what each destination reaches
+
+  @behavior
+  Scenario: says when the agent's own instructions already carry the text
+    Given the agent's always-loaded instructions already hold the `## Delegation` text
+    And a root `AGENTS.md` the section is absent from
+    When the `## Delegation` section is offered
+    Then the offer states that the repository copy would add the team and nothing else
+    And it states that the owner would then carry the text twice
+    And the choice is left to the owner rather than decided
+
+  @behavior
+  Scenario: hands a global placement over rather than writing outside the repository
+    Given an owner who picks their global instruction file over the repository's `AGENTS.md`
+    When the agent applies the answer
+    Then the text and the file it belongs in are given to the owner
+    And no file outside the repository is written
+    And the run reports the hand-off as an outcome rather than as a decline
+
+  @behavior
+  Scenario: names no global instruction file the harness in use does not document
+    Given a harness that documents no user-scope instruction file
+    When the `## Delegation` section is offered
+    Then no path is guessed for it
+    And the report says the harness documents none and leaves the placement to the owner
+
+  @behavior
   Scenario: treats a heading inside a fenced block as an example rather than as coverage
     Given a root `AGENTS.md` documenting this package
     And a fenced code block inside it containing the `## Delegation` heading and the section's text

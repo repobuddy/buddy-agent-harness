@@ -12,7 +12,7 @@ The split matters: initialization has to run everywhere and invent nothing, so i
 
 Every addition is **offered, never written on sight**. An addition asserts something about how the repository is worked in — it stays true whether or not this tool ever ran — so it is material under the rule in `../init/references/agents-md.md`, and material content needs approval. Nothing here goes inside the `buddy-agent-harness` managed region; that region is for the tool's own bookkeeping.
 
-One addition ships today: `references/delegation.md`. Each addition's reference file carries the text to offer, a `## Covered when` criterion for the subject already being present, and a `## Stale when` criterion for the file already carrying a **wording this addition has since retired**. The retired wordings themselves are kept beside it — for delegation, `references/delegation.history.md` — and are what a present section is compared against.
+One addition ships today: `references/delegation.md`. Each addition's reference file carries the text to offer, a `## Covered when` criterion for the subject already being present, a `## Stale when` criterion for the file already carrying a **wording this addition has since retired**, and a `## Where it belongs` recommendation naming which instruction file the text should go in. The retired wordings themselves are kept beside it — for delegation, `references/delegation.history.md` — and are what a present section is compared against.
 
 ## 1. Find the instruction file
 
@@ -62,6 +62,12 @@ A section from a retired wording in a file that is **not** the root `AGENTS.md` 
 
 Where an addition is **absent**, show its text **verbatim** — the whole thing, not a summary — say where it would go, and ask.
 
+**Where it goes is part of the offer, and the addition decides it.** Read its `## Where it belongs` and lead with what that section recommends. An addition whose subject is the repository belongs in the repository's `AGENTS.md`; one whose subject is how the agent works belongs in the owner's own global instruction file, because it holds in every repository they open and a copy per repository is a copy per repository to keep in step. Delegation is the second kind, and its reference recommends the global file.
+
+Name both destinations and what each buys — the global file reaches every repository the owner opens and nobody else; the project file reaches everyone who clones it, at a copy per repository. Where your own always-loaded instructions already carry the text, say so: the project copy then adds nothing but the team, and arrives twice for the owner.
+
+**A global placement is handed over, not written.** This skill writes the root `AGENTS.md` and nothing else, so give the text and the path and stop there. Do not offer to write outside the repository, and do not treat the hand-off as a decline — report it as what it is.
+
 Where an addition came from a **retired wording**, show the section as it stands in `AGENTS.md`, then the current text **verbatim**, say that it would replace that section and nothing else, and ask.
 
 **Name what the replacement would take with it.** A stale section often carries paragraphs the owner added to it — rules of their own, sitting under the same heading. Replacing the section removes those too. So before you ask, name every paragraph in that section that appears in no retired wording, say the replacement would remove it, and let the owner weigh that. An approval given for "refresh the wording" is not an approval to delete what they wrote.
@@ -87,7 +93,9 @@ Do not argue for any of it past one sentence. The user is reading the actual tex
 
 ## 5. Write what was approved
 
-On approval of an **addition**, write the section into the root `AGENTS.md` at the end of the owner's prose, outside the managed region, preserving the surrounding file exactly.
+On approval of an **addition** for the repository, write the section into the root `AGENTS.md` at the end of the owner's prose, outside the managed region, preserving the surrounding file exactly.
+
+On approval of a **global placement**, write nothing. Give the text and the file it goes in, and say it belongs at the end of that file. Nothing in a repository changes, and the run still reports.
 
 On approval of a **replacement**, replace that one section in place — from its heading through to the next heading of the same or higher level — and leave every other byte of the file as it was. Do not relocate it, do not reformat around it, and do not touch the managed region.
 
@@ -97,7 +105,7 @@ On a decline, write nothing. A declined replacement leaves the section exactly w
 
 ## 6. Report
 
-Report every run, whichever way it went: what you read, the verdict for each addition and why — already current, absent, the owner's own, from a retired wording, or undecidable — what you offered, and what was written. A run that offers nothing still reports — that is the only way the user can tell "already covered" from "did not look".
+Report every run, whichever way it went: what you read, the verdict for each addition and why — already current, absent, the owner's own, from a retired wording, or undecidable — what you offered, which destination you recommended, and what was written. A hand-off for the owner to place globally is an outcome, not a decline; say so. A run that offers nothing still reports — that is the only way the user can tell "already covered" from "did not look".
 
 ## Rules
 
@@ -107,5 +115,6 @@ Report every run, whichever way it went: what you read, the verdict for each add
 - **Never guess whose words they are.** Where you cannot tell an edited copy of a retired wording from the owner's own prose, say so and ask. Deciding it silently in either direction is the one failure this path exists to avoid.
 - **Never run an evaluation unasked.** It costs the owner many model runs. Offer it; wait.
 - **Never edit an addition to fit a repository.** The wording is fixed. Offer it as written or not at all.
+- **Never guess a global instruction file's path.** Name one only where the harness in use documents it — `~/.claude/CLAUDE.md` for Claude Code. Otherwise say the harness documents none here and let the owner place the text.
 - **Never touch the managed region**, a nested `AGENTS.md`, or any file other than the root `AGENTS.md`.
 - Local agent configuration only. Do not change workflows, repository settings, or unrelated project files.
