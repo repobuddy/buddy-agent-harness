@@ -1,13 +1,13 @@
 ---
 title: 'CLI: doctor'
-description: 'CLI reference for buddy-agent-harness doctor: flags, statuses, findings, instruction bridges, and why it never repairs.'
+description: 'CLI reference for buddy-agent-harness doctor: flags, statuses, findings, what stands between a harness and AGENTS.md, and why it never repairs.'
 ---
 
 ```sh
 buddy-agent-harness doctor [--root <directory>] [--harness <names>] [--format toon|json|text]
 ```
 
-`doctor` reports whether a repository's harness bridges still resolve: the skill bridges [`init`](/cli/init/) creates into `.agents/skills`, and the instruction bridges the [`init-buddy-agent-harness` skill](/skills/init-buddy-agent-harness/) writes into `AGENTS.md`. It is read-only: it never creates, moves, or repairs anything, so it is safe to run at any point, including from a session-start hook.
+`doctor` reports whether a repository's harness bridges still resolve: the skill bridges [`init`](/cli/init/) creates into `.agents/skills`, and everything standing between a harness and `AGENTS.md` — the one bridge the [`init-buddy-agent-harness` skill](/skills/init-buddy-agent-harness/) writes, and the files that suppress `AGENTS.md` where a harness reads it natively. It is read-only: it never creates, moves, or repairs anything, so it is safe to run at any point, including from a session-start hook.
 
 ## No install needed
 
@@ -45,21 +45,23 @@ bridges[2]{harness,path,kind,status}:
   claude-code,.claude/skills,file,degraded
   windsurf,.windsurf/skills,none,missing
 instructions[2]{harness,path,kind,status}:
-  claude-code,CLAUDE.md,import,ok
   gemini-cli,.gemini/settings.json,none,missing
+  claude-code,CLAUDE.md,file,shadowing
 governances[1]{name,scope,path}:
   agent-tool-output,project,~/code/acme/.agents/governances/agent-tool-output.md
-findings[3]{path,problem,detail}:
+findings[4]{path,problem,detail}:
   .claude/skills,degraded,expected a directory but found a regular file — checkout without core.symlinks
   .windsurf/skills,missing,no bridge at this path — the harness sees zero project skills
   .gemini/settings.json,instructions-missing,no instruction bridge at this path — the harness reads none of AGENTS.md
-help[3]{command,instruction}:
+  CLAUDE.md,instructions-shadowing,this file suppresses the AGENTS.md beside it — the harness reads this instead, and none of AGENTS.md
+help[4]{command,instruction}:
   buddy-agent-harness init --copy --force,run `buddy-agent-harness init --copy --force` to rebuild .claude/skills as a real directory
   buddy-agent-harness init,run `buddy-agent-harness init` to create the bridge at .windsurf/skills
   "","hand .gemini/settings.json to `/buddy-agent-harness:init-buddy-agent-harness`, which writes the bridge into it"
+  "","hand CLAUDE.md to `/buddy-agent-harness:init-buddy-agent-harness`, which consolidates what it says into AGENTS.md, or adds an @AGENTS.md import above it where the file has to stay"
 ```
 
-Each `help` row is one repair, in two columns. `command` is a shell invocation that runs exactly as given and **completes** the repair; `instruction` is the same repair in the imperative. `command` is empty when no single invocation does the job — the third row above, where the repair is the [`init-buddy-agent-harness` skill](/skills/init-buddy-agent-harness/)'s judgment and nothing in a shell does it.
+Each `help` row is one repair, in two columns. `command` is a shell invocation that runs exactly as given and **completes** the repair; `instruction` is the same repair in the imperative. `command` is empty when no single invocation does the job — the last two rows above, where the repair is the [`init-buddy-agent-harness` skill](/skills/init-buddy-agent-harness/)'s judgment and nothing in a shell does it.
 
 That emptiness is the whole point of the split: a caller can tell an executable repair from an instruction without parsing prose. A runnable invocation quoted *inside* an `instruction` is not a command either — `diverged-both` names `git diff --no-index` because the diff shows you what differs, not because running it reconciles anything.
 
@@ -79,14 +81,13 @@ A healthy repository says so outright rather than printing an empty section, so 
 bridges[2]{harness,path,kind,status}:
   claude-code,.claude/skills,symlink,ok
   windsurf,.windsurf/skills,symlink,ok
-instructions[2]{harness,path,kind,status}:
-  claude-code,CLAUDE.md,import,ok
+instructions[1]{harness,path,kind,status}:
   gemini-cli,.gemini/settings.json,settings-entry,ok
 governances: 0 governance overrides — no .agents/governances at project, user, or machine scope
-findings: 0 problems found — all 4 bridges resolve
+findings: 0 problems found — all 3 bridges resolve and the configuration around them is current
 ```
 
-The count spans both sections. Both are bridges, and a reader learning that nothing is wrong should not have to add two numbers together.
+The count spans both sections, and a reader learning that nothing is wrong should not have to add two numbers together. Claude Code contributes no `instructions` row here, which is what a healthy repository looks like now: it reads `AGENTS.md` itself, and a row appears only where something is in the way.
 
 ### `--format text`
 
@@ -102,39 +103,41 @@ bridges:
 
 instructions:
   harness      path                   kind    status
-  claude-code  CLAUDE.md              import  ok
   gemini-cli   .gemini/settings.json  none    missing
+  claude-code  CLAUDE.md              file    shadowing
 
 governances:
   name               scope    path
   agent-tool-output  project  ~/code/acme/.agents/governances/agent-tool-output.md
 
 findings:
-  path                   problem               detail
-  .claude/skills         degraded              expected a directory but found a regular file — checkout without core.symlinks
-  .windsurf/skills       missing               no bridge at this path — the harness sees zero project skills
-  .gemini/settings.json  instructions-missing  no instruction bridge at this path — the harness reads none of AGENTS.md
+  path                   problem                 detail
+  .claude/skills         degraded                expected a directory but found a regular file — checkout without core.symlinks
+  .windsurf/skills       missing                 no bridge at this path — the harness sees zero project skills
+  .gemini/settings.json  instructions-missing    no instruction bridge at this path — the harness reads none of AGENTS.md
+  CLAUDE.md              instructions-shadowing  this file suppresses the AGENTS.md beside it — the harness reads this instead, and none of AGENTS.md
 
 help:
   command                                  instruction
   buddy-agent-harness init --copy --force  run `buddy-agent-harness init --copy --force` to rebuild .claude/skills as a real directory
   buddy-agent-harness init                 run `buddy-agent-harness init` to create the bridge at .windsurf/skills
                                            hand .gemini/settings.json to `/buddy-agent-harness:init-buddy-agent-harness`, which writes the bridge into it
+                                           hand CLAUDE.md to `/buddy-agent-harness:init-buddy-agent-harness`, which consolidates what it says into AGENTS.md, or adds an @AGENTS.md import above it where the file has to stay
 ```
 
 `init` accepts the same flag.
 
-## Instruction bridges
+## Reaching AGENTS.md
 
-A repository that consolidated into `AGENTS.md` needs a second bridge per harness that cannot read it. Claude Code reads `CLAUDE.md`, so it gets one holding `@AGENTS.md`. Gemini CLI reads the `context.fileName` array in `.gemini/settings.json`, and `AGENTS.md` is not in its default list, so without that entry it reads no instructions at all.
+The `instructions` section reports two shapes, not one. A **bridge** is what a harness needs before it can read `AGENTS.md` at all: Gemini CLI reads the `context.fileName` array in `.gemini/settings.json`, `AGENTS.md` is not in its default list, and without that entry it reads no instructions. It is the only harness left needing one. A **shadow** is the reverse — a file sitting beside an `AGENTS.md` that a harness reading it natively prefers, so the canonical file never loads. Claude Code is the case, and the files are `CLAUDE.md`, `.claude/CLAUDE.md`, and `CLAUDE.local.md`; [Claude Code](/agent-configuration/harnesses/claude-code/#a-claudemd-beside-it-suppresses-it) has the rule.
 
-These fail as silently as a skills bridge and cost more. Losing a skills bridge costs a repository its skills; losing the instruction bridge costs it every instruction it has.
+Both fail as silently as a skills bridge and cost more. Losing a skills bridge costs a repository its skills; losing `AGENTS.md` costs it every instruction it has.
 
 They are a separate `instructions` section rather than more `bridges` rows, because nothing about them is shared:
 
 - The `kind` and `status` vocabularies differ. `stale` and `diverged` describe a directory projection and mean nothing for a Markdown import or a JSON array entry.
 - The repair is never a command. `init` writes skills projections; the instruction files carry prose a person authored, so restoring a bridge without discarding what displaced it is the [`init-buddy-agent-harness` skill](/skills/init-buddy-agent-harness/)'s judgment.
-- A `bridges` row is a directory the CLI wrote. An `instructions` row is a file the skill wrote. Merging them would make one section mean two things.
+- A `bridges` row is a directory the CLI wrote. An `instructions` row is a file a person wrote, or one the skill wrote into. Merging them would make one section mean two things.
 
 | Status | Meaning |
 | --- | --- |
@@ -142,25 +145,32 @@ They are a separate `instructions` section rather than more `bridges` rows, beca
 | `missing` | Nothing is at the path. |
 | `unbridged` | The file is there and names `AGENTS.md` nowhere. |
 | `unreadable` | A settings file that does not parse as JSON, once its comments are removed. |
+| `shadowing` | A file that suppresses the `AGENTS.md` beside it. The harness reads this instead. |
+| `superseded` | A file that suppresses `AGENTS.md` and then delivers it anyway, through an `@AGENTS.md` import or a symlink. |
 
-`unbridged` is the case with no equivalent on the skills side, and the reason these checks exist. Nothing looks wrong: `CLAUDE.md` is present, and it holds something a well-meaning agent wrote over the import; or `.gemini/settings.json` is present, and another tool rewrote it without the entry. The repair never replaces the file, because the content that displaced the bridge may be the only copy of it.
+`unbridged` is the case with no equivalent on the skills side, and the reason these checks exist. Nothing looks wrong: `.gemini/settings.json` is present, and another tool rewrote it without the entry. The repair never replaces the file, because the content that displaced the bridge may be the only copy of it.
 
-Bridges are reported per file, not per harness. An import bridges the `AGENTS.md` beside it and nothing deeper, so every directory holding a nested `AGENTS.md` gets its own row:
+`shadowing` is the same failure from the other direction, and the most expensive row in this section. Nothing is missing, nothing looks wrong, and the harness is reading a file the rest of the repository does not maintain. The repair consolidates what the file says into `AGENTS.md`, or — where the file has to stay, as a gitignored `CLAUDE.local.md` does — adds an `@AGENTS.md` import above it so both load.
+
+`superseded` is not a fault. It is the bridge this tool used to write, still working and no longer needed, and there is one reason to keep it: [sessions that cannot read `AGENTS.md` directly](/agent-configuration/harnesses/claude-code/#sessions-that-still-need-the-import). The removal is offered, never made.
+
+Both are reported per file, not per harness. A shadow suppresses the `AGENTS.md` beside it and nothing deeper, and an import bridges no further either, so every directory holding a nested `AGENTS.md` gets its own row where something sits there:
 
 ```
-instructions[3]{harness,path,kind,status}:
-  claude-code,CLAUDE.md,import,ok
-  claude-code,apps/web/CLAUDE.md,none,missing
-  claude-code,packages/core/CLAUDE.md,import,ok
+instructions[2]{harness,path,kind,status}:
+  claude-code,CLAUDE.md,import,superseded
+  claude-code,packages/core/CLAUDE.md,file,shadowing
 ```
+
+A directory with a nested `AGENTS.md` and nothing beside it produces no row at all. That is the healthy state, not an omission.
 
 `AGENTS.md` files under a dot-directory or `node_modules` are not counted. `.agents/AGENTS.md` is canonical shared instructions rather than instructions scoped to a subtree, and a vendored one is not this repository's to bridge.
 
-A repository with no root `AGENTS.md` gets one finding saying so, and no bridge rows — there is nothing for a bridge to point at.
+A repository with no root `AGENTS.md` gets one finding saying so, provided something in it depends on that file: a bridge pointing at it, or a shadowing file that is the only instructions one harness reads. A repository with neither has no instructions at all, which is `init`'s to create rather than a fault here.
 
 `.gemini/settings.json` may legally carry comments — the Gemini CLI loader strips them before parsing — so `doctor` strips them too. Reporting a commented settings file as broken would be a false alarm on a file that works. A trailing comma is still a parse error, because nothing documents it as accepted. [Harness Differences](/agent-configuration/harness-differences/#json-configuration-disagrees-about-comments) covers the disagreement between the two `settings.json` files.
 
-Which harnesses are checked is the same question as for skills: the registry records an instruction bridge per harness, and `--harness` gates both kinds together. Codex, Cursor, Copilot CLI, and Devin Desktop read `AGENTS.md` where it lies, so they get no rows — see [Harness Differences](/agent-configuration/harness-differences/).
+Which harnesses are checked is the same question as for skills: the registry records, per harness, an instruction bridge or the filenames that shadow `AGENTS.md`, and `--harness` gates both kinds together. Codex, Cursor, Copilot CLI, and Devin Desktop read `AGENTS.md` where it lies and nothing documented suppresses it, so they get no rows — see [Harness Differences](/agent-configuration/harness-differences/).
 
 ## Governance overrides
 
@@ -234,10 +244,12 @@ Every repair is already expressible with existing `init` flags, and each finding
 | `no-instructions` | `/buddy-agent-harness:init-buddy-agent-harness` |
 | `instructions-missing` | `/buddy-agent-harness:init-buddy-agent-harness` |
 | `instructions-unbridged` | `/buddy-agent-harness:init-buddy-agent-harness` |
+| `instructions-shadowing` | `/buddy-agent-harness:init-buddy-agent-harness` |
+| `instructions-superseded` | `/buddy-agent-harness:init-buddy-agent-harness`, which offers the removal |
 | `instructions-unreadable` | Fix the JSON by hand, then `/buddy-agent-harness:init-buddy-agent-harness` |
 
 `no-canonical` is the one finding that is not about a bridge: `.agents/skills` itself is absent, so nothing can resolve into it. `no-instructions` is its counterpart for `AGENTS.md`. `unpinned-copy` is the [skip-worktree](#the-skip-worktree-bit) case, and it is reported against a bridge whose status is still `ok`.
 
-The four instruction repairs name a skill rather than a shell command, because no shell command does the job. They carry an empty `command` for exactly that reason, so a caller never has to work out which rows it can run.
+Every instruction repair names a skill rather than a shell command, because no shell command does the job. They carry an empty `command` for exactly that reason, so a caller never has to work out which rows it can run.
 
 A `--fix` flag would reimplement that logic and drift from it. On the Windows case it would likely reimplement it wrongly: the naive repair is to recreate the link, which is precisely the operation that already failed on that machine. `--copy` is the branch that works there. The three-way divergence case has no safe automatic answer at all.

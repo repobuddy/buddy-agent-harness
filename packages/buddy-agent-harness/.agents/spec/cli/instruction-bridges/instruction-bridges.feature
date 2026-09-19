@@ -1,61 +1,67 @@
 Feature: Report whether every enabled harness can still read AGENTS.md
 
-  # ── the import bridge ──
+  # ── the AGENTS.md shadow ──
 
   @behavior
-  Scenario: accepts a file whose body is the import
-    Given a repository with a root `AGENTS.md` and a `CLAUDE.md` whose body is the `AGENTS.md` import
+  Scenario: reports nothing where no shadowing file exists
+    Given a repository with a root `AGENTS.md` and no file a harness would read instead of it
     When the command diagnoses the instruction bridges
-    Then it reports that bridge with kind `import` and status `ok`
+    Then it reports no instruction row
     And it reports no problem
 
   @behavior
-  Scenario: accepts an import carrying Claude-specific notes below it
+  Scenario: reports a file carrying its own content as shadowing
+    Given a repository with a root `AGENTS.md` and a `CLAUDE.md` holding instructions of its own
+    When the command diagnoses the instruction bridges
+    Then it reports that file with kind `file` and status `shadowing`
+    And it reports an `instructions-shadowing` problem naming `CLAUDE.md`
+
+  @behavior
+  Scenario: reports a file whose body is the import as superseded rather than shadowing
+    Given a `CLAUDE.md` whose body is the `AGENTS.md` import
+    When the command diagnoses the instruction bridges
+    Then it reports that file with kind `import` and status `superseded`
+    And it reports an `instructions-superseded` problem naming `CLAUDE.md`
+
+  @behavior
+  Scenario: reads an import carrying harness-specific notes below it as superseded
     Given a `CLAUDE.md` holding the `AGENTS.md` import on a line of its own and harness-specific notes below it
     When the command diagnoses the instruction bridges
-    Then it reports that bridge with status `ok`
+    Then it reports that file with status `superseded`
 
   @behavior
-  Scenario: accepts a symlink to AGENTS.md and rejects one pointing elsewhere
+  Scenario: separates a symlink to AGENTS.md from one pointing elsewhere
     Given a `CLAUDE.md` that is a symlink to `AGENTS.md`
     When the command diagnoses the instruction bridges
-    Then it reports that bridge with kind `symlink` and status `ok`
-    And a `CLAUDE.md` symlinked to any other file is reported with status `unbridged`
+    Then it reports that file with kind `symlink` and status `superseded`
+    And a `CLAUDE.md` symlinked to any other file is reported with status `shadowing`
 
   @behavior
-  Scenario: reports a missing instruction bridge
-    Given a repository with a root `AGENTS.md` and no `CLAUDE.md`
+  Scenario: checks every filename the harness would read instead of AGENTS.md
+    Given a repository holding a `.claude/CLAUDE.md` and a `CLAUDE.local.md` beside the root `AGENTS.md`
     When the command diagnoses the instruction bridges
-    Then it reports that bridge with kind `none` and status `missing`
-    And it reports an `instructions-missing` problem naming `CLAUDE.md`
+    Then it reports each of them, and each as shadowing
 
   @behavior
-  Scenario: reports a bridge overwritten with real content as unbridged
-    Given a `CLAUDE.md` holding instructions of its own and naming `AGENTS.md` nowhere
+  Scenario: checks each directory holding an AGENTS.md, and none without one
+    Given a nested `AGENTS.md` with a `CLAUDE.md` beside it
+    And a further subdirectory holding a `CLAUDE.md` and no `AGENTS.md`
     When the command diagnoses the instruction bridges
-    Then it reports that bridge with kind `file` and status `unbridged`
-    And it reports an `instructions-unbridged` problem naming `CLAUDE.md`
-
-  @behavior
-  Scenario: checks one bridge per nested AGENTS.md, and none where there is no AGENTS.md
-    Given a repository holding a root `AGENTS.md` and a nested `AGENTS.md` in one subdirectory
-    And a further subdirectory holding no `AGENTS.md`
-    When the command diagnoses the instruction bridges
-    Then it reports one bridge for the root and one for the nested directory
-    And it reports no bridge for the directory holding no `AGENTS.md`
+    Then it reports the nested file as shadowing
+    And it reports nothing for the directory holding no `AGENTS.md`
 
   @behavior
   Scenario: ignores AGENTS.md under a dot-directory or node_modules
     Given a repository holding an `AGENTS.md` under a dot-directory and another under `node_modules`
     When the command diagnoses the instruction bridges
-    Then it reports no bridge for either directory
+    Then it reports nothing for either directory
 
   @behavior
-  Scenario: reports a repository with no AGENTS.md once, and checks no bridge into it
-    Given a repository with no root `AGENTS.md` and a harness that bridges into one
+  Scenario: reports the missing AGENTS.md rather than the file standing in for it
+    Given a repository with no root `AGENTS.md` and a `CLAUDE.md` holding instructions of its own
     When the command diagnoses the instruction bridges
     Then it reports exactly one `no-instructions` problem
-    And it reports no bridge into the absent file
+    And it reports no shadow row for that file
 
   @behavior
   Scenario: reads a directory it cannot list as holding nothing
@@ -106,11 +112,11 @@ Feature: Report whether every enabled harness can still read AGENTS.md
     And an absent settings file is reported with status `missing`
     And a settings file that does not parse is reported with status `unreadable`
 
-  # ── a harness set with no instruction bridge ──
+  # ── a harness set with no instruction bridge and nothing shadowing AGENTS.md ──
 
   @behavior
   Scenario: reports nothing at all, not even a missing AGENTS.md
-    Given a repository with no root `AGENTS.md` and no selected harness that bridges into one
+    Given a repository with no root `AGENTS.md`, no selected harness that bridges into one, and no file any of them would read instead
     When the command diagnoses the instruction bridges
-    Then it reports no instruction bridge
+    Then it reports no instruction row
     And it reports no problem

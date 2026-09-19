@@ -24,7 +24,7 @@ Every correction is **offered with its before and after, and written only on app
 **Non-goals**
 
 - **Detecting.** Not this node's. A check written here would be a second home for one already in the command.
-- **Any finding this skill holds no correction for** — every bridge, of either kind, and every MCP finding. Each is handed on, whoever owns it. Every instruction finding, and every bridge finding a rebuild fixes, is `init`'s (`../init/`): `init` writes the `AGENTS.md` import and the Gemini `context.fileName` entry itself, and writes the `CLAUDE.md` stub *without* asking, where every correction here needs approval — one write cannot have two homes and two contradictory approval rules. A few bridge findings, and every MCP finding, name no owner at all and are work for a person; those are handed on too, and named as needing a hand rather than a skill.
+- **Any finding this skill holds no correction for** — every bridge, of either kind, and every MCP finding. Each is handed on, whoever owns it. Every instruction finding, and every bridge finding a rebuild fixes, is `init`'s (`../init/`): `init` is what writes the Gemini `context.fileName` entry and what consolidates an instruction file into `AGENTS.md`, and deciding what to preserve while it does is judgment none of the corrections here carries — one write cannot have two homes and two contradictory approval rules. A few bridge findings, and every MCP finding, name no owner at all and are work for a person; those are handed on too, and named as needing a hand rather than a skill.
 - **Adding what is absent.** A repository with no canonical configuration is `init`'s; guidance the repository lacks is `enhance`'s.
 - **Correcting project policy.** `repair` never rewrites a statement about how the repository is worked in, even a false one.
 - **Deciding activation.** Which of the four skills a request routes to is co-owned — the `description` prose this node holds, the harness that matches it, and the sibling descriptions it competes with. That is not this node's to freeze. What this node owns is its **remit**: what it does with a finding `doctor` handed it.
@@ -32,7 +32,7 @@ Every correction is **offered with its before and after, and written only on app
 **Key terms**
 
 - **canonical configuration** — the root `AGENTS.md` and the `.agents/` tree; the one source every harness is pointed at.
-- **bridge** — what a harness that cannot read `.agents/` is given instead: a skills projection (`.claude/skills`) or an instruction bridge (`CLAUDE.md`, `.gemini/settings.json`).
+- **bridge** — what a harness that cannot read `.agents/` is given instead: a skills projection (`.claude/skills`) or an instruction bridge (`.gemini/settings.json`).
 - **bridge finding** — a `doctor` finding about a bridge, whether it has stopped resolving or was never completed. **Never repaired here.** Whether it has an owner at all is the seam node's to state: `../../workflows/detect-and-repair/`.
 - **MCP finding** — a `doctor` finding that a golden MCP server set and a harness's copy of it disagree. **Never repaired here**, and it names no owner at all — which side is right is a judgment about servers, not a correction to a file.
 - **configuration finding** — a `doctor` finding that configuration around the bridges is present and wrong. The one family repaired here, and `references/classes.md` carries a section per `problem` in it. That membership is the remit: a `problem` with a section there is this skill's, and a `problem` without one is not.
@@ -121,7 +121,7 @@ Detection is the command's, so a run holds no state of its own and there is no f
 | B→C | doctor reports zero problems | `reports that doctor ran clean and stops` |
 | D→E | doctor reports a degraded bridge | `hands a bridge finding to init and writes nothing` |
 | D→E | doctor reports a diverged bridge on both sides | `hands a two-sided divergence on rather than picking a side` |
-| D→E | doctor reports an instruction bridge that names AGENTS.md nowhere | `hands an unbridged instruction file to init rather than adding the import` |
+| D→E | doctor reports a file the harness reads instead of AGENTS.md | `hands a shadowing instruction file to init rather than editing it` |
 | D→E | doctor reports an MCP finding | `hands an MCP finding on as work for a person` |
 | D→E | doctor reports a finding whose repair names no skill | `names no owner for a finding whose repair names no skill` |
 | F→G | doctor reports an unloadable-skill finding with no description to quote | `reports a missing description rather than inventing one` |

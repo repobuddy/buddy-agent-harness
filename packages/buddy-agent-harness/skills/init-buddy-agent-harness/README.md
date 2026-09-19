@@ -12,7 +12,7 @@ It detects agent configuration you already have — instruction files, skills, c
 
 Codex, Cursor, GitHub Copilot CLI, and Devin Desktop read `.agents/skills/` natively, so they need nothing. Only Claude Code and Gemini CLI need a link, which the skill creates by running the `init` command in Phase 4.
 
-Claude Code also reads `CLAUDE.md` rather than `AGENTS.md`, so the skill sets up a `CLAUDE.md` that imports `@AGENTS.md`.
+Instructions are a separate axis, and it has gone the other way: every harness the skill knows reads `AGENTS.md`. Gemini CLI needs it named in `context.fileName` first; Claude Code reads it unless a `CLAUDE.md` sits beside it, so the skill's instruction work is consolidating those files away rather than writing one.
 
 `references/standard.md` defines the baseline every repository gets from the open standards. `references/harnesses/<harness>.md` covers what each harness needs on top of that baseline — and how well-sourced each claim is. `SKILL.md` routes to them directly.
 

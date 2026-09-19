@@ -22,6 +22,6 @@ Give the corrected claim one home and link the other locations to it. A claim re
 
 ## Validation
 
-Run `pnpm check`, `pnpm verify`, and `git diff --check`. Run `pnpm web build` when site content changes — it is the only check that catches a broken Starlight page or a bad sidebar slug.
+Run `pnpm verify`, then `git diff --check`. `verify` is the whole gate — it runs `biome check` at the root and builds the docs site along with the package, so `pnpm check` and `pnpm web build` are steps inside it rather than commands to run beside it. Reach for one of those directly only to iterate on that one step.
 
 Add a changeset when published behavior changes. In the PR body, say which claims are newly sourced and name the `.research/` entries backing them.

@@ -25,7 +25,7 @@ Not all indirection carries the same risk, and the difference is who resolves it
 | the filesystem | `.claude/skills` symlinked to `.agents/skills` | deterministic: one directory, two names |
 | the model | "see `references/detection.md`" | a judgment call, made fresh each time |
 
-Only the third kind is lossy, and it is the only kind worth counting. This is why a one-line `CLAUDE.md` that imports `AGENTS.md` is not a hop in the sense that matters, while a one-line document that *tells* the agent to go read `AGENTS.md` is.
+Only the third kind is lossy, and it is the only kind worth counting. This is why a one-line `CLAUDE.md` that imports `AGENTS.md` is not a hop in the sense that matters, while a one-line document that *tells* the agent to go read `AGENTS.md` is. Claude Code no longer needs that import — it [reads `AGENTS.md` itself](/agent-configuration/harnesses/claude-code/#instructions-need-nothing-written) — but the two shapes still divide the same way wherever a harness offers an import.
 
 Prefer mechanical indirection wherever a harness offers it. Where it does not, shorten the chain rather than trusting the link.
 

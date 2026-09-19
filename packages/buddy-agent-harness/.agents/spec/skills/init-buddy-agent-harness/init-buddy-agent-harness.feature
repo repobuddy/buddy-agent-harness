@@ -17,7 +17,30 @@ Feature: Consolidate a repository's agent configuration and bridge the harnesses
     When the agent runs the `init-buddy-agent-harness` skill
     Then neither of them is treated as instruction content to consolidate
     And neither of them is reported as a conflict
-    And `CLAUDE.md` is unchanged
+    And `CLAUDE.md` is unchanged unless the owner approves its removal
+
+  @behavior
+  Scenario: offers to remove a superseded pointer rather than removing it
+    Given a `CLAUDE.md` whose entire body is the `AGENTS.md` import
+    When the agent runs the `init-buddy-agent-harness` skill
+    Then its removal is presented for approval rather than made
+    And the offer names the sessions that still need the import
+    And the file is unchanged until that approval is given
+
+  @behavior
+  Scenario: consolidates an instruction file that suppresses AGENTS.md rather than leaving a copy
+    Given a `CLAUDE.md` holding instructions of its own beside a root `AGENTS.md`
+    When the agent runs the `init-buddy-agent-harness` skill
+    Then the offer states that the harness is reading that file instead of `AGENTS.md`
+    And the offer is to consolidate and remove it, or to leave it holding the `AGENTS.md` import
+    And no generated copy of the consolidated content is left in its place
+
+  @behavior
+  Scenario: leaves a personal override in place and offers it the import
+    Given a `CLAUDE.local.md` beside a root `AGENTS.md`
+    When the agent runs the `init-buddy-agent-harness` skill
+    Then it is neither consolidated nor deleted
+    And the offer is an `AGENTS.md` import at the top of it
 
   @behavior
   Scenario: treats a heading-only AGENTS.md as absent and derives against it
@@ -83,6 +106,36 @@ Feature: Consolidate a repository's agent configuration and bridge the harnesses
     And only the approved lines reach `AGENTS.md`
 
   @behavior
+  Scenario: weighs each surviving line against the work the repository actually does
+    Given a candidate line that serves one shape of work the repository's history shows is a minority of it
+    When the agent presents the plan
+    Then the share that line serves is weighed against the repository's own commit history
+    And a line serving a minority is folded into one that already earns its place, or cut
+    And a cut line is reported with where the repository already catches what it would have said
+
+  @behavior
+  Scenario: restates a narrow-looking line in its universal form before cutting it
+    Given a candidate line phrased so that it reads as serving one shape of work
+    And the underlying fact serves most of the repository's sessions
+    When the agent weighs it
+    Then the line is restated in the form that says what it covers
+    And it is kept on that basis rather than cut on the phrasing
+
+  @behavior
+  Scenario: points at an index the repository already keeps rather than restating its rows
+    Given a repository holding a file that says where each kind of fact lives
+    When the agent derives against it
+    Then that file is read before any line is derived
+    And it is named in one line rather than having its rows copied into `AGENTS.md`
+
+  @behavior
+  Scenario: runs a command before writing it into the file
+    Given a candidate line naming a command to run
+    When the agent prepares to offer it
+    Then the command is run in this repository first
+    And a command another command already covers is not offered as a second one
+
+  @behavior
   Scenario: writes a heading and one line when nothing survives derivation
     Given a repository with no instruction content and no candidate fact that survives the test
     When the agent presents the plan
@@ -104,12 +157,12 @@ Feature: Consolidate a repository's agent configuration and bridge the harnesses
     And the file is unchanged until that approval is given
 
   @behavior
-  Scenario: asks before bridging a nested file that reverses a root rule
+  Scenario: says what a nested file that reverses a root rule will do in each harness
     Given a nested `AGENTS.md` stating a rule that negates one in the root `AGENTS.md`
     When the agent runs the `init-buddy-agent-harness` skill
-    Then that one file is raised with the owner before it is bridged
-    And the offer carries the option to bridge it anyway, to reword it as additive, and to leave it unbridged
-    And no stub is written in its directory until the owner answers
+    Then that one file is named, with what each harness will do with it
+    And rewording it as additive is offered rather than applied
+    And the nested file is unchanged whatever the owner answers
 
   @behavior
   Scenario: creates a missing directory and a missing AGENTS.md without asking
@@ -120,12 +173,11 @@ Feature: Consolidate a repository's agent configuration and bridge the harnesses
     And every one of those creations is reported
 
   @behavior
-  Scenario: writes the CLAUDE.md import stub without asking
-    Given Claude Code among the enabled harnesses and no `CLAUDE.md` at the root
+  Scenario: writes no CLAUDE.md, at the root or beside a nested file
+    Given Claude Code among the enabled harnesses and no `CLAUDE.md` anywhere
     When the agent runs the `init-buddy-agent-harness` skill
-    Then a `CLAUDE.md` importing `AGENTS.md` is written without an approval being asked for
-    And it carries the import and nothing copied out of `AGENTS.md`
-    And the write is reported
+    Then no `CLAUDE.md` is written at the root
+    And none is written in any directory holding a nested `AGENTS.md`
 
   @behavior
   Scenario: writes the Gemini entry unasked where no settings file exists
@@ -135,10 +187,10 @@ Feature: Consolidate a repository's agent configuration and bridge the harnesses
     And no approval is asked for before it is written
 
   @behavior
-  Scenario: bridges every additive nested file unasked and names each one it judged
+  Scenario: names every nested file it judged rather than reporting a count
     Given two package directories each holding an `AGENTS.md` that adds to the root rules
     When the agent runs the `init-buddy-agent-harness` skill
-    Then a stub is written in each of those directories without an approval being asked for
+    Then nothing is written in either directory
     And the report names each nested file and states that it was judged additive
     And the report does not state the outcome as a count alone
 

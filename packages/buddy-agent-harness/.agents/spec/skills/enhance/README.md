@@ -13,6 +13,8 @@ The `enhance` skill's conduct: which vetted sections it offers to a repository t
 
 Three properties make it a node rather than a paragraph inside `../init/`.
 
+**Where a section goes is part of what it offers.** A subject that is not about the repository has no business being copied into every repository the owner works in — that is the drift this package exists to remove, one level up from the file it removes it in. So an addition names its destination, the offer leads with it, and the one destination this skill cannot write is the one it recommends for delegation: a global placement is handed over, never made.
+
 **It writes material content, and material content needs a person's word.** A section here asserts something about how the repository is worked in — it stays true whether or not this tool ever ran — so it falls on the material side of the discriminator `../init/` applies, and nothing here is ever written on sight. `../init/` may create an absent file unasked; this skill may not add a sentence unasked.
 
 **Its detection has five outcomes, not two.** A repository can be **missing** a subject; can **cover** it in the owner's own words; can already carry the **text the addition would offer**; can carry a **wording this addition has since retired**, edits and all; or can carry something the skill genuinely **cannot place** between the last two. Absent is offered as an addition, a retired wording as a replacement, the owner's own and the already-current left alone, and the undecidable **put to the owner**. Already-current and the owner's own reach the same silence by different routes, and the report says which: a section this package wrote is not credited to the person reading the report.
@@ -23,7 +25,8 @@ Three properties make it a node rather than a paragraph inside `../init/`.
 
 **Key terms**
 
-- **addition** — a named block of instruction content this skill can offer, shipped as a reference file carrying the text to offer, the criterion for the subject already being present, and the criterion that compares a present section against the wordings this addition has retired. One addition ships today: `## Delegation`.
+- **addition** — a named block of instruction content this skill can offer, shipped as a reference file carrying the text to offer, the criterion for the subject already being present, the criterion that compares a present section against the wordings this addition has retired, and the destination it recommends. One addition ships today: `## Delegation`.
+- **destination** — which instruction file an addition's text belongs in, declared by the addition rather than assumed. An addition about the repository belongs in the repository's `AGENTS.md`; one about how the agent works belongs in the owner's own global file, where it is written once for every repository they open. Delegation is the second kind.
 - **merged view** — the root `AGENTS.md` together with every harness instruction file whose content still belongs in it. It is the text a downstream agent effectively reads, so guidance sitting in a Cursor always-on rule counts as present.
 - **covered** — the merged view already tells the agent what the addition would tell it, judged by meaning rather than by heading or wording.
 - **retired wording** — a text an addition used to offer, kept verbatim beside it after a revision. A present section is checked for containment of the current text first; to decide whether it is stale, it is compared against these, never weighed against the text that would be offered.
@@ -197,6 +200,10 @@ flowchart TD
 | B→C | the repository has no root instruction file | `reports and stops when there is no instruction file to add to` |
 | D | a `.cursorrules` holds delegation guidance that was never consolidated | `judges coverage across instructions that are not yet consolidated` |
 | E→F | an `AGENTS.md` whose prose says nothing about handing work to a subagent | `offers an addition the merged view does not cover` |
+| F | an addition naming a destination that is not this repository | `recommends the destination the addition names, not the repository by default` |
+| F | the agent's own always-loaded instructions already holding the text | `says when the agent's own instructions already carry the text` |
+| F | an owner choosing their global file over the repository | `hands a global placement over rather than writing outside the repository` |
+| F | a harness documenting no user-scope instruction file | `names no global instruction file the harness in use does not document` |
 | E→F | an `AGENTS.md` that quotes the addition inside a fenced block | `treats a heading inside a fenced block as an example rather than as coverage` |
 | E→F | an `AGENTS.md` that carried the section and no longer does | `offers again once an approved section is removed` |
 | G→H | an `AGENTS.md` covering the subject under the owner's own heading | `withholds an offer the owner's own words already cover` |

@@ -17,10 +17,10 @@ The first question needs a scope before it has an answer. A harness reads projec
 | [Antigravity](https://antigravity.google/docs/skills) | Yes (`<workspace-root>/.agents/skills/`) | **No** (`~/.gemini/config/skills/`) | Not established | Nothing |
 | [VS Code](https://code.visualstudio.com/docs/agent-customization/agent-skills) | Yes (same path set as Copilot CLI) | Yes (same path set as Copilot CLI) | Yes | Nothing |
 | [Cursor](/agent-configuration/harnesses/cursor/) | Yes (also `.cursor/skills/`) | Yes (also `~/.cursor/skills/`) | Agent mode only | [Attention to the mode split](/agent-configuration/harnesses/cursor/) |
-| [Claude Code](/agent-configuration/harnesses/claude-code/) | **No** | **No** (`~/.claude/skills/`) | **No** | [Skills projection + `CLAUDE.md`](/agent-configuration/harnesses/claude-code/) |
+| [Claude Code](/agent-configuration/harnesses/claude-code/) | **No** | **No** (`~/.claude/skills/`) | Yes, unless a `CLAUDE.md` suppresses it | [Skills projection](/agent-configuration/harnesses/claude-code/) |
 | [Gemini CLI](/agent-configuration/harnesses/gemini-cli/) | Yes (alias, takes precedence over `.gemini/skills/`) | Yes (alias for `~/.gemini/skills/`) | Only once configured | [Settings edit](/agent-configuration/harnesses/gemini-cli/) |
 
-Only Claude Code needs a skills projection. Every other harness in the table reads the canonical directory in a repository. The three with pages of their own are there because each has a gap that costs you instructions if you miss it — and Gemini CLI is the case that shows the two questions are independent: it reads the canonical skills directory and still reads no instructions until `context.fileName` says so.
+Only Claude Code needs a skills projection. Every other harness in the table reads the canonical directory in a repository. The three with pages of their own are there because each has a gap that costs you instructions if you miss it, and the gaps are not the same shape. Gemini CLI reads the canonical skills directory and still reads no instructions until `context.fileName` says so, which is why it is the only harness left needing an [instruction bridge](/agent-configuration/harnesses/gemini-cli/). Claude Code is the reverse: it reads `AGENTS.md` with nothing written, and a [`CLAUDE.md` beside that file takes it out of context entirely](/agent-configuration/harnesses/claude-code/#a-claudemd-beside-it-suppresses-it).
 
 Only the repository column decides whether a projection gets written. The user column is here because the same skills can be installed there and the failure mode is identical, and because a harness answering differently in the two columns — Antigravity does — is otherwise invisible. Nothing is written outside the repository.
 
@@ -40,7 +40,7 @@ The two-question table asks whether a harness reads `AGENTS.md`. For a repositor
 | [AGENTS.md v1.1](https://github.com/agentsmd/agents.md/issues/135), proposed | Guidance accumulates down the tree | More specific instructions take precedence |
 | [Claude Code](/agent-configuration/harnesses/claude-code/#how-claudemd-files-load) | All discovered files are concatenated | Undefined: "Claude may pick one arbitrarily" |
 
-Claude Code's model is additive: every `CLAUDE.md` from the filesystem root down to the working directory is loaded, ordered so the nearest is read last. Proximity buys recency, not authority.
+Claude Code's model is additive, and it is additive for either filename: every file it discovers from the filesystem root down to the working directory is loaded, ordered so the nearest is read last. Proximity buys recency, not authority.
 
 This matters when a nested file is written to *contradict* its parent: "this package uses vitest, not jest." Under the published rule that override is the point; under Claude Code both statements arrive together with no rule for choosing. So a nested instruction file behaves as intended for Codex and Cursor, and lands as a contradiction for Claude Code.
 
@@ -100,4 +100,4 @@ Two caveats. The `vercel-labs/skills` README claims 75 supported agents while th
 
 Buddy Agent Harness prefers direct consumption of the canonical format. Where a harness needs another location, it projects a compatible artifact by link or copy. It does not translate policy into an undocumented harness format, and it does not overwrite existing user-owned configuration.
 
-The directory-level link is supported in practice rather than guaranteed by contract. [Claude Code](/agent-configuration/harnesses/claude-code/#bridge-1-skills) covers what the vendor documents, why the directory link is preferred anyway, and the documented fallback.
+The directory-level link is supported in practice rather than guaranteed by contract. [Claude Code](/agent-configuration/harnesses/claude-code/#skills-need-a-projection) covers what the vendor documents, why the directory link is preferred anyway, and the documented fallback.

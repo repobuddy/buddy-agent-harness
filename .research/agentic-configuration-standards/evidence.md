@@ -85,6 +85,8 @@ Status values: `confirmed`, `contested`, `thin`. Confidence: high / medium / low
 
 ## E-CC-03 — Claude Code does not read AGENTS.md
 
+**Superseded by E-CC-14 (2026-09-19).** Claude Code reads `AGENTS.md` directly from v2.1.277. The bridge findings below are retained for provenance and still describe the fallback path; do not cite the "does not read" claim.
+
 - **Date**: 2026-08
 - **Status**: confirmed
 - **Confidence**: high
@@ -418,6 +420,28 @@ Status values: `confirmed`, `contested`, `thin`. Confidence: high / medium / low
 - **Confidence**: low
 - **Source**: direct observation of a local Claude Code install (`~/.claude/plugins/`), 2026-08-17. No vendor documentation found for plugin dependency installation.
 - **Notes**: `installed_plugins.json` records `gitCommitSha` for git-sourced plugins and none for npm-sourced ones. A shared `~/.claude/plugins/npm-cache/package.json` lists npm-sourced plugins as dependencies (`cyber-sdd`), and those plugins' cache directories carry a populated `node_modules` (`gherkin-cli`, `@cucumber/*`, `commander`). Running an npm-sourced plugin's own script succeeded: `node ~/.claude/plugins/cache/cyberplace/sdd/0.0.0/skills/discover-specs/scripts/discover-specs.mts --root .` exited 0. A git-sourced plugin (`repobuddy/buddy-agent-harness/0.2.0`, carrying `src/` and `coverage/`, which its npm `files` list excludes) failed on a missing transitive dependency: `Cannot find package 'js-yaml' imported from .../node_modules/clibuilder/esm/config.js`. Single machine, single point in time; treat the mechanism as observed rather than specified.
+
+## E-CC-14 — Claude Code reads `AGENTS.md` directly, unless a `CLAUDE.md` shadows it
+
+- **Date**: 2026-09-19
+- **Status**: confirmed
+- **Confidence**: high
+- **Source**: Claude Code memory documentation — https://code.claude.com/docs/en/memory — official docs
+- **Notes**: Verbatim: "Claude Code can read `AGENTS.md` as your project instructions, so a repository already set up for other coding agents works without adding a `CLAUDE.md`, an import, or a setting." **This supersedes E-CC-03.**
+
+  The default is conditional, and the condition is the whole finding. Published table: an `AGENTS.md` with no `CLAUDE.md` or `CLAUDE.local.md` in the working directory or above it → "Your `AGENTS.md`"; an `AGENTS.md` **and** such a file → "Your `CLAUDE.md` files only"; a `CLAUDE.md` that imports `AGENTS.md` → both, through the import. So a leftover bridge file is harmless and a leftover *non-bridge* `CLAUDE.md` is not: it takes `AGENTS.md` out of context entirely, silently.
+
+  Which files count for that check, verbatim: "a `CLAUDE.md`, `.claude/CLAUDE.md`, or `CLAUDE.local.md` in your working directory or any directory above it". Which do not: "your `~/.claude/CLAUDE.md`, your organization's managed `CLAUDE.md`, and `.claude/rules/` files".
+
+  Nested files are covered without a stub. At session start Claude reads "every `AGENTS.md` and `.claude/AGENTS.md` in your working directory and the directories above it"; below it, "a subdirectory's `AGENTS.md`, when Claude opens a file there with the Read tool and that subdirectory has none of the three `CLAUDE.md` files of its own" — the same lazy-on-read rule `CLAUDE.md` gets (E-CC-05), applied per file rather than per repository.
+
+  **Version and availability**: "Reading `AGENTS.md` directly requires Claude Code v2.1.277 or later." It is additionally unavailable in sessions that do not fetch feature flags — Amazon Bedrock and other third-party providers, or telemetry disabled — in the first session after an install or upgrade, and where `disableAllHooks` / `allowManagedHooksOnly` is set or the built-in `agents-md` plugin is disabled. The documented remedy in those sessions is the `@AGENTS.md` import. So the import is a fallback for a named set of sessions, not the general path.
+
+  **The setting**: **Project instructions**, `/config` or `pluginConfigs` → `agents-md@builtin` → `options.instructionFiles`, in `~/.claude/settings.json`, a `--settings` file, or managed settings — "Claude Code ignores it in project and local settings files", so a repository cannot set it for its contributors. Values: `claude-md-or-agents-md` (default), `claude-md-and-agents-md`, `claude-md`, `managed-only`.
+
+  **Removing the old workaround**, verbatim guidance: a `CLAUDE.md` containing `@AGENTS.md` — "you can leave it… Remove the `CLAUDE.md` if it holds nothing else, or keep it if some of your sessions can't load `AGENTS.md` directly"; a `CLAUDE.md` symlinked to `AGENTS.md` — "nothing, or delete the symlink"; a `CLAUDE.md` that tells Claude in words to read `AGENTS.md` — delete it or replace the sentence with an import; a `SessionStart` hook that prints `AGENTS.md` — remove it.
+
+  **Two observability differences** for an `AGENTS.md` read directly rather than through an import: it is not listed in `/memory` or `/context`, and `InstructionsLoaded` hooks do not fire for it. Both still hold for an imported one.
 
 ## E-JSON-01 — Gemini CLI accepts comments in `settings.json`
 

@@ -1,5 +1,23 @@
 # Changes — Agentic Configuration Standards
 
+## 2026-09-19 — Claude Code reads AGENTS.md, and a CLAUDE.md now hides it
+
+**What changed**: E-CC-14 added, superseding E-CC-03. Claude Code reads `AGENTS.md` as project instructions from v2.1.277 — "without adding a `CLAUDE.md`, an import, or a setting" — but only where no `CLAUDE.md`, `.claude/CLAUDE.md`, or `CLAUDE.local.md` sits in the working directory or above it. The import bridge this project wrote for four years of releases is now redundant, and a `CLAUDE.md` that is *not* a bridge is actively harmful.
+
+**Why**: the vendor shipped it, and the project's central claim about that harness — the one every page and the registry itself was built on — stopped being true.
+
+**Material conclusions**:
+
+- **The instruction bridge leaves the registry.** `claude-code` carries no `instructionBridge`. Gemini CLI is the only harness that still needs one, and Claude Code is the only one that still needs a skills projection. The two axes have now fully crossed.
+- **The opposite axis replaces it.** `shadowedBy` records the filenames whose presence stops a harness reading the `AGENTS.md` beside them. `doctor` gained `instructions-shadowing` for a file carrying its own content — the harness reads it instead, and nothing looks wrong — and `instructions-superseded` for one that still imports or links to `AGENTS.md`. A harness has a bridge or shadow filenames, never both.
+- **`init` writes no `CLAUDE.md`, and removes none unasked.** Consolidation is the instruction job now. A file with content is consolidated and removed on approval, never left as a generated copy: under this filename a copy is read *instead of* the canonical file, so the safeguard that protects `.cursorrules` is the harm here. A pure pointer is offered for removal and kept on a no.
+- **The import is a fallback, not a workaround to delete.** Direct reading is unavailable on a version before v2.1.277, on Amazon Bedrock and other third-party providers, with telemetry disabled, in the first session after an upgrade, and where hooks or the built-in `agents-md` plugin are off. That is why the removal is offered rather than made.
+- **Nested `AGENTS.md` files need no stub at all.** Claude Code reads each one at and above the working directory at session start, and a subdirectory's when it opens a file there. The per-directory stub writing, and the approval gate guarding it, are both gone. What survives is the *reporting*: nested precedence still differs between the standard's nearest-wins rule and Claude Code's concatenation, so a file that reverses a root rule is named rather than silently bridged.
+- **A repository cannot opt its contributors in or out.** The **Project instructions** setting is read from user, `--settings`, and managed settings only. Nothing this tool writes can change which files a contributor's sessions load.
+- **`no-instructions` changed trigger, not meaning.** It fired when a bridge pointed at a missing `AGENTS.md`. With almost no bridges left it would have gone silent, so it now also fires when a shadowing file stands where the canonical one is missing — the same finding, reached from the other side.
+
+**Triggering evidence**: E-CC-14, E-CC-03 (superseded), E-CC-05 (the concatenation rule the nested-precedence divergence still rests on).
+
 ## 2026-08-18 — Gemini CLI reads the canonical path at project scope, so its projection is redundant
 
 **What changed**: E-GEM-02 added, superseding E-GEM-01's project-scope skills path. Gemini CLI discovers skills from `.agents/skills/` at **workspace scope as well as user scope**, with the alias taking precedence over `.gemini/skills/` in each tier. Verified in the vendor's own discovery code, not only its prose.

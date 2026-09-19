@@ -51,11 +51,11 @@ Custom agents, hooks, and harness-specific settings are useful agent configurati
 
 MCP is the exception, and it is left canonical by choice rather than by necessity: the protocol is published and a cross-harness config mapping exists, but conversion is lossy. [What stays canonical](/reference/configuration-layout/#what-stays-canonical) has the reasoning, and a user-authored [golden server set](/agent-configuration/mcp-servers/) is the opt-in that changes it — a field the user wrote once is transcription, not invention.
 
-**Personal, uncommitted instructions** are the other gap, and a more surprising one. Claude Code has `CLAUDE.local.md`, a gitignored counterpart that loads alongside `CLAUDE.md` and holds machine-specific preferences. `AGENTS.md` has no published equivalent, so consolidating onto it costs you that capability everywhere except Claude Code.
+**Personal, uncommitted instructions** are the other gap, and a more surprising one. Claude Code has `CLAUDE.local.md`, a gitignored file holding machine-specific preferences. `AGENTS.md` has no published equivalent, so consolidating onto it costs you that capability everywhere except Claude Code.
 
 There is demand but no answer: three open issues request it ([#13](https://github.com/agentsmd/agents.md/issues/13), [#72](https://github.com/agentsmd/agents.md/issues/72), [#211](https://github.com/agentsmd/agents.md/issues/211)), and the most developed of them names two candidate filenames (`AGENTS.local.md` or `AGENTS.override.md`) and leans additive where most third-party write-ups assume override. Neither the spelling nor the semantics is settled.
 
-This project therefore does not create or project such a file, because doing so would pick a winner ahead of the standard. Keep personal instructions in `CLAUDE.local.md` and gitignore it, accepting that only Claude Code will read them.
+This project therefore does not create or project such a file, because doing so would pick a winner ahead of the standard. Keep personal instructions in `CLAUDE.local.md` and gitignore it, accepting that only Claude Code will read them — and open that file with an `@AGENTS.md` import, because otherwise it [suppresses the `AGENTS.md` beside it](/agent-configuration/harnesses/claude-code/#a-claudemd-beside-it-suppresses-it) and Claude reads your preferences in place of the project's instructions.
 
 ## Unsettled questions
 

@@ -9,24 +9,33 @@ concept: command-interface
 
 The `doctor` command's third question about the same repository: whether every enabled harness can still **read `AGENTS.md`**.
 
-A harness that cannot read the canonical instructions where they lie is given a bridge to them — a `CLAUDE.md` whose body imports `AGENTS.md`, or an `AGENTS.md` entry inside `.gemini/settings.json`. When that bridge is gone or was never completed, the harness reads **none** of the repository's instructions and says nothing about it.
+Two ways the answer is no, and they are opposites.
 
-It is a separate node from `../bridge-resolution/` rather than a case of it, and the separation is not tidiness. Nothing is shared: a different `kind` vocabulary (`import`, `symlink`, `settings-entry`, `file`, `none`), a different `status` vocabulary (`ok`, `missing`, `unbridged`, `unreadable`), a different unit of iteration — an import bridge is checked **once per directory holding an `AGENTS.md`** rather than once per harness — and a repair that is never a rebuild, because the file carries content a person wrote.
+A harness that cannot read the canonical instructions where they lie is given a **bridge** to them — an `AGENTS.md` entry inside `.gemini/settings.json` is the only one left. When that bridge is gone or was never completed, the harness reads **none** of the repository's instructions and says nothing about it.
 
-**`unbridged` is the case that has no counterpart on the skills side.** The file is present, it is the right size, it opens and reads like instructions, and it names `AGENTS.md` nowhere: a `CLAUDE.md` someone overwrote with real content, or a settings file another tool rewrote. Nothing about it looks wrong. It is why this half is checked at all rather than inferred from the file existing.
+A harness that reads `AGENTS.md` by itself needs no bridge and can still be stopped, by a file it prefers sitting in the same directory. Claude Code reads `AGENTS.md` only where it finds no `CLAUDE.md`, `.claude/CLAUDE.md`, or `CLAUDE.local.md` there or above it. That file is a **shadow**: nothing is missing, nothing looks wrong, and the canonical file is unread.
+
+It is a separate node from `../bridge-resolution/` rather than a case of it, and the separation is not tidiness. Nothing is shared: a different `kind` vocabulary (`import`, `symlink`, `settings-entry`, `file`, `none`), a different `status` vocabulary (`ok`, `missing`, `unbridged`, `unreadable`, `shadowing`, `superseded`), a different unit of iteration — a shadow is checked **once per directory holding an `AGENTS.md`** rather than once per harness — and a repair that is never a rebuild, because the file carries content a person wrote.
+
+**`unbridged` and `shadowing` are the cases that have no counterpart on the skills side.** The file is present, it is the right size, it opens and reads like instructions, and the harness is reading none of the repository's instructions anyway: a settings file another tool rewrote, or a `CLAUDE.md` holding a project overview somebody added years ago. Nothing about either looks wrong. It is why this half is checked at all rather than inferred from the file existing.
+
+**`superseded` is the one finding here that is not a fault.** A `CLAUDE.md` that imports `AGENTS.md`, or symlinks to it, still delivers the canonical file — it is the bridge this tool wrote before Claude Code read `AGENTS.md` itself, and the one reason to keep it is a session that cannot: an old version, a third-party provider, telemetry or hooks disabled. It is reported so `init` can offer the removal, never so anything can make it.
 
 **Key terms**
 
-- **instruction bridge** — what a harness needs in order to read `AGENTS.md`: an import line, a symlink, or an entry in a settings array. What it is differs per harness, which is why the registry records the variant rather than a bare path.
+- **instruction bridge** — what a harness needs in order to read `AGENTS.md`: an entry in a settings array, or the import line and symlink a harness needed before it read the file itself. What it is differs per harness, which is why the registry records the variant rather than a bare path.
+- **shadow** — a file whose presence in a directory stops a harness reading the `AGENTS.md` beside it. Declared per harness in the registry, because which filenames count is the harness's rule.
 - **canonical instructions** — the root `AGENTS.md`, and every nested `AGENTS.md` in the tree.
-- **instruction problem** — one named way an instruction bridge fails: `no-instructions`, `instructions-missing`, `instructions-unbridged`, `instructions-unreadable`.
+- **instruction problem** — one named way a harness ends up reading none of `AGENTS.md`: `no-instructions`, `instructions-missing`, `instructions-unbridged`, `instructions-unreadable`, `instructions-shadowing`, `instructions-superseded`.
 - **unbridged** — the file is present and does not name `AGENTS.md`, so the harness reads none of it.
+- **shadowing** — a shadow file carrying its own content, read *instead of* the `AGENTS.md` beside it.
+- **superseded** — a shadow file that imports or links to `AGENTS.md`, so the canonical file still arrives. Working, redundant, and nobody's to delete unasked.
 
 **Non-goals**
 
 - **Repairing.** Never. Rewriting an instruction file touches prose a person authored; see `../../workflows/detect-and-repair/` for who owns it.
 - **Reading what the instructions say.** Whether the bridge exists is decidable by reading the file; whether the instructions are any good is nobody's business here.
-- **Nested bridges beyond their own directory.** An import bridges the `AGENTS.md` **beside** it and nothing deeper, so the check is per directory rather than per harness, and a nested `AGENTS.md` with no stub of its own is a finding rather than covered by the root one.
+- **Nested files beyond their own directory.** A shadow suppresses the `AGENTS.md` **beside** it and nothing deeper, so the check is per directory rather than per harness, and a `CLAUDE.md` in one subtree says nothing about another.
 - **User-scope instruction bridges.** They exist and the registry describes them. `doctor` diagnoses a repository, so the check is project scope only.
 - **Skills bridges.** `../bridge-resolution/`.
 - **The shape of the report.** `../diagnosis-report/`.
@@ -60,44 +69,51 @@ It is a separate node from `../bridge-resolution/` rather than a case of it, and
 
 No option of its own. Harness selection is shared with `../bridge-resolution/` and so is `--harness`; `--root` and `--format` belong to `../diagnosis-report/`.
 
-The set checked is narrower than the selected set: only harnesses the registry records an instruction bridge for. Cursor, Codex, and Copilot CLI read `AGENTS.md` where it lies and are never bridged, so nothing is reported for them — an answer from the registry, not an omission.
+The set checked is narrower than the selected set, and narrower per question: bridges for the harnesses the registry gives one, shadows for the harnesses it gives shadow filenames. Cursor, Codex, and Copilot CLI read `AGENTS.md` where it lies and prefer no file over it, so nothing is reported for them — an answer from the registry, not an omission.
 
 **Extensions**
 
-- **No harness in the selected set needs an instruction bridge.** Nothing is reported at all — **not even a missing `AGENTS.md`**. Every other harness reads `AGENTS.md` where it lies, so its absence in that repository is one `init` has not run in, not a broken bridge, and reporting it would name a fault nothing is suffering.
-- **There is no root `AGENTS.md`, and something does bridge into it.** Reported **once**, as `no-instructions`, because every bridge then points at nothing. The bridges themselves are still judged on their own terms: a settings entry naming `AGENTS.md` is a claim about which file to read, and it stays `ok` whether or not that file exists. An import bridge cannot reach the same state, because it is checked per directory holding an `AGENTS.md` and a missing root file means no root bridge is checked at all.
+- **No harness in the selected set needs a bridge, and nothing shadows the canonical file.** Nothing is reported at all — **not even a missing `AGENTS.md`**. A repository with no instruction file of any kind has none to consolidate and nothing pointing at one, so its absence is a repository `init` has not run in, not a fault, and reporting it would name one nothing is suffering.
+- **There is no root `AGENTS.md`, and something depends on one.** Reported **once**, as `no-instructions`. Two things count as depending on it: a bridge, which then points at nothing, and a shadow file, which is then not shadowing anything — it is the only instructions the repository has, in the one place a single harness reads. The bridges themselves are still judged on their own terms: a settings entry naming `AGENTS.md` is a claim about which file to read, and it stays `ok` whether or not that file exists.
+- **A shadow file beside no `AGENTS.md`.** Not a shadow row. The `no-instructions` finding above is the whole report on it; `init` consolidates it into the file that is missing.
 - **A settings file does not parse.** `unreadable`. Nothing is inferred from a file whose contents could not be read, and the repair fixes the JSON first.
 - **A settings file is absent, or holds the key with the wrong value.** Absent reads as `missing`; present without `AGENTS.md` in the array reads as `unbridged`. Neither throws.
-- **A nested `AGENTS.md` under a dot-directory or `node_modules`.** Not bridged. `.agents/AGENTS.md` is canonical shared instructions rather than subtree-scoped, so bridging it would claim a scope it does not have.
+- **A nested `AGENTS.md` under a dot-directory or `node_modules`.** Not checked. `.agents/AGENTS.md` is canonical shared instructions rather than subtree-scoped, and a vendored file is not this repository's to diagnose.
 - **A directory that cannot be listed.** Reads as holding nothing rather than failing the run.
 
 ## Control Flow
 
 ```mermaid
 flowchart TD
-  A[Select the harnesses to check] --> B[Keep only those the registry gives an instruction bridge]
-  B --> C{Any left?}
+  A[Select the harnesses to check] --> B[Split: those the registry gives a bridge, those it gives shadow filenames]
+  B --> C{Either set non-empty?}
   C -->|no| D[Report nothing at all]
   C -->|yes| E{A root AGENTS.md exists?}
-  E -->|no| F[Report no-instructions, once]
-  E -->|yes| G
-  F --> G[For each bridge path: one per AGENTS.md directory for an import, one for a settings entry]
-  G --> H{What is at the path?}
-  H -->|nothing| I[Report instructions-missing]
-  H -->|a symlink| J{Points at AGENTS.md?}
-  H -->|a file| K{Names AGENTS.md?}
-  H -->|settings that will not parse| L[Report instructions-unreadable]
-  J -->|yes| M[Record the bridge as ok]
-  J -->|no| N[Report instructions-unbridged]
-  K -->|yes| M
-  K -->|no| N
-  I --> O[Emit every instruction bridge with its kind and status, and every finding]
-  L --> O
-  M --> O
-  N --> O
+  E -->|no| F{A bridge, or a shadow file at the root?}
+  F -->|neither| D
+  F -->|either| G[Report no-instructions, once]
+  E -->|yes| H
+  G --> H[Check each bridge once, and each shadow filename per AGENTS.md directory]
+  H --> I{What is at the path?}
+  I -->|nothing at a bridge path| J[Report instructions-missing]
+  I -->|nothing at a shadow path| K[Report nothing for it]
+  I -->|settings that will not parse| L[Report instructions-unreadable]
+  I -->|a settings file| M{Names AGENTS.md in the array?}
+  I -->|a shadow file or symlink| N{Imports or links to AGENTS.md?}
+  M -->|yes| O[Record the bridge as ok]
+  M -->|no| P[Report instructions-unbridged]
+  N -->|yes| Q[Report instructions-superseded]
+  N -->|no| R[Report instructions-shadowing]
+  J --> S[Emit every instruction row with its kind and status, and every finding]
+  K --> S
+  L --> S
+  O --> S
+  P --> S
+  Q --> S
+  R --> S
 ```
 
-Each bridge is inspected independently, so one run reports as many faults as it finds, and a run can report a bridged root beside an unbridged nested directory.
+Each path is inspected independently, so one run reports as many faults as it finds, and a run can report a clean root beside a shadowed nested directory.
 
 ## Scenario map
 
@@ -105,24 +121,27 @@ Each bridge is inspected independently, so one run reports as many faults as it 
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
-| C→D | no selected harness needs an instruction bridge | `reports nothing at all, not even a missing AGENTS.md` |
-| E→F | something bridges in, and there is no root `AGENTS.md` | `reports a repository with no AGENTS.md once, and checks no bridge into it` |
-| G | an `AGENTS.md` in a nested directory | `checks one bridge per nested AGENTS.md, and none where there is no AGENTS.md` |
-| G | an `AGENTS.md` under a dot-directory or `node_modules` | `ignores AGENTS.md under a dot-directory or node_modules` |
-| G | a directory that cannot be listed | `reads a directory it cannot list as holding nothing` |
-| G | a harness the repository does not enable | `is checked only for the harnesses this repository enables` |
-| H→I | nothing at the bridge path | `reports a missing instruction bridge` |
-| K→M | a file whose body is the import | `accepts a file whose body is the import` |
-| K→M | an import with harness-specific notes below it | `accepts an import carrying Claude-specific notes below it` |
-| J→M, J→N | a symlink to `AGENTS.md`, and one pointing elsewhere | `accepts a symlink to AGENTS.md and rejects one pointing elsewhere` |
-| K→N | a bridge file overwritten with real content | `reports a bridge overwritten with real content as unbridged` |
-| K→M | `AGENTS.md` in `context.fileName` beside the harness default | `accepts AGENTS.md in context.fileName beside the harness default` |
-| K→M | a settings entry naming an `AGENTS.md` that is not there | `keeps a settings entry ok when the file it names does not exist` |
-| K→M | a settings file carrying comments | `accepts a settings file carrying comments` |
-| K→N | a settings file rewritten without the entry | `reports a settings file another tool rewrote without the entry` |
-| H→L, H→I | a missing key, a missing file, and unparsable JSON | `reads a missing key, a missing file, and unparsable JSON without throwing` |
+| C→D | no selected harness needs a bridge, and none is shadowed | `reports nothing at all, not even a missing AGENTS.md` |
+| F→G | no root `AGENTS.md`, and a shadow file standing in for it | `reports the missing AGENTS.md rather than the file standing in for it` |
+| F→G | no root `AGENTS.md`, and a bridge pointing into it | `keeps a settings entry ok when the file it names does not exist` |
+| I→K | a root `AGENTS.md` and no file any harness would read instead | `reports nothing where no shadowing file exists` |
+| H | an `AGENTS.md` in a nested directory, and a directory with none | `checks each directory holding an AGENTS.md, and none without one` |
+| H | an `AGENTS.md` under a dot-directory or `node_modules` | `ignores AGENTS.md under a dot-directory or node_modules` |
+| H | a directory that cannot be listed | `reads a directory it cannot list as holding nothing` |
+| H | every shadow filename the registry records | `checks every filename the harness would read instead of AGENTS.md` |
+| H | a harness the repository does not enable | `is checked only for the harnesses this repository enables` |
+| I→J | nothing at the bridge path | `reads a missing key, a missing file, and unparsable JSON without throwing` |
+| N→R | a shadow file carrying its own content | `reports a file carrying its own content as shadowing` |
+| N→Q | a shadow file whose body is the import | `reports a file whose body is the import as superseded rather than shadowing` |
+| N→Q | an import with harness-specific notes below it | `reads an import carrying harness-specific notes below it as superseded` |
+| N→Q, N→R | a symlink to `AGENTS.md`, and one pointing elsewhere | `separates a symlink to AGENTS.md from one pointing elsewhere` |
+| M→O | `AGENTS.md` in `context.fileName` beside the harness default | `accepts AGENTS.md in context.fileName beside the harness default` |
+| M→O | a settings file carrying comments | `accepts a settings file carrying comments` |
+| M→P | a settings file rewritten without the entry | `reports a settings file another tool rewrote without the entry` |
+| I→L, I→J | a missing key, a missing file, and unparsable JSON | `reads a missing key, a missing file, and unparsable JSON without throwing` |
 
 ## References
 
-- `../../../../src/harness-registry/instruction-bridge.ts` is why the registry models a variant rather than a path: a skills projection is one shape, and an instruction bridge is at least two. A second bare path field would have described Claude Code and lied about Gemini CLI.
+- `../../../../src/harness-registry/instruction-bridge.ts` is why the registry models a variant rather than a path: a skills projection is one shape, and an instruction bridge is not. A bare path field would have described the import bridge Claude Code needed and lied about Gemini CLI's settings entry.
+- `../../../../src/harness-registry/harness-registry.ts` holds `shadowedBy`, the opposite axis: a harness has a bridge or shadow filenames, never both.
 - `../../../../src/diagnose-bridges/agents-files.ts` backs the per-directory iteration and the pruning rule.

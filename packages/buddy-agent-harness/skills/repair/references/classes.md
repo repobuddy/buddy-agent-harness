@@ -24,7 +24,7 @@ Every correction below is non-material: it would stop being true if this tool's 
 
 Read the file to describe the options, then offer all three:
 
-- move it to `CLAUDE.local.md` and add that to `.gitignore`, where the content is personal and Claude Code is the reader that matters;
+- move it to `CLAUDE.local.md` and add that to `.gitignore`, where the content is personal and Claude Code is the reader that matters — say that a `CLAUDE.local.md` is read *instead of* `AGENTS.md` unless it opens with an `@AGENTS.md` import, and write the import;
 - hand it to `init` to consolidate into `AGENTS.md`, where the content is project guidance — that move is material, and `init`'s;
 - delete it, where it is dead.
 
@@ -44,6 +44,6 @@ Two faults arrive under this name, and only one of them is correctable.
 
 `doctor` reports far more than this file covers: skills bridges that no longer resolve, instruction bridges that were never completed, and drift between the golden MCP server set and a harness's copy of it. None of them has a section here, and that is what says they are not yours.
 
-**Who to hand one to is read off the repair `doctor` gave it, and the question is whether it names `init`.** It names it one of two ways — the `/buddy-agent-harness:init-buddy-agent-harness` skill, or a `buddy-agent-harness init` command line — and both mean the finding is `init`'s, which writes both kinds of bridge in the first place and writes a `CLAUDE.md` stub *without* asking, where every correction here needs approval. Hand it to the skill; never run the command. A repair naming `init` in **neither** form is work for a person: `doctor` states it in full, and passing it on is the whole of what you do with it. Every MCP finding is that second case, as is every bridge finding a rebuild would not fix.
+**Who to hand one to is read off the repair `doctor` gave it, and the question is whether it names `init`.** It names it one of two ways — the `/buddy-agent-harness:init-buddy-agent-harness` skill, or a `buddy-agent-harness init` command line — and both mean the finding is `init`'s, which is what writes a bridge and what consolidates an instruction file in the first place. Hand it to the skill; never run the command. A repair naming `init` in **neither** form is work for a person: `doctor` states it in full, and passing it on is the whole of what you do with it. Every MCP finding is that second case, as is every bridge finding a rebuild would not fix.
 
 Never infer an owner for a finding that names none. The wrong guess is always `init`, and on a two-sided divergence rebuilding is precisely what discards whichever side holds the newer edit.

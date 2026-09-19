@@ -19,7 +19,7 @@ function run(args: { format?: string; harness?: string; root?: string }): number
 
 const healthy: DiagnoseResult = {
 	bridges: [{ harness: 'claude-code', path: '.claude/skills', kind: 'symlink', status: 'ok' }],
-	instructions: [{ harness: 'claude-code', path: 'CLAUDE.md', kind: 'import', status: 'ok' }],
+	instructions: [{ harness: 'gemini-cli', path: '.gemini/settings.json', kind: 'settings-entry', status: 'ok' }],
 	divergence: [],
 	findings: [],
 }

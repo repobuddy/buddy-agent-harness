@@ -67,7 +67,7 @@ Explicit approval is required before any step that deletes, replaces, or rewrite
 3. Merge approved instruction content into `AGENTS.md`, preserving your wording. Content is appended, not restructured.
 4. Run the `init` command to create the projections and report the enabled harnesses.
 5. Resolve any reported conflict and retry. `--force` replaces one named projection; `--copy` is only for environments without symlinks.
-6. Apply the instruction bridges the CLI does not write. [Claude Code](/agent-configuration/harnesses/claude-code/) needs a `CLAUDE.md`; [Gemini CLI](/agent-configuration/harnesses/gemini-cli/) needs a `.gemini/settings.json` edit.
+6. Settle the instruction files the CLI does not touch. [Gemini CLI](/agent-configuration/harnesses/gemini-cli/) needs a `.gemini/settings.json` edit, and it is the only bridge left to write. No `CLAUDE.md` is written, at the root or beside a nested `AGENTS.md`: [Claude Code reads `AGENTS.md` itself](/agent-configuration/harnesses/claude-code/#instructions-need-nothing-written), and a generated copy would be read instead of it.
 
 ### 5. Verify and report
 

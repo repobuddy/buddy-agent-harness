@@ -25,11 +25,11 @@ The skill runs a self-contained bundle of the CLI shipped in its own `scripts/` 
 
 It checks every bridge [`init`](/skills/init-buddy-agent-harness/) would create for this repository. Both read the same registry, so the two cannot describe different bridge sets.
 
-The report has two of them. `bridges` covers the skills projections into `.agents/skills`; `instructions` covers the files that let a harness read `AGENTS.md` — a `CLAUDE.md` holding `@AGENTS.md`, one beside every nested `AGENTS.md`, and the `context.fileName` entry in `.gemini/settings.json`. They are separate sections because their statuses and their repairs have nothing in common; the [CLI reference](/cli/doctor/#instruction-bridges) has the reasoning.
+The report has two of them. `bridges` covers the skills projections into `.agents/skills`; `instructions` covers everything standing between a harness and `AGENTS.md` — the `context.fileName` entry in `.gemini/settings.json`, which is the one bridge left, and the files that suppress an `AGENTS.md` a harness would otherwise read, which is what a `CLAUDE.md` now is. They are separate sections because their statuses and their repairs have nothing in common; the [CLI reference](/cli/doctor/#reaching-agentsmd) has the reasoning.
 
 For each one the report gives a `kind` (what is on disk now) and a `status` (whether it works). A `findings` entry explains each problem and a `help` row carries its repair in two columns: a `command` that runs verbatim and completes it, and an `instruction` in the imperative. An empty `command` means no single invocation does the job — act on the instruction. Apply the repair, then run `doctor` again.
 
-Every instruction repair is `/buddy-agent-harness:init-buddy-agent-harness` rather than a command. Those files carry prose someone wrote, and restoring a bridge without discarding what displaced it is the `init-buddy-agent-harness` skill's judgment.
+Every instruction repair is `/buddy-agent-harness:init-buddy-agent-harness` rather than a command. Those files carry prose someone wrote, and restoring a bridge without discarding what displaced it — or deciding whether a redundant one is being kept on purpose — is the `init-buddy-agent-harness` skill's judgment.
 
 A healthy repository says so outright instead of printing an empty section, so an agent does not re-run with other flags to check whether "nothing" meant "nothing wrong".
 

@@ -1,13 +1,15 @@
 ---
 name: doctor-buddy-agent-harness
-description: Use this skill when a repository loads no project skills, when skills are missing after a clone, when a harness appears to be ignoring AGENTS.md, or when checking whether the agent configuration bridges into .claude/skills, CLAUDE.md, and the other harness files still resolve.
+description: Use this skill when a repository loads no project skills, when skills are missing after a clone, when a harness appears to be ignoring AGENTS.md, or when checking whether the agent configuration bridges into .claude/skills and the other harness files still resolve.
 ---
 
 <!-- Generated from src/diagnose-bridges/doctor-guidance.ts by scripts/generate-skills.ts. Do not edit by hand. -->
 
 # Harness Doctor
 
-A repository keeps one canonical configuration: `.agents/skills` for its skills and `AGENTS.md` for its instructions. Harnesses that cannot read those get bridges pointing at them: Claude Code needs both, and Gemini CLI needs the instruction bridge only — it reads `.agents/skills` itself. A bridge that stops resolving is silent: the harness finds nothing and loads zero project skills, with no warning anywhere. An instruction bridge fails the same way and costs more, because the harness then reads none of the repository's instructions at all.
+A repository keeps one canonical configuration: `.agents/skills` for its skills and `AGENTS.md` for its instructions. Harnesses that cannot read those get bridges pointing at them: Claude Code needs the skills projection, and Gemini CLI needs the instruction bridge — each reads the other canonical path itself. A bridge that stops resolving is silent: the harness finds nothing and loads zero project skills, with no warning anywhere.
+
+Instructions fail two ways, both as quiet. A bridge that stops resolving costs more than a skills one, because the harness then reads none of the repository's instructions at all. And a harness that reads `AGENTS.md` natively still reads none of it when a file it prefers sits beside it — a `CLAUDE.md` next to an `AGENTS.md` is read *instead of* it, unless it imports it.
 
 Diagnose it:
 
@@ -23,7 +25,7 @@ The command is read-only. It never repairs anything, so it is safe to run at any
 
 `bridges` lists every skills bridge `init` would create for this repository, each with a `status` of `ok`, `missing`, `degraded`, `stale`, or `diverged`.
 
-`instructions` lists every instruction bridge into `AGENTS.md`, with a `status` of `ok`, `missing`, `unbridged`, or `unreadable`. They are a separate section because nothing about them is shared: a different `kind`, a different status vocabulary, and a repair that is never a command.
+`instructions` is everything standing between a harness and `AGENTS.md`, with a `status` of `ok`, `missing`, `unbridged`, `unreadable`, `shadowing`, or `superseded`. The last two are not bridges: they are files that suppress an `AGENTS.md` the harness would otherwise read by itself. A separate section because nothing about any of them is shared with `bridges`: a different `kind`, a different status vocabulary, and a repair that is never a command.
 
 `findings` explains each problem and carries more than the two sections above: the configuration, MCP, and non-standard findings have no section of their own, because they are about files rather than about bridges. `help` carries each repair, one row per distinct repair, with two columns:
 
@@ -59,4 +61,4 @@ Every `problem` name routes to exactly one page. Load the page for the finding i
 - Edit skills at `.agents/skills/<name>/SKILL.md`. Editing through a bridge is only safe when that bridge is a symlink.
 - Do not add bridges to `.gitignore`. An untracked bridge swallows a real edit silently.
 - Never repeat a value from a file an `mcp-literal-secret` or `mcp-committed-secret` finding points at. The report withheld it on purpose, and quoting it back puts it in the transcript anyway.
-- Write instructions in `AGENTS.md`, never in `CLAUDE.md`. A bridge file holds the import and any harness-specific notes; content written there reaches one harness and drifts from the canonical file.
+- Write instructions in `AGENTS.md`, never in `CLAUDE.md`. Content written there reaches one harness, drifts from the canonical file, and — because Claude Code prefers it — takes `AGENTS.md` out of that harness's context entirely.
