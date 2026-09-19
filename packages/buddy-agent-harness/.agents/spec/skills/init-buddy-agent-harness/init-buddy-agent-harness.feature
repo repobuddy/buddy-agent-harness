@@ -106,6 +106,36 @@ Feature: Consolidate a repository's agent configuration and bridge the harnesses
     And only the approved lines reach `AGENTS.md`
 
   @behavior
+  Scenario: weighs each surviving line against the work the repository actually does
+    Given a candidate line that serves one shape of work the repository's history shows is a minority of it
+    When the agent presents the plan
+    Then the share that line serves is weighed against the repository's own commit history
+    And a line serving a minority is folded into one that already earns its place, or cut
+    And a cut line is reported with where the repository already catches what it would have said
+
+  @behavior
+  Scenario: restates a narrow-looking line in its universal form before cutting it
+    Given a candidate line phrased so that it reads as serving one shape of work
+    And the underlying fact serves most of the repository's sessions
+    When the agent weighs it
+    Then the line is restated in the form that says what it covers
+    And it is kept on that basis rather than cut on the phrasing
+
+  @behavior
+  Scenario: points at an index the repository already keeps rather than restating its rows
+    Given a repository holding a file that says where each kind of fact lives
+    When the agent derives against it
+    Then that file is read before any line is derived
+    And it is named in one line rather than having its rows copied into `AGENTS.md`
+
+  @behavior
+  Scenario: runs a command before writing it into the file
+    Given a candidate line naming a command to run
+    When the agent prepares to offer it
+    Then the command is run in this repository first
+    And a command another command already covers is not offered as a second one
+
+  @behavior
   Scenario: writes a heading and one line when nothing survives derivation
     Given a repository with no instruction content and no candidate fact that survives the test
     When the agent presents the plan

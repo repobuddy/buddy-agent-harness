@@ -95,13 +95,32 @@ Pair every "don't" with a "do". A file of unpaired prohibitions makes an agent e
 
 "We use TypeScript" in a repository full of `.ts` files is the shape to avoid. "Every exported binding needs an explicit type annotation or `typecheck` fails" is the shape to keep.
 
+### Then ask who it is for
+
+A line that passes the test above still has to be paid for by **every** session, including the ones it says nothing to. So ask a second question of each survivor: **what share of the work in this repository does it serve?**
+
+Answer it from the repository's own history, not from a sense of what matters. `git log --no-merges --name-only` over the last fifty or so commits says what sessions here actually touch — code, docs, skills, configuration, planning — and a line serving one of those shapes is being loaded by all of them.
+
+| Share | Do |
+| --- | --- |
+| most sessions | keep it |
+| one shape of work, and it is the constraint that shape fails on | fold it into a line that already earns its place, as a clause rather than a paragraph |
+| one shape of work, and something else already catches it | cut it — name where the catch is, in the report |
+| almost none | cut it |
+
+**Look for the universal form before you cut.** A line often reads as narrow because of how it is phrased, not because it is narrow. One repository's `pnpm verify` gates the code, the shipped skills, *and* the documentation site; written out as its seven code-flavored task names it reads as a rule for code sessions, and written as "the gate for all of it, not only the code" it serves nearly every session in the repository. Restate it and re-ask before dropping it.
+
+**A rule that defends itself at the point of contact does not need a line here.** A generated file whose first line reads `Generated from … do not edit` already tells the agent that at the moment it opens the file. Restating it in the always-loaded file buys only the seconds before that — and costs every session that never opens it.
+
 ## Derive
 
-1. Read `package.json` (scripts, `engines`), the TypeScript, test, and lint configs, CI workflows, release configuration, and any existing `README.md`.
+1. Read `package.json` (scripts, `engines`), the TypeScript, test, and lint configs, CI workflows, release configuration, any existing `README.md`, and any index or contributing guide the repository keeps.
 2. List each candidate fact with the file it came from. A fact with no source is invention — drop it.
 3. Apply the test above. Most candidates fail it. Cut them.
-4. Show the user every surviving line beside its source, and get approval.
-5. Write only what was approved.
+4. Ask who each survivor is for, against the repository's history. Fold, cut, or keep as the table says.
+5. **Check each survivor by running it**, where running it is possible. A command goes in only after it has been run in this repository and done what the line claims: a task list read out of a build config, or a second command that the first one already covers, is how a file starts lying on its first day.
+6. Show the user every surviving line beside its source, and get approval.
+7. Write only what was approved.
 
 If nothing survives, write the heading and a one-line statement of what the repository is, then stop. Do not pad to look complete.
 
@@ -112,12 +131,17 @@ If nothing survives, write the heading and a one-line statement of what the repo
 | a procedure, or depth about one domain | a skill in `.agents/skills/` — only its `name` and `description` stay in context, and the body loads when the description matches |
 | payload a skill needs only sometimes | `references/` beside that `SKILL.md`, loaded on demand |
 | rationale, background, evidence | the documentation site, not agent context |
+| a rule about where a kind of fact lives | the repository's own index, if it has one — see below |
 
 A section of `AGENTS.md` that only some tasks need is a skill that has not been extracted yet.
 
+**Point at an index; never restate its rows.** Where the repository already keeps a file answering "which fact lives where" — a lookup document, a contributing guide, a docs map — one line naming that file is worth more than three lines copying rows out of it, and it cannot go stale against the thing it points at. Copying two rows of an index into the file that points at the index is the failure to watch for: it reads as thorough and is two homes for one fact.
+
+Read that file before deriving. A repository that has one has usually already decided most of what you were about to write down.
+
 ## Limits
 
-- Target under 150 lines. Past that, added lines cost more than they return.
+- Target under 150 lines. Past that, added lines cost more than they return. Most repositories should land far under it: a derived file that fills the budget has usually failed the share question rather than passed the value one.
 - State facts, not instructions, unless the user authored the instruction.
 - Derivable is not the same as worth including — a discoverable fact restated here goes stale the first time someone moves the file.
 

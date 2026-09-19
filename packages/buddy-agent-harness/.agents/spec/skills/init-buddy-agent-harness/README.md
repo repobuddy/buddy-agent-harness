@@ -89,6 +89,9 @@ Three rules, and each closes a different failure:
 - **A `CLAUDE.local.md`.** Someone's personal file. Never consolidated, never removed; offered the import and nothing else.
 - **A root `AGENTS.md` holding nothing but a heading.** A placeholder, treated as absent: derive against it and confirm before filling it. A file that carries authored content is never rewritten, whatever else the run does.
 - **Nothing survives derivation.** Write the heading and one line stating what the repository is, and stop. Padding a file that is read on every session costs context on every session.
+- **A line that passes the value test and serves a minority of sessions.** Folded into a line that already earns its place, or cut — every session pays for it, including the ones it says nothing to. The share is read off the repository's own history rather than judged by feel. Before cutting, the line is restated in its universal form: a narrow-sounding line is often a narrow *phrasing* of a fact that covers everything.
+- **A repository that already keeps an index of where facts live.** Read first, then named in one line. Copying its rows into the file that points at it is two homes for one fact, and the copy is the one that goes stale.
+- **A command nothing has run.** Not offered. A task list read out of a build config, or a second command the first already covers, is how a derived file starts lying on its first day.
 - **A nested `AGENTS.md`.** Left where it is and never merged upward — merging changes which files it governs. Nothing is written beside it: every harness reads a nested file where it lies. Reported by name as judged additive rather than counted.
 - **A nested `AGENTS.md` that reverses a root rule.** Named, with what each harness will do with it: an override under the standard's nearest-wins rule, an ambiguity in a harness that concatenates. Rewording it as additive is offered; the file is not changed either way, because which behavior the owner wants is policy.
 - **The command reports a conflict.** Resolve the named target and retry. `--force` is reached for only to replace that exact projection — the flag itself replaces every conflicting target, so the narrowness is the skill's discipline rather than the command's guarantee (issue #80). `--copy` is a snapshot rather than a live projection, and a run that falls back to one says so.
@@ -157,6 +160,10 @@ The graph rejoins at `I` after a decline, and that edge is the shipped skill's *
 | B | a nested `AGENTS.md` under a package | `leaves a nested AGENTS.md where it is rather than merging it upward` |
 | C | frontmatter derived for a skill that has none | `shows the derived name and description verbatim before writing either` |
 | B1→C | a candidate line that survives the test | `shows every derived line beside its source and writes only what was approved` |
+| B1→C | a surviving line serving a minority of the repository's work | `weighs each surviving line against the work the repository actually does` |
+| B1→C | a line phrased narrowly for a fact that is not narrow | `restates a narrow-looking line in its universal form before cutting it` |
+| B1 | a repository keeping an index of where facts live | `points at an index the repository already keeps rather than restating its rows` |
+| B1→C | a candidate line naming a command | `runs a command before writing it into the file` |
 | B1→B2 | no candidate survives the test | `writes a heading and one line when nothing survives derivation` |
 | D→E | a `.cursorrules` a person wrote | `asks before replacing an authored instruction file with a pointer` |
 | D→E | a `.gemini/settings.json` a person wrote | `asks before editing a settings file a person wrote` |
