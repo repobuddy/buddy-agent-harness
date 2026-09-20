@@ -1,5 +1,68 @@
 # Changes — Agentic Configuration Standards
 
+## 2026-09-20 — Posit Assistant is native on both axes, and upstream understated two more
+
+**What changed**: E-POSIT-01 through E-POSIT-04, E-DROID-01, and E-KILO-01 added. Posit Assistant
+reads `.agents/skills/` at project scope and `~/.agents/skills/` at user scope by default, and reads
+`AGENTS.md` in the project root as its project memory. It needs neither a skills projection nor an
+instruction bridge.
+
+**Why**: issue #83. The weekly drift check flagged `posit-assistant` as a new upstream agent with
+`skillsDir` `.posit/assistant/skills`, which reads as non-canonical. Upstream is a tripwire, so the
+finding was taken to the vendor, and by the time the research ran the drift had grown to five
+findings rather than one.
+
+**Material conclusions**:
+
+- **Nothing the package ships changes.** No registry entry gained or lost a path, no projection
+  target moved, no bridge appeared. Posit Assistant is native on both axes, and the four other
+  findings concern agents this project does not register. The change is documentation and evidence.
+- **Upstream's single `skillsDir` cannot express "also".** Posit Assistant scans four skill
+  directories by default and upstream records one of them; Droid scans eight and upstream moved its
+  one entry from `.factory/skills` to `.agents/skills` as though the first had been dropped, which
+  the vendor's own scope table contradicts. Both are the false signal the `harness-update` skill
+  names, and this is the first run where it fired twice at once.
+- **Posit Assistant is the first native harness with a usable detection marker and no registry
+  entry.** Antigravity and VS Code are unregistered because neither can be detected safely;
+  `.posit/assistant/` can be. Whether to register it is a product question about which harnesses
+  this tool maintains — registering would write zero files and add a `--harness` name — so it is
+  recorded as open rather than answered by the evidence. See **Open** below.
+- **`AGENTS.md` support can carry a consent gate without being a bridge.** Posit Assistant loads
+  project memory only in a trusted workspace. That is a prompt the user answers once, not a file
+  anything writes, so it belongs in the table's cell text and not in `instructionBridge`.
+- **A vendor page can belong to the superseded product.** Positron's own site documents Positron
+  Assistant appending any of six instruction filenames, including `claude.md`. Posit Assistant
+  replaced that product in Positron 2026.07 and names one project file. Reading the older page as
+  current would have produced a `shadowedBy`-shaped claim with nothing behind it.
+- **Kilo Code is left contested.** Its docs claim `.agents/skills` support; its own tracker carries
+  unresolved reports that skills there are not detected, and the issue was closed "not planned"
+  without a confirmed fix. Nothing here depends on the answer, and settling it needs a behavioral
+  test rather than another document.
+- **The drift detector had failed closed for a month.** `assertParsed` cross-checked the parsed
+  registry against the count of `HarnessName` union members, and that union is deliberately wider
+  than the registry — `mcp-inventory.ts` names three harnesses there that have no entry. Since
+  2026-09-17 every run exited 2 with "parsed 7 harnesses but HarnessName declares 10", and the
+  weekly workflow errored instead of reporting. The cross-check now counts entry braces inside the
+  `harnessRegistry` literal, which is independent of the `name:` split `parseLocal` uses and does
+  not track the union. The 2026-08-18 entry below records the same function failing *open*; this is
+  the other direction, and the pair is why the check is now anchored to the array it parses.
+
+**Triggering evidence**: E-POSIT-01, E-POSIT-02, E-POSIT-03, E-POSIT-04, E-DROID-01, E-KILO-01.
+
+**Open**: whether `posit-assistant` earns a registry entry. The evidence supports one — detect
+`.posit/assistant`, no `skillsDirectory` at either scope, no `instructionBridge`, `mcpServers` in
+`.posit/assistant/settings.json` at both scopes, and `.posit/assistant/skills` plus the legacy
+`.positai/` as nonstandard artifacts. What it does not settle is whether a data-science assistant
+belongs in the maintained set. Not implemented here.
+
+**Not changed**: `fx` and `sarvam-code`, the two other new upstream agents, were not researched.
+Neither is in the registry and neither appears in any published table, so no claim here rests on
+them. Also left alone: the "unresolved third-party discrepancy" on [Sources &
+Confidence](https://buddy-agent-harness.js.org/sources/), which reads the `vercel-labs/skills`
+README as claiming 75 agents. The README now names four and says "75 more", so the figure it
+supports is 79 — the same as the registry. Correcting a published claim has its own process and
+its own evidence, and it is not this finding's.
+
 ## 2026-09-19 — Claude Code reads AGENTS.md, and a CLAUDE.md now hides it
 
 **What changed**: E-CC-14 added, superseding E-CC-03. Claude Code reads `AGENTS.md` as project instructions from v2.1.277 — "without adding a `CLAUDE.md`, an import, or a setting" — but only where no `CLAUDE.md`, `.claude/CLAUDE.md`, or `CLAUDE.local.md` sits in the working directory or above it. The import bridge this project wrote for four years of releases is now redundant, and a `CLAUDE.md` that is *not* a bridge is actively harmful.

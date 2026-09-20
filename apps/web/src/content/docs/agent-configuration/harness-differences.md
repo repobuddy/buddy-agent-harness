@@ -16,6 +16,7 @@ The first question needs a scope before it has an answer. A harness reads projec
 | [Devin Desktop](https://docs.devin.ai/product-guides/skills) | Yes (first of nine scanned paths, and recommended) | Not established | Not established | Nothing |
 | [Antigravity](https://antigravity.google/docs/skills) | Yes (`<workspace-root>/.agents/skills/`) | **No** (`~/.gemini/config/skills/`) | Not established | Nothing |
 | [VS Code](https://code.visualstudio.com/docs/agent-customization/agent-skills) | Yes (same path set as Copilot CLI) | Yes (same path set as Copilot CLI) | Yes | Nothing |
+| [Posit Assistant](https://assistant.posit.co/docs/features/skills/) | Yes (also `.posit/assistant/skills/`, which wins a name collision) | Yes (also `~/.posit/assistant/skills/`) | Yes, once the workspace is trusted | Nothing |
 | [Cursor](/agent-configuration/harnesses/cursor/) | Yes (also `.cursor/skills/`) | Yes (also `~/.cursor/skills/`) | Agent mode only | [Attention to the mode split](/agent-configuration/harnesses/cursor/) |
 | [Claude Code](/agent-configuration/harnesses/claude-code/) | **No** | **No** (`~/.claude/skills/`) | Yes, unless a `CLAUDE.md` suppresses it | [Skills projection](/agent-configuration/harnesses/claude-code/) |
 | [Gemini CLI](/agent-configuration/harnesses/gemini-cli/) | Yes (alias, takes precedence over `.gemini/skills/`) | Yes (alias for `~/.gemini/skills/`) | Only once configured | [Settings edit](/agent-configuration/harnesses/gemini-cli/) |
@@ -78,13 +79,17 @@ They were on opposite sides of the projection line until 2026-08-18, when Gemini
 
 ## Native harnesses without a registry entry
 
-Antigravity and VS Code read the canonical directory but are not selectable via `--harness`, because harness registration exists to decide projections and detection, and neither needs either.
+Antigravity, VS Code, and Posit Assistant read the canonical directory but are not selectable via `--harness`, because harness registration exists to decide projections and detection, and none of them needs a projection.
 
-Neither has a safe project-scope detection marker. Antigravity documents no project harness directory, and VS Code's `.vscode/` indicates the editor rather than skills support. It exists in repositories with no agent configuration at all, so detecting on it would enable a harness almost everywhere. Registering them would add a name to the reported enabled set, write zero files, and introduce a false positive. Documenting them is the useful part.
+Antigravity and VS Code have no safe project-scope detection marker either. Antigravity documents no project harness directory, and VS Code's `.vscode/` indicates the editor rather than skills support. It exists in repositories with no agent configuration at all, so detecting on it would enable a harness almost everywhere. Registering them would add a name to the reported enabled set, write zero files, and introduce a false positive.
+
+Posit Assistant is the different case: it does have a marker. The vendor documents `.posit/assistant/` as its project configuration directory, and nothing else writes there. So an entry for it would detect accurately and still write nothing — the shape Devin Desktop already has. Whether that is worth a registry name is a product question about which harnesses this tool maintains, not a question the evidence settles, and it is left open rather than decided here.
+
+Documenting all three is the part that is useful either way.
 
 ## Enabling states support, projecting writes a link
 
-Enabling a harness is a statement about what the repository supports. For the five native harnesses above, no files are written at all. The CLI result separates `native` from `linked` so it is clear what actually changed on disk.
+Enabling a harness is a statement about what the repository supports. For the five registered native harnesses — Codex, Copilot CLI, Cursor, Gemini CLI, and Devin Desktop — no files are written at all. The CLI result separates `native` from `linked` so it is clear what actually changed on disk.
 
 Which harnesses get enabled, and why a detected directory does not by itself mean you want that harness maintained, is covered in [Skill: init-buddy-agent-harness](/skills/init-buddy-agent-harness/#which-harnesses-get-enabled).
 

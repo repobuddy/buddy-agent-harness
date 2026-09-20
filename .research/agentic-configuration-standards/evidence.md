@@ -523,3 +523,79 @@ Status values: `confirmed`, `contested`, `thin`. Confidence: high / medium / low
   Goose's own docs list `enabled`, `timeout`, `description`, and `bundled` as optional, so the invented values are legal — but they are still values a user did not write, and going back the other way drops them. That is the shape of the lossiness: not a failure to convert, but a conversion that has to guess in one direction and discard in the other.
 
   This is the finding that bears on `init` rather than on the wording. `init`'s stated safety property is that it invents nothing; a conforming MCP converter cannot hold that property.
+
+## E-POSIT-01 — Posit Assistant reads `.agents/skills` at both scopes, by default
+
+- **Date**: 2026-09-20
+- **Status**: confirmed
+- **Confidence**: high
+- **Source**: Posit Assistant docs — https://assistant.posit.co/docs/features/skills/ — primary vendor documentation
+- **Notes**: The vendor publishes the default search order verbatim: `~/.agents/skills/`, `~/.posit/assistant/skills/`, `.agents/skills/` "relative to each workspace root", `.posit/assistant/skills/` relative to each workspace root. Both canonical paths are scanned with nothing configured, so **Posit Assistant is native at project and user scope alike — no projection at either.**
+
+  The vendor-specific path is not a fallback but a tie-breaker: "If a skill of the same name exists in both `.posit/assistant/skills` and `.agents/skills` at the same level, the `.posit/assistant/skills` version wins." The page also tells the reader which to choose — `.agents/skills` "for skills you want to share with other coding assistants that follow the Agent Skills specification, or that came from an installer like `npx skills`".
+
+  The whole list is user-overridable through `skills.paths` in `~/.posit/assistant/settings.json`, so the default order is a default, not a guarantee. Project skills take priority over user skills, and both override built-ins of the same name.
+
+  **Upstream understates this.** The `vercel-labs/skills` entry that triggered issue #83 records `skillsDir: '.posit/assistant/skills'` and `globalSkillsDir: '~/.posit/assistant/skills'` only, so upstream classifies the agent as non-universal and would symlink into it. That is the "reads the canonical path among several" false signal the `harness-update` skill warns about, and Devin is the earlier example of the same shape (E-WS-02).
+
+## E-POSIT-02 — Posit Assistant reads `AGENTS.md` as project memory, in trusted workspaces
+
+- **Date**: 2026-09-20
+- **Status**: confirmed
+- **Confidence**: high
+- **Source**: Posit Assistant docs — https://assistant.posit.co/docs/features/memory/ — primary vendor documentation
+- **Notes**: "Project memory — `AGENTS.md` in the project root". It is read with nothing configured — memory files "are loaded automatically at the start of every conversation" — so **no instruction bridge is needed**. User memory is `~/.posit/assistant/AGENTS.md`, which is the canonical filename under a vendor directory rather than a vendor filename; project memory wins on conflict.
+
+  One documented condition: "Project memory files are only loaded in trusted workspaces. This prevents untrusted projects from injecting prompts into the assistant's context." The user-level file loads regardless of trust. This is a consent gate on a first open, not a configuration step, and it is not the same thing as Gemini CLI's bridge — nothing has to be written for the file to be read once the workspace is trusted.
+
+  Nothing on this page suppresses `AGENTS.md` the way a `CLAUDE.md` suppresses it for Claude Code (E-CC-14), and no `shadowedBy` behavior is documented anywhere in these docs. Recorded as absent from the vendor documentation rather than as a confirmed negative.
+
+  **Do not read the predecessor's page as this one's.** Positron's own site documents a *different* product, Positron Assistant, which "appends the content" of any of `agent.md`, `agents.md`, `positron.md`, `claude.md`, `gemini.md`, `llms.txt` found in the workspace root (https://positron.posit.co/assistant-chat-instructions.html, 2026-09-20). Posit Assistant replaced Positron Assistant and Databot as the default AI experience in Positron 2026.07 (https://positron.posit.co/assistant.html), and its own docs name one project file, `AGENTS.md`. The six-filename list is the superseded product's behavior and is not restated here as Posit Assistant's.
+
+## E-POSIT-03 — Posit Assistant's own configuration lives under `.posit/assistant/`
+
+- **Date**: 2026-09-20
+- **Status**: confirmed
+- **Confidence**: high
+- **Source**: Posit Assistant docs — https://assistant.posit.co/docs/reference/config-file/ and https://assistant.posit.co/docs/reference/mcp-servers/ — primary vendor documentation
+- **Notes**: Global settings at `~/.posit/assistant/settings.json` (`%USERPROFILE%\.posit\assistant\settings.json` on Windows); project settings at `.posit/assistant/settings.json` in the project root, overriding the global file key by key. MCP servers sit under the `mcpServers` key in either file, merged by server name with project entries winning, and `"enabled": false` disables a global server per project. Resolution order: defaults → global → project → environment → CLI flags.
+
+  **A rename is already behind it.** "In previous versions, the configuration directory was `~/.positai` (global) and `.positai/` (project-level). These have been renamed to `~/.posit/assistant` and `.posit/assistant/`. Existing files are migrated automatically on first launch." A repository initialized under the old product may still carry `.positai/`.
+
+  `.posit/assistant/` is therefore a project-scope detection marker in the sense the registry means — a directory the vendor documents and only this harness writes — unlike VS Code's `.vscode/` (E-VSC-01). Recorded so the registry question can be decided on evidence; nothing here asserts that it should be registered.
+
+## E-POSIT-04 — Posit Assistant is not a single-IDE feature
+
+- **Date**: 2026-09-20
+- **Status**: confirmed
+- **Confidence**: high
+- **Source**: Posit Assistant docs — https://assistant.posit.co/docs/downloads/tui/ and https://assistant.posit.co/docs/downloads/rstudio/ — primary vendor documentation
+- **Notes**: The site describes it as "a platform-agnostic data analysis assistant for Positron, RStudio, and beyond", and ships three surfaces: the Positron IDE, RStudio, and a terminal application, `pa`, installed as a standalone binary and runnable headless.
+
+  Recorded because the obvious reading — that "Posit Assistant" is a feature of the Positron IDE — is wrong, and it is the reading that would justify treating the harness as out of scope for a repository-configuration tool. All three surfaces read the same `~/.posit/assistant/settings.json` (E-POSIT-03), so the paths do not vary by surface.
+
+## E-DROID-01 — Droid reads `.agents/skills` as a compatibility path, not instead of `.factory/skills`
+
+- **Date**: 2026-09-20
+- **Status**: confirmed
+- **Confidence**: high
+- **Source**: Factory docs — https://docs.factory.ai/cli/configuration/skills — primary vendor documentation; corroborated by https://docs.factory.ai/harness/skills and https://docs.factory.ai/harness/agents-md
+- **Notes**: The vendor's scope table lists eight scopes, and the canonical paths are two of them: "Compatibility — `<repo>/.agents/skills/**/SKILL.md`, `<repo>/.agent/skills/**/SKILL.md`" and "Personal compatibility — `~/.agents/skills/**/SKILL.md`, `~/.agent/skills/**/SKILL.md`". `.factory/skills` remains the project scope and `~/.factory/skills` the personal one; neither was dropped. Droid also reads `AGENTS.md` as its project briefing.
+
+  Recorded because upstream reported this as a *replacement* — `skillsDir` "changed from `.factory/skills` to `.agents/skills`" — and it is not one. Upstream carries a single `skillsDir` per agent, so a vendor adding the canonical path beside its own is indistinguishable there from a vendor moving to it. Both readings are native by our criteria, which is why the finding costs nothing here, but the two are different facts and only the vendor page separates them.
+
+  Droid is not in this project's registry, so nothing changes. Logged so a future drift run does not re-research it.
+
+## E-KILO-01 — Kilo Code documents `.agents/skills` and its own tracker disputes that it works
+
+- **Date**: 2026-09-20
+- **Status**: contested
+- **Confidence**: low
+- **Source**: Kilo Code docs — https://kilo.ai/docs/customize/skills and https://kilo.ai/docs/customize/agents-md — primary vendor documentation; disputed by the vendor's own tracker, https://github.com/Kilo-Org/kilocode/discussions/9595 and https://github.com/Kilo-Org/kilocode/issues/9629
+- **Notes**: The docs place project skills in `.kilo/skills/` and add: "For interoperability with other tools, Kilo Code also loads skills from: `.agents/skills/` — Open agent standard, loaded by default." `AGENTS.md` support is stated plainly and is not in dispute: "Kilo Code checks for `AGENTS.md` or `AGENT.md` at the project root."
+
+  Against that, two reports on the vendor's own tracker (both filed 2026-04-28) say skills in `.agents/skills` are not detected in practice. A maintainer answered that it works and asked for a reproduction; the issue was then closed as "not planned" with no confirmed fix. An earlier feature request for the path (Kilo-Org/kilocode#5783, opened 2026-02-10) is still open and unanswered, which fits a documented-before-shipped rollout.
+
+  Two further gaps: `~/.agents/skills` at user scope is **unsourced** — no vendor statement found either way — and the docs name `.kilo/skills` where the older material named `.kilocode/skills`, without saying whether the legacy path is still scanned.
+
+  So upstream's reclassification of `kilo` to `.agents/skills` is not confirmable from the vendor. Kilo Code is not in this project's registry and nothing here depends on the answer; settling it would need a behavioral test, not another document. Left contested rather than smoothed either way.
