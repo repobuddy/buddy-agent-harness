@@ -83,14 +83,23 @@ export function parseLocal(source) {
  * Fail loudly when the registry's shape outruns the parser. Every harness has a project scope and
  * every project scope has a `detect`, so a missing one means this script is reading a shape it does
  * not understand — and a comparison it cannot make must not be reported as agreement.
+ *
+ * The entry count is a second, independent read of the same array: `parseLocal` splits on `name:`,
+ * so counting the `name:` keys again would agree with it whatever it dropped. Counting the entry
+ * braces instead catches an entry the name split misses.
+ *
+ * It deliberately does not count the `HarnessName` union. That union is wider than the registry —
+ * `mcp-inventory.ts` names harnesses there that have no entry here — so it once reported a healthy
+ * registry as unparseable and the weekly workflow errored out for a month.
  */
 export function assertParsed(local, source) {
-	const declared = (source.match(/^\t\| '[^']+'$/gm) ?? []).length
+	const literal = source.match(/harnessRegistry: readonly Harness\[\] = \[\n([\s\S]*?)\n\]/)?.[1]
+	const entries = (literal?.match(/^\t\{/gm) ?? []).length
 	const blind = local.filter((harness) => harness.detect === null).map((harness) => harness.name)
 	if (blind.length) return `could not read the project scope of: ${blind.join(', ')}`
 	if (local.length === 0) return 'parsed zero harnesses'
-	if (declared && local.length !== declared)
-		return `parsed ${local.length} harnesses but HarnessName declares ${declared}`
+	if (entries === 0) return 'could not find the harnessRegistry array literal'
+	if (local.length !== entries) return `parsed ${local.length} harnesses but the registry holds ${entries} entries`
 	return null
 }
 
