@@ -13,6 +13,7 @@ The harness claims across this site are not equally well-sourced, and the differ
 | Frontmatter field origins | High | primary vendor documentation |
 | Devin Desktop skill paths and the rebrand | High | official vendor announcement and documentation |
 | Antigravity and VS Code skill paths | High / Medium | primary vendor documentation |
+| Posit Assistant reading `.agents/skills` at both scopes and `AGENTS.md` as project memory | High | primary vendor documentation, which publishes the default search order and the memory filenames |
 | Gemini CLI reads `.agents/skills` at both scopes | High | the Gemini CLI discovery source, corroborated by its documentation |
 | Gemini CLI `context.fileName` | Medium | project documentation, partly an issue thread |
 | JSON comment tolerance in `.gemini/settings.json` and `.claude/settings.json` | High | the Gemini CLI loader source, and Claude Code documentation plus an open request for JSONC support |
