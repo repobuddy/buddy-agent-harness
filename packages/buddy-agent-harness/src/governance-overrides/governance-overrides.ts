@@ -48,7 +48,6 @@ export function deprecatedManagedGovernancesDir(platform: NodeJS.Platform, progr
 	return '/etc/universal-plugin/governances'
 }
 
-/** The project override layer: one directory, in the canonical `.agents/` tree. */
 export function projectGovernancesDir(root: string): string {
 	return join(root, '.agents', 'governances')
 }

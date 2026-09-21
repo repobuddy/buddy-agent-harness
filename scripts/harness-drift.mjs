@@ -59,10 +59,6 @@ export function parseUpstream(source) {
  * entries rather than lines: everything from one `name:` up to the next one. Only the `project`
  * scope is compared — upstream's `skillsDir` is a project-scope path, and only project scope
  * decides whether we write a projection.
- *
- * A line-scoped reader lived here until the registry grew scopes, and it went silent rather than
- * wrong: multi-line entries matched nothing, so the harnesses most likely to drift dropped out of
- * the comparison and the run reported clean. Hence `assertParsed` below.
  */
 export function parseLocal(source) {
 	const body = source.slice(source.indexOf('harnessRegistry'))
@@ -89,8 +85,7 @@ export function parseLocal(source) {
  * braces instead catches an entry the name split misses.
  *
  * It deliberately does not count the `HarnessName` union. That union is wider than the registry —
- * `mcp-inventory.ts` names harnesses there that have no entry here — so it once reported a healthy
- * registry as unparseable and the weekly workflow errored out for a month.
+ * `mcp-inventory.ts` names harnesses there that have no entry here.
  */
 export function assertParsed(local, source) {
 	const literal = source.match(/harnessRegistry: readonly Harness\[\] = \[\n([\s\S]*?)\n\]/)?.[1]

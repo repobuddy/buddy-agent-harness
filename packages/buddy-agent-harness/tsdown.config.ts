@@ -54,9 +54,7 @@ export default defineConfig([
 		// CLI entry. Every runtime dependency is inlined so the published
 		// `dist/cli.mjs` runs with no `node_modules` present — which is the state an
 		// installed agent plugin is actually in, since the plugin directory is a copy
-		// of the source checkout rather than an npm install. Today this package's own
-		// shipped launcher fails in that state with `Cannot find package 'type-plus'
-		// imported from .../clibuilder/esm/builder.js`; inlining is what fixes it.
+		// of the source checkout rather than an npm install.
 		//
 		// Only this package's own `dependencies` need listing — those are the only ones
 		// tsdown externalizes by default, so clibuilder's ~30 transitive packages are

@@ -24,16 +24,6 @@ export type BridgeProblem =
 	| 'unpinned-copy'
 
 /**
- * Every way a harness can end up reading none of `AGENTS.md`. Separate from `BridgeProblem` because
- * the two share no repair: a skills bridge is rebuilt with `init` flags, and every file here holds
- * content that is the user's, so every repair goes back to the `init-buddy-agent-harness` skill.
- *
- * Two of them are the reverse of a missing bridge. A harness that reads `AGENTS.md` natively needs
- * nothing written, and can still be stopped — by a file that sits where it looks and says something
- * else. `instructions-shadowing` is that file; `instructions-superseded` is the same file still
- * carrying the import that used to be the only way in, which costs nothing and is now optional.
- */
-/**
  * Configuration that is present and **wrong**, as against a bridge that does not resolve. These are
  * the faults the `repair` skill owns: none is expressible as an `init` flag, because `init`
  * consolidates and creates but never corrects a file the user already wrote.
@@ -75,6 +65,7 @@ export type NonstandardProblem =
 	| 'nonstandard-skill'
 	| 'nonstandard-subagent'
 
+/** Every way a harness can end up reading none of `AGENTS.md`. */
 export type InstructionProblem =
 	| 'no-instructions'
 	| 'instructions-missing'

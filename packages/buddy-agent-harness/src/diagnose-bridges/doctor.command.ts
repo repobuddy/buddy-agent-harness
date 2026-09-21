@@ -84,8 +84,7 @@ export function buildDoctorReport(
 		...(result.divergence.length ? { divergence: result.divergence } : {}),
 		findings: findings.map(({ path, problem, detail }) => ({ path, problem, detail })),
 		// Deduped on the whole pair: several findings often share one repair, and repeating it reads as
-		// more work than there is. Nothing wraps a repair — a `Run …` around every one of them is what
-		// this report used to do, and most repairs are not commands.
+		// more work than there is. Nothing wraps a repair: most repairs are not commands.
 		help: [
 			...new Map(
 				findings.map((finding) => [`${finding.repair.command}\u0000${finding.repair.instruction}`, finding.repair]),
