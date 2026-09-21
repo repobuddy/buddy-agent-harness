@@ -6,6 +6,8 @@ A pnpm + turbo monorepo: the `buddy-agent-harness` npm package — the CLI and t
 
 Add a changeset when published behavior changes. Nothing else catches a missing one.
 
+Comment only what a name cannot say: a constraint a reader would otherwise break. History goes in the commit, vendor facts in `.research/`, rationale on the docs site.
+
 `.agents/LOOKUP.DOC.md` says where each kind of fact lives and which source file generates what.
 
 <!-- buddy-agent-harness:begin -->
