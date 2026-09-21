@@ -34,10 +34,7 @@ export type McpField = (typeof mcpFields)[number]
 /** The two fields holding one value per name rather than a single value. */
 const mapFields = new Set<McpField>(['env', 'headers'])
 
-/**
- * Whether two values of the same field agree. Arrays are ordered — `args` is a command line, and
- * reordering it changes what runs. Maps are not, so they are compared by their sorted entries.
- */
+/** Arrays compare ordered (`args` is a command line); maps compare by sorted entries. */
 function sameValue(field: McpField, left: unknown, right: unknown): boolean {
 	if (mapFields.has(field) && isRecord(left) && isRecord(right)) {
 		const keys = Object.keys(left)
@@ -46,18 +43,6 @@ function sameValue(field: McpField, left: unknown, right: unknown): boolean {
 	return JSON.stringify(left) === JSON.stringify(right)
 }
 
-/**
- * The fields on which a target disagrees with the golden set.
- *
- * Asymmetric by design, and this is the rule that keeps a golden set from accumulating noise. A
- * field the golden set leaves unset is never a difference, however the target fills it: a host
- * restating its own default and a user's deliberate edit are indistinguishable in that position,
- * and pulling both back would grow the golden set on every round-trip. The golden set speaks only
- * about what it says.
- *
- * `env` and `headers` are compared per name for the same reason — a variable only the target sets
- * is that target's business, and one the golden set names must match.
- */
 export function divergingFields(golden: McpServer, target: McpServer): McpField[] {
 	return mcpFields.filter((field) => {
 		const declared = golden[field]

@@ -18,14 +18,8 @@ export function writeResult(value: object, format: OutputFormat): void {
 }
 
 /**
- * The other thing a command can have to say: a document that already is the answer, written exactly
- * as it was read. `governance show` is the caller — a rule set an agent is about to follow is not a
- * result to encode, and a Markdown body run through TOON or through the text renderer comes back as
- * one escaped line.
- *
- * It lives here rather than in that command because this module is the stdout boundary, and the
- * boundary is the module rather than the function. A run still writes once: a command either encodes
- * a result or writes a document, never both.
+ * Writes a document exactly as read, bypassing the encoders — a Markdown body run through TOON or
+ * the text renderer comes back as one escaped line. A command writes one or the other, never both.
  */
 export function writeDocument(content: string): void {
 	process.stdout.write(content.endsWith('\n') ? content : `${content}\n`)
@@ -40,7 +34,6 @@ function cell(value: unknown): string {
 	return value === undefined ? '' : String(value)
 }
 
-/** A header row plus one row per record, every column padded to its widest cell. */
 function table(rows: Record<string, unknown>[]): string[] {
 	const columns = [...new Set(rows.flatMap((row) => Object.keys(row)))]
 	const widths = columns.map((column) => Math.max(column.length, ...rows.map((row) => cell(row[column]).length)))
@@ -49,11 +42,7 @@ function table(rows: Record<string, unknown>[]): string[] {
 	return [line(columns), ...rows.map((row) => line(columns.map((column) => cell(row[column]))))]
 }
 
-/**
- * The same result rendered for a person rather than for an agent: scalars as `key: value`, records
- * as an aligned table, and everything else as a bulleted list. TOON stays the default because it is
- * what an agent parses; this is for reading over someone's shoulder.
- */
+/** Renders for a person, not an agent — TOON stays the default since that's what an agent parses. */
 export function renderText(value: object): string {
 	const blocks = Object.entries(value).map(([key, item]) => {
 		if (!Array.isArray(item)) return [`${key}: ${isRecord(item) ? JSON.stringify(item) : String(item)}`]
@@ -62,8 +51,8 @@ export function renderText(value: object): string {
 		return [`${key}:`, ...body]
 	})
 
-	// A blank line wherever a multi-line block meets its neighbour, so a following scalar does not
-	// read as another row of the table above it.
+	// Blank line between blocks so a following scalar doesn't read as another row of the table
+	// above it.
 	return blocks
 		.flatMap((block, index) => {
 			const previous = blocks[index - 1]
@@ -73,8 +62,8 @@ export function renderText(value: object): string {
 }
 
 /**
- * AXI §10: an absolute path with the user's home directory collapsed to `~`, so a reader handed a
- * report can paste the path on a machine that is not the one it came from.
+ * AXI §10: collapses the home directory to `~` so a path in a report is portable to another
+ * machine.
  */
 export function collapseHome(home: string, path: string): string {
 	return home && path.startsWith(home + sep) ? `~${path.slice(home.length)}` : path

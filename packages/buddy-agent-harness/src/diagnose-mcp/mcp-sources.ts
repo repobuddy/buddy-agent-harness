@@ -8,7 +8,6 @@ import type { McpServer, McpTransport } from './mcp-model.ts'
 /** Where the golden set lives, and why it is namespaced rather than sitting at `.agents/mcp.json`. */
 export const goldenSetPath = '.agents/buddy-agent-harness/mcp.toml'
 
-/** The table the golden set keeps its servers under. */
 const goldenKey = 'servers'
 
 export type ParsedServers =
@@ -26,10 +25,8 @@ function stringMap(value: unknown): Record<string, string> | undefined {
 const transports = new Set<string>(['stdio', 'http', 'sse'])
 
 /**
- * The transport a host entry describes. Hosts spell it `type` (Claude Code, VS Code) or
- * `transport`, and several state it nowhere and leave it implied by which of `url` and `command`
- * is present. Inferring it is what lets a `url` entry in one file compare equal to a `type: http`
- * entry in another.
+ * Infers transport when unstated (`url` → `http`, `command` → `stdio`), so a `url` entry in one
+ * file compares equal to a `type: http` entry in another.
  */
 function transportOf(entry: Record<string, unknown>): McpTransport | undefined {
 	const declared = entry['type'] ?? entry['transport']
@@ -40,20 +37,10 @@ function transportOf(entry: Record<string, unknown>): McpTransport | undefined {
 }
 
 /**
- * One host entry, or one golden entry, in the canonical model. The two formats carry the same
- * field names — the divergence between hosts is the file, the top-level key, and the serialization,
- * not the entry — so one reader serves both directions of the comparison.
- *
- * A field whose value is the wrong type is dropped rather than carried through. A `timeout` that
- * is a string is not a timeout, and letting it into the model would report a divergence whose real
- * cause is a typo the finding does not name.
- */
-/**
- * Exported for `mcp-inventory.ts`, which reads a handful of sources this module's own `McpConfig`
- * shape cannot describe — a plugin's flat `.mcp.json`, a project entry nested inside `~/.claude.json`,
- * and hosts whose `command` is an array or an object rather than a string. Each of those normalizes
- * its raw entry into this same field shape before calling this function, so one reader still decides
- * what counts as `transport`, `args`, and the rest.
+ * One host or golden entry, converted into the shared model; a field of the wrong type is dropped
+ * rather than carried through, so a `timeout` that is a string does not report as a divergence.
+ * Also used by `mcp-inventory.ts`, which normalizes its own raw shapes into these same fields
+ * first.
  */
 export function serverFrom(entry: Record<string, unknown>): McpServer {
 	const args = Array.isArray(entry['args']) && entry['args'].every((item) => typeof item === 'string')
@@ -85,16 +72,8 @@ function serversUnder(document: unknown, key: string): Map<string, McpServer> {
 }
 
 /**
- * The position out of a thrown parse error, and nothing else out of it.
- *
- * `smol-toml` reports `line` and `column` on the error alongside a `codeblock` quoting the source,
- * and its `message` embeds that same code block. Both are unusable: in a file of MCP configuration
- * the line a parser failed on is exactly the line holding the credential. Only the two numbers are
- * read, and anything thrown that does not carry them is reported without a position rather than by
- * reaching for its message.
- *
- * Exported because that restriction is the point of the function rather than an implementation
- * detail of it, and it is verified directly.
+ * Only line and column — never `message` or `codeblock`, which quote the source line and could echo
+ * a credential.
  */
 export function positionOf(error: unknown): Position | undefined {
 	if (!isRecord(error)) return undefined
@@ -113,12 +92,8 @@ export function parseGoldenSet(source: string | undefined): ParsedServers {
 }
 
 /**
- * One harness's MCP configuration, parsed. The file is read for its own key and nothing else:
- * `.gemini/settings.json` also carries the instruction bridge, and a reader that treated the whole
- * file as MCP would report the rest of a user's settings as servers it does not recognize.
- *
- * JSON is parsed with comments stripped, because Gemini CLI's loader strips them too and a
- * settings file may legally carry them.
+ * One harness's config, parsed under its own key only — `.gemini/settings.json` also carries the
+ * instruction bridge. JSON is parsed with comments stripped, matching Gemini CLI's own loader.
  */
 export function parseTarget(config: McpConfig, source: string | undefined): ParsedServers {
 	if (source === undefined) return { kind: 'absent' }
@@ -130,9 +105,8 @@ export function parseTarget(config: McpConfig, source: string | undefined): Pars
 		}
 	}
 	const document = parseJsonWithComments(source)
-	// `parseJsonWithComments` answers `undefined` for a file that does not parse. A file whose
-	// literal content is `null` parses and holds no servers, which reads the same here and is
-	// reported the same way it would be for `{}`.
+	// A literal `null` parses successfully and holds no servers — reported the same as `{}`, not as
+	// unreadable.
 	if (document === undefined) return { kind: 'unreadable' }
 	return { kind: 'servers', servers: serversUnder(document, config.key) }
 }

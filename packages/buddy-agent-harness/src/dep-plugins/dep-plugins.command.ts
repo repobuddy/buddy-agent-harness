@@ -11,24 +11,18 @@ export type DepPluginsReport = {
 	catalog: string
 	marketplace: string
 	outcome: WriteOutcome | 'would-change' | 'current'
-	/** Always emitted, so a healthy run states its zero rather than leaving a reader to infer it. */
+	/** Emitted even when empty, so a healthy run states its zero explicitly. */
 	plugins: { name: string; package: string; version: string }[] | string
-	/** Every runtime detected on this machine, and whether it matches the catalog. */
 	harness: { runtime: string; status: string }[] | string
 	/**
-	 * What each runtime needs in order to match the catalog, and the command that does it. Reported
-	 * rather than run: this writes outside the repository, and a generation step should not reach into
-	 * a developer's harness state without being asked.
-	 *
-	 * One flat row per action rather than actions nested under each runtime: a uniform record renders
-	 * as a table in both TOON and text, where a nested array collapses into a JSON blob.
+	 * Reported, never run — writes outside the repo and shouldn't happen unasked.
+	 * One flat row per action, not nested under runtime: TOON renders a flat record as a table but collapses a nested array to JSON.
 	 */
 	actions: { runtime: string; do: string; subject: string; why: string }[] | string
 	notes?: string[]
 	help?: string[]
 }
 
-/** The command that performs one action, so a reader is not left to look the verb up per runtime. */
 function commandFor(runtime: PluginRuntime, action: Action, marketplace: string): string {
 	switch (action.kind) {
 		case 'register':
@@ -36,9 +30,8 @@ function commandFor(runtime: PluginRuntime, action: Action, marketplace: string)
 		case 'install':
 			return runtime.install(action.subject)
 		case 'update': {
-			// Where a runtime caches the catalog it has to be refreshed first, or the update reinstalls
-			// the version already cached rather than the one the catalog now pins. Codex re-reads a local
-			// catalog on every add and needs no such step, so it declares no refresh command.
+			// Some runtimes cache the catalog and must refresh before update, or they reinstall the
+			// stale cached version; Codex re-reads on every add and needs none.
 			const refresh = runtime.refreshMarketplace(marketplace)
 			const update = runtime.update(action.subject)
 			return refresh ? `${refresh} && ${update}` : update
@@ -48,11 +41,6 @@ function commandFor(runtime: PluginRuntime, action: Action, marketplace: string)
 	}
 }
 
-/**
- * Notes name the conditions a caller cannot see from the entry list and would otherwise discover as a
- * failure later — a dependency that is declared but absent, a marketplace name two repositories are
- * likely to share, a resolver under which no dependency has a directory at all.
- */
 function notesFor(derived: ReturnType<typeof deriveCatalog>): string[] {
 	const notes: string[] = []
 	if (derived.pnp) {
@@ -96,18 +84,14 @@ export const depPluginsCommand: cli.Command = command({
 			const root = args.root ?? process.cwd()
 			const derived = deriveCatalog(root)
 
-			// `--check` compares without touching the disk, so it is safe from a postinstall hook and from
-			// CI, where the question is only whether the committed catalog still matches the declared
-			// dependencies.
 			const outcome = args.check
 				? catalogStatus(root, derived.catalog) === 'unchanged'
 					? ('current' as const)
 					: ('would-change' as const)
 				: writeCatalog(root, derived.catalog)
 
-			// Read-only, and against each harness's own state files rather than its CLI: asking a runtime
-			// what it has should not depend on that runtime being launchable from here. Only runtimes
-			// actually set up on this machine are reported, so a report names work a reader can do.
+			// Reads each harness's own state files, never its CLI — a report shouldn't require that
+			// runtime to be launchable here.
 			const home = homedir()
 			const notes = notesFor(derived)
 			const detected = runtimes.filter((candidate) => candidate.present(home))
@@ -157,8 +141,8 @@ export const depPluginsCommand: cli.Command = command({
 			}
 			writeResult(report, format)
 
-			// A stale catalog under `--check` is the one failure this command reports through its exit
-			// code, because that is the whole question the flag asks. Everything else the report carries.
+			// Exit code reflects staleness under --check only; everything else is in the report, not
+			// the exit code.
 			return outcome === 'would-change' ? exitCodes.error : exitCodes.success
 		} catch (error) {
 			process.stderr.write(`error: ${error instanceof Error ? error.message : 'Catalog generation failed.'}\n`)

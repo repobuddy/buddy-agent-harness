@@ -8,21 +8,12 @@ import { goldenSetPath, type ParsedServers, parseGoldenSet, parseTarget } from '
 /** Which side of a diverged server moved since the two last agreed. */
 export type McpDirection = 'target' | 'golden' | 'both' | 'unknown'
 
-/** Where the record of what was last written to each target lives, beside the golden set it came from. */
+/**
+ * Where the record of what was last written to each target lives, beside the golden set it came
+ * from.
+ */
 export const projectionRecordPath = '.agents/buddy-agent-harness/mcp.projected.json'
 
-/**
- * The last-projected record: per target path, per server name, the model that was written there.
- *
- * It exists because git can only answer for a file it can see. Harnesses write their MCP
- * configuration themselves, at user scope, into files that are often untracked or ignored outright,
- * and for those "which side moved since they last agreed" has no answer in history. A record
- * written at projection time has one, exactly, because it *is* what was projected.
- *
- * A malformed record answers nothing rather than throwing. It is a cache of an answer, not the
- * answer, and a diagnosis that dies because its cache is corrupt is worse than one that says
- * `unknown`.
- */
 export function parseProjectionRecord(source: string | undefined): Map<string, Map<string, McpServer>> {
 	const document = source === undefined ? undefined : parseJsonWithComments(source)
 	const targets = isRecord(document) ? document['targets'] : undefined
@@ -46,27 +37,13 @@ export type BaselineOptions = {
 	record: Map<string, Map<string, McpServer>>
 }
 
-/**
- * Which side moved, for one server and one field.
- *
- * The record is asked first, because it records exactly what was written and therefore answers
- * exactly. Where it holds nothing, a **tracked** target falls back to git: the newest commit where
- * the golden set and the target agreed on that field, then which working tree still matches it.
- * Where neither can answer, the direction is `unknown` and the finding says so — naming a side on a
- * guess would send a reconcile at the wrong file.
- */
 export class McpBaseline {
 	constructor(private readonly options: BaselineOptions) {}
 
 	/**
-	 * One parse per commit per file, and one commit walk per target.
-	 *
-	 * `lastAgreed` runs per (config, server, field) that diverges without a projection record, and
-	 * every one of those walks reads the same two files at the same commits. Unmemoized, three
-	 * targets against five servers with two diverged fields each over fifty commits of history is
-	 * three thousand `git show` calls and as many parses — on the command the `doctor-buddy-agent-harness` skill says is
-	 * cheap enough for a session-start hook. One instance serves one diagnosis, so the memo lives and
-	 * dies with it and can never answer for a working tree that has moved on.
+	 * Memoized per instance: unmemoized, `lastAgreed` would repeat the same `git show` and parse
+	 * for every diverged field. The memo dies with the instance, so it never answers for a working
+	 * tree that has since moved on.
 	 */
 	private readonly parsed = new Map<string, ParsedServers>()
 	private readonly walked = new Map<string, string[]>()
@@ -87,9 +64,8 @@ export class McpBaseline {
 	}
 
 	/**
-	 * The newest committed state where both files described this field the same way. Read at model
-	 * granularity rather than by comparing blobs: the two files never share bytes, and a commit that
-	 * reformatted one of them did not change what it says.
+	 * Compared at model granularity, not blob bytes — the two files never share bytes, so a
+	 * reformat wouldn't register as agreement lost.
 	 */
 	private lastAgreed(config: McpConfig, name: string, field: McpField): McpServer | undefined {
 		for (const commit of this.commitsTouching(config)) {

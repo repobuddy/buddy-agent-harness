@@ -2,15 +2,9 @@
 /**
  * Harness drift detector.
  *
- * Compares this repository's `harnessRegistry` against the `vercel-labs/skills` agent registry,
- * which is the largest machine-readable source of per-harness skill paths in the ecosystem.
- *
- * This covers the **skills axis only**. Instruction files, rules, MCP, and hooks have no
- * machine-readable source; those are the `harness-update` skill's job. A clean run here does not
- * mean the harness data is current — it means nothing changed in the one place a script can look.
- *
- * This is an MVP with one secondary source. Watching primary vendor documentation across both
- * axes is tracked in https://github.com/repobuddy/buddy-agent-harness/issues/8.
+ * Compares this repository's `harnessRegistry` against the `vercel-labs/skills` agent registry.
+ * Covers the skills axis only — instructions, rules, MCP, and hooks have no machine-readable
+ * source, so a clean run here doesn't mean the harness data overall is current.
  *
  * Usage:
  *   node scripts/harness-drift.mjs --json            # machine-readable report
@@ -53,12 +47,8 @@ export function parseUpstream(source) {
 }
 
 /**
- * Parse this repository's harness registry out of its TypeScript source.
- *
- * An entry spans as many lines as it needs and holds one record per scope, so this reads whole
- * entries rather than lines: everything from one `name:` up to the next one. Only the `project`
- * scope is compared — upstream's `skillsDir` is a project-scope path, and only project scope
- * decides whether we write a projection.
+ * Reads whole entries (`name:` to the next `name:`), not lines — an entry spans several lines.
+ * Only the `project` scope is compared; that's the scope whose `skillsDir` decides our projection.
  */
 export function parseLocal(source) {
 	const body = source.slice(source.indexOf('harnessRegistry'))
@@ -76,16 +66,14 @@ export function parseLocal(source) {
 }
 
 /**
- * Fail loudly when the registry's shape outruns the parser. Every harness has a project scope and
- * every project scope has a `detect`, so a missing one means this script is reading a shape it does
- * not understand — and a comparison it cannot make must not be reported as agreement.
+ * Fails rather than reporting agreement when the registry's shape outruns the parser — a project
+ * scope with no `detect` is unparseable.
  *
- * The entry count is a second, independent read of the same array: `parseLocal` splits on `name:`,
- * so counting the `name:` keys again would agree with it whatever it dropped. Counting the entry
- * braces instead catches an entry the name split misses.
+ * Counts `{` braces in the array literal rather than re-splitting on `name:`, so a dropped entry
+ * can't agree with the count that dropped it.
  *
- * It deliberately does not count the `HarnessName` union. That union is wider than the registry —
- * `mcp-inventory.ts` names harnesses there that have no entry here.
+ * Deliberately excludes the wider `HarnessName` union, which names harnesses (see `mcp-inventory.ts`)
+ * that have no registry entry.
  */
 export function assertParsed(local, source) {
 	const literal = source.match(/harnessRegistry: readonly Harness\[\] = \[\n([\s\S]*?)\n\]/)?.[1]
@@ -99,10 +87,9 @@ export function assertParsed(local, source) {
 }
 
 /**
- * Our criteria are not upstream's. `vercel-labs/skills` calls an agent universal when its single
- * `skillsDir` is literally `.agents/skills`; a harness that reads the canonical path *among
- * several* is still symlinked there. We ask whether a harness reads it at all, and separately
- * whether it reads `AGENTS.md`. So an upstream mismatch is a prompt to research, never a verdict.
+ * Our criteria differ from upstream's: it calls an agent universal only when `skillsDir` alone is
+ * canonical, while we ask whether a harness reads the canonical path at all. So a mismatch here is
+ * a prompt to research, not a verdict.
  */
 export function compare({ upstream, local, baseline }) {
 	const findings = []

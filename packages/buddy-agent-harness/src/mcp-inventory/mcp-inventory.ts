@@ -10,51 +10,12 @@ import type { McpConfig } from '../harness-registry/mcp-config.ts'
 import { isRecord } from '../is-record/is-record.ts'
 
 /**
- * A public, redaction-safe inventory of configured MCP servers: what `diagnoseMcp` already knows how
- * to read, reshaped for a consumer that wants a list rather than a drift diagnosis.
- *
- * This is a **different question** than `doctor` answers, not a wider version of it. `doctor`
- * compares project-scope configuration against a golden set the user authors, and stays
- * project-scope only by design — see `apps/web/src/content/docs/agent-configuration/mcp-servers.md`
- * for why reading a user's home directory is a wider blast radius than diagnosis needs. An inventory
- * has no golden set to compare against and nothing to diagnose; it answers "what MCP servers does
- * this project, and this machine, already have configured", which is a question a consumer can only
- * answer by reading both scopes. Adding user scope here changes nothing about what `doctor` reads:
- * `diagnoseMcp` still touches `harness.project.mcpConfig` alone.
- *
- * Beyond `harnessRegistry`'s own harnesses this module also covers sources `doctor` never diagnoses
- * at all and that carry no `harnessRegistry` entry: VS Code, Windsurf/Devin Desktop's legacy config
- * path, OpenCode, and Zed at both scopes; Claude Code's project-local servers nested inside
- * `~/.claude.json`; and the MCP servers an installed Claude Code plugin ships. None of this changes
- * `selectHarnesses`, `diagnoseMcp`, or `doctor`'s project-scope-only policy — this module reads none
- * of it through those functions.
- *
- * Every field that could carry a credential is reduced before it leaves this module, the same
- * discipline `mcp-secrets.ts` documents for `doctor`'s own findings: `command` is trimmed to its
- * basename, `args` drops any `--flag=value` pair `nonSecretArgs` flags, and `url` is trimmed to its
- * origin and path. `env` and `headers` are not returned at all — a name alone does not say whether
- * the value behind it is a literal or a reference, and the safe answer is not to carry the map.
- */
-
-/**
- * The two scopes `harnessRegistry` knows, plus the two this module adds on top of it.
- *
- * `local` is Claude Code's project-scoped entry inside the user-level `~/.claude.json` — a server
- * declared for one project only, not visible to any other. `plugin` is a server an installed Claude
- * Code plugin ships; `McpServerEntry.plugin` names which one. Neither fits `project` (there is no
- * project-scope file) or `user` (the entry does not apply to every project), so both get their own
- * name rather than being folded into the nearer of the two and read wrong.
+ * `local`: Claude Code's per-project entry inside `~/.claude.json`. `plugin`: a server an installed
+ * Claude Code plugin ships, named on `McpServerEntry.plugin`.
  */
 export type McpServerScope = HarnessScopeName | 'local' | 'plugin'
 
-/** Where a harness keeps its **user-scope** MCP configuration, as that harness documents it.
- *
- * Unlike `harnessRegistry`, this table is read only from here: it is not wired into `doctor`, and
- * adding a harness to it never changes what `doctor` reads. Codex and Copilot CLI each let their
- * whole configuration directory move via an environment variable — `CODEX_HOME` and `COPILOT_HOME`
- * — so those two resolve through `env` before falling back to the home directory; the rest do not
- * document one.
- */
+/** Not wired into `doctor`: adding a harness here never changes what `doctor` reads. */
 function userScopeConfig(
 	harness: HarnessName,
 	home: string,
@@ -128,7 +89,10 @@ export type ListMcpServersOptions = {
 	projectDir: string
 	/** Overrides `os.homedir()`, for a test that must not touch the real one. */
 	homeDir?: string
-	/** Overrides `process.env`, for a test — read only for `CODEX_HOME`, `COPILOT_HOME`, and `XDG_CONFIG_HOME`. */
+	/**
+	 * Overrides `process.env`, for a test — read only for `CODEX_HOME`, `COPILOT_HOME`, and
+	 * `XDG_CONFIG_HOME`.
+	 */
 	env?: Readonly<Record<string, string | undefined>>
 	/** Overrides `os.platform()`, so the VS Code user directory is testable on every OS. */
 	platform?: NodeJS.Platform
@@ -163,10 +127,8 @@ function entriesFrom(harness: HarnessName, scope: McpServerScope, file: string, 
 }
 
 /**
- * A raw entry reshaped so `serverFrom` recognizes fields the registry-driven harnesses never write:
- * OpenCode's `command` as an array (its first element is the command, the rest are args), Zed's
- * `command` as `{ path, args }`, and Windsurf's `serverUrl` as an alias for `url`. A field none of
- * those apply to is passed through unchanged.
+ * Reshapes what `serverFrom` doesn't recognize: OpenCode's `command` array, Zed's `command` object,
+ * and Windsurf's `serverUrl` alias for `url`.
  */
 function normalizeRawEntry(raw: Record<string, unknown>): Record<string, unknown> {
 	const command = raw['command']
@@ -208,7 +170,10 @@ function entriesFromDocument(
 	})
 }
 
-/** Where VS Code keeps its user-scope settings, per platform — mirrors what VS Code itself documents. */
+/**
+ * Where VS Code keeps its user-scope settings, per platform — mirrors what VS Code itself
+ * documents.
+ */
 function vscodeUserDir(env: Readonly<Record<string, string | undefined>>, home: string, plat: NodeJS.Platform): string {
 	if (plat === 'win32') return join(env['APPDATA'] || join(home, 'AppData', 'Roaming'), 'Code', 'User')
 	if (plat === 'darwin') return join(home, 'Library', 'Application Support', 'Code', 'User')
@@ -222,7 +187,8 @@ type ExtraSource = {
 	key: string
 }
 
-// Sources with no registry entry. Windsurf's legacy path is read as `devin-desktop`, its new name (E-WS-02).
+// Sources with no registry entry. Windsurf's legacy path is read as `devin-desktop`, its new name
+// (E-WS-02).
 function extraSources(
 	projectDir: string,
 	home: string,
@@ -247,9 +213,8 @@ function extraSources(
 }
 
 /**
- * Claude Code's project-local servers: `~/.claude.json`'s `projects["<absolute project dir>"]
- * .mcpServers`, a server declared for this one project rather than every project the way the file's
- * top-level `mcpServers` (read as `'user'` scope, above) is.
+ * Claude Code's per-project servers: `~/.claude.json`'s `projects[projectDir].mcpServers`, distinct
+ * from the file's top-level `mcpServers` (read as `'user'` scope above).
  */
 function claudeLocalEntries(home: string, projectDir: string): McpServerEntry[] {
 	const file = join(home, '.claude.json')
@@ -281,11 +246,8 @@ function enabledPlugins(home: string, projectDir: string): Record<string, boolea
 }
 
 /**
- * MCP servers shipped by installed Claude Code plugins, with `enabled` reflecting whether the plugin
- * itself is enabled for this project — a plugin not set to `true` in the merged `enabledPlugins` is
- * disabled, and every server it ships is reported disabled regardless of that server's own field. An
- * install whose `projectPath` names a different project contributes nothing: that install is not
- * this project's.
+ * Servers shipped by installed Claude Code plugins, with `enabled` forced by the plugin's own
+ * enabled state rather than the server's own field.
  */
 function pluginEntries(home: string, projectDir: string): McpServerEntry[] {
 	const file = join(home, '.claude', 'plugins', 'installed_plugins.json')
@@ -328,14 +290,9 @@ function pluginEntries(home: string, projectDir: string): McpServerEntry[] {
 }
 
 /**
- * Every MCP server configured for a project, across every supported harness and every scope that
- * harness documents — without ever surfacing a credential.
- *
- * Reuses `diagnoseMcp`'s own parsing (`parseTarget`, `serverFrom`), model (`McpServer`), and
- * redaction (`nonSecretArgs`, and the URL/command trimming this module adds) rather than re-reading
- * or re-parsing any of the supported harnesses' MCP files. A harness with no file present, or one
- * whose file does not parse, contributes no entries; this function reports an inventory, not a
- * diagnosis, so it has nothing to say about why a file is missing or broken.
+ * Every configured MCP server across supported harnesses and scopes, redacted of credentials. A
+ * missing or unparseable file contributes no entries silently — this reports an inventory, not a
+ * diagnosis.
  */
 export function listMcpServers(options: ListMcpServersOptions): McpServerEntry[] {
 	const home = options.homeDir ?? homedir()

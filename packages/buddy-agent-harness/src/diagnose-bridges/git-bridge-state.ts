@@ -26,23 +26,21 @@ function lines(output: string | undefined): string[] {
 }
 
 /**
- * Reads git state for the two sides of a bridge. Every method degrades to "cannot tell" rather than
- * throwing, so `doctor` still reports on a tarball, a worktree without git, or a repository with no
- * commits.
+ * Every method degrades to "cannot tell" rather than throwing, so `doctor` still reports on a
+ * tarball or a repository with no commits.
  */
 export class GitBridgeState {
-	/** Path of `root` relative to the repository root, `''` at the top, `undefined` outside a repository. */
+	/**
+	 * Path of `root` relative to the repository root, `''` at the top, `undefined` outside a
+	 * repository.
+	 */
 	private readonly prefix: string | undefined
 
 	constructor(private readonly root: string) {
 		this.prefix = git(root, ['rev-parse', '--show-prefix'])?.trim()
 	}
 
-	/**
-	 * `init --copy` marks a bridge skip-worktree so a machine-local copy over a tracked symlink stops
-	 * showing as a pending change. The bit is a hint that some checkouts clear, so it is verified
-	 * rather than assumed.
-	 */
+	/** The skip-worktree bit is a hint some checkouts clear, so it is verified rather than assumed. */
 	trackingOf(path: string): TrackingState {
 		if (this.prefix === undefined) return 'untracked'
 		const entries = lines(git(this.root, ['ls-files', '-v', '--', path]))
@@ -51,10 +49,8 @@ export class GitBridgeState {
 	}
 
 	/**
-	 * Whether a `.gitignore` rule matches this path. Asked of git rather than matched against the
-	 * file, so a rule on a parent directory — the common way a bridge gets ignored — is caught.
-	 * Outside a repository nothing is ignored, which is the same "cannot tell" degradation the rest
-	 * of this class uses.
+	 * Asked of git rather than matched against the file, so a rule on a parent directory is caught
+	 * too.
 	 */
 	isIgnored(path: string): boolean {
 		if (this.prefix === undefined) return false
@@ -62,12 +58,8 @@ export class GitBridgeState {
 	}
 
 	/**
-	 * The newest commits that touched any of these paths, newest first. Empty outside a repository,
-	 * which is the same "cannot tell" degradation as everything else here.
-	 *
-	 * Bounded like `lastAgreedTree` is: a baseline that is not in the recent history of the two files
-	 * is not a baseline anyone can act on, and walking a whole repository to prove its absence costs
-	 * more than the answer is worth.
+	 * Bounded to the last 200 commits: a baseline outside that range costs more to find than it's
+	 * worth acting on.
 	 */
 	commitsTouching(paths: readonly string[]): string[] {
 		if (this.prefix === undefined) return []
@@ -80,10 +72,6 @@ export class GitBridgeState {
 		return git(this.root, ['show', `${commit}:${this.prefix}${path}`])
 	}
 
-	/**
-	 * Names the side that moved by finding the newest commit whose two trees agreed, then asking which
-	 * of the working directories still matches it.
-	 */
 	directionOf(bridge: string, canonical: string): DivergenceDirection {
 		if (this.prefix === undefined) return 'unknown'
 		const base = this.lastAgreedTree(bridge, canonical)
@@ -112,8 +100,8 @@ export class GitBridgeState {
 	}
 
 	/**
-	 * Compares a working directory against a git tree by object id. `hash-object` is used rather than
-	 * hashing in-process so the comparison follows whatever object format the repository uses.
+	 * Compares by object id via `hash-object` rather than hashing in-process, so it follows
+	 * whatever object format the repository uses.
 	 */
 	private matchesTree(directory: string, tree: string): boolean {
 		const expected = new Map(

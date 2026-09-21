@@ -20,10 +20,8 @@ function pathOccupied(path: string): boolean {
 }
 
 /**
- * Whether `target` is a symbolic link that resolves to `canonical`. Resolved paths are compared
- * rather than link text, so a link a user wrote as an absolute path, one this tool wrote as a
- * Windows junction, and one reached through a symbolic link in a parent directory all read as the
- * correct bridge. A link that no longer resolves is not.
+ * Compares resolved paths, not link text, so an absolute link, a Windows junction, or a link
+ * reached through a parent symlink all read as correct.
  */
 export function linksTo(target: string, canonical: string): boolean {
 	try {
@@ -41,26 +39,22 @@ export function countSkills(canonicalSkills: string): number {
 }
 
 /**
- * A junction is the only link Windows grants an unprivileged process, and Node resolves a relative
- * junction target against the process directory rather than the link's own, so Windows is given the
- * absolute path. Every other platform keeps the link relative, so it survives the repository moving.
+ * Windows junctions resolve a relative target against the process directory, not the link's own, so
+ * Windows gets an absolute path; everywhere else stays relative to survive the repository moving.
  */
 function linkTarget(target: string, canonicalSkills: string): string {
 	return platform() === 'win32' ? resolve(canonicalSkills) : relative(dirname(target), canonicalSkills)
 }
 
 /**
- * Which conflicting targets a run may replace. `true` is every one of them; a list names them
- * individually, so a run invoked to fix one bridge cannot reach past it to another. `false` and an
- * empty list both mean none, which is what makes a conflict stop the run.
+ * `true` = every conflicting target; a list names them individually so a run can't reach past what
+ * it named; `false`/empty = none, which is what stops the run on conflict.
  */
 export type ForceSelection = boolean | readonly string[]
 
 /**
- * Translates what the option parser hands back into a selection. A valueless `--force` arrives as
- * the literal string `true` — that is how the parser encodes a flag given no value — and means
- * every conflicting target, which is what keeps an existing `init --force` doing what it always did.
- * Anything else is a comma-separated list of targets.
+ * A valueless `--force` arrives as the literal string `"true"` — the parser's flag encoding — and
+ * means every target; anything else is a comma-separated list.
  */
 export function parseForce(value: string): ForceSelection {
 	if (value === 'true') return true
@@ -80,25 +74,19 @@ export type ProjectSkillsOptions = {
 }
 
 export type ProjectSkillsResult = {
-	/** Harnesses whose target now points at the canonical directory. */
 	linked: HarnessName[]
-	/** Harnesses left untouched because their target conflicts and `--force` did not name it. */
 	skipped: HarnessName[]
 }
 
 /**
- * Targets are matched against what the caller typed, resolved against the repository root, so the
- * repo-relative form the conflict message prints is the form that selects it back — and an absolute
- * path naming the same directory selects it too.
+ * Resolves both sides so the repo-relative path a conflict message prints also selects it back, and
+ * so does an absolute path naming the same directory.
  */
 function namesTarget(root: string, target: string, given: string): boolean {
 	return resolve(root, given) === resolve(target)
 }
 
-/**
- * Points every harness that cannot read `.agents/skills` at the canonical directory. Symlinking is
- * preferred; a platform that refuses the link falls back to a copy.
- */
+/** Symlinks by default; falls back to a copy where the platform refuses the link. */
 export function projectSkills({
 	root,
 	canonicalSkills,
@@ -114,8 +102,8 @@ export function projectSkills({
 		}))
 
 	const named = Array.isArray(force) ? force : []
-	// A name matching no projection target at all is a typo, not a narrower run: silently forcing
-	// nothing would surface as the conflict error the flag was reached for, blaming the wrong thing.
+	// An unmatched force target is a typo, not a narrower run — ignoring it would misattribute the
+	// conflict error it was meant to avoid.
 	const unknown = named.filter((given) => !projections.some(({ target }) => namesTarget(root, target, given)))
 	if (unknown.length) {
 		throw new Error(
@@ -129,9 +117,9 @@ export function projectSkills({
 	const conflicts = projections.filter(({ target }) => pathOccupied(target) && !linksTo(target, canonicalSkills))
 	const blocked = conflicts.filter(({ target }) => !forces(target))
 
-	// Nothing was named, so nothing distinguishes one conflict from another: stop before writing.
-	// Once a target IS named, the unnamed conflicts are the ones this run was told to leave alone,
-	// so they are skipped and reported rather than turned into a refusal that writes nothing at all.
+	// No target named: nothing distinguishes one conflict from another, so refuse before writing.
+	// A target named: the unnamed conflicts are what this run was told to leave alone, so skip and
+	// report them instead of refusing.
 	if (blocked.length && named.length === 0) {
 		throw new Error(
 			`Refusing to replace existing skill targets:\n${blocked.map(({ target }) => `- ${relative(root, target)}`).join('\n')}`,

@@ -50,15 +50,15 @@ export const initCommand: cli.Command = command({
 			return exitCodes.success
 		} catch (error) {
 			process.stderr.write(`error: ${error instanceof Error ? error.message : 'Harness initialization failed.'}\n`)
-			// Returned, not written: a command that writes the code reports its failure past `run`
-			// rather than to it, leaving a caller that is not the process no way to learn of it.
+			// Returned, not written — writing it here reports failure past `run`, not to it, so a
+			// non-process caller never learns of it.
 			return exitCodes.error
 		}
 	},
 })
 
-// Named for the package rather than shortened to `harness`: `repobuddy` mounts every plugin into one
-// command namespace, where `harness` is generic enough to collide with another plugin's.
+// Named `agent-harness`, not `harness` — `repobuddy` mounts every plugin into one namespace, and
+// `harness` is generic enough to collide.
 export const harnessCommand: cli.Command = command({
 	name: 'agent-harness',
 	description: 'Commands for configuring agent harness compatibility.',
