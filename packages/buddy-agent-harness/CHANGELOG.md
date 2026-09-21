@@ -1,5 +1,51 @@
 # buddy-agent-harness
 
+## 0.12.0
+
+### Minor Changes
+
+- 668e569: Claude Code reads `AGENTS.md` itself from v2.1.277, so the `CLAUDE.md` import bridge is gone from the model.
+  
+  `init` writes no `CLAUDE.md` — not at the root, and not beside a nested `AGENTS.md`. Its instruction work is consolidation instead: a `CLAUDE.md` holding content of its own is now the urgent finding, because Claude Code reads it *instead of* `AGENTS.md`, and it is consolidated and removed on approval rather than left behind as a generated copy. A `CLAUDE.md` that is only `@AGENTS.md`, or a symlink to it, is offered for removal and kept on a no — the import is still the only way in for sessions that cannot read `AGENTS.md` directly, such as a third-party provider or a version before v2.1.277.
+  
+  `doctor` reports two new findings in the `instructions` section: `instructions-shadowing` for a file read instead of the `AGENTS.md` beside it, and `instructions-superseded` for a bridge that still works and is no longer needed. Both are checked per directory holding an `AGENTS.md`, for `CLAUDE.md`, `.claude/CLAUDE.md`, and `CLAUDE.local.md`. It no longer reports a missing `CLAUDE.md`.
+  
+  Gemini CLI is now the only harness in the registry that needs an instruction bridge. Nothing changes about skills projections: Claude Code still needs `.claude/skills`.
+- 7c29ed6: The `enhance` skill now recommends the owner's own global instruction file for the `## Delegation` section, rather than the repository's `AGENTS.md`.
+  
+  Nothing in that text is about the repository in front of it: it says how to work with subagents, which holds in every repository the owner opens. Copying it into each one is a copy per repository to keep in step — the drift this package exists to remove, one level up from the file it removes it in. So an addition now declares where it belongs, the offer leads with that destination, and the alternative is named with what each one buys: the global file reaches every repository the owner opens and nobody else, and the project file reaches everyone who clones it at the cost of a copy per repository.
+  
+  Where the agent's own always-loaded instructions already carry the text, the offer says so — the repository copy then adds the team and nothing else, and the owner carries the text twice. That is stated, not decided.
+  
+  A global placement is handed over rather than written. The skill still writes the root `AGENTS.md` and nothing else, so it gives the text and the path and stops; on Claude Code that path is `~/.claude/CLAUDE.md`. Where the harness in use documents no user-scope instruction file, no path is guessed.
+- fe1a601: Add `buddy-agent-harness governance list` and `governance show <name>`, and own the override layers a governance can be replaced in.
+  
+  A governance is a version-pinned Markdown rule set a skill loads, such as `skill-design` or `agent-tool-output`. Each skill ships its own committed copy, which is the version it was tested against. This command reads the layers someone can override that copy in, in lookup order: the project's `.agents/governances/`, the user's `~/.agents/governances/`, then two machine-wide directories, which are defaults rather than enforcement and therefore sit last. The layered resolver moved here from `universal-plugin` rather than being written again.
+  
+  There are two machine-wide layers on purpose. A new install uses the directory this package owns (`/etc/buddy-agent-harness/governances` on Linux, `/Library/Application Support/BuddyAgentHarness/governances` on macOS, `%ProgramData%\BuddyAgentHarness\governances` on Windows). The directory `universal-plugin` wrote is still read one layer below it, so a machine already carrying governances keeps resolving them. Wherever that layer appears it is reported as deprecated: `governance list` carries a status on its row alone, and `doctor` names the directory each override was read from, so an admin can see both that there is somewhere else to put it and where it is now. Nothing is enforced — the old location still answers, so there is nothing to repair.
+  
+  `governance show` writes the document itself on stdout by default; `--format toon` or `--format json` wraps it with the layer it came from. `governance list` reports every name at the layer that would win, alongside the layers themselves, so a reader knows where to write an override.
+  
+  `--overrides-only` on either subcommand restricts the answer to those three layers and never returns a governance this package ships, exiting non-zero when none of them holds the name. That is what lets a skill decide whether an override exists without paying for a registry lookup: it runs the command only from an already-installed copy, and reads the exit code.
+  
+  `init` now also creates `.agents/governances/` when it is absent and reports how many documents it holds, the same contract it already has for `.agents/skills`. `doctor` now carries a `governances` section naming each override and the layer it came from, or stating the zero. An override is a choice someone made, so it is never a finding: `doctor`'s existing findings, its repairs, its exit code, and its project-scope-only MCP policy are unchanged.
+- aa1b57a: Rename the `init` and `doctor` skills to `init-buddy-agent-harness` and `doctor-buddy-agent-harness`.
+  
+  A plugin-scoped skill named `init` or `doctor` collides with the same names shipped by other plugins, so a harness loading several plugins could not tell which one a bare `init` or `doctor` invocation meant. Invoke them as `/buddy-agent-harness:init-buddy-agent-harness` and `/buddy-agent-harness:doctor-buddy-agent-harness`.
+  
+  The CLI commands `init` and `doctor` keep their names — this only renames the two agent skills that wrap them.
+
+### Patch Changes
+
+- 7d98f7e: The `enhance` skill's `## Delegation` section now also tells the agent how to pick a subagent's reasoning effort: the lowest, unless it could not write down the steps that reach the answer.
+  
+  A repository holding the previous wording is offered the new one as a replacement.
+- 9c2bd77: The `init` skill now weighs a derived `AGENTS.md` line against the work a repository actually does, not only against whether the fact is worth knowing.
+  
+  A line that passes the value test can still serve a minority of sessions, and every session pays for it. So a surviving line is now checked for the share of the repository's work it serves — read off the repository's own commit history — and one serving a minority is folded into a line that already earns its place, or cut with a note saying where the repository already catches it. Before cutting, the line is restated in its universal form: a narrow-sounding line is often a narrow phrasing of a fact that covers everything.
+  
+  Two smaller rules come with it. Where the repository already keeps an index of where facts live, `init` reads it first and then names it in one line, instead of copying its rows into the file that points at it. And a command goes into `AGENTS.md` only after it has been run in the repository and done what the line claims, so a task list read out of a build config — or a second command the first already covers — is caught before it ships.
+
 ## 0.11.0
 
 ### Minor Changes
