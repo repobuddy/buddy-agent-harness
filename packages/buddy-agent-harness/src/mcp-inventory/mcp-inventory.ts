@@ -222,17 +222,7 @@ type ExtraSource = {
 	key: string
 }
 
-/**
- * Sources `harnessRegistry` carries no entry for at all, so they cannot be read through
- * `userScopeConfig` or a harness's `project.mcpConfig`. Each of these harnesses is either not one
- * `doctor` diagnoses (VS Code, OpenCode, Zed have no `HarnessScope.mcpConfig`) or is diagnosed under
- * a different name than the one its own vendor uses for this file: Windsurf was rebranded to Devin
- * Desktop (`.research/agentic-configuration-standards/evidence.md`, E-WS-02), and
- * `~/.codeium/windsurf/mcp_config.json` is that product's legacy config path, read here under
- * `devin-desktop` rather than under a separate `windsurf` MCP source. This is a deliberate departure
- * from `repobuddy`'s scanner, which has no such mapping and reports the file under a standalone
- * `windsurf` harness name.
- */
+// Sources with no registry entry. Windsurf's legacy path is read as `devin-desktop`, its new name (E-WS-02).
 function extraSources(
 	projectDir: string,
 	home: string,

@@ -599,3 +599,63 @@ Status values: `confirmed`, `contested`, `thin`. Confidence: high / medium / low
   Two further gaps: `~/.agents/skills` at user scope is **unsourced** — no vendor statement found either way — and the docs name `.kilo/skills` where the older material named `.kilocode/skills`, without saying whether the legacy path is still scanned.
 
   So upstream's reclassification of `kilo` to `.agents/skills` is not confirmable from the vendor. Kilo Code is not in this project's registry and nothing here depends on the answer; settling it would need a behavioral test, not another document. Left contested rather than smoothed either way.
+
+## E-CC-15 — Claude Code refreshes a plugin with `plugin update`; re-running `install` changes nothing
+
+- **Date**: 2026-09-07
+- **Status**: confirmed
+- **Confidence**: medium
+- **Source**: direct run of the shipped `claude` CLI while building `dep-plugins` (#103, c9fd249). The CLI version was not recorded. Previously held only in a source comment in `src/dep-plugins/harness-plugins.ts` and in `apps/web/.../cli/dep-plugins.md`.
+- **Notes**: Re-running `claude plugin install <plugin>@<marketplace>` on a plugin that is already installed is a no-op: it reports "already installed" and leaves the stale cached copy in place. Refreshing takes `claude plugin update`. The marketplace itself is refreshed with `claude plugin marketplace update <marketplace>`.
+- **Why it matters here**: an install that reports success while changing nothing reads as a refresh. `dep-plugins` drives an out-of-date plugin through `update`, never `install`.
+
+## E-CC-16 — Every Claude Code plugin verb defaults to user scope
+
+- **Date**: 2026-09-07
+- **Status**: confirmed
+- **Confidence**: medium
+- **Source**: direct run of the shipped `claude` CLI, as E-CC-15.
+- **Notes**: `plugin marketplace add`, `install`, `update`, and `uninstall` all act at user scope unless given `--scope project`. An `update` that omits it fails with "not installed at scope user" against a plugin that is installed at project scope.
+- **Why it matters here**: `--scope project` is required on every verb, not cosmetic.
+
+## E-CC-17 — Where Claude Code records installed plugins and registered marketplaces
+
+- **Date**: 2026-09-07
+- **Status**: confirmed
+- **Confidence**: medium
+- **Source**: direct inspection of a local Claude Code configuration directory (`~/.claude`, or `CLAUDE_CONFIG_DIR` where set), as E-CC-15. No vendor documentation found for either file's shape.
+- **Notes**: `plugins/installed_plugins.json` keys each plugin by `<plugin>@<marketplace>` under `plugins`, and holds an *array* per key: one plugin can be installed at more than one scope, and at project scope once per project. Each element carries `version`, `scope`, and, for project- and local-scope installs, `projectPath`. `plugins/known_marketplaces.json` maps a marketplace name to `{ source: { path } }`.
+
+## E-CODEX-03 — Codex has no plugin update verb and no scope
+
+- **Date**: 2026-09-07
+- **Status**: confirmed
+- **Confidence**: medium
+- **Source**: direct run of the shipped `codex` CLI while building `dep-plugins` (#103, c9fd249). The CLI version was not recorded.
+- **Notes**: Re-running `codex plugin add <plugin>@<marketplace>` re-reads the catalog and replaces the cached copy, so the same command installs and refreshes. There is no scope flag: plugins install into `CODEX_HOME` (default `~/.codex`), and one install serves every repository on the machine. `codex plugin marketplace upgrade` refreshes git-sourced snapshots only; a local catalog needs no separate refresh because `add` already re-reads it. Removal is `codex plugin remove`.
+- **Why it matters here**: two repositories whose catalogs share a marketplace name cannot be told apart in Codex, which is why `dep-plugins` derives the marketplace name from the consuming package's name.
+
+## E-CODEX-04 — Codex records an installed plugin's version only in its cache path
+
+- **Date**: 2026-09-07
+- **Status**: confirmed
+- **Confidence**: medium
+- **Source**: direct inspection of a local `CODEX_HOME`, as E-CODEX-03.
+- **Notes**: `config.toml` records that a plugin is enabled, never which version. The version appears only in the cache layout, `plugins/cache/<marketplace>/<plugin>/<version>`. Registered marketplaces are `[marketplaces.<name>]` tables in `config.toml`, each with a `source` key.
+
+## E-COPILOT-03 — Copilot CLI rejects an `npm` marketplace source
+
+- **Date**: 2026-09-07
+- **Status**: confirmed
+- **Confidence**: medium
+- **Source**: direct run of the shipped `copilot` CLI while building `dep-plugins` (#103, c9fd249). The CLI version was not recorded.
+- **Notes**: `copilot plugin marketplace add` rejects a catalog whose plugin entry has an `npm` source with `Invalid marketplace.json: plugins.0.source: Invalid input`. The same catalog with a `./path` source is accepted. A path source cannot escape its marketplace root, so it cannot reach `node_modules` from a subdirectory.
+- **Why it matters here**: Copilot CLI cannot consume the catalog `dep-plugins` generates. Supporting it needs a second, path-sourced catalog.
+
+## E-CUR-04 — Cursor exposes no plugin subcommand from a terminal
+
+- **Date**: 2026-09-07
+- **Status**: confirmed
+- **Confidence**: medium
+- **Source**: direct run of the shipped Cursor CLI while building `dep-plugins` (#103, c9fd249). The CLI version was not recorded.
+- **Notes**: No terminal command installs, updates, or lists Cursor plugins, so `dep-plugins` has nothing to drive for it.

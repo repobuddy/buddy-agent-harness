@@ -1,5 +1,17 @@
 # Changes — Agentic Configuration Standards
 
+## 2026-09-20 — Plugin CLI behaviors move out of the source
+
+**What changed**: E-CC-15, E-CC-16, E-CC-17, E-CODEX-03, E-CODEX-04, E-COPILOT-03, and E-CUR-04
+added.
+
+**Why**: issue #139. How each harness's CLI installs, refreshes, and records a plugin was established
+by running the shipped CLIs while building `dep-plugins` (#103), and was recorded only in a header
+comment in `src/dep-plugins/harness-plugins.ts` and on the `dep-plugins` docs page. A vendor claim
+lives here; the source now points at these entries.
+
+**Material conclusions**: none. The behaviors are unchanged, and nothing the package ships changes.
+
 ## 2026-09-20 — Posit Assistant is native on both axes, and upstream understated two more
 
 **What changed**: E-POSIT-01 through E-POSIT-04, E-DROID-01, and E-KILO-01 added. Posit Assistant

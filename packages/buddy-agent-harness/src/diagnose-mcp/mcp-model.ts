@@ -1,19 +1,7 @@
 import { isRecord } from '../is-record/is-record.ts'
-/**
- * The shape both sides of an MCP comparison are normalized into.
- *
- * No two MCP configuration files are ever byte-equal — the supported harnesses spread the same
- * servers across six config keys and three serialization formats — so comparison cannot be a
- * diff. Each side is parsed into this model and the models are compared.
- *
- * The field list is a **superset** of what the hosts accept, which is the whole premise of a
- * golden set: `description`, `enabled`, and `timeout` are Goose's, `source` is Zed's, and a
- * converter writing into either has to supply them. Supplying a value the user wrote is
- * transcription; supplying one they did not is invention, and `init` invents nothing. See
- * `.research/agentic-configuration-standards/` (E-MCP-05) for what each host makes up today.
- */
 export type McpTransport = 'stdio' | 'http' | 'sse'
 
+/** A superset of every host's fields (E-MCP-05): carry what the user wrote, never invent a value. */
 export type McpServer = {
 	transport?: McpTransport
 	command?: string
