@@ -6,25 +6,19 @@ import type { GitBridgeState } from '../diagnose-bridges/git-bridge-state.ts'
 import { selectHarnesses } from '../harness-registry/harness-registry.ts'
 
 /**
- * The configuration half of `doctor`. Where `diagnose-bridges` asks whether a bridge still
- * resolves, this asks whether the configuration around it is still *right* — a harness name that
- * has been superseded, an instruction file that never reaches `AGENTS.md`, a bridge git-ignores.
- *
- * Everything here is present-and-wrong rather than missing. Configuration that is absent is
- * `init`'s to create; configuration that is wrong is what the `repair` skill acts on, and this
- * module is where it reads its work from. Detection has one home so the two cannot drift.
- *
- * Instruction bridges are deliberately not here: `diagnose-instructions` owns them, and every one
- * of its repairs goes back to the `init-buddy-agent-harness` skill rather than to `repair`.
- *
- * Read-only, like every other part of `doctor`.
+ * The configuration half of `doctor` — present-and-wrong findings about a harness's config, not
+ * whether something is missing (`init`'s job) or an instruction bridge (`diagnose-instructions`'s).
+ * Read-only.
  */
 export type ConfigurationFinding = {
 	/** Repository-relative path the finding is about. */
 	path: string
 	problem: ConfigurationProblem
 	detail: string
-	/** What repairs it, already carrying the path. Every fault here is judgment, so `command` is empty. */
+	/**
+	 * What repairs it, already carrying the path; `command` is always empty since every fault here
+	 * is judgment.
+	 */
 	repair: RepairAction
 }
 
@@ -39,12 +33,10 @@ const canonicalSkills = '.agents/skills'
 const localOverride = 'AGENTS.local.md'
 
 /**
- * The two frontmatter faults that make a harness skip a skill outright, per
- * `skills/init-buddy-agent-harness/references/frontmatter.md`: YAML that does not parse, and a missing `description`.
- * A `name` that mismatches the directory is a warning and still loads, so it is not reported here.
- *
- * The unquoted colon is the documented cause of the first, and is checked directly rather than by
- * parsing YAML: the package ships no parser, and a targeted check names the actual fault.
+ * The two frontmatter faults that make a harness skip a skill outright (see
+ * `skills/init-buddy-agent-harness/references/frontmatter.md`): unparseable YAML, and a missing
+ * `description`. A name/directory mismatch only warns and still loads, so it's not checked here.
+ * Checked directly for an unquoted colon rather than by parsing YAML — the package ships no parser.
  */
 function frontmatterFault(body: string): 'unparseable' | 'no-description' | undefined {
 	const block = /^---\n([\s\S]*?)\n---/.exec(body)
@@ -58,10 +50,8 @@ function frontmatterFault(body: string): 'unparseable' | 'no-description' | unde
 }
 
 /**
- * Unlike `diagnoseBridges`, this takes no harness preference. Every check here requires the
- * projection to exist on disk, and a projection cannot exist without its harness's detection
- * directory — which selects that harness anyway. A preference could therefore never add a finding,
- * so accepting one would be surface that does nothing.
+ * Takes no harness preference, unlike `diagnoseBridges`: every check here needs the projection to
+ * already exist on disk, which already selects the harness — a preference could never add a finding.
  */
 export function diagnoseConfiguration({ root, git, cli }: DiagnoseConfigurationOptions): ConfigurationFinding[] {
 	const findings: ConfigurationFinding[] = []
@@ -72,8 +62,8 @@ export function diagnoseConfiguration({ root, git, cli }: DiagnoseConfigurationO
 
 	const harnesses = selectHarnesses(root, [])
 
-	// A superseded name whose projection still exists. `init` reports the deprecation and keeps
-	// projecting, because the old path still works — so nothing else ever says it is stale.
+	// A superseded name whose projection still exists — `init` keeps projecting since the old path
+	// still works, so nothing else flags it as stale.
 	for (const harness of harnesses) {
 		const projection = harness.project.skillsDirectory
 		if (harness.deprecated && projection && existsSync(join(root, projection))) add(projection, 'deprecated-harness')
@@ -88,8 +78,8 @@ export function diagnoseConfiguration({ root, git, cli }: DiagnoseConfigurationO
 	// No harness reads this filename, so whatever it holds is invisible to every agent.
 	if (existsSync(join(root, localOverride))) add(localOverride, 'unread-local-override')
 
-	// `filesUnder` has already confirmed each of these is a readable file, so the read needs no guard
-	// of its own; a failure here is a genuine IO error and belongs in the command's error path.
+	// `filesUnder` already confirmed these are readable files, so a failure here is a genuine IO
+	// error, not a guard to add.
 	for (const file of filesUnder(join(root, canonicalSkills)).filter((file) => file.endsWith('SKILL.md'))) {
 		if (frontmatterFault(readFileSync(join(root, canonicalSkills, file), 'utf8')))
 			add(`${canonicalSkills}/${file}`, 'unloadable-skill')

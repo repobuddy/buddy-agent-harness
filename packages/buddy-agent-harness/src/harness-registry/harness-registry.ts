@@ -13,12 +13,8 @@ export type HarnessName =
 	| 'devin-desktop'
 	| 'windsurf'
 	/**
-	 * Recognized by `listMcpServers` (`mcp-inventory.ts`) only. These three have no entry in
-	 * `harnessRegistry` below and are never selected by `selectHarnesses` or `--harness`: they carry
-	 * no skills projection, instruction bridge, or `doctor` golden-set comparison, and adding one
-	 * here would risk drawing them into `diagnoseMcp`'s project-scope diagnosis, which this type
-	 * alone cannot do — only a `harnessRegistry` entry can. They exist here solely so the inventory's
-	 * `McpServerEntry.harness` field can name them.
+	 * No `harnessRegistry` entry — recognized by `listMcpServers` only, so `McpServerEntry.harness`
+	 * can name them.
 	 */
 	| 'vscode'
 	| 'opencode'
@@ -27,41 +23,22 @@ export type HarnessName =
 /** The two scopes a harness reads configuration at. Their roots differ; their shape does not. */
 export type HarnessScopeName = 'project' | 'user'
 
-/**
- * What one harness does at one scope. Paths are relative to that scope's root: the repository root
- * at project scope, the user's home directory at user scope.
- *
- * `detect` is the directory whose presence means this harness is configured at this scope — a
- * different question per scope, which is why it is recorded per scope rather than once.
- *
- * `skillsDirectory` is the projection target the harness needs to see `.agents/skills` at this
- * scope. A harness that reads `.agents/skills` natively there has none, and is never projected into.
- *
- * `mcpConfig` is where this harness keeps its MCP servers at this scope. Unlike the other two it
- * is not a bridge into a canonical file the harness cannot read — it is the harness's own
- * configuration, which `doctor` compares against the golden set and never writes.
- *
- * `nonstandard` is what this harness reads that no other harness can. Unlike the three above it is
- * not something the tool maintains — it is what a repository accumulated before it was canonical,
- * and `doctor` reports it so it can be converted. Declared here because the paths are per harness
- * and belong beside the harness's other paths, not in a second list that would drift from this one.
- *
- * `instructionBridge` is the same question for `AGENTS.md`: what the harness needs at this scope in
- * order to read it. It belongs per scope for the same reason `skillsDirectory` does — the file
- * differs. Unlike `skillsDirectory`, the `init` command does not write it; the `init-buddy-agent-harness` skill does. It
- * is recorded here to be diagnosed and gated per harness, not to be projected.
- *
- * `shadowedBy` is the opposite axis, and only a harness that reads `AGENTS.md` natively can have
- * one: the files whose presence in a directory stop it reading the `AGENTS.md` beside them. A
- * harness needing a bridge has none — there is nothing to suppress — so the two fields never appear
- * together, and a harness with neither reads `AGENTS.md` unconditionally.
- */
+/** What one harness does at one scope; paths are relative to that scope's root. */
 export type HarnessScope = {
+	/** The directory whose presence means this harness is configured at this scope. */
 	detect: string
+	/** The projection target for `.agents/skills`; absent when the harness reads it there natively. */
 	skillsDirectory?: string
+	/**
+	 * What the harness needs at this scope to read `AGENTS.md`; diagnosed and gated, never written
+	 * by `init`.
+	 */
 	instructionBridge?: InstructionBridge
+	/** Files whose presence beside `AGENTS.md` stop the harness reading it. */
 	shadowedBy?: readonly string[]
+	/** Where this harness keeps its own MCP servers; `doctor` compares against it and never writes. */
 	mcpConfig?: McpConfig
+	/** What this harness reads that no other can, reported so it can be converted to canonical form. */
 	nonstandard?: readonly NonstandardArtifact[]
 }
 
@@ -70,39 +47,15 @@ export type Harness = {
 	/** What this harness does inside a repository. `init` and `doctor` act only here. */
 	project: HarnessScope
 	/**
-	 * What this harness does for the user, outside any repository. Absent when no user-scope path is
-	 * primary-sourced — Devin documents none. Described and diagnosable; never written to.
+	 * Outside any repository; absent when no user-scope path is documented (e.g. Devin).
+	 * Diagnosable, never written.
 	 */
 	user?: HarnessScope
 	/** Set when this name has been superseded; the value is the name that replaces it. */
 	deprecated?: HarnessName
 }
 
-/**
- * The two scopes disagree in general, and a single answer per harness could only record one of them:
- * Copilot CLI is `.github/skills` in a repository and `~/.copilot` for the user. Claude Code is the
- * only harness that needs a skills projection, and it needs one at both scopes. Codex, Cursor,
- * Copilot CLI, Gemini CLI, and Devin Desktop read `.agents/skills` themselves and are never
- * projected into.
- *
- * Gemini CLI carried a `.gemini/skills` projection until E-GEM-02: it reads the `.agents/skills`
- * alias at project scope too, where that alias takes precedence over `.gemini/skills`. It still
- * needs an instruction bridge, which is a separate axis and unaffected.
- *
- * Instruction bridges are recorded at project scope only. The user-scope equivalents exist, but
- * nothing writes or reads them yet: `init` works inside a repository, and so does `doctor`.
- *
- * Claude Code carried one until E-CC-14: from v2.1.277 it reads `AGENTS.md` itself, so `CLAUDE.md`
- * stops being a bridge to write and becomes a file to watch — present beside an `AGENTS.md`, it
- * suppresses it. That is `shadowedBy`. Gemini CLI is now the only harness in the registry needing
- * an instruction bridge at all.
- *
- * `windsurf` is the former name of Devin Desktop, rebranded 2026-06-02. It is retained as a
- * deprecated alias: Devin still scans the legacy `.windsurf/skills` path, so its projection keeps
- * working, but new repositories should enable `devin-desktop` and have nothing written for them.
- *
- * See `.research/agentic-configuration-standards/` for the per-harness sources.
- */
+/** See `.research/agentic-configuration-standards/` for the per-harness sources. */
 export const harnessRegistry: readonly Harness[] = [
 	{
 		name: 'claude-code',
@@ -189,13 +142,8 @@ function isHarnessName(value: string): value is HarnessName {
 }
 
 /**
- * The `--harness` option, as names this registry knows. Both commands take the option and neither
- * owns what a name means, so the parse lives beside the list it validates against: a harness added
- * to the registry is accepted by both commands with nothing else to change, and the rejection reads
- * the same either way.
- *
- * An unknown name throws rather than being dropped. A caller that asked for a harness by name and
- * got a report about the two default ones has been told the wrong thing about their repository.
+ * An unknown name throws rather than being dropped — silently falling back to the defaults would
+ * misreport what was diagnosed.
  */
 export function parseHarnesses(value: string | undefined): HarnessName[] {
 	const requested = (value ?? '')

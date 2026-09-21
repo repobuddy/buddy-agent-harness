@@ -1,15 +1,7 @@
 /**
- * Verifies what `skill:gen:check` no longer can: the per-skill script bundles are gitignored and
- * ship through the npm package rather than through git (see `.gitignore` and `tsdown.config.ts`), so
- * there is no committed copy left to diff against. Instead this packs the package the way `npm
- * publish` would, unpacks the tarball, and checks the result directly:
- *
- *   - every shipped skill's script is present in the tarball, at the path its `SKILL.md` documents
- *   - one of them runs standalone from a copy of its skill folder alone, with no `node_modules`
- *     anywhere above it — the state an installer that copies only that folder leaves it in
- *
- * Run after `pnpm build`, which puts the bundles on disk for `npm pack` to pick up; `--ignore-scripts` skips the `prepack` lifecycle script so this does not redo that work
- * (and does not need `pnpm` on PATH inside the child process).
+ * Packs the package as `npm publish` would and checks the tarball directly — the shipped skill
+ * scripts are gitignored, so there's no committed copy to diff against. Confirms every one is
+ * present, and that one runs standalone from a copied-out skill folder with no `node_modules` above it.
  *
  *   pnpm pack:check
  */
@@ -51,8 +43,6 @@ try {
 		)
 	}
 
-	// Copy one skill folder out on its own — no `dist/`, no `node_modules` anywhere above it — the
-	// state an installer that copies only that folder leaves it in, and run its script from there.
 	const doctorSkillDir = join(runDir, doctorSkill.name)
 	cpSync(join(pkgDir, 'skills', doctorSkill.name), doctorSkillDir, { recursive: true })
 	const scriptPath = join(doctorSkillDir, ...launcherFor('doctor').split('/'))

@@ -1,10 +1,5 @@
-/**
- * `.gemini/settings.json` may legally carry comments — the Gemini CLI loader strips them before
- * parsing. A plain `JSON.parse` of a valid settings file therefore throws, and `doctor` would report
- * a working bridge as unreadable. Comments are removed before parsing for that reason.
- *
- * Only comments. A trailing comma stays a parse error, because nothing documents it as accepted.
- */
+// Gemini CLI strips comments from `settings.json` before parsing (E-JSON-01). Trailing commas stay an
+// error: nothing documents them as accepted.
 export function stripJsonComments(source: string): string {
 	let output = ''
 	let index = 0

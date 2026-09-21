@@ -1,13 +1,4 @@
-/**
- * Comparing a derived catalog against what a harness actually has installed.
- *
- * The harness reconciles nothing on its own. A catalog entry that appears is not installed; one that
- * disappears leaves the plugin installed and failing to load, with `prune` declining to remove it
- * because it was never an auto-installed dependency. So the delta has to be computed, and every
- * conclusion here comes from that asymmetry.
- *
- * Pure. Reading harness state lives in `harness-plugins.ts`.
- */
+/** Pure. Reading harness state lives in `harness-plugins.ts`. */
 
 import type { Catalog } from './dep-plugins.ts'
 import type { InstalledPlugin, RegisteredMarketplace } from './harness-plugins.ts'
@@ -18,18 +9,16 @@ export type Action = {
 	kind: ActionKind
 	/** `<plugin>@<marketplace>`, or the marketplace name for `register`. */
 	subject: string
-	/** Why, in the terms a reader can act on: the version moving, or the entry that went away. */
 	detail: string
 }
 
 export type Reconciliation = {
 	actions: Action[]
 	/**
-	 * Set when a marketplace of this name is registered against a different directory — the silent
-	 * collision, which produces no error from the harness at any point.
+	 * Set when a marketplace of this name is registered against a different directory — the harness
+	 * gives no error for this on its own.
 	 */
 	collision?: string
-	/** Set when the catalog's marketplace is not registered with the harness at all. */
 	unregistered: boolean
 }
 
@@ -42,19 +31,15 @@ export type ReconcileOptions = {
 	installed: readonly InstalledPlugin[]
 	marketplaces: readonly RegisteredMarketplace[]
 	/**
-	 * Whether this runtime installs per repository. Where it does not — Codex keeps one install per
-	 * machine — every install under this marketplace is this repository's by default, because there
-	 * is nothing to tell two repositories apart.
+	 * False for a runtime with no per-repo scope (Codex): every install under this marketplace
+	 * counts as this repository's, since nothing else distinguishes them.
 	 */
 	scoped?: boolean
 }
 
 /**
- * Installs belonging to this repository and this catalog.
- *
- * On a scoped runtime a user-scoped install is deliberately excluded rather than counted: it is
- * shared with every other repository on the machine, so treating it as satisfying this repository's
- * catalog would let one project's pin silently stand in for another's.
+ * Excludes a user-scoped install on a scoped runtime — it's shared machine-wide, so it can't
+ * satisfy this repository's catalog alone.
  */
 function ours(
 	installed: readonly InstalledPlugin[],
@@ -77,9 +62,7 @@ export function reconcile({
 	const registration = marketplaces.find((entry) => entry.name === catalog.name)
 	const actions: Action[] = []
 
-	// A registration pointing somewhere else is the collision case. Reported rather than repaired:
-	// re-registering would take the name from whichever repository currently holds it, trading one
-	// silent breakage for another.
+	// Reported, not repaired: re-registering would just steal the name from whoever holds it.
 	const expected = catalogDir.split(/[\\/]/).filter(Boolean)
 	const pointsHere = registration ? expected.every((segment) => registration.path.includes(segment)) : false
 	const collision = registration && !pointsHere ? registration.path : undefined
@@ -111,8 +94,8 @@ export function reconcile({
 		}
 	}
 
-	// Installed but no longer in the catalog: the dependency was removed or stopped shipping a plugin.
-	// Nothing else removes these — the harness leaves them installed and failing to load.
+	// Nothing else removes these — the harness leaves a plugin dropped from the catalog installed
+	// and failing to load.
 	const wanted = new Set(catalog.plugins.map((entry) => `${entry.name}@${catalog.name}`))
 	for (const entry of mine) {
 		if (!wanted.has(entry.id)) {

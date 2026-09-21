@@ -21,8 +21,8 @@ export type BridgeReport = {
 export type BridgeFinding = {
 	path: string
 	/**
-	 * Which problem this is. Emitted so a caller routes on a name rather than by matching `detail`
-	 * prose, which would break the moment the wording is improved.
+	 * Emitted so a caller routes on a name rather than matching `detail` prose, which would break
+	 * when the wording changes.
 	 */
 	problem: DoctorProblem
 	detail: string
@@ -45,8 +45,8 @@ export type DiagnoseOptions = {
 export type DiagnoseResult = {
 	bridges: BridgeReport[]
 	/**
-	 * The instruction bridges into `AGENTS.md`, kept out of `bridges` on purpose: a different `kind`
-	 * and `status` vocabulary, and a repair that is the `init-buddy-agent-harness` skill rather than a command.
+	 * Kept out of `bridges` on purpose: a different `kind`/`status` vocabulary, and a repair that
+	 * is never a command.
 	 */
 	instructions: InstructionReport[]
 	divergence: DivergenceReport[]
@@ -96,12 +96,10 @@ function inspect(target: string, path: string, canonical: string, git: GitBridge
 	switch (pathState(target)) {
 		case 'missing':
 			return { kind: 'none', status: 'missing', problem: 'missing' }
-		// The flagship Windows failure: git with `core.symlinks=false` writes the link out as a
-		// regular file holding the target path, and the harness silently loads nothing.
+		// git with `core.symlinks=false` writes the link out as a regular file holding the target path.
 		case 'file':
 			return { kind: 'file', status: 'degraded', problem: 'degraded' }
-		// The very test `init` uses to decide a projection is already correct, so a bridge `init` would
-		// leave alone never reports as one `doctor` wants rebuilt.
+		// The same test `init` uses to decide a projection is already correct.
 		case 'symlink':
 			return linksTo(target, canonical)
 				? { kind: 'symlink', status: 'ok' }
@@ -111,8 +109,7 @@ function inspect(target: string, path: string, canonical: string, git: GitBridge
 				const direction = git.directionOf(path, canonicalPath)
 				return { kind: 'copy', status: 'diverged', problem: `diverged-${direction}`, direction }
 			}
-			// A copy over a tracked symlink only stays out of `git status` while its skip-worktree bit
-			// survives, and some checkout and merge operations clear it.
+			// Stays out of `git status` only while the skip-worktree bit survives.
 			return git.trackingOf(path) === 'tracked'
 				? { kind: 'copy', status: 'ok', problem: 'unpinned-copy' }
 				: { kind: 'copy', status: 'ok' }
@@ -121,9 +118,8 @@ function inspect(target: string, path: string, canonical: string, git: GitBridge
 }
 
 /**
- * Reports whether every bridge this repository needs still resolves: the skills bridges into
- * `.agents/skills`, and the instruction bridges into `AGENTS.md`. Read-only: nothing is created,
- * moved, or repaired, so the caller decides what to run from the repair each finding carries.
+ * Read-only: nothing is created, moved, or repaired — the caller decides what to run from the
+ * repair each finding carries.
  */
 export function diagnoseBridges({ root, harnesses: preferred = [], cli }: DiagnoseOptions): DiagnoseResult {
 	const canonical = join(root, '.agents', 'skills')

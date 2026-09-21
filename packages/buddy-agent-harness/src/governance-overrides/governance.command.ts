@@ -14,15 +14,11 @@ import {
 
 export type GovernanceListReport = {
 	/**
-	 * Where a governance may come from, in lookup order, so a reader knows where to write one.
-	 *
-	 * `status` is emitted on every row, empty where there is nothing to say, rather than only on the
-	 * row that has something: an optional key would drop the whole array out of TOON's tabular form
-	 * into the nested list form, which is worse for exactly the consumer the default format exists
-	 * for.
+	 * `status` is always a string, not optional — an optional key would drop this array out of
+	 * TOON's tabular form into a nested list.
 	 */
 	layers: { scope: GovernanceScope; path: string; status: string }[]
-	/** Always emitted, so a healthy run states its zero rather than leaving a reader to infer it. */
+	/** Emitted even when empty, so a healthy run states its zero explicitly. */
 	governances: { name: string; scope: GovernanceScope; path: string }[] | string
 }
 
@@ -35,12 +31,6 @@ export type GovernanceShowReport = {
 
 type Args = { root: string | undefined; format: string | undefined; 'overrides-only': boolean | undefined }
 
-/**
- * `--overrides-only` is the narrowing step 2 of the skill lookup order is pinned to: the answer comes
- * from a layer someone set, never from what this package ships. A skill asks the question to learn
- * whether an override exists at all, and an answer drawn from the package would replace the copy the
- * skill was tested against.
- */
 function layersFor(args: Args): GovernanceLayer[] {
 	const layers = governanceLayers({
 		root: args.root ?? process.cwd(),
@@ -51,10 +41,6 @@ function layersFor(args: Args): GovernanceLayer[] {
 	return args['overrides-only'] ? overrideLayers(layers) : layers
 }
 
-/**
- * Said on the layer rather than on a finding: the old location still answers, so nothing is broken
- * and nothing is to be repaired — there is simply somewhere better to put it.
- */
 export const DEPRECATED_MANAGED = 'deprecated — move these documents to the managed layer above'
 
 const rootOption = {
@@ -125,8 +111,9 @@ export const governanceShowCommand: cli.Command = command({
 			const name = parseGovernanceName(args.name)
 			const found = resolveGovernance(name, layersFor(args))
 			if (!found) {
-				// stderr, not stdout: a caller reading the document off stdout must never receive prose
-				// about not having found one, and the exit code is the whole answer to `--overrides-only`.
+				// stderr, not stdout — a caller piping the document off stdout must never see this
+				// prose
+				// mixed in.
 				process.stderr.write(
 					args['overrides-only']
 						? `error: no override for governance "${name}" in the project, user, or machine-wide layer.\n`

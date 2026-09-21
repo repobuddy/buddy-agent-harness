@@ -10,13 +10,8 @@ import { parseJsonWithComments } from './json-with-comments.ts'
 /** What is on disk where an instruction bridge belongs, or where a shadowing file may sit. */
 export type InstructionKind = 'import' | 'symlink' | 'settings-entry' | 'file' | 'none'
 /**
- * `unbridged` is the case a skills bridge has no equivalent of: the file is there, so nothing looks
- * wrong, and it names `AGENTS.md` nowhere — a settings file another tool rewrote.
- *
- * `shadowing` and `superseded` are the two states of a file that suppresses an `AGENTS.md` a
- * harness would otherwise read. They are reported here rather than as bridges because the file is
- * the opposite of one: nothing has to be written for the harness to read `AGENTS.md`, and something
- * has to be dealt with before it can.
+ * `shadowing` and `superseded` describe a file suppressing `AGENTS.md`, not a missing bridge;
+ * `unbridged` is a bridge file present but not wired to it.
  */
 export type InstructionStatus = 'ok' | 'missing' | 'unbridged' | 'unreadable' | 'shadowing' | 'superseded'
 
@@ -73,18 +68,6 @@ function inspectSettingsEntry(target: string, key: string): Inspection {
 		: { kind: 'file', status: 'unbridged', problem: 'instructions-unbridged' }
 }
 
-/**
- * What a file sitting where a harness would otherwise read `AGENTS.md` does to it.
- *
- * Three outcomes, and the split is the whole point of the check. A symlink to `AGENTS.md`, or a
- * body carrying an `@AGENTS.md` import, still delivers the canonical file — it is the bridge this
- * tool used to write, now redundant but not harmful, and removing it is a decision about a file
- * someone may be keeping on purpose. Anything else carries its own content and delivers none of
- * `AGENTS.md`: the harness reads this file *instead*, and says nothing about the one it skipped.
- *
- * A file that imports `AGENTS.md` and then adds harness-specific notes is still the first case. The
- * import is what decides it, wherever it sits in the body.
- */
 function inspectShadow(target: string): ShadowInspection | undefined {
 	let stats: ReturnType<typeof lstatSync>
 	try {
@@ -112,24 +95,15 @@ function inspectShadow(target: string): ShadowInspection | undefined {
 }
 
 /**
- * Reports whether every enabled harness can still read `AGENTS.md`.
- *
- * Two questions, not one. A harness with an instruction bridge reads `AGENTS.md` only once the
- * bridge is there, so the check is whether it resolves. A harness that reads `AGENTS.md` natively
- * needs nothing written and can still be stopped from reading it, so the check is whether anything
- * on disk suppresses it.
- *
- * Losing either is quieter than losing a skills bridge and costs more: the harness reads none of
- * the repository's instructions, and says nothing about it. The checks are read-only, and no repair
- * is a command — rewriting an instruction file is the `init` skill's judgment.
+ * Checks two things: whether each instruction bridge resolves, and whether anything suppresses a
+ * harness that reads `AGENTS.md` natively.
  */
 export function diagnoseInstructions(
 	root: string,
 	harnesses: readonly Harness[],
 	cli: string,
 ): { instructions: InstructionReport[]; findings: BridgeFinding[] } {
-	// Project scope only: `doctor` diagnoses a repository, and the user-scope bridges are neither
-	// written nor read by this tool.
+	// Project scope only: the user-scope bridges are neither written nor read by this tool.
 	const bridged = harnesses
 		.map((harness) => ({ name: harness.name, bridge: harness.project.instructionBridge }))
 		.filter((harness): harness is { name: HarnessName; bridge: InstructionBridge } => Boolean(harness.bridge))
@@ -138,9 +112,8 @@ export function diagnoseInstructions(
 	const findings: BridgeFinding[] = []
 	const directories = agentsFileDirectories(root)
 
-	// Reported when something in the repository depends on the file: a bridge pointing at it, or an
-	// instruction file only one harness reads and nothing canonical beside it. A repository with
-	// neither has no instructions at all, which is `init`'s to create rather than a fault here.
+	// Reported only when something depends on the file: a bridge pointing at it, or a shadow with
+	// no canonical file beside it.
 	const shadowsAtRoot = harnesses.some((harness) =>
 		(harness.project.shadowedBy ?? []).some((shadow) => exists(join(root, shadow))),
 	)
@@ -168,16 +141,15 @@ export function diagnoseInstructions(
 		}
 	}
 
-	// Per directory holding an `AGENTS.md`, not per repository. A nested `AGENTS.md` is read where it
-	// lies and suppressed where it lies, so a `CLAUDE.md` in one subtree says nothing about another.
+	// Per directory holding an `AGENTS.md`, not per repository: a `CLAUDE.md` in one subtree says
+	// nothing about another.
 	for (const harness of harnesses) {
 		for (const shadow of harness.project.shadowedBy ?? []) {
 			for (const directory of directories) {
 				const path = directory ? posix.join(directory, shadow) : shadow
 				const inspection = inspectShadow(join(root, path))
 				if (!inspection) continue
-				// Every shadow that is there is a finding — a fault where it carries content, and an
-				// offer to remove it where it does not. Only its absence is silent.
+				// Every shadow that is there is a finding; only its absence is silent.
 				instructions.push({ harness: harness.name, path, kind: inspection.kind, status: inspection.status })
 				const { detail, repair } = repairFor(inspection.problem)
 				findings.push({ path, problem: inspection.problem, detail, repair: repair({ file: path }, cli) })

@@ -1,22 +1,13 @@
 /**
- * Where a finding is, in parts.
- *
- * A locator addresses a place inside a file — `.cursor/mcp.json#servers.linear.command` — because a
- * file holding twenty servers is not an address. The parts are known wherever a finding is raised,
- * and only the report and the repairs need the string, so the parts are what travel and this module
- * is the one place they become one. Nothing ever recovers a part by splitting a locator back apart:
- * a server may be named `io.github.foo`, and no split of the rendered string tells where the server
- * name ends and the field begins.
- */
-
-/**
- * Where a malformed file failed. **Position only.** A parser's own error message quotes the
- * offending line back, and in a file of MCP configuration that line is exactly the one holding a
- * credential — so neither the message nor the code block it carries is ever read. Line and column
- * are enough to fix the file and carry nothing out of it.
+ * Position only: a parser's own error message quotes the offending line, and in MCP configuration
+ * that line holds a credential.
  */
 export type Position = { line: number; column: number }
 
+/**
+ * Never recover a part by splitting a locator's rendered string back apart — no separator survives
+ * a server named `io.github.foo`.
+ */
 export type Locator = {
 	/** Repository-relative path of the file the finding is about. */
 	file: string

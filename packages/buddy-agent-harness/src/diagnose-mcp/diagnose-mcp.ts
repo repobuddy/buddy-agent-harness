@@ -11,21 +11,6 @@ import { divergingFields, type McpServer } from './mcp-model.ts'
 import { credentialFields } from './mcp-secrets.ts'
 import { goldenSetPath, parseGoldenSet, parseTarget } from './mcp-sources.ts'
 
-/**
- * The MCP half of `doctor`: how a repository's **golden MCP server set** and the harness copies of
- * it have drifted apart, and where a literal credential is sitting in either.
- *
- * The golden set is a file the user authors. That is what makes this capability possible at all:
- * `init` reports MCP configuration rather than converting it because converting a config someone
- * wrote for one harness into another's format has to invent values they never wrote, and `init`
- * invents nothing. A set the user authored inverts the premise — a field they filled in is
- * transcription. **No golden set means no drift diagnosis**, and nothing here invents anything
- * either.
- *
- * Read-only, like the rest of `doctor`. Projecting the golden set forward and reconciling a
- * target-side change back into it are writes, and they need an approval-gated home; this module is
- * where that home reads its work from.
- */
 export type DiagnoseMcpOptions = {
 	root: string
 	git: GitBridgeState
@@ -39,12 +24,8 @@ function read(root: string, path: string): string | undefined {
 }
 
 /**
- * The distinct MCP files the enabled harnesses read. Two harnesses may name the same file.
- *
- * No harness preference is accepted, for the same reason the configuration half accepts none: every
- * harness documenting an MCP file is already selected without one. Claude Code and Cursor are
- * selected unconditionally; Codex and Gemini CLI keep their file inside their own detection
- * directory, so it cannot exist without that directory selecting them. A preference could never add
+ * The distinct MCP files the enabled harnesses read. No `--harness` preference is accepted: every
+ * harness documenting an MCP file is already selected without one, so a preference could never add
  * a finding.
  */
 function targetsOf(root: string): McpConfig[] {
@@ -64,20 +45,13 @@ const divergence: Record<McpDirection, McpProblem> = {
 
 export function diagnoseMcp({ root, git, cli }: DiagnoseMcpOptions): ConfigurationFinding[] {
 	const findings: ConfigurationFinding[] = []
-	// The finding carries the locator in parts as far as the repair, which is where a repair naming
-	// only the server or only the file reads one off. The string is built here and nowhere else, and
-	// nothing recovers a part from it: a server named `io.github.foo` survives no split of it.
+	// The locator is built once and never parsed back — a server name like `io.github.foo` would
+	// not survive a split.
 	const add = (at: Locator, problem: McpProblem) => {
 		const { detail, repair } = repairFor(problem)
 		findings.push({ path: locatorText(at), problem, detail, repair: repair(at, cli) })
 	}
 
-	/**
-	 * Credentials are reported for every file that holds servers, the golden set included — a user
-	 * pastes a token into whichever file is open, and the golden set is a file. Severity splits on
-	 * tracking, because a literal in a tracked file is already a committed credential and moving it
-	 * to an environment variable does not un-commit it.
-	 */
 	const reportSecrets = (path: string, servers: Map<string, McpServer>) => {
 		const committed = git.trackingOf(path) !== 'untracked'
 		for (const [name, server] of servers)
@@ -85,8 +59,8 @@ export function diagnoseMcp({ root, git, cli }: DiagnoseMcpOptions): Configurati
 				add({ file: path, server: name, field }, committed ? 'mcp-committed-secret' : 'mcp-literal-secret')
 	}
 
-	// Targets are read first so an unreadable one is reported whether or not a golden set exists: a
-	// harness cannot read that file either, and its servers are not running.
+	// Read first so an unreadable target is reported even without a golden set — that harness can't
+	// read the file either.
 	const targets = new Map<string, Map<string, McpServer>>()
 	const configs: McpConfig[] = []
 	for (const config of targetsOf(root)) {
@@ -95,8 +69,8 @@ export function diagnoseMcp({ root, git, cli }: DiagnoseMcpOptions): Configurati
 			add({ file: config.path }, 'mcp-target-unreadable')
 			continue
 		}
-		// A harness with no MCP file has nothing that could have drifted. Writing one for the first
-		// time is projection, which is a write and not this command's.
+		// No file yet means nothing has drifted — writing one is projection, a write this command
+		// doesn't do.
 		if (parsed.kind === 'absent') continue
 		reportSecrets(config.path, parsed.servers)
 		targets.set(config.path, parsed.servers)

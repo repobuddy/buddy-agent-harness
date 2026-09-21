@@ -1,7 +1,7 @@
 import { homedir } from 'node:os'
 import type { cli } from 'clibuilder'
 import { command, exitCodes, z } from 'clibuilder'
-import { binPath, collapseHome, parseFormat, writeResult } from '../command-output/command-output.ts'
+import { collapseHome, displayBinPath, parseFormat, writeResult } from '../command-output/command-output.ts'
 import { type ConfigurationFinding, diagnoseConfiguration } from '../diagnose-configuration/diagnose-configuration.ts'
 import { diagnoseMcp } from '../diagnose-mcp/diagnose-mcp.ts'
 import { diagnoseNonstandard } from '../diagnose-nonstandard/diagnose-nonstandard.ts'
@@ -21,36 +21,26 @@ export type DoctorReport = {
 	bridges: DiagnoseResult['bridges']
 	instructions: DiagnoseResult['instructions']
 	/**
-	 * The governance overrides in play on this machine, each at the layer that would win, and the
-	 * directory it was read from with the home directory collapsed to `~`. Reported rather than
-	 * diagnosed: an override is a choice someone made, not a fault, so it is a section of its own and
-	 * never a finding.
-	 *
-	 * The path is on the row because the scope no longer settles it: there are two machine-wide
-	 * layers, and an admin reading a row from the deprecated one has to see which directory answered
-	 * before they can move it.
+	 * Governance overrides in play, each at the layer that would win; reported rather than
+	 * diagnosed, since an override is a choice, not a fault.
 	 */
 	governances: { name: string; scope: GovernanceScope; path: string }[] | string
 	divergence?: DiagnoseResult['divergence']
 	/**
-	 * The repair is lifted out into `help`, so a finding row stays to the diagnosis itself. `problem`
-	 * stays on the row: it is how a caller routes without parsing `detail` prose.
+	 * The repair is lifted out into `help`; `problem` stays on the row so a caller routes without
+	 * parsing `detail` prose.
 	 */
 	findings: { path: string; problem: DoctorProblem; detail: string }[] | string
 	/**
-	 * One entry per distinct repair. Two fields rather than a sentence, because the caller has to
-	 * tell an executable repair from an instruction, and `RepairAction` is where that lives.
-	 *
-	 * Both keys are always emitted, `command` as an empty string when there is none. An optional key
-	 * would drop the whole array out of TOON's tabular form into the nested list form — worse for
-	 * exactly the consumer the default format exists for.
+	 * One entry per distinct repair; `command` is always emitted, empty when there is none — an
+	 * optional key would break TOON's tabular form.
 	 */
 	help?: RepairAction[]
 }
 
 /**
- * AXI §5: the healthy answer states the zero with context, so an agent does not re-run with other
- * flags to confirm that an empty section really meant "nothing wrong".
+ * AXI §5: the healthy answer states the zero with context, so an agent doesn't re-run to confirm
+ * nothing was wrong.
  */
 export function buildDoctorReport(
 	bin: string,
@@ -62,8 +52,7 @@ export function buildDoctorReport(
 	const governances = overrides.length
 		? overrides
 		: '0 governance overrides — no .agents/governances at project, user, or machine scope'
-	// Both sections are bridges, so the healthy line counts them together rather than making a reader
-	// add up two numbers to learn that nothing is wrong.
+	// Counted together so a reader doesn't add up two numbers to learn that nothing is wrong.
 	if (!findings.length) {
 		const count = result.bridges.length + result.instructions.length
 		const bridges = count === 1 ? 'the 1 bridge resolves' : `all ${count} bridges resolve`
@@ -83,9 +72,8 @@ export function buildDoctorReport(
 		governances,
 		...(result.divergence.length ? { divergence: result.divergence } : {}),
 		findings: findings.map(({ path, problem, detail }) => ({ path, problem, detail })),
-		// Deduped on the whole pair: several findings often share one repair, and repeating it reads as
-		// more work than there is. Nothing wraps a repair — a `Run …` around every one of them is what
-		// this report used to do, and most repairs are not commands.
+		// Deduped on the whole pair: several findings often share one repair, and repeating it
+		// reads as more work than there is.
 		help: [
 			...new Map(
 				findings.map((finding) => [`${finding.repair.command}\u0000${finding.repair.instruction}`, finding.repair]),
@@ -130,8 +118,8 @@ export const doctorCommand: cli.Command = command({
 				...diagnoseMcp({ root, git, cli: commandInvocation }),
 				...diagnoseNonstandard({ root, cli: commandInvocation }),
 			]
-			// Read-only, and the override layers only: what a skill ships is the skill's business, and
-			// `doctor` reporting it would read as a repository setting nobody in this repository made.
+			// Override layers only: what a skill ships is the skill's own business, not a
+			// repository setting.
 			const overrides = listGovernances(
 				overrideLayers(
 					governanceLayers({
@@ -142,14 +130,14 @@ export const doctorCommand: cli.Command = command({
 					}),
 				),
 			).map(({ name, scope, path }) => ({ name, scope, path: collapseHome(home, path) }))
-			// Exit stays 0 even with findings: the diagnosis succeeded, and a non-zero code reads to an
-			// agent as "this command is broken, try something else".
-			writeResult(buildDoctorReport(binPath(home, process.argv[1]), result, configuration, overrides), format)
+			// Exit stays 0 even with findings: a non-zero code reads to an agent as "this command
+			// is broken".
+			writeResult(buildDoctorReport(displayBinPath(home, process.argv[1]), result, configuration, overrides), format)
 			return exitCodes.success
 		} catch (error) {
 			process.stderr.write(`error: ${error instanceof Error ? error.message : 'Harness diagnosis failed.'}\n`)
-			// Returned, not written: a command that writes the code reports its failure past `run`
-			// rather than to it, leaving a caller that is not the process no way to learn of it.
+			// Returned, not written: a caller that is not the process has no other way to learn of
+			// the failure.
 			return exitCodes.error
 		}
 	},

@@ -72,7 +72,7 @@ function fakeRuntime(overrides: Partial<PluginRuntime> = {}): PluginRuntime {
 	return {
 		name: 'claude-code',
 		scoped: true,
-		present: () => true,
+		installedOnMachine: () => true,
 		state: () => ({ installed: [], marketplaces: [] }),
 		register: (dir) => `register ${dir}`,
 		install: (id) => `install ${id}`,
@@ -273,7 +273,7 @@ describe('dep-plugins command', () => {
 	})
 
 	it('skips a runtime that is not set up on this machine', () => {
-		useRuntimes(fakeRuntime({ present: () => false }))
+		useRuntimes(fakeRuntime({ installedOnMachine: () => false }))
 
 		run({ root: repository() })
 		expect(result(report()['harness'])).toContain('no supported harness detected')

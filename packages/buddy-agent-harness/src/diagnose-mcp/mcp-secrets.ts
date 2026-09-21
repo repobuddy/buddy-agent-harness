@@ -1,30 +1,20 @@
 import type { McpServer } from './mcp-model.ts'
 
 /**
- * Finding a literal credential in MCP configuration, without ever handling one.
- *
- * `doctor` is safe to run from a session-start hook, so its output lands in agent context on every
- * session and from there into transcripts. A value it echoes is amplified far past the file it came
- * from. Every function here answers **where**, never **what**: the return is a field path, and the
- * value never leaves this module.
- *
- * That is also why the redaction lives here rather than in a formatter. `doctor` renders three ways
- * — TOON, `--format text`, and `--format json` — and trusting each of them to mask is three chances
- * to drift. A value that never enters the finding cannot be printed by any of them.
+ * Finding a literal credential in MCP configuration, without ever handling one: every function
+ * here answers where, never what, and the value itself never leaves this module — redaction lives
+ * here, once, rather than being trusted to each of `doctor`'s three output formats.
  */
 
 /**
- * Words that mark a field as credential-bearing wherever they appear in its name. Each is one that
- * effectively never turns up inside an innocent word, so a bare substring test is safe and catches
- * the run-together spellings a segment test would miss — `MYTOKEN`, `githubsecret`.
+ * Marks a field as credential-bearing anywhere in its name — safe as a substring, since none of
+ * these turn up inside an innocent word.
  */
 const credentialWord = /token|secret|password|passwd|credential/i
 
 /**
- * Words that mark a field only when they are a **segment** of its name. `key` and `auth` are the
- * two that matter, and both are common inside words that carry nothing — `MONKEY`, `AUTHOR`,
- * `KEYSTONE_URL`. Matching them as substrings reports those, and a scanner that cries wolf on a
- * hook-run command is one people stop reading.
+ * Marks a field only as a whole name segment: `key`/`auth` are common inside innocent words like
+ * `MONKEY` or `AUTHOR`.
  */
 const credentialSegment = new Set(['key', 'apikey', 'auth', 'authorization', 'bearer'])
 
@@ -38,20 +28,16 @@ function segmentsOf(key: string): string[] {
 }
 
 /**
- * A value that **names** a secret instead of holding one, in the forms the supported hosts
- * document: `${VAR}`, `$VAR`, and the `${env:VAR}` / `${input:id}` variants.
- *
- * Classification is by shape, not by content. An entropy test on the value would be a guess about
- * a string this module has already decided not to look at, and it would fail in both directions —
- * a short password is low-entropy and a base64 configuration blob is high.
+ * A value that names a secret rather than holding one: `${VAR}`, `$VAR`, `${env:VAR}`,
+ * `${input:id}`. Classification is by shape, not entropy — a short password and a base64 blob look
+ * identical to an entropy test.
  */
 const reference = /\$\{[^}]+\}|\$[A-Za-z_][A-Za-z0-9_]*/
 
 /**
- * A credential-bearing field passes when it carries a reference anywhere in it, because the common
- * legitimate form is a template rather than a bare variable — `Bearer ${LINEAR_TOKEN}` is the
- * documented way to write an authorization header, and requiring the whole value to be a reference
- * would report every correct one.
+ * True unless a reference appears anywhere in the value — `Bearer ${LINEAR_TOKEN}` is the
+ * documented template form, so requiring the whole value to be a reference would flag it as
+ * literal.
  */
 function holdsLiteral(value: string): boolean {
 	return !reference.test(value)
@@ -62,11 +48,8 @@ function credentialKey(key: string): boolean {
 }
 
 /**
- * Whether a URL carries a credential in itself. Two shapes: a password in the userinfo component,
- * and a credential-named query parameter holding a literal. Neither value is read past the test.
- *
- * A URL that does not parse is not reported. It is malformed rather than leaky, and guessing at its
- * structure with a regular expression is how a scanner starts matching the thing it must not touch.
+ * A password in the URL's userinfo, or a credential-named query parameter holding a literal. An
+ * unparseable URL is not reported — malformed, not leaky.
  */
 function urlHoldsCredential(value: string): boolean {
 	let url: URL
@@ -86,12 +69,7 @@ function literalsIn(field: 'env' | 'headers', values: Readonly<Record<string, st
 		.map(([key]) => `${field}.${key}`)
 }
 
-/**
- * Every field of one server holding a literal credential, as a path within that server.
- *
- * The path is the whole answer. It is never a truncated value: `sk-ab…` is a leak into the same
- * transcript and buys a reader nothing the field name does not already give them.
- */
+/** Field paths only — never a truncated value; `sk-ab…` is still a leak into the same transcript. */
 export function credentialFields(server: McpServer): string[] {
 	return [
 		...literalsIn('env', server.env),
@@ -101,13 +79,8 @@ export function credentialFields(server: McpServer): string[] {
 }
 
 /**
- * `args` with any `--flag=value` pair dropped whose flag names a credential and whose value is a
- * literal rather than a reference — the same test `credentialKey` and `holdsLiteral` apply to `env`
- * and `headers`, applied here to the one field that carries names and values in a single string
- * instead of a map.
- *
- * A positional argument, or a flag with no `=`, passes through unfiltered: `-y` and a package name
- * are not a place a credential's value is written, and there is no key in either to test.
+ * Drops a `--flag=value` pair whose flag names a credential and whose value is a literal; a
+ * positional argument or a flag with no `=` has no key to test and passes through.
  */
 export function nonSecretArgs(args: readonly string[] | undefined): string[] {
 	return (args ?? []).filter((arg) => {

@@ -6,9 +6,8 @@ import type { NonstandardKind } from '../harness-registry/nonstandard-artifact.t
 import { type Locator, locatorText } from './locator.ts'
 
 /**
- * The one place `doctor`'s guidance is written. The command reads `detail` and `repair` to fill its
- * `findings` and `help` sections; `skills/doctor-buddy-agent-harness/SKILL.md` is generated from the same table by
- * `scripts/generate-skills.ts`, so the shipped skill cannot drift from what the command says.
+ * The one place `doctor`'s guidance is written: `skills/doctor-buddy-agent-harness/SKILL.md` is
+ * generated from this table, so the shipped skill cannot drift from what the command says.
  */
 
 /** Every way a skills bridge can fail, in the order `doctor` reports them. */
@@ -24,29 +23,14 @@ export type BridgeProblem =
 	| 'unpinned-copy'
 
 /**
- * Every way a harness can end up reading none of `AGENTS.md`. Separate from `BridgeProblem` because
- * the two share no repair: a skills bridge is rebuilt with `init` flags, and every file here holds
- * content that is the user's, so every repair goes back to the `init-buddy-agent-harness` skill.
- *
- * Two of them are the reverse of a missing bridge. A harness that reads `AGENTS.md` natively needs
- * nothing written, and can still be stopped — by a file that sits where it looks and says something
- * else. `instructions-shadowing` is that file; `instructions-superseded` is the same file still
- * carrying the import that used to be the only way in, which costs nothing and is now optional.
- */
-/**
- * Configuration that is present and **wrong**, as against a bridge that does not resolve. These are
- * the faults the `repair` skill owns: none is expressible as an `init` flag, because `init`
- * consolidates and creates but never corrects a file the user already wrote.
+ * Configuration that is present and **wrong**; repaired by the `repair` skill, since `init` never
+ * corrects a file the user already wrote.
  */
 export type ConfigurationFault = 'deprecated-harness' | 'ignored-bridge' | 'unread-local-override' | 'unloadable-skill'
 
 /**
  * Every way the golden MCP server set and a harness's copy of it can disagree, plus the two
  * credential findings.
- *
- * A family of its own because nothing it says is shared with the others. A bridge either resolves
- * or does not; two MCP files never share a byte, so every finding here is the result of a semantic
- * comparison, and each one names a **server** and usually a **field** rather than a file.
  */
 export type McpProblem =
 	| 'mcp-golden-unreadable'
@@ -61,12 +45,8 @@ export type McpProblem =
 	| 'mcp-committed-secret'
 
 /**
- * Configuration that works, for exactly one harness. Not wrong and not missing — the two states the
- * other families cover — which is why it is a family of its own: every other finding says something
- * is broken, and these say something reaches less far than the repository meant.
- *
- * Each one names the canonical form it converts to, because surfacing without a destination is just
- * a list of files somebody already knows about.
+ * Configuration that works, but only for one harness — not wrong, not missing, just narrower reach
+ * than the repository intends.
  */
 export type NonstandardProblem =
 	| 'nonstandard-instructions'
@@ -75,6 +55,7 @@ export type NonstandardProblem =
 	| 'nonstandard-skill'
 	| 'nonstandard-subagent'
 
+/** Every way a harness can end up reading none of `AGENTS.md`. */
 export type InstructionProblem =
 	| 'no-instructions'
 	| 'instructions-missing'
@@ -89,23 +70,6 @@ export type DoctorProblem = BridgeProblem | InstructionProblem | ConfigurationFa
 /** Alias kept for callers that name the whole set rather than one section. */
 export type ConfigurationProblem = DoctorProblem
 
-/**
- * What resolves one finding, for `doctor`'s own output. Two fields rather than one string, because
- * the caller `doctor` is written for is an agent parsing TOON, and the question it has to answer is
- * "can I execute this, or is this judgment I hand to a skill?" A single string leaves that
- * answerable only by parsing English.
- *
- * The contract is exact, and it is what makes the field safe to act on blindly:
- *
- * - `command` non-empty — a shell invocation that, run verbatim, **completes** the repair.
- * - `command` empty — no single invocation does; act on `instruction` and do not synthesize one.
- *
- * So a diagnostic worth running is not a `command`. `diverged-both` carries none even though
- * `git diff --no-index …` is perfectly runnable: the diff shows what differs, it does not reconcile
- * anything. That is what stops an agent executing every `command` it is handed from rebuilding a
- * diverged bridge over whichever side holds the newer edit. A skill invocation is not a `command`
- * either — nothing in a shell runs `/buddy-agent-harness:init-buddy-agent-harness`.
- */
 export type RepairAction = {
 	/** A shell invocation that completes the repair, or empty when none does. */
 	command: string
@@ -118,50 +82,32 @@ export type Repair = {
 	/** What `doctor` prints in the `findings` row for this problem. */
 	detail: string
 	/**
-	 * What fixes it, for `doctor`'s own output. `at` is where the finding is, in parts — the file
-	 * alone for a bridge, the file, server, and field for an MCP finding; `cli` is how to invoke this
-	 * tool. A repair that names only part of a locator reads it off `at` rather than splitting the
-	 * rendered string, which no separator survives: a server may be named `io.github.foo`.
+	 * `at` carries the finding in parts; read fields off it rather than splitting the rendered
+	 * locator — no separator survives a server named `io.github.foo`.
 	 */
 	repair(at: Locator, cli: string): RepairAction
 	/**
-	 * What the shipped skill tells an agent to do instead. A repair that rebuilds a bridge delegates
-	 * to the `init-buddy-agent-harness` skill rather than calling the `init` command, because rebuilding can move
-	 * user-authored skills and that judgment is the `init-buddy-agent-harness` skill's, not `doctor`'s.
+	 * Delegates bridge rebuilds to the `init-buddy-agent-harness` skill rather than `init`, since
+	 * rebuilding can move user-authored skills.
 	 */
 	skillRepair(at: Locator): string
 }
 
 /**
- * One row of a repair table. The problem is the key it is filed under rather than a field on it, so
- * a table typed `Record<…Problem, RepairRow>` cannot be written with a row missing: adding a
- * variant to one of the unions above fails to compile until its row exists. That is the only place
- * the invariant can be held — a union is not enumerable at runtime, so no test can walk it, and a
- * lookup that asserts its own completeness reads `.detail` off `undefined` the first time it is
- * wrong.
+ * One row of a repair table, keyed by problem; a `Record<Problem, RepairRow>` fails to compile
+ * until every union variant has a row.
  */
 export type RepairRow = Omit<Repair, 'problem'>
 
 /**
- * A table as the list `doctor` reports, in the order it was written. The keys of a
- * `Record<P, RepairRow>` are `P` by construction, which is what the assertion says; nothing here
- * claims a row exists.
+ * Turns a table into the list `doctor` reports; the cast is safe because a `Record<P, RepairRow>`'s
+ * keys are `P` by construction.
  */
 function repairsOf<Problem extends DoctorProblem>(table: Record<Problem, RepairRow>): readonly Repair[] {
 	return (Object.entries(table) as [Problem, RepairRow][]).map(([problem, row]) => ({ problem, ...row }))
 }
 
-/** How the command names itself. */
 export const commandInvocation = 'buddy-agent-harness'
-/**
- * How a skill invokes the command. A skill may run without the binary on PATH, so it goes through
- * `npx`, pinned to the caret range of the version that generated the skill.
- *
- * The pin is what makes the shipped guidance honest. A skill states the findings and flags of the
- * version it was generated from, so an unpinned `npx` — which resolves whatever is latest — can
- * hand an agent a table that does not describe the CLI it just ran. The caret keeps patches
- * flowing and stops at the next breaking line.
- */
 export const skillInvocation = (version: string) => `npx -y ${commandInvocation}@^${version}`
 
 /** Any `npx` invocation of this CLI, pinned or not, so a stale pin is rewritten rather than doubled. */
@@ -171,10 +117,9 @@ export const anyNpxInvocation: RegExp = /npx -y buddy-agent-harness(@[^\s`]+)?/g
 export type PinTarget = { path: string; expected: string }
 
 /**
- * Every hand-written `SKILL.md` under `skillsRoot` that names an `npx` invocation of this package,
- * found by reading the `skills/` directory rather than a maintained list — a skill added later is
- * covered with no second edit to this generator. `doctor`'s `SKILL.md` is excluded: the generator
- * writes that one whole from `renderDoctorSkill`, so re-pinning it here would just retrace that write.
+ * Every hand-written `SKILL.md` under `skillsRoot` naming an `npx` invocation of this package,
+ * found by scanning `skills/` rather than a maintained list; `doctor`'s own `SKILL.md` is excluded
+ * since `renderDoctorSkill` writes it whole.
  */
 export function handWrittenPinTargets(skillsRoot: string, version: string): PinTarget[] {
 	let skillNames: string[]
@@ -204,42 +149,28 @@ export function handWrittenPinTargets(skillsRoot: string, version: string): PinT
 	return targets
 }
 
-/**
- * The launcher a skill ships, named for the subcommand it runs so a stack trace or a process list
- * says which one it was. One script per command, beside the `SKILL.md` that documents it.
- */
+/** Named for the subcommand it runs, so a stack trace or process list shows which one it was. */
 export const launcherFor = (subcommand: string) => `scripts/${subcommand}.mjs`
 
 /**
- * How a skill names its script: the path as the skill sees it, resolved by the agent against the
- * directory it read the `SKILL.md` from.
- *
- * `node` stays in front. The script ships without an executable bit, and its shebang does nothing
- * on Windows, so naming the file alone would not run it.
+ * `node` stays in front: the script ships without an executable bit, and its shebang is a no-op on
+ * Windows.
  */
 export const launcherInvocation = (subcommand: string) => `node ${launcherFor(subcommand)}`
 
-/**
- * How the skill hands a repair to `repair`. Bridge and instruction repairs go to `init`, which
- * writes both kinds of bridge in the first place; configuration that is present and wrong goes
- * here, because no `init` flag corrects a file the user already wrote.
- */
 export const repairSkillInvocation = '/buddy-agent-harness:repair'
 
 /**
- * The shipped skill every consolidation repair routes to. The name is qualified rather than a bare
- * `init` because a skill name is global to the harness that loads it, where the subcommand it runs is
- * scoped to this CLI — so the two are deliberately not the same string.
+ * Qualified rather than bare `init`: a skill name is global to the harness loading it, while the
+ * subcommand is scoped to this CLI.
  */
 export const initSkillName = 'init-buddy-agent-harness'
 
-/** How the skill hands a repair back to `init-buddy-agent-harness`. */
 export const initSkillInvocation: string = `/buddy-agent-harness:${initSkillName}`
 
 /** Where the user authors the golden MCP server set, named in every MCP repair that points at it. */
 const goldenSet = '.agents/buddy-agent-harness/mcp.toml'
 
-/** The skills bridges, reported in `bridges`. */
 const bridgeTable: Record<BridgeProblem, RepairRow> = {
 	'no-canonical': {
 		detail: 'the canonical skill directory does not exist, so no bridge can resolve',
@@ -275,9 +206,8 @@ const bridgeTable: Record<BridgeProblem, RepairRow> = {
 	},
 	'diverged-bridge': {
 		detail: 'only the bridge changed since the two last agreed — an agent wrote through the copy',
-		// No command, unlike `diverged-canonical`, and the asymmetry is real: `init` only ever builds a
-		// bridge *from* the canonical directory, so no flag promotes the bridge's newer content back
-		// into it. Deciding to keep that side is the caller's, and the rebuild is what follows.
+		// No command: `init` only ever builds a bridge from the canonical directory, so no flag
+		// promotes the bridge's content back into it.
 		repair: ({ file }, cli) => ({
 			command: '',
 			instruction: `replace .agents/skills with ${file} to keep the newer edit, then run \`${cli} init --force ${file}\``,
@@ -311,8 +241,8 @@ const bridgeTable: Record<BridgeProblem, RepairRow> = {
 	},
 	'unpinned-copy': {
 		detail: 'tracked copy without the skip-worktree bit — the tree is dirty with content that must not be committed',
-		// The index entry is the tracked symlink on a Windows checkout but the individual files in a
-		// committed copy, so the paths are read back from git rather than assumed.
+		// Reads paths back from git rather than assuming them: the tracked entry is a symlink on a
+		// Windows checkout, but individual files in a committed copy.
 		repair: ({ file }) => ({
 			command: `git ls-files -z ${file} | xargs -0 git update-index --skip-worktree`,
 			instruction: `run \`git ls-files -z ${file} | xargs -0 git update-index --skip-worktree\` to restore the skip-worktree bit`,
@@ -324,12 +254,8 @@ const bridgeTable: Record<BridgeProblem, RepairRow> = {
 export const bridgeRepairs: readonly Repair[] = repairsOf(bridgeTable)
 
 /**
- * Everything reported in `instructions`: the bridges into `AGENTS.md`, and the files that suppress
- * it where a harness reads it natively. Every repair is the `init-buddy-agent-harness` skill: these are files a
- * person wrote, or files carrying content beside the bridge, and deciding what to preserve while
- * restoring the bridge — or whether a redundant one is being kept on purpose — is judgment no flag
- * carries. `repair` therefore names the skill in both places rather than pretending a shell command
- * exists.
+ * Everything reported in `instructions`: bridges into `AGENTS.md` and the files that suppress it.
+ * Every repair is the `init-buddy-agent-harness` skill's judgment, never a shell command.
  */
 const instructionTable: Record<InstructionProblem, RepairRow> = {
 	'no-instructions': {
@@ -386,10 +312,6 @@ const instructionTable: Record<InstructionProblem, RepairRow> = {
 
 export const instructionRepairs: readonly Repair[] = repairsOf(instructionTable)
 
-/**
- * Configuration that is present and wrong. Detected here like everything else, but repaired by the
- * `repair` skill rather than by `init` — which is why it is a section of its own.
- */
 const configurationTable: Record<ConfigurationFault, RepairRow> = {
 	'deprecated-harness': {
 		detail:
@@ -429,13 +351,8 @@ const configurationTable: Record<ConfigurationFault, RepairRow> = {
 const configurationRepairs: readonly Repair[] = repairsOf(configurationTable)
 
 /**
- * The golden MCP server set against the harness copies of it.
- *
- * Every repair names a **locator** rather than a file — `.cursor/mcp.json#servers.linear.command` —
- * because a file holding twenty servers is not an address. The locator never carries a value: not
- * a whole one, and not a prefix. `doctor` is safe to run from a session-start hook, so a value it
- * echoes lands in agent context on every session and from there into transcripts, and `sk-ab…`
- * leaks into exactly the same place the whole string would.
+ * Every repair names a locator rather than a file, and the locator never carries a credential
+ * value.
  */
 const mcpTable: Record<McpProblem, RepairRow> = {
 	'mcp-golden-unreadable': {
@@ -515,13 +432,8 @@ const mcpTable: Record<McpProblem, RepairRow> = {
 const mcpRepairs: readonly Repair[] = repairsOf(mcpTable)
 
 /**
- * Configuration only one harness can read. Every repair here is a **conversion**, and every one of
- * them is the `init-buddy-agent-harness` skill's: consolidating what a repository already has is exactly its remit, and
- * the content is the user's, so it is offered and never written on sight. `repair` owns none of
- * them — it corrects configuration that is wrong, and none of this is wrong.
- *
- * `nonstandard-subagent` is the exception that names no owner. There is no cross-harness subagent
- * format to convert to, so the honest report is that the gap exists, not a repair that cannot run.
+ * Every repair here is a conversion owned by the `init-buddy-agent-harness` skill, except
+ * `nonstandard-subagent`, which names no owner since no cross-harness format exists to convert to.
  */
 const nonstandardTable: Record<NonstandardProblem, RepairRow> = {
 	'nonstandard-instructions': {
@@ -572,8 +484,8 @@ const nonstandardTable: Record<NonstandardProblem, RepairRow> = {
 export const nonstandardRepairs: readonly Repair[] = repairsOf(nonstandardTable)
 
 /**
- * All five sections, in the order `doctor` reports them. Annotated over the whole union rather than
- * inferred, so a problem added to any of the four fails here too if its section was left alone.
+ * Annotated over the whole union rather than inferred, so an added problem fails to compile until
+ * its section carries it.
  */
 const doctorTable: Record<DoctorProblem, RepairRow> = {
 	...bridgeTable,
@@ -601,10 +513,8 @@ export const generatedSkillWarning =
 	'<!-- Generated from src/diagnose-bridges/doctor-guidance.ts by scripts/generate-skills.ts. Do not edit by hand. -->'
 
 /**
- * A file the generator writes under `skills/doctor-buddy-agent-harness/`, path relative to that directory. The skill is
- * split the way `init`'s is: a lean `SKILL.md` an agent always reads, and reference pages it loads
- * only for the family it is acting on. One flat file made every reader of one finding pay for the
- * prose behind all five.
+ * A file the generator writes under `skills/doctor-buddy-agent-harness/`, path relative to that
+ * directory.
  */
 export type GeneratedDoc = { path: string; content: string }
 
@@ -620,12 +530,8 @@ ${repairs
 }
 
 /**
- * The shipped `doctor-buddy-agent-harness` skill, rendered from the same table the command prints. `version` is the
- * package version the skill ships with; it pins the `npx` invocation so the table and the CLI that
- * produced it stay on the same breaking line.
- *
- * The finding tables are NOT here. They live in the reference pages below, and this file carries
- * only what every reader needs: how to run it, how to read the report, and where to go next.
+ * The shipped `doctor-buddy-agent-harness` skill; the finding tables live in the reference pages
+ * below, not here.
  */
 export function renderDoctorSkill(version: string): string {
 	return `---
@@ -735,10 +641,8 @@ function scopeRows(scope: HarnessScope): string {
 }
 
 /**
- * One page per harness, generated from the registry rather than written by hand. These are the
- * paths the detectors actually use, so a page written beside them would drift the first time a
- * harness moved a file. Editorial judgment about a harness — what is contested, what not to
- * generate — stays in the `init-buddy-agent-harness` skill's own reference pages, which these link to where one exists.
+ * Generated from the registry rather than written by hand, so a page can't drift from the paths the
+ * detectors actually use.
  */
 function harnessPage(harness: Harness, hasInitReference: boolean): GeneratedDoc {
 	const deprecated =
@@ -798,9 +702,8 @@ ${user}${nonstandard}${editorial}`,
 }
 
 /**
- * The reference pages, split by finding family plus one per harness. `initReferences` names the
- * harnesses the `init-buddy-agent-harness` skill has a hand-written page for; it is read off the filesystem by the
- * generator rather than written down here, so a page added there is linked without a second edit.
+ * `initReferences` is read off the filesystem rather than maintained here, so a hand-written
+ * harness page is linked without a second edit.
  */
 export function renderDoctorReferences(initReferences: ReadonlySet<string>): GeneratedDoc[] {
 	return [

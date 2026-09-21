@@ -1,28 +1,12 @@
 /**
  * Keeps the shipped skills in step with the code and the version they ship with (AXI §7).
  *
- * Jobs, all driven by `package.json`'s version:
- *   - `skills/<skill>/scripts/<subcommand>.mjs` is the bundle each skill runs in preference to `npx`
- *     — copied from `dist/skill-scripts/<subcommand>.mjs`, which `pnpm build` produces. The bundle
- *     is never committed (see `.gitignore`) and ships through the npm package instead, so it is
- *     copied on every run rather than compared for staleness the way the targets below are.
- *   - `skills/doctor-buddy-agent-harness/SKILL.md` is written whole from the guidance the `doctor`
- *     command prints.
- *   - `skills/doctor-buddy-agent-harness/references/**` is written whole from the same guidance and
- *     the harness registry, so an agent loads one finding family rather than all of them.
- *   - every other `skills/<skill>/SKILL.md` is hand-written prose, so only its `npx` fallback is
- *     rewritten, if it has one. Which files those are is read off the `skills/` directory rather than
- *     listed here, so a new hand-written skill with a pin is covered with no edit to this script.
- *
- * The fallback is pinned to the caret range of the version that shipped the skill. Unpinned, a
- * skill from an old install drives whatever `npx` resolves as latest, and its flags and findings
- * stop describing the command it just ran.
+ * Hand-written `SKILL.md`s are found by reading the `skills/` directory rather than listed here, so
+ * a new one needs no edit to this script. `--check` doesn't verify the bundles themselves — that's
+ * `scripts/pack-check.ts`'s job.
  *
  *   pnpm skill:gen          rewrite the committed skills and copy the built bundles
  *   pnpm skill:gen --check  fail when a committed skill is stale (the CI step)
- *
- * `--check` does not touch the bundles at all: whether the packed tarball carries every one of them,
- * and whether one runs standalone, is `scripts/pack-check.ts`'s job, not this one's.
  */
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
@@ -60,12 +44,8 @@ const targets: { path: string; expected: string | undefined }[] = []
 
 targets.push({ path: skillPath(doctorSkill.name, 'SKILL.md'), expected: renderDoctorSkill(version) })
 
-/**
- * Which harnesses the `init-buddy-agent-harness` skill has a hand-written page for, read off the
- * filesystem rather than listed here: a page added there is then linked from `doctor`'s own harness
- * page with no second edit, and a list written down here could only go stale against the directory
- * it describes.
- */
+// Read off the filesystem rather than listed here, so a new harness page needs no second edit and
+// can't drift against the directory it describes.
 function initHarnessReferences(): Set<string> {
 	try {
 		return new Set(
@@ -82,8 +62,8 @@ for (const doc of renderDoctorReferences(initHarnessReferences())) {
 	targets.push({ path: skillPath(doctorSkill.name, ...doc.path.split('/')), expected: doc.content })
 }
 
-// Every other hand-written SKILL.md that names an `npx` fallback. Only the pin is generated, so an
-// edit to the surrounding prose survives.
+// Every hand-written SKILL.md with an `npx` fallback: only the pin is regenerated, so edited prose
+// survives.
 targets.push(...handWrittenPinTargets(skillPath(''), version))
 
 const check = process.argv.includes('--check')
@@ -104,9 +84,8 @@ for (const target of targets) {
 	process.stdout.write(`skill: wrote ${relative}\n`)
 }
 
-// The bundles are copied only in write mode. They are gitignored and shipped through the npm
-// package rather than committed, so `--check` has nothing to compare them against — that coverage
-// is `scripts/pack-check.ts`'s, run after `npm pack`.
+// Bundles are copied only in write mode — gitignored, so `--check` has nothing to diff them against;
+// `scripts/pack-check.ts` covers that, run after `npm pack`.
 if (!check) {
 	const subcommands = [...new Set(launchers.map((entry) => entry.subcommand))]
 	for (const subcommand of subcommands) {

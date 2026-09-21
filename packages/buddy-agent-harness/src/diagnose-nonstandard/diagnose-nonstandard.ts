@@ -6,15 +6,8 @@ import { harnessRegistry } from '../harness-registry/harness-registry.ts'
 import type { NonstandardArtifact, NonstandardKind } from '../harness-registry/nonstandard-artifact.ts'
 
 /**
- * The fifth section of `doctor`: configuration that works for exactly one harness.
- *
- * The other four ask whether something is broken. This one asks how far what is there reaches, and
- * reports the answer when it is "one harness". Nothing here is a fault — a Cursor rule does what it
- * says — so nothing here is repaired by correcting it. Each finding names the canonical form it
- * would convert to, so a repository can be walked toward one where every harness file is generated
- * from a canonical source rather than authored beside it.
- *
- * Read-only, like every other part of `doctor`.
+ * Configuration that works for exactly one harness — not a fault to fix, since e.g. a Cursor rule
+ * does what it says; each finding just names the canonical form to convert to. Read-only.
  */
 export type NonstandardFinding = {
 	/** Repository-relative path of the artifact, POSIX-separated. */
@@ -40,11 +33,9 @@ const problemOf: Record<NonstandardKind, NonstandardProblem> = {
 }
 
 /**
- * A `.mdc` rule splits on whether its scoping is load-bearing. `globs:` with a value binds the rule
- * to paths, and `AGENTS.md` has no equivalent — it scopes by directory nesting only — so that one
- * converts to a skill, or stays. Without it the rule is always-on prose, which `AGENTS.md` holds
- * verbatim. Read from frontmatter rather than assumed, because the two need different conversions
- * and guessing wrong sends prose to the wrong destination.
+ * `globs:` with a value binds a `.mdc` rule to paths — `AGENTS.md` has no equivalent, so that rule
+ * converts to a skill; without it, the rule is always-on prose that `AGENTS.md` holds verbatim.
+ * Read from frontmatter rather than assumed, since guessing wrong sends prose to the wrong destination.
  */
 function scopedByGlobs(body: string): boolean {
 	const block = /^---\n([\s\S]*?)\n---/.exec(body)
@@ -60,8 +51,8 @@ function skillFiles(directory: string): string[] {
 }
 
 /**
- * A harness directory that is a symlink is a projection someone already made, not configuration
- * authored here — reporting it would tell a repository to convert what it already converted.
+ * A symlinked path is already a projection, not authored config — reporting it would tell a repo to
+ * convert what it already converted.
  */
 function authoredHere(path: string): boolean {
 	try {
@@ -81,10 +72,8 @@ function artifactFiles(root: string, artifact: NonstandardArtifact): string[] {
 }
 
 /**
- * Unlike the other detectors this takes no harness preference and no enabled set. An artifact is
- * reachable by one harness whether or not that harness is enabled here — a `.cursorrules` in a
- * repository nobody opens in Cursor is still instruction content `AGENTS.md` does not carry — so
- * filtering by the enabled set would hide exactly the drift worth converting.
+ * Takes no harness preference or enabled set, unlike the other detectors — an artifact matters
+ * whether or not its harness is enabled here, so filtering by the enabled set would hide it.
  */
 export function diagnoseNonstandard({ root, cli }: DiagnoseNonstandardOptions): NonstandardFinding[] {
 	const findings: NonstandardFinding[] = []
@@ -103,7 +92,7 @@ export function diagnoseNonstandard({ root, cli }: DiagnoseNonstandardOptions): 
 		}
 	}
 
-	// No dedupe: one artifact is declared by one harness, and `harness-registry.test.ts` holds that
-	// invariant. Collapsing a duplicate here would hide the registry mistake rather than surface it.
+	// No dedupe — one artifact is declared by one harness (enforced by `harness-registry.test.ts`);
+	// collapsing a duplicate would hide a registry mistake.
 	return findings.sort((left, right) => left.path.localeCompare(right.path))
 }

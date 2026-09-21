@@ -219,6 +219,14 @@ Each finding row carries three fields: `problem` is its name and the only thing 
 
 `--harness` does not affect these checks. Every one requires a projection to exist on disk, and a projection cannot exist without its harness's own directory, which selects that harness already.
 
+## Non-standard configuration findings
+
+`doctor` also reports configuration that **works, for exactly one harness**: a `.cursor/rules/*.mdc`, a harness-only command, skill, or subagent directory. None of these is a fault. The problem is reach: guidance in a Cursor rule reaches Cursor and nothing else, and nobody finds out except by noticing an agent behave differently in another tool.
+
+Each `nonstandard-*` finding names the canonical form its content converts to: `AGENTS.md` for prose, `.agents/skills/` for a capability. The harness file is then generated from that source rather than authored beside it. Every conversion moves content someone wrote, so each one is offered by the [`init-buddy-agent-harness` skill](/skills/init-buddy-agent-harness/) and never written on sight. `repair` owns none of them, because it corrects configuration that is wrong and none of this is wrong. `nonstandard-subagent` names no owner at all: there is no cross-harness subagent format to convert to, so the finding reports the gap instead of a repair that cannot run.
+
+Zero of these is a direction, not a gate. Nothing blocks on the count.
+
 ## MCP findings
 
 Where a repository keeps a [golden MCP server set](/agent-configuration/mcp-servers/) at `.agents/buddy-agent-harness/mcp.toml`, `doctor` compares it against each harness's project-scope MCP configuration and reports drift in both directions, as `mcp-*` findings in the same `findings` section. Literal credentials in any MCP file are reported whether or not a golden set exists, and a secret's value never enters the report — the finding carries a locator like `.cursor/mcp.json#servers.linear.headers.Authorization` and nothing else.

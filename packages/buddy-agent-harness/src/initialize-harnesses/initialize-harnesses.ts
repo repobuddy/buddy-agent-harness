@@ -14,15 +14,17 @@ export type InitializeResult = {
 	harnesses: HarnessName[]
 	native: HarnessName[]
 	linked: HarnessName[]
-	/** Enabled harnesses left untouched because their target conflicts and `--force` did not name it. */
+	/**
+	 * Enabled harnesses left untouched because their target conflicts and `--force` did not name
+	 * it.
+	 */
 	skipped: HarnessName[]
 	/** Enabled harnesses whose name has been superseded, as `{ name, replacedBy }`. */
 	deprecated: { name: HarnessName; replacedBy: HarnessName }[]
 	skills: number
 	/**
-	 * Documents in the project override layer, which this run creates when it is absent. Counted for
-	 * the same reason `skills` is: a fresh repository reports its zero rather than leaving a reader to
-	 * wonder whether the directory was looked at.
+	 * Documents in the project override layer (created here when absent); counted, like `skills`,
+	 * so a fresh repo reports zero rather than leaving it unclear.
 	 */
 	governances: number
 	copied: boolean
