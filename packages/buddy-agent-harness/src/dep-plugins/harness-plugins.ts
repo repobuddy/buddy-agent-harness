@@ -23,7 +23,7 @@ export type HarnessPluginState = {
 
 export type PluginRuntime = {
 	name: PluginRuntimeName
-	present(home: string, env?: NodeJS.ProcessEnv): boolean
+	installedOnMachine(home: string, env?: NodeJS.ProcessEnv): boolean
 	state(home: string, env?: NodeJS.ProcessEnv): HarnessPluginState
 	register(catalogDir: string): string
 	install(id: string): string
@@ -96,7 +96,7 @@ export function readClaudeState(configDir: string): HarnessPluginState {
 export const claudeCode: PluginRuntime = {
 	name: 'claude-code',
 	scoped: true,
-	present: (home, env = process.env) => existsSync(claudeConfigDir(home, env)),
+	installedOnMachine: (home, env = process.env) => existsSync(claudeConfigDir(home, env)),
 	state: (home, env = process.env) => readClaudeState(claudeConfigDir(home, env)),
 	register: (catalogDir) => `claude plugin marketplace add ./${catalogDir} --scope project`,
 	install: (id) => `claude plugin install ${id} --scope project`,
@@ -155,7 +155,7 @@ export const codex: PluginRuntime = {
 	name: 'codex',
 	// E-CODEX-03: unscoped, so only the derived marketplace name keeps two repositories apart.
 	scoped: false,
-	present: (home, env = process.env) => existsSync(codexHome(home, env)),
+	installedOnMachine: (home, env = process.env) => existsSync(codexHome(home, env)),
 	state: (home, env = process.env) => readCodexState(codexHome(home, env)),
 	register: (catalogDir) => `codex plugin marketplace add ./${catalogDir}`,
 	install: (id) => `codex plugin add ${id}`,

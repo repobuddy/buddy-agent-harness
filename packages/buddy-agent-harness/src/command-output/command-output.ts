@@ -69,7 +69,6 @@ export function collapseHome(home: string, path: string): string {
 	return home && path.startsWith(home + sep) ? `~${path.slice(home.length)}` : path
 }
 
-/** The same collapse for the executable that produced a report, which may not be known at all. */
-export function binPath(home: string, executable: string | undefined): string {
+export function displayBinPath(home: string, executable: string | undefined): string {
 	return executable ? collapseHome(home, executable) : 'buddy-agent-harness'
 }

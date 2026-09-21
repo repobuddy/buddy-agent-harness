@@ -315,12 +315,12 @@ describe('runtime detection and paths', () => {
 
 	it('detects a runtime by the presence of its configuration directory', () => {
 		const configured = home(['.claude', '.codex'])
-		expect(claudeCode.present(configured, {})).toBe(true)
-		expect(codex.present(configured, {})).toBe(true)
+		expect(claudeCode.installedOnMachine(configured, {})).toBe(true)
+		expect(codex.installedOnMachine(configured, {})).toBe(true)
 
 		const bare = home([])
-		expect(claudeCode.present(bare, {})).toBe(false)
-		expect(codex.present(bare, {})).toBe(false)
+		expect(claudeCode.installedOnMachine(bare, {})).toBe(false)
+		expect(codex.installedOnMachine(bare, {})).toBe(false)
 	})
 
 	it('honours CODEX_HOME, which is what keeps a test off the real configuration', () => {

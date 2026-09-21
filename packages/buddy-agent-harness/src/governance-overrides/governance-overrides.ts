@@ -97,11 +97,7 @@ export function parseGovernanceName(value: string): string {
 	return value
 }
 
-/**
- * `undefined` rather than a throw for anything unreadable, so one bad entry does not end the
- * search.
- */
-function readDocument(path: string): string | undefined {
+function tryReadDocument(path: string): string | undefined {
 	try {
 		return readFileSync(path, 'utf8')
 	} catch {
@@ -124,7 +120,7 @@ function documentNames(dir: string): string[] {
 export function resolveGovernance(name: string, layers: readonly GovernanceLayer[]): GovernanceDocument | undefined {
 	for (const { scope, dir } of layers) {
 		const path = join(dir, `${name}.md`)
-		const content = readDocument(path)
+		const content = tryReadDocument(path)
 		if (content !== undefined) return { name, scope, path, content }
 	}
 	return undefined

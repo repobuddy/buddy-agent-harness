@@ -1,7 +1,7 @@
 import { homedir } from 'node:os'
 import type { cli } from 'clibuilder'
 import { command, exitCodes, z } from 'clibuilder'
-import { binPath, collapseHome, parseFormat, writeResult } from '../command-output/command-output.ts'
+import { collapseHome, displayBinPath, parseFormat, writeResult } from '../command-output/command-output.ts'
 import { type ConfigurationFinding, diagnoseConfiguration } from '../diagnose-configuration/diagnose-configuration.ts'
 import { diagnoseMcp } from '../diagnose-mcp/diagnose-mcp.ts'
 import { diagnoseNonstandard } from '../diagnose-nonstandard/diagnose-nonstandard.ts'
@@ -132,7 +132,7 @@ export const doctorCommand: cli.Command = command({
 			).map(({ name, scope, path }) => ({ name, scope, path: collapseHome(home, path) }))
 			// Exit stays 0 even with findings: a non-zero code reads to an agent as "this command
 			// is broken".
-			writeResult(buildDoctorReport(binPath(home, process.argv[1]), result, configuration, overrides), format)
+			writeResult(buildDoctorReport(displayBinPath(home, process.argv[1]), result, configuration, overrides), format)
 			return exitCodes.success
 		} catch (error) {
 			process.stderr.write(`error: ${error instanceof Error ? error.message : 'Harness diagnosis failed.'}\n`)

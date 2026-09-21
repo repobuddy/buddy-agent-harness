@@ -1,6 +1,6 @@
 import { sep } from 'node:path'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { binPath, collapseHome, parseFormat, renderText, writeDocument, writeResult } from './command-output.ts'
+import { collapseHome, displayBinPath, parseFormat, renderText, writeDocument, writeResult } from './command-output.ts'
 
 const stdout = vi.spyOn(process.stdout, 'write').mockImplementation(() => true)
 
@@ -109,19 +109,19 @@ describe('renderText', () => {
 	})
 })
 
-describe('binPath', () => {
+describe('displayBinPath', () => {
 	it('collapses the home directory', () => {
-		expect(binPath(`${sep}home${sep}dev`, `${sep}home${sep}dev${sep}.local${sep}bin${sep}bah`)).toBe(
+		expect(displayBinPath(`${sep}home${sep}dev`, `${sep}home${sep}dev${sep}.local${sep}bin${sep}bah`)).toBe(
 			`~${sep}.local${sep}bin${sep}bah`,
 		)
 	})
 
 	it('leaves a path outside the home directory alone', () => {
-		expect(binPath(`${sep}home${sep}dev`, `${sep}usr${sep}bin${sep}bah`)).toBe(`${sep}usr${sep}bin${sep}bah`)
-		expect(binPath('', `${sep}usr${sep}bin${sep}bah`)).toBe(`${sep}usr${sep}bin${sep}bah`)
+		expect(displayBinPath(`${sep}home${sep}dev`, `${sep}usr${sep}bin${sep}bah`)).toBe(`${sep}usr${sep}bin${sep}bah`)
+		expect(displayBinPath('', `${sep}usr${sep}bin${sep}bah`)).toBe(`${sep}usr${sep}bin${sep}bah`)
 	})
 
 	it('falls back to the package name when the executable is unknown', () => {
-		expect(binPath(`${sep}home${sep}dev`, undefined)).toBe('buddy-agent-harness')
+		expect(displayBinPath(`${sep}home${sep}dev`, undefined)).toBe('buddy-agent-harness')
 	})
 })

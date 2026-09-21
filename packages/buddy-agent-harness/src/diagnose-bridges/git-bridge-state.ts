@@ -30,19 +30,16 @@ function lines(output: string | undefined): string[] {
  * tarball or a repository with no commits.
  */
 export class GitBridgeState {
-	/**
-	 * Path of `root` relative to the repository root, `''` at the top, `undefined` outside a
-	 * repository.
-	 */
-	private readonly prefix: string | undefined
+	/** `''` at the top, `undefined` outside a repository. */
+	private readonly repoRootPrefix: string | undefined
 
 	constructor(private readonly root: string) {
-		this.prefix = git(root, ['rev-parse', '--show-prefix'])?.trim()
+		this.repoRootPrefix = git(root, ['rev-parse', '--show-prefix'])?.trim()
 	}
 
 	/** The skip-worktree bit is a hint some checkouts clear, so it is verified rather than assumed. */
 	trackingOf(path: string): TrackingState {
-		if (this.prefix === undefined) return 'untracked'
+		if (this.repoRootPrefix === undefined) return 'untracked'
 		const entries = lines(git(this.root, ['ls-files', '-v', '--', path]))
 		if (!entries.length) return 'untracked'
 		return entries.every((entry) => entry.startsWith('S')) ? 'skip-worktree' : 'tracked'
@@ -53,7 +50,7 @@ export class GitBridgeState {
 	 * too.
 	 */
 	isIgnored(path: string): boolean {
-		if (this.prefix === undefined) return false
+		if (this.repoRootPrefix === undefined) return false
 		return git(this.root, ['check-ignore', '-q', '--', path]) !== undefined
 	}
 
@@ -62,18 +59,18 @@ export class GitBridgeState {
 	 * worth acting on.
 	 */
 	commitsTouching(paths: readonly string[]): string[] {
-		if (this.prefix === undefined) return []
+		if (this.repoRootPrefix === undefined) return []
 		return lines(git(this.root, ['rev-list', '-n', '200', 'HEAD', '--', ...paths]))
 	}
 
 	/** One file's content at one commit, or `undefined` when it did not exist there. */
 	contentAt(commit: string, path: string): string | undefined {
-		if (this.prefix === undefined) return undefined
-		return git(this.root, ['show', `${commit}:${this.prefix}${path}`])
+		if (this.repoRootPrefix === undefined) return undefined
+		return git(this.root, ['show', `${commit}:${this.repoRootPrefix}${path}`])
 	}
 
 	directionOf(bridge: string, canonical: string): DivergenceDirection {
-		if (this.prefix === undefined) return 'unknown'
+		if (this.repoRootPrefix === undefined) return 'unknown'
 		const base = this.lastAgreedTree(bridge, canonical)
 		if (base === undefined) return 'unknown'
 		const bridgeMoved = !this.matchesTree(bridge, base)
@@ -86,13 +83,18 @@ export class GitBridgeState {
 	/** The tree of the newest commit where both paths held identical content. */
 	private lastAgreedTree(bridge: string, canonical: string): string | undefined {
 		for (const commit of lines(git(this.root, ['rev-list', '-n', '200', 'HEAD', '--', bridge, canonical]))) {
-			const bridgeObject = git(this.root, ['rev-parse', '-q', '--verify', `${commit}:${this.prefix}${bridge}`])?.trim()
+			const bridgeObject = git(this.root, [
+				'rev-parse',
+				'-q',
+				'--verify',
+				`${commit}:${this.repoRootPrefix}${bridge}`,
+			])?.trim()
 			if (!bridgeObject) continue
 			const canonicalObject = git(this.root, [
 				'rev-parse',
 				'-q',
 				'--verify',
-				`${commit}:${this.prefix}${canonical}`,
+				`${commit}:${this.repoRootPrefix}${canonical}`,
 			])?.trim()
 			if (bridgeObject === canonicalObject) return bridgeObject
 		}

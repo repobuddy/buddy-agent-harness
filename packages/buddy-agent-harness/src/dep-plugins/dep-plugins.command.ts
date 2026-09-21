@@ -94,7 +94,7 @@ export const depPluginsCommand: cli.Command = command({
 			// runtime to be launchable here.
 			const home = homedir()
 			const notes = notesFor(derived)
-			const detected = runtimes.filter((candidate) => candidate.present(home))
+			const detected = runtimes.filter((candidate) => candidate.installedOnMachine(home))
 			const harness: { runtime: string; status: string }[] = []
 			const actions: { runtime: string; do: string; subject: string; why: string }[] = []
 

@@ -3,7 +3,7 @@ import { homedir, tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { encode } from '@toon-format/toon'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { binPath, collapseHome, renderText } from '../command-output/command-output.ts'
+import { collapseHome, displayBinPath, renderText } from '../command-output/command-output.ts'
 import { type DiagnoseResult, diagnoseBridges } from './diagnose-bridges.ts'
 import { buildDoctorReport, doctorCommand } from './doctor.command.ts'
 
@@ -91,7 +91,7 @@ describe('doctor command', () => {
 	it('names the executable that produced the report, with the home directory collapsed', () => {
 		run({ format: 'json' })
 
-		const bin = binPath(homedir(), process.argv[1])
+		const bin = displayBinPath(homedir(), process.argv[1])
 		expect(bin).not.toContain(homedir())
 		expect(stdout).toHaveBeenCalledWith(expect.stringContaining(`"bin":${JSON.stringify(bin)}`))
 	})
