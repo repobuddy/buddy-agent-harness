@@ -80,7 +80,7 @@ Where you **cannot tell**, say that first, in those words. Then show three texts
 
 Put the third every time the repository can actually do it, because the owner may not remember either, and the question they care about is not where the section came from but **which wording serves them better**. Provenance is a stand-in for that; when the stand-in fails, ask the real question.
 
-Measurement means running each wording against a set of real tasks and comparing how the agent behaves — whatever harness this repository has for that addition's wording. In this package's own repository the `eval-delegation` skill scores Delegation's and nothing else; a consumer repository will have its own or none. **Look before you offer it.** Where the repository has no harness for that addition, say the third answer would need one it does not have, and put the other two.
+Measurement means running each wording against a set of real tasks and comparing how the agent behaves — whatever harness this repository has for that addition's wording. In this package's own repository `eval-delegation` scores Delegation's and `eval-list-identifiers` scores List identifiers'; a consumer repository will have its own or none. **Look before you offer it.** Where the repository has no harness for that addition, say the third answer would need one it does not have, and put the other two.
 
 **Ask before running it, and never run it unasked** — it is many model runs, and the owner is the one paying for them.
 
