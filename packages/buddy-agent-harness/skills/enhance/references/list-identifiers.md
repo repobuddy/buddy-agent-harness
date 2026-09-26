@@ -24,9 +24,10 @@ already current is compared against the text below, standing in for a retired wo
 yes is this text edited, and gets the replacement offer; both no is the owner's own; a disagreement
 you cannot tell. The paragraphs a replacement would remove are the ones the text below does not contain.
 
-No harness scores this addition's wording — `eval-delegation` scores Delegation's only. Where you
-cannot tell, put two answers, not three, and say settling it by measurement would need a harness
-this repository does not have.
+Where you cannot tell, the third answer needs a harness that scores this addition's wording, not
+any harness: `eval-delegation` scores Delegation's only. In this package's own repository that
+harness is `eval-list-identifiers`. Where the repository has none, put two answers, not three, and
+say settling it by measurement would need a harness this repository does not have.
 
 ## Offer this text verbatim
 
