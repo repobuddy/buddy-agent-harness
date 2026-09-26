@@ -27,4 +27,4 @@ CR against `packages/buddy-agent-harness`, run headless. Seed intent is the issu
 ## NEXT
 
 Landed on a PR against main. Owner to ratify the spec re-open and the impl gate
-(status stays as is until then). One follow-up recorded in the ledger shard.
+(status stays as is until then). Follow-up filed: #157.
