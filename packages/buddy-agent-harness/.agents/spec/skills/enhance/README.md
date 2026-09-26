@@ -36,7 +36,7 @@ Three properties make it a node rather than a paragraph inside `../init/`.
 **Non-goals**
 
 - **Consolidating harness instruction files.** This skill reads them into the merged view and moves none of them; consolidation has one home, `../init/`. Where a run finds content that should be consolidated it says so and recommends that skill.
-- **The wording of `## Delegation`.** What it says was settled by blind A/B evaluation and is fixed; the repo-private `eval-delegation` skill owns it. This node specifies **when that text is surfaced**, never what it says. The `## List identifiers` text has no such harness, so this node owns what it must direct — the rules issue #146 asked for — and not its exact wording.
+- **The wording of `## Delegation`.** What it says was settled by blind A/B evaluation and is fixed; the repo-private `eval-delegation` skill owns it. This node specifies **when that text is surfaced**, never what it says. The `## List identifiers` text is scored by the repo-private `eval-list-identifiers` skill, so this node owns what it must direct — the rules issue #146 asked for — and not its exact wording.
 - **Correcting agent configuration that is present and wrong.** `../repair/`. A stale addition is not a fault in the repository — it is this package's wording having moved.
 - **Creating an `AGENTS.md`.** `../init/`'s. A repository without one is reported and left alone.
 - **Anything outside local agent configuration.** Workflows, repository settings, and project source are out of reach whatever a run finds in them — a bar the suite asserts as a barred scenario rather than a path, since no decision in the graph can reach them.
@@ -96,7 +96,7 @@ For `/buddy-agent-harness:enhance`:
 - **Two additions are uncovered.** Each is offered on its own, and the owner's answer to one writes or withholds that one only.
 - **A style rule numbers the lists in documents the agent writes.** Not coverage for list identifiers: it governs files, not the lists the agent puts to the user.
 - **A section on list identifiers, while the addition has no retired wording.** The current text stands in for a retired wording at `G`, so the same four outcomes apply: that text edited is offered the replacement, a section sharing neither its sentences nor its structure is the owner's own, and a disagreement goes to the owner. It is never credited to the owner merely because there is no history to match.
-- **No harness scores the addition's wording.** `P0` asks about a harness for that addition, not any harness. `eval-delegation` scores Delegation's wording only, so an unplaceable List identifiers section gets two answers even in this package's own repository.
+- **No harness scores the addition's wording.** `P0` asks about a harness for that addition, not any harness. `eval-delegation` scores Delegation's wording only, so a repository carrying that harness and no other gives an unplaceable List identifiers section two answers.
 - **The section was approved on an earlier run and has since been deleted.** It reads as absent and is offered again. Absence is the whole state; the skill keeps no memory of a run.
 
 For an addition's reference file:
