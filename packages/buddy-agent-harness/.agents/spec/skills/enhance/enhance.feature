@@ -355,6 +355,104 @@ Feature: Offer the current wording of a vetted section to a repository that alre
     Then the offered text is byte-identical to the text inside the fence in `references/delegation.md`
     And no reworded variant of it is offered
 
+  # ── /buddy-agent-harness:enhance — the List identifiers addition ──
+
+  @behavior
+  Scenario: offers the List identifiers addition the merged view does not cover
+    Given a root `AGENTS.md` holding a build-commands section and a code-style section
+    When the agent runs the `enhance` skill
+    Then the `## List identifiers` section is offered
+    And the offered `## List identifiers` text is byte-identical to the text inside the fence in `references/list-identifiers.md`
+
+  @behavior
+  Scenario: offers each addition on its own
+    Given a root `AGENTS.md` covering neither delegation nor list identifiers
+    And the `enhance` skill has offered the `## Delegation` section and the `## List identifiers` section
+    When the owner approves the `## List identifiers` section for the repository and declines the `## Delegation` section
+    Then `AGENTS.md` carries the `## List identifiers` section
+    And `AGENTS.md` carries no `## Delegation` section
+
+  @behavior
+  Scenario: does not count a numbered-list style rule for documents as covering list identifiers
+    Given a root `AGENTS.md` whose only list guidance is a `## Docs style` line saying to use numbered lists for sequential steps in documentation
+    When the agent runs the `enhance` skill
+    Then the `## List identifiers` section is offered
+
+  @behavior
+  Scenario: withholds List identifiers where the owner's own words cover it
+    Given a root `AGENTS.md` holding a `## Answering the user` section written by the repository owner
+    And that section says to number each option put to the user and to keep those numbers when the options are revised
+    And no sentence of it appears verbatim in the text `references/list-identifiers.md` offers
+    When the agent runs the `enhance` skill
+    Then no `## List identifiers` section is offered
+    And the report names the `## Answering the user` section as what covers the subject
+    And `AGENTS.md` is unchanged
+
+  @behavior
+  Scenario: offers nothing where the file already carries the current List identifiers text
+    Given a root `AGENTS.md` holding the `## List identifiers` section exactly as `references/list-identifiers.md` offers it
+    When the agent runs the `enhance` skill
+    Then no `## List identifiers` section is offered
+    And the report says the section is already the text the addition offers
+    And `AGENTS.md` is unchanged
+
+  @behavior
+  Scenario: judges a List identifiers section it did not write as the owner's own while the addition has no retired wording
+    Given a root `AGENTS.md` holding a `## List identifiers` section that tells the agent to label list items
+    And no sentence of it appears verbatim in the text `references/list-identifiers.md` offers
+    And its sentences do not follow the order of that text
+    And `references/list-identifiers.history.md` names no retired wording
+    When the agent runs the `enhance` skill
+    Then no replacement is offered
+    And the report says the section was judged the owner's own
+    And `AGENTS.md` is unchanged
+
+  @behavior
+  Scenario: offers the current List identifiers text where that text was edited in place
+    Given a root `AGENTS.md` holding a `## List identifiers` section carrying two sentences of the text `references/list-identifiers.md` offers verbatim
+    And that section keeps the sentence order of that text
+    And its remaining sentences are that text's, reworded
+    And `references/list-identifiers.history.md` names no retired wording
+    When the agent runs the `enhance` skill
+    Then the report does not describe that section as the owner's own words
+    And the current `## List identifiers` text is offered as a replacement for that section
+    And `AGENTS.md` is unchanged until the owner answers
+
+  @behavior
+  Scenario: puts a reworded List identifiers text to the owner without offering measurement
+    Given a root `AGENTS.md` holding a `## List identifiers` section of five sentences
+    And each does the job of the sentence at that position in the text `references/list-identifiers.md` offers
+    And no sentence of that text appears in it verbatim
+    And `references/list-identifiers.history.md` names no retired wording
+    And the repository has the `eval-delegation` harness for scoring `## Delegation` wordings
+    When the agent runs the `enhance` skill
+    Then the report says the section cannot be placed
+    And the owner is asked whether the section is theirs
+    And the `eval-delegation` harness is not offered as an answer for that section
+    And the report says settling it by measurement would need a harness this repository does not have
+    And no replacement is offered ahead of that answer
+    And `AGENTS.md` is unchanged
+
+  @behavior
+  Scenario: offers the List identifiers replacement when the owner says the section came from this package
+    Given the `enhance` skill has asked the owner whether a `## List identifiers` section is theirs
+    When the owner answers that it is an edited copy of this package's text
+    Then the current `## List identifiers` text is offered as a replacement for that section
+
+  @behavior
+  Scenario: recommends the owner's global file for List identifiers
+    Given a root `AGENTS.md` the `## List identifiers` section is absent from
+    When the `## List identifiers` section is offered
+    Then the owner's own global instruction file is recommended over the repository's `AGENTS.md`
+    And the repository's `AGENTS.md` is named as the alternative, with what each destination reaches
+
+  @behavior
+  Scenario: reports a verdict for every addition
+    Given a repository the `enhance` skill has been run in
+    When the run reaches any of its outcomes
+    Then the report gives a verdict for the `## Delegation` addition
+    And the report gives a verdict for the `## List identifiers` addition
+
   # ── an addition's reference file ──
 
   @behavior
@@ -394,3 +492,27 @@ Feature: Offer the current wording of a vetted section to a repository that alre
     Given a new addition shipping its first wording
     When the addition ships
     Then its history file names no retired wording
+
+  @behavior
+  Scenario: states what already covers the List identifiers subject
+    Given the shipped `references/list-identifiers.md`
+    When the file is read
+    Then it carries a `## Covered when` section
+    And that section names at least one shape of existing prose that counts as the subject being present
+    And that section names at least one shape of list guidance that does not count
+
+  @behavior
+  Scenario: points the List identifiers stale check at its own history file
+    Given the shipped `references/list-identifiers.md`
+    When the file is read
+    Then it carries a `## Stale when` section directing the comparison at `references/list-identifiers.history.md`
+
+  @behavior
+  Scenario: offers List identifiers text that says what the issue asked for
+    Given the shipped `references/list-identifiers.md`
+    When the text inside its fence is read
+    Then it directs the agent to label every list it presents to the user
+    And it directs a letter or number sequence for a plain list
+    And it directs a prefix naming the kind for a list whose items are all one kind
+    And it directs that a revised list keeps each item's label, reuses no removed label, and gives a new item the next label
+    And it names no model, vendor, or version
