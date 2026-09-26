@@ -153,3 +153,36 @@ Keep a label once you have given it. When you revise the list, each item keeps i
 ```
 
 The round-1 bar applies unchanged.
+
+## Round 3 — 2026-09-26, 234 turns
+
+The round-2 backlog. Same model, isolation, and judge. No hand corrections: every failing verdict
+was read against its reply and stands.
+
+| arm | I1 | R1 | I2 | R2 | I3 | R3 | I4 | N1 | N2 | N3 | present /24 | revise /18 | near-miss /18 | total /60 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| control | 6 | 0 | 5 | 1 | 0 | 1 | 0 | 6 | 6 | 6 | 11 | 2 | 18 | 31 |
+| shipped | 6 | 6 | 3 | 6 | 4 | 6 | 6 | 6 | 6 | **0** | 19 | 18 | 12 | 49 |
+| narrowed | 6 | 6 | 5 | 6 | **1** | 4 | 6 | 6 | 6 | 6 | 18 | 16 | 18 | 52 |
+
+**By the bar, the shipped wording holds a third time.** Narrowed clears the total by exactly 3 but
+falls 2 below shipped on revise.
+
+**Narrowed fixes N3 and breaks I3.** It never labels an explanation, but four of six runs present
+code-review findings as unlabelled bullets under bold titles, and both R3 failures follow from
+those unlabelled first replies. Read as "a list that asks the user to choose, answer, or decide",
+a review's findings are something the user reads, not answers.
+
+## Verdict after three rounds
+
+**The shipped wording stays.** It met the bar against every candidate in all three rounds, and it
+beats the empty control by 11 to 18 runs in total each round, almost all of it on revision and
+two-list replies, which control fails nearly every time.
+
+Its one categorical failure has reproduced in every round: it labels plain explanations, N3
+failing 18 of 18 runs. Each narrowing tried so far trades that away for something worse. Scoped
+drops presentation, and narrowed drops review findings, which is the section's purpose. The noise
+of labels on an explanation costs less than findings the user cannot answer by label.
+
+A next candidate would have to keep findings inside the rule while leaving explanations out. That
+is a fourth round on this backlog, under the same bar.
