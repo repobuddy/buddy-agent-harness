@@ -17,6 +17,7 @@ arm's section, and nothing else.
 | I4 | present | propose README changes and list decisions for the user | two lists in one reply; a bare "2" must name one item |
 | R1 | revise | on I1's session: drop the second option, add a disk cache, show the list again | labels survive a removal and an addition |
 | R2 | revise | on I2's session: answer the first question, raise a new one, show what is open | labels survive an answer and a follow-up |
+| R3 | revise | on I3's session: one finding fixed, a new field raises more, show the list again | labels survive a removal and an addition that cannot duplicate an item; added for round 2 |
 | N1 | near-miss | write a commit message | a list in an artifact, where labels are noise |
 | N2 | near-miss | write a changeset file | the same, in a file |
 | N3 | near-miss | explain a failure mode, nothing to decide | a list that asks nothing of the user |
@@ -68,3 +69,47 @@ revise /12, near-miss /18.
   keeps the incumbent.
 - A categorical failure — a task failing 5 or 6 of 6 under an arm — is reported on its own
   whatever the totals say.
+
+## Round 1 — 2026-09-26, 216 turns
+
+Backlog without R3. Six runs per task per arm, all `sonnet`, isolated runners, judged blind by
+`sonnet`.
+
+| arm | I1 | R1 | I2 | R2 | I3 | I4 | N1 | N2 | N3 | present /24 | revise /12 | near-miss /18 | total /54 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| control | 6 | 0 | 3 | 0 | 0 | 0 | 6 | 6 | 6 | 9 | 0 | 18 | 27 |
+| shipped | 6 | 6 | 5 | 6 | 5 | 6 | 6 | 6 | **0** | 22 | 12 | 12 | 46 |
+| scoped | 6 | 4 | 4 | 6 | 6 | 6 | 6 | 6 | 6 | 22 | 10 | 18 | **50** |
+| minimal | 6 | 6 | 4 | 6 | 2 | 2 | 6 | 6 | 6 | 14 | 12 | 18 | 44 |
+
+**Hand corrections.** Scoped I4 was judged 1 of 6. Four of the five failing verdicts reversed
+themselves on a later line and ended PASS, and the parser read only the first line; the fifth
+counted a cross-reference, "(change I)", as a second item labelled I. All five are judge errors
+and are scored PASS above. The parser now reads the last verdict line.
+
+**By the bar, the shipped wording holds.** It beats control in two categories, by 13 on present
+and 12 on revise, so the section does something. Scoped beats it by 4 in total but falls 2 below
+it on revise, one more than the bar allows.
+
+Both scoped revise failures are R1, and both are the same reply: the first list already carried a
+disk cache keyed by mtime, so the runner narrowed that option instead of adding a duplicate, kept
+every other label, and did not reuse the dropped one. The key asks for a new identifier, so they
+score as failures, and they stay scored that way. R1 rewards adding a duplicate item when the user
+asks for one. R3 was added so the next round has a revision that cannot collide.
+
+**Categorical failure: the shipped wording labels explanations.** N3 fails 6 of 6. Each run
+labelled the causes in a plain explanation, as C1–C5, R1–R6, or A–E, and then referred back to
+them by label. The wording's first clause, "Label every list you present", with the kind prefix
+as an example, reads as covering lists that ask the user nothing. No other arm labelled N3.
+
+Control fails every revision and every two-list reply: it renumbers after a removal, and numbers
+both lists from 1. That is what the section is for.
+
+## The bar for round 2
+
+Fixed before round 2. The backlog now includes R3, so round 2 is a different backlog and is never
+pooled with round 1. Arms are control, shipped, and scoped; minimal is dropped, trailing on present
+by 8. Category totals are present /24, revise /18, near-miss /18.
+
+The round-1 bar applies unchanged: a candidate replaces the shipped wording only if its total beats
+shipped's by at least 3 runs and no category falls more than 1 run below shipped.

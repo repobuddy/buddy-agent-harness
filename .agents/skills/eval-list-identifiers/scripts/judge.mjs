@@ -97,7 +97,8 @@ await Promise.all(
 		while (next < items.length) {
 			const item = items[next++]
 			item.verdict = await claude(item.prompt)
-			item.pass = /^PASS\b/.test(item.verdict)
+			// A judge sometimes reverses itself on a later line; its last verdict line is its answer.
+			item.pass = item.verdict.match(/^(PASS|FAIL)\b/gm)?.at(-1) === 'PASS'
 		}
 	}),
 )

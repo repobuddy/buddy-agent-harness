@@ -57,6 +57,13 @@ export const TASKS = [
 		kind: 'present',
 		prompt: `Review this function before I merge it.\n\n${REVIEW_SNIPPET}`,
 		key: 'Every finding the reply puts to the user carries a visible identifier the user could answer with (a number, a letter, or a prefixed number such as F1), and no two findings share one.',
+		// Added after round 1, whose R1 asks for an option most first replies already carry.
+		revision: {
+			id: 'R3',
+			prompt:
+				"I've fixed the second one. Next week plugin.json also gains a `schemaVersion` field; add whatever that raises for this function. Show me the updated list.",
+			key: "The revised list keeps each finding still open on the identifier it had in the first reply, does not give the fixed finding's identifier to any other item, and gives each new finding an identifier not used in the first reply. Fail if the first reply had no identifiers.",
+		},
 	},
 	{
 		id: 'I4',
