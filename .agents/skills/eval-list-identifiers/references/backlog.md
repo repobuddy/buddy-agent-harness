@@ -113,3 +113,43 @@ by 8. Category totals are present /24, revise /18, near-miss /18.
 
 The round-1 bar applies unchanged: a candidate replaces the shipped wording only if its total beats
 shipped's by at least 3 runs and no category falls more than 1 run below shipped.
+
+## Round 2 — 2026-09-26, 234 turns
+
+The backlog with R3. Same model, isolation, and judge as round 1.
+
+| arm | I1 | R1 | I2 | R2 | I3 | R3 | I4 | N1 | N2 | N3 | present /24 | revise /18 | near-miss /18 | total /60 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| control | 6 | 0 | 5 | 0 | 0 | 0 | 0 | 6 | 6 | 6 | 11 | 0 | 18 | 29 |
+| shipped | 6 | 6 | 5 | 6 | 5 | 6 | 6 | 6 | 6 | **0** | 22 | 18 | 12 | **52** |
+| scoped | 6 | 5 | 4 | 6 | 3 | 6 | 6 | 6 | 6 | 3 | 19 | 17 | 15 | 51 |
+
+**Hand corrections.** Scoped I4 was judged 3 of 6. Two failing verdicts ended "Correction: PASS",
+a line the parser did not match, and one counted cross-references to proposals as repeated
+identifiers, the round-1 misread. Scoped N3 was judged 2 of 6; one of the four failures numbers
+every item plainly and says "A" once in its closing sentence, which labels no item. All four are
+scored PASS above. The parser now also matches a prefixed verdict line.
+
+**By the bar, the shipped wording holds again.** Scoped trails it by 1 in total and by 3 on
+present. Its I3 losses are findings bundled under one number, or left unlabelled after the list.
+
+**Scoped halves the N3 failure; it does not remove it.** Three scoped runs labelled the
+explanation anyway, each saying it had labelled the items so the user could refer back to them.
+Control never does. Any rule about labelling appears to spread to lists it does not name.
+
+The shipped N3 failure reproduced, 6 of 6.
+
+## The bar for round 3
+
+Fixed before round 3, on the round-2 backlog. Arms are control, shipped, and narrowed. Narrowed
+is the shipped text with only its first sentence changed, so the difference is attributable to it:
+
+```markdown
+## List identifiers
+
+Label every list that asks the user to choose, answer, or decide, so they can answer each item by its label; a list that only explains needs none. Letter a plain list (A, B, C) or number it (1, 2, 3). Where every item is one kind of thing, prefix the number with a letter naming the kind: P1 for a proposal, Q1 for a question, S1 for a scenario.
+
+Keep a label once you have given it. When you revise the list, each item keeps its label, a removed item's label is not reused, and a new item takes the next one in the sequence.
+```
+
+The round-1 bar applies unchanged.
