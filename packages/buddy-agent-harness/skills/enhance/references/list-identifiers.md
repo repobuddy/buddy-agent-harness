@@ -44,8 +44,7 @@ Keep a label once you have given it. When you revise the list, each item keeps i
 **Recommend the owner's own global instruction file, not this repository's `AGENTS.md`.**
 
 The text says how to present a list to the user, which holds in every repository the owner opens,
-so the global file is its one home. On Claude Code that file is `~/.claude/CLAUDE.md`. Where the
-harness in use documents no such file, say so and let the owner place the text. Never guess a path.
+so the global file, `~/.agents/AGENTS.md`, is its one home.
 
 Offer this repository's `AGENTS.md` as the alternative, and name what each one buys:
 
@@ -53,9 +52,6 @@ Offer this repository's `AGENTS.md` as the alternative, and name what each one b
 | --- | --- | --- |
 | the owner's global file | every repository they open, themselves only | one copy, and nothing to keep in step |
 | this repository's `AGENTS.md` | everyone who clones it, and any agent CI runs | a copy per repository, and a second copy in context for anyone who already has it globally |
-
-**Say when your own always-loaded instructions already carry this text.** Where they do, the
-repository copy adds nothing but the team. State it and leave the choice alone.
 
 A global placement is **handed over, not made**: give the text and the path, say it goes at the end
 of that file, and stop there.
