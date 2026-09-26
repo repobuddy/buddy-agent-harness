@@ -223,19 +223,19 @@ flowchart TD
 | P0→P1 | a section carrying one sentence of a retired wording inside prose that wording does not contain, in a repository that has a scoring harness | `puts a section it cannot place to the owner instead of deciding` |
 | G→P0 | a section whose sentences do the jobs of a retired wording's, in its order, none of them verbatim | `puts a reworded retired wording to the owner instead of deciding` |
 | P0→P1N | the same section, in a repository that has none | `names measurement as unavailable where the repository has no harness` |
-| P2→K | the owner answers that the section is theirs | `leaves the file alone when the owner says the section is theirs` |
+| P2→K | the owner answers "mine" to the only question on the table | `leaves the file alone when the owner says the section is theirs` |
 | P4→I | the owner asked for measurement and the current text scores higher | `replaces the section when measurement puts the current wording ahead` |
-| P4→K | the owner asked for measurement and the section scores level or higher | `keeps the owner's wording when measurement does not put ours ahead` |
+| P4→K | the owner asked for measurement on the only question on the table and the section scores level or higher | `keeps the owner's wording when measurement does not put ours ahead` |
 | P2 | an unplaceable section and no answer from the owner | `runs no evaluation the owner did not ask for` |
 | P2→I | the owner answers that the section is an edited copy | `offers the replacement when the owner says the section came from this package` |
-| P1 | a question on the table at the end of a run | `writes nothing while the question is unanswered` |
+| P1 | the only question on the table at the end of a run | `writes nothing while the question is unanswered` |
 | G1→I | a root `AGENTS.md` carrying a retired wording verbatim | `offers the current wording where the file carries a retired one verbatim` |
 | GC→G1 | a retired wording verbatim, every sentence of which the current text still carries, because the revision only added a sentence | `does not call a retired wording current because the current text still carries all its sentences` |
 | G1→I | that retired wording with an owner's sentence at the place the revision added one | `offers the current wording where an owner filled the gap a revision added` |
 | G1→G2 | a `CLAUDE.md` carrying a retired wording and a root `AGENTS.md` that does not | `reports a retired wording outside the root file rather than replacing it` |
 | F | an addition about to be presented | `shows the addition verbatim rather than a summary of it` |
 | I | a replacement about to be presented | `shows the current text beside the section it would replace` |
-| J→K | any offer on the table | `reports the decline and leaves the instruction file unchanged` |
+| J→K | the only offer on the table | `reports the decline and leaves the instruction file unchanged` |
 | L→M | an approved addition and an `AGENTS.md` holding a managed region | `appends an approved addition outside the managed region` |
 | I | a stale section carrying paragraphs the owner added under the same heading | `names the owner's own paragraphs a replacement would remove` |
 | L→N | an approved replacement | `replaces only that section and leaves the rest of the file byte-identical` |
@@ -255,6 +255,8 @@ flowchart TD
 | barred | a nested `AGENTS.md` carrying a retired wording | `writes to no file other than the root AGENTS.md` |
 | barred | a repository whose CI workflow names an agent harness | `changes no file outside the repository's agent configuration` |
 | barred | an addition whose wording would sit better in this repository reworded | `offers the text as written rather than adapted to the repository` |
+
+A run makes an offer for every addition the file lacks or carries in a stale form, so a scenario whose Then covers the whole `AGENTS.md` settles the other addition in its Given: the file already holds that addition's current text, or the offer or question the scenario answers is the run's only one. A Then that names what is offered or replaced names the addition or the section it means.
 
 A run following a **declined** offer gets no row of its own. The repository it leaves behind is byte-identical to one that was never offered anything — the skill records nothing — so it reaches `E→F` by the same path class as `offers an addition the merged view does not cover` and would be a duplicate rather than a permutation. The rule that covers both is stated once, at `E`: detection decides every run, and absence is the whole state.
 
