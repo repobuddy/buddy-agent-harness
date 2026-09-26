@@ -184,3 +184,21 @@ The first row is why the shipped section names no model, vendor, or version, and
 Read the small differences with care. One judge scored every run, against one backlog, six runs per cell in the final rounds, so the top candidates were statistically indistinguishable. The categorical failures are the strong evidence. The gaps between close scores are not. T5's gather-versus-decide boundary remains a known thin spot: about half of all runs report it unclear under every wording tried, while still resolving it correctly.
 
 The backlog, the key, and the baseline are recorded in `.agents/skills/eval-delegation/`, which is also the harness for re-running them.
+
+### List identifiers
+
+A `## List identifiers` section, telling the agent to label every list it puts to you so you can answer item by item:
+
+```markdown wrap
+## List identifiers
+
+Label every list you present so the user can answer each item by its label. Letter a plain list (A, B, C) or number it (1, 2, 3). Where every item is one kind of thing, prefix the number with a letter naming the kind: P1 for a proposal, Q1 for a question, S1 for a scenario.
+
+Keep a label once you have given it. When you revise the list, each item keeps its label, a removed item's label is not reused, and a new item takes the next one in the sequence.
+```
+
+Design discussions get answered item by item: "Q1: yes, Q3: design more, Q5: permanent". Without labels you have to quote or paraphrase each item, and the reply gets ambiguous. Stable labels keep a reply valid after the list is revised, because Q3 is still Q3.
+
+Like Delegation, the skill recommends your own global instruction file for it, since it holds in every repository you open, and names this repository's `AGENTS.md` as the alternative for reaching a team. A style rule that numbers the steps in your documentation does not count as covering it. That rule governs files, not the lists an agent puts to you.
+
+The section has no retired wording yet, so `references/list-identifiers.history.md` is empty, and a section already in your file is compared against the current text instead. The current text stands in for a retired wording and gets the same two questions. One that is this text with edits is offered the current text as a replacement, one sharing neither its sentences nor its shape is judged yours, and in between the skill asks. No harness scores this wording yet, so it offers two answers there, not three. Unlike Delegation, this wording has not been through a blind A/B evaluation.
