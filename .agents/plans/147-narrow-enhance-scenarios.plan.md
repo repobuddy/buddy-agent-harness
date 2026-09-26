@@ -12,6 +12,14 @@ todos:
     status: completed
   - content: pnpm verify, PR referencing #147, report to operator
     status: completed
+  - content: "#157 spec: destination-neutral place Thens, already-global state, ~/.agents/AGENTS.md destination"
+    status: in_progress
+  - content: "#157 spec gate — cold aced-spec-validator"
+    status: pending
+  - content: "#157 deliver: SKILL.md, both references, docs page, changeset"
+    status: pending
+  - content: "#157 impl gate, pnpm verify, push to #156, update PR body"
+    status: pending
 ---
 
 # 147 — narrow the enhance scenarios written when Delegation was the only addition
@@ -23,6 +31,10 @@ CR against `packages/buddy-agent-harness`, run headless. Seed intent is the issu
   what is offered or replaced names the addition or section it means.
 - Narrowing, not additive: a re-open of a frozen suite. Authorized by the issue and the dispatch brief.
 - Spec-only: `.agents/` is outside the package allowlist, so no changeset unless SKILL.md changes.
+
+- #157 continues on this branch, owner-directed (2026-09-26): P1 reword the two place Thens
+  destination-neutral; P2 global stays recommended; P3 add an already-global state; P4 the global
+  destination is `~/.agents/AGENTS.md`. Re-opens five frozen scenarios; the owner's answer is the ratification.
 
 ## NEXT
 

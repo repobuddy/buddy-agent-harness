@@ -35,12 +35,33 @@ Feature: Offer the current wording of a vetted section to a repository that alre
 
   @behavior
   Scenario: says when the agent's own instructions already carry the text
-    Given the agent's always-loaded instructions already hold the `## Delegation` text
-    And a root `AGENTS.md` the section is absent from
-    When the `## Delegation` section is offered
-    Then the offer states that the repository copy would add the team and nothing else
-    And it states that the owner would then carry the text twice
-    And the choice is left to the owner rather than decided
+    Given instructions the agent loads from outside the repository already carry the `## Delegation` text exactly as `references/delegation.md` offers it
+    And a root `AGENTS.md` holding a build-commands section and a code-style section
+    And the root `AGENTS.md` also holds the `## List identifiers` section exactly as `references/list-identifiers.md` offers it
+    When the agent runs the `enhance` skill
+    Then the report gives the `## Delegation` addition the verdict already global
+    And the `## Delegation` text is not offered
+    And the report says a copy in the repository's `AGENTS.md` would add the team and nothing else
+    And it says the owner would then carry the text twice
+    And the report says the owner may ask for that copy
+    And `AGENTS.md` is unchanged until the owner asks for that copy
+
+  @behavior
+  Scenario: writes a team copy of an already-global addition when the owner asks for it
+    Given the `enhance` skill has said the `## Delegation` addition is already global and that the owner may ask for a team copy
+    When the owner asks for a copy in the repository's `AGENTS.md`
+    Then `AGENTS.md` carries the `## Delegation` section
+    And that section holds the text inside the fence in `references/delegation.md`
+
+  @behavior
+  Scenario: reports a section held both in the repository and in the agent's own instructions
+    Given instructions the agent loads from outside the repository already carry the `## Delegation` text exactly as `references/delegation.md` offers it
+    And a root `AGENTS.md` holding the `## Delegation` section exactly as `references/delegation.md` offers it
+    And the root `AGENTS.md` also holds the `## List identifiers` section exactly as `references/list-identifiers.md` offers it
+    When the agent runs the `enhance` skill
+    Then the report gives the `## Delegation` addition the verdict already current
+    And the report says the owner reads the `## Delegation` text twice, once from each place
+    And `AGENTS.md` is unchanged
 
   @behavior
   Scenario: hands a global placement over rather than writing outside the repository
@@ -51,11 +72,18 @@ Feature: Offer the current wording of a vetted section to a repository that alre
     And the run reports the hand-off as an outcome rather than as a decline
 
   @behavior
-  Scenario: names no global instruction file the harness in use does not document
-    Given a harness that documents no user-scope instruction file
+  Scenario: names ~/.agents/AGENTS.md as the global instruction file
+    Given a root `AGENTS.md` the `## Delegation` section is absent from
     When the `## Delegation` section is offered
-    Then no path is guessed for it
-    And the report says the harness documents none and leaves the placement to the owner
+    Then the global destination it names is `~/.agents/AGENTS.md`
+
+  @behavior
+  Scenario: says the harness loads the global file only through its own user-scope file
+    Given a harness in use that documents a user-scope instruction file other than `~/.agents/AGENTS.md`, or documents none
+    And a root `AGENTS.md` the `## Delegation` section is absent from
+    When the `## Delegation` section is offered
+    Then the global destination it names is still `~/.agents/AGENTS.md`
+    And the offer says that harness reads the text only where a user-scope instruction file of its own loads `~/.agents/AGENTS.md`
 
   @behavior
   Scenario: treats a heading inside a fenced block as an example rather than as coverage
@@ -287,7 +315,7 @@ Feature: Offer the current wording of a vetted section to a repository that alre
     Given a root `AGENTS.md` holding a build-commands section and a code-style section
     When the agent runs the `enhance` skill
     Then the offered `## Delegation` text is byte-identical to the text inside the fence in `references/delegation.md`
-    And the `## Delegation` offer names the place in `AGENTS.md` it would go
+    And the `## Delegation` offer says where the section would go
 
   @behavior
   Scenario: shows the current text beside the section it would replace
@@ -336,7 +364,7 @@ Feature: Offer the current wording of a vetted section to a repository that alre
     Given a repository at a path that is not the working directory
     And that repository holds a root `AGENTS.md` with a build-commands section and a code-style section
     When the agent runs the `enhance` skill with `--root` naming that path
-    Then each offer names that repository's `AGENTS.md` as where its section would go
+    Then any repository `AGENTS.md` an offer names is the one at that path
     And no file outside that repository is read as its merged view
 
   @behavior
@@ -359,7 +387,7 @@ Feature: Offer the current wording of a vetted section to a repository that alre
     And a `.github/workflows/ci.yml` naming an agent harness
     When the agent runs the `enhance` skill
     Then `.github/workflows/ci.yml` is byte-identical to what it was before the run
-    And no offer names a file outside the repository's agent configuration
+    And no offer names a file in the repository outside its agent configuration
 
   @behavior
   Scenario: offers the text as written rather than adapted to the repository
