@@ -12,13 +12,13 @@ The split matters: initialization has to run everywhere and invent nothing, so i
 
 Every addition is **offered, never written on sight**. An addition asserts something about how the repository is worked in — it stays true whether or not this tool ever ran — so it is material under the rule in `../init/references/agents-md.md`, and material content needs approval. Nothing here goes inside the `buddy-agent-harness` managed region; that region is for the tool's own bookkeeping.
 
-One addition ships today: `references/delegation.md`. Each addition's reference file carries the text to offer, a `## Covered when` criterion for the subject already being present, a `## Stale when` criterion for the file already carrying a **wording this addition has since retired**, and a `## Where it belongs` recommendation naming which instruction file the text should go in. The retired wordings themselves are kept beside it — for delegation, `references/delegation.history.md` — and are what a present section is compared against.
+Two additions ship today: `references/delegation.md` and `references/list-identifiers.md`. Classify, offer, and report each one on its own; the owner's answer to one decides nothing about the other. Each addition's reference file carries the text to offer, a `## Covered when` criterion for the subject already being present, a `## Stale when` criterion for the file already carrying a **wording this addition has since retired**, and a `## Where it belongs` recommendation naming which instruction file the text should go in. The retired wordings themselves are kept beside it — `references/<addition>.history.md` — and are what a present section is compared against.
 
 ## 1. Find the instruction file
 
 Where the invocation names `--root <dir>`, that directory is the repository: read and write inside it only. Otherwise locate the Git repository root. The target is the root `AGENTS.md`.
 
-If there is no root `AGENTS.md`, stop and say so. This skill adds to an existing file; creating one is `init`'s job, so point there and write nothing.
+If there is no root `AGENTS.md`, stop and say so. This skill adds to an existing file; creating one is `init`'s job, so point there and write nothing. Still report in full as step 6 says — what you read, that nothing was written — with **not judged** as each addition's verdict.
 
 A nested `AGENTS.md` is never a target. It governs its own subtree, and none of these additions are subtree-scoped.
 
@@ -46,13 +46,13 @@ Answer it against the addition's own texts, which its reference keeps beside it:
 
 **First, is the section already current?** It is when it carries every sentence of the text you would offer, in order — the owner may have added paragraphs of their own around or between them — and asserts no sentence found only in a retired wording. Say so and stop. Resemblance is not enough; containment is the test.
 
-**Otherwise, compare against the retired wordings, and never weigh a section against the current text to decide it is stale** — differing from the current wording tells you nothing, since differing is what a rewrite produces.
+**Otherwise, compare against the retired wordings, and never weigh a section against the current text to decide it is stale** — differing from the current wording tells you nothing, since differing is what a rewrite produces. The one exception: an addition whose history holds no retired wording yet has its current text stand in for one, and its reference says so.
 
 Each addition ends this step in one of five states:
 
 - **already current** — the section carries the text you would offer. Offer nothing, and say that is why. Do **not** report it as the owner's own: they did not write it, this package did, and telling someone they authored your text is the same mistake as replacing what they did author.
 - **absent** — offer it as an addition.
-- **from a retired wording, in the root `AGENTS.md`** — offer the current text as a replacement.
+- **from a retired wording, in the root `AGENTS.md`** — offer the current text as a replacement. For an addition with no retired wording yet, report it as an edited copy of the current text.
 - **the owner's own** — offer nothing, and name what covers it.
 - **you cannot tell** — do not decide it either way. Put it to the owner (step 4).
 
@@ -62,7 +62,7 @@ A section from a retired wording in a file that is **not** the root `AGENTS.md` 
 
 Where an addition is **absent**, show its text **verbatim** — the whole thing, not a summary — say where it would go, and ask.
 
-**Where it goes is part of the offer, and the addition decides it.** Read its `## Where it belongs` and lead with what that section recommends. An addition whose subject is the repository belongs in the repository's `AGENTS.md`; one whose subject is how the agent works belongs in the owner's own global instruction file, because it holds in every repository they open and a copy per repository is a copy per repository to keep in step. Delegation is the second kind, and its reference recommends the global file.
+**Where it goes is part of the offer, and the addition decides it.** Read its `## Where it belongs` and lead with what that section recommends. An addition whose subject is the repository belongs in the repository's `AGENTS.md`; one whose subject is how the agent works belongs in the owner's own global instruction file, because it holds in every repository they open and a copy per repository is a copy per repository to keep in step. Delegation and list identifiers are both the second kind, and their references recommend the global file.
 
 Name both destinations and what each buys — the global file reaches every repository the owner opens and nobody else; the project file reaches everyone who clones it, at a copy per repository. Where your own always-loaded instructions already carry the text, say so: the project copy then adds nothing but the team, and arrives twice for the owner.
 
@@ -70,7 +70,7 @@ Name both destinations and what each buys — the global file reaches every repo
 
 Where an addition came from a **retired wording**, show the section as it stands in `AGENTS.md`, then the current text **verbatim**, say that it would replace that section and nothing else, and ask.
 
-**Name what the replacement would take with it.** A stale section often carries paragraphs the owner added to it — rules of their own, sitting under the same heading. Replacing the section removes those too. So before you ask, name every paragraph in that section that appears in no retired wording, say the replacement would remove it, and let the owner weigh that. An approval given for "refresh the wording" is not an approval to delete what they wrote.
+**Name what the replacement would take with it.** A stale section often carries paragraphs the owner added to it — rules of their own, sitting under the same heading. Replacing the section removes those too. So before you ask, name every paragraph in that section that appears in no retired wording — or, for an addition with none yet, not in the current text — say the replacement would remove it, and let the owner weigh that. An approval given for "refresh the wording" is not an approval to delete what they wrote.
 
 Where you **cannot tell**, say that first, in those words. Then show three texts — the section as it stands, the retired wording it partly tracks, and the current text — and put three answers to the owner:
 
@@ -80,7 +80,7 @@ Where you **cannot tell**, say that first, in those words. Then show three texts
 
 Put the third every time the repository can actually do it, because the owner may not remember either, and the question they care about is not where the section came from but **which wording serves them better**. Provenance is a stand-in for that; when the stand-in fails, ask the real question.
 
-Measurement means running each wording against a set of real tasks and comparing how the agent behaves — whatever harness this repository has for that. In this package's own repository it is the `eval-delegation` skill; a consumer repository will have its own or none. **Look before you offer it.** Where the repository has no such harness, say the third answer would need one it does not have, and put the other two.
+Measurement means running each wording against a set of real tasks and comparing how the agent behaves — whatever harness this repository has for that addition's wording. In this package's own repository the `eval-delegation` skill scores Delegation's and nothing else; a consumer repository will have its own or none. **Look before you offer it.** Where the repository has no harness for that addition, say the third answer would need one it does not have, and put the other two.
 
 **Ask before running it, and never run it unasked** — it is many model runs, and the owner is the one paying for them.
 
@@ -105,7 +105,7 @@ On a decline, write nothing. A declined replacement leaves the section exactly w
 
 ## 6. Report
 
-Report every run, whichever way it went: what you read, the verdict for each addition and why — already current, absent, the owner's own, from a retired wording, or undecidable — what you offered, which destination you recommended, and what was written. A hand-off for the owner to place globally is an outcome, not a decline; say so. A run that offers nothing still reports — that is the only way the user can tell "already covered" from "did not look".
+Report every run, whichever way it went: what you read, the verdict for each addition and why — already current, absent, the owner's own, from a retired wording, undecidable, or not judged — what you offered, which destination you recommended, and what was written. A hand-off for the owner to place globally is an outcome, not a decline; say so. A run that offers nothing still reports — that is the only way the user can tell "already covered" from "did not look".
 
 ## Rules
 
