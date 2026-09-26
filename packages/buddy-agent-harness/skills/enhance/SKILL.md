@@ -48,7 +48,7 @@ Answer it against the addition's own texts, which its reference keeps beside it:
 
 **Otherwise, compare against the retired wordings, and never weigh a section against the current text to decide it is stale** — differing from the current wording tells you nothing, since differing is what a rewrite produces. The one exception: an addition whose history holds no retired wording yet has its current text stand in for one, and its reference says so.
 
-**Before offering an uncovered addition, check your own instructions.** Where instructions you load from outside the repository — the owner's global file, however your harness reaches it — carry every sentence of its current text, in order, and assert no sentence found only in a retired wording, it is **already global**. You can check without opening a file; they are in front of you. Do not count the repository's own files, which the merged view already judged.
+**Before offering an uncovered addition, check your own instructions.** Where instructions you load from outside the repository — the owner's global file, however your harness reaches it — carry every sentence of its current text, in order, and assert no sentence found only in a retired wording, it is **already global**. You can check without opening a file; they are in front of you. Do not count the repository's own files, which the merged view already judged, nor another repository's that your harness loaded from the working directory.
 
 Each addition ends this step in one of six states:
 
@@ -100,7 +100,7 @@ Do not argue for any of it past one sentence. The user is reading the actual tex
 
 On approval of an **addition** for the repository, or a request for the team copy of an **already global** one, write the section into the root `AGENTS.md` at the end of the owner's prose, outside the managed region, preserving the surrounding file exactly.
 
-On approval of a **global placement**, write nothing. Give the text and the file it goes in, and say it belongs at the end of that file. Nothing in a repository changes, and the run still reports.
+On approval of a **global placement**, write nothing. Give the text and `~/.agents/AGENTS.md`, and say it belongs at the end of that file. Nothing in a repository changes, and the run still reports.
 
 On approval of a **replacement**, replace that one section in place — from its heading through to the next heading of the same or higher level — and leave every other byte of the file as it was. Do not relocate it, do not reformat around it, and do not touch the managed region.
 
@@ -110,7 +110,7 @@ On a decline, write nothing. A declined replacement leaves the section exactly w
 
 ## 6. Report
 
-Report every run, whichever way it went: what you read, the verdict for each addition and why — already global, already current, absent, the owner's own, from a retired wording, undecidable, or not judged — what you offered, which destination you recommended, and what was written. A hand-off for the owner to place globally is an outcome, not a decline; say so. A run that offers nothing still reports — that is the only way the user can tell "already covered" from "did not look".
+Report every run, whichever way it went: what you read, the verdict for each addition and why — already global, already current, absent, the owner's own, from a retired wording, undecidable, or not judged — what you offered, which destination you recommended, and what was written. For an already-current addition your instructions from outside the repository also carry, say the owner reads it twice. A hand-off for the owner to place globally is an outcome, not a decline; say so. A run that offers nothing still reports — that is the only way the user can tell "already covered" from "did not look".
 
 ## Rules
 
