@@ -13,13 +13,13 @@ todos:
   - content: pnpm verify, PR referencing #147, report to operator
     status: completed
   - content: "#157 spec: destination-neutral place Thens, already-global state, ~/.agents/AGENTS.md destination"
-    status: in_progress
-  - content: "#157 spec gate — cold aced-spec-validator"
-    status: pending
+    status: completed
+  - content: "#157 spec gate — ALIGNED on scenarios after 3 rounds + 2 confirmations; self-asserted"
+    status: completed
   - content: "#157 deliver: SKILL.md, both references, docs page, changeset"
-    status: pending
-  - content: "#157 impl gate, pnpm verify, push to #156, update PR body"
-    status: pending
+    status: completed
+  - content: "#157 impl gate — 8 in-scope scenarios pass (N=1, structural); pnpm verify; pushed to #156"
+    status: completed
 ---
 
 # 147 — narrow the enhance scenarios written when Delegation was the only addition
@@ -38,5 +38,5 @@ CR against `packages/buddy-agent-harness`, run headless. Seed intent is the issu
 
 ## NEXT
 
-Landed on a PR against main. Owner to ratify the spec re-open and the impl gate
-(status stays as is until then). Follow-up filed: #157.
+Landed on PR #156 against main, now covering #147 and #157. Owner to ratify both re-opens and
+both impl gates. Two backlog follow-ups are recorded in the ledger shard for this session, not yet filed.
