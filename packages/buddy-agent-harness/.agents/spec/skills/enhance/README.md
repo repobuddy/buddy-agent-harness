@@ -13,7 +13,7 @@ The `enhance` skill's conduct: which vetted sections it offers to a repository t
 
 Three properties make it a node rather than a paragraph inside `../init/`.
 
-**Where a section goes is part of what it offers.** A subject that is not about the repository has no business being copied into every repository the owner works in — that is the drift this package exists to remove, one level up from the file it removes it in. So an addition names its destination, the offer leads with it, and the one destination this skill cannot write is the one it recommends for delegation: a global placement is handed over, never made.
+**Where a section goes is part of what it offers.** A subject that is not about the repository has no business being copied into every repository the owner works in — that is the drift this package exists to remove, one level up from the file it removes it in. So an addition names its destination, the offer leads with it, and the one destination this skill cannot write is the one it recommends for delegation and list identifiers: a global placement is handed over, never made.
 
 **It writes material content, and material content needs a person's word.** A section here asserts something about how the repository is worked in — it stays true whether or not this tool ever ran — so it falls on the material side of the discriminator `../init/` applies, and nothing here is ever written on sight. `../init/` may create an absent file unasked; this skill may not add a sentence unasked.
 
@@ -25,8 +25,8 @@ Three properties make it a node rather than a paragraph inside `../init/`.
 
 **Key terms**
 
-- **addition** — a named block of instruction content this skill can offer, shipped as a reference file carrying the text to offer, the criterion for the subject already being present, the criterion that compares a present section against the wordings this addition has retired, and the destination it recommends. One addition ships today: `## Delegation`.
-- **destination** — which instruction file an addition's text belongs in, declared by the addition rather than assumed. An addition about the repository belongs in the repository's `AGENTS.md`; one about how the agent works belongs in the owner's own global file, where it is written once for every repository they open. Delegation is the second kind.
+- **addition** — a named block of instruction content this skill can offer, shipped as a reference file carrying the text to offer, the criterion for the subject already being present, the criterion that compares a present section against the wordings this addition has retired, and the destination it recommends. Two additions ship today: `## Delegation` and `## List identifiers`. Each is classified, offered, and reported on its own.
+- **destination** — which instruction file an addition's text belongs in, declared by the addition rather than assumed. An addition about the repository belongs in the repository's `AGENTS.md`; one about how the agent works belongs in the owner's own global file, where it is written once for every repository they open. Delegation and list identifiers are both the second kind.
 - **merged view** — the root `AGENTS.md` together with every harness instruction file whose content still belongs in it. It is the text a downstream agent effectively reads, so guidance sitting in a Cursor always-on rule counts as present.
 - **covered** — the merged view already tells the agent what the addition would tell it, judged by meaning rather than by heading or wording.
 - **retired wording** — a text an addition used to offer, kept verbatim beside it after a revision. A present section is checked for containment of the current text first; to decide whether it is stale, it is compared against these, never weighed against the text that would be offered.
@@ -36,7 +36,7 @@ Three properties make it a node rather than a paragraph inside `../init/`.
 **Non-goals**
 
 - **Consolidating harness instruction files.** This skill reads them into the merged view and moves none of them; consolidation has one home, `../init/`. Where a run finds content that should be consolidated it says so and recommends that skill.
-- **The wording of any addition.** What the `## Delegation` text says was settled by blind A/B evaluation and is fixed; the repo-private `eval-delegation` skill owns it. This node specifies **when the current text is surfaced**, never what it says.
+- **The wording of `## Delegation`.** What it says was settled by blind A/B evaluation and is fixed; the repo-private `eval-delegation` skill owns it. This node specifies **when that text is surfaced**, never what it says. The `## List identifiers` text has no such harness, so this node owns what it must direct — the rules issue #146 asked for — and not its exact wording.
 - **Correcting agent configuration that is present and wrong.** `../repair/`. A stale addition is not a fault in the repository — it is this package's wording having moved.
 - **Creating an `AGENTS.md`.** `../init/`'s. A repository without one is reported and left alone.
 - **Anything outside local agent configuration.** Workflows, repository settings, and project source are out of reach whatever a run finds in them — a bar the suite asserts as a barred scenario rather than a path, since no decision in the graph can reach them.
@@ -93,6 +93,10 @@ For `/buddy-agent-harness:enhance`:
 - **The owner asks for measurement.** The evaluation harness scores the section as it stands against the current text, both scores are reported, and the replacement is offered only if the current text wins. A section that scores level or better is kept and said to be kept.
 - **A retired wording sits outside the root `AGENTS.md`** — in a `CLAUDE.md` or a `.cursorrules`. Reported by file and not replaced. This skill writes one file, and replacing the root copy while a contradicting older copy stays in a harness file would leave the repository worse than it started.
 - **An offer is declined.** Nothing is written, for a replacement exactly as for an addition.
+- **Two additions are uncovered.** Each is offered on its own, and the owner's answer to one writes or withholds that one only.
+- **A style rule numbers the lists in documents the agent writes.** Not coverage for list identifiers: it governs files, not the lists the agent puts to the user.
+- **A section on list identifiers, while the addition has no retired wording.** The current text stands in for a retired wording at `G`, so the same four outcomes apply: that text edited is offered the replacement, a section sharing neither its sentences nor its structure is the owner's own, and a disagreement goes to the owner. It is never credited to the owner merely because there is no history to match.
+- **No harness scores the addition's wording.** `P0` asks about a harness for that addition, not any harness. `eval-delegation` scores Delegation's wording only, so an unplaceable List identifiers section gets two answers even in this package's own repository.
 - **The section was approved on an earlier run and has since been deleted.** It reads as absent and is offered again. Absence is the whole state; the skill keeps no memory of a run.
 
 For an addition's reference file:
@@ -113,18 +117,18 @@ flowchart TD
   E -->|no| F[Present the addition verbatim and say where it would go]
   E -->|yes| GC{Does the section carry every sentence of the current text in order, and assert no sentence found only in a retired wording?}
   GC -->|yes| HC[Say the section is already the text this addition offers, and offer nothing]
-  GC -->|no| G{Do whole sentences of a retired wording survive, and does its structure survive?}
+  GC -->|no| G{Do whole sentences of a retired wording — or of the current text, where the addition has none — survive, and does its structure survive?}
   G -->|neither| H[Name what covers it and offer nothing]
   G -->|both| G1{Does that section sit in the root AGENTS.md?}
-  G -->|they disagree| P0{Does this repository have a harness for scoring instruction wordings?}
-  P0 -->|yes| P1[Say it cannot be placed, show the three texts, and put three answers: theirs, ours, or settle it by measurement]
+  G -->|they disagree| P0{Does this repository have a harness scoring this addition's wordings?}
+  P0 -->|yes| P1[Say it cannot be placed, show the three texts — the section, the wording it partly tracks, and the current text, the last two one text where the addition has no retired wording — and put three answers: theirs, ours, or settle it by measurement]
   P0 -->|no| P1N[Say it cannot be placed, show the three texts, put the two answers, and name measurement as needing a harness this repository lacks]
   G1 -->|no| G2[Name the file holding it and offer nothing]
-  G1 -->|yes| I[Present the current text beside the section it would replace, naming every paragraph in it that no retired wording contains]
+  G1 -->|yes| I[Present the current text beside the section it would replace, naming every paragraph in it that no retired wording — or, where the addition has none, the current text — contains]
   P1N --> P2
   P1 --> P2{Which of the three answers does the owner give?}
   P2 -->|theirs, or unanswered| K
-  P2 -->|an edited copy of the retired wording| I
+  P2 -->|an edited copy of this package's text| I
   P2 -->|settle it by measurement| P3[Score the section as it stands and the current text]
   P3 --> P4{Does the current text score higher?}
   P4 -->|yes| I
@@ -148,7 +152,7 @@ flowchart TD
 
 The decision at `E` is unchanged from the skill as it shipped: coverage is judged by meaning, and doubt resolves as covered, because a missed offer costs the user nothing while a duplicate section teaches every future agent that the file repeats itself.
 
-What `G` adds is a second question asked **only of text that already read as covered**, and it is a question about **provenance** rather than about meaning: did this text come from the addition, at a wording it used to ship? It is answered by comparing the section against those retired wordings, which the addition keeps verbatim, and never by weighing it against the text that would be offered — a section differing from the current wording is evidence of nothing, since differing is what a rewrite produces.
+What `G` adds is a second question asked **only of text that already read as covered**, and it is a question about **provenance** rather than about meaning: did this text come from the addition, at a wording it used to ship? It is answered by comparing the section against those retired wordings, which the addition keeps verbatim, and never by weighing it against the text that would be offered — a section differing from the current wording is evidence of nothing, since differing is what a rewrite produces. The one exception is an addition that has retired nothing yet: its current text is the only wording it has ever shipped, so it stands in at `G` and is asked the same two provenance questions. Without it, an edited copy of this package's text would read as the owner's own merely because there is no history to match.
 
 `G` asks two questions — do whole sentences of a retired wording survive, and does its structure survive — and **their agreement is the decision**. Both yes, and the section is that wording edited. Both no, and it is the owner's. **Disagreeing is not a gap in the test**: it is the test reporting that the evidence points both ways, and the third branch is where that is said out loud rather than resolved by improvisation. The first draft of this enumerated three of the four combinations and left the fourth — their words in our shape — with no rule at all, which cost an impl-gate round: three independent runs met it, had nothing to apply, and each invented the same answer. A whole retired passage does not appear in someone's independent prose, so a section reproducing one, edits and all, is safely placed; a section sharing nothing but a turn of phrase is safely the owner's. Between those sits real ambiguity — half of a retired wording carried into prose the owner clearly wrote — and there the node **declines to decide**. It says so and asks. That is not doubt resolving toward inaction: leaving a genuinely stale section unmentioned and replacing a person's own words are both wrong, so the branch that admits it cannot tell is the only honest one.
 
@@ -237,6 +241,17 @@ flowchart TD
 | L→N | an approved replacement | `replaces only that section and leaves the rest of the file byte-identical` |
 | A | a repository at a path that is not the working directory | `works on the directory the invocation named` |
 | Z | a run that reached any of its outcomes | `reports the run whichever way it went` |
+| E→F | an `AGENTS.md` with no guidance on labelling list items | `offers the List identifiers addition the merged view does not cover` |
+| J→L, J→K | both additions offered, one approved and one declined | `offers each addition on its own` |
+| E→F | an `AGENTS.md` whose only list guidance numbers the steps in documentation | `does not count a numbered-list style rule for documents as covering list identifiers` |
+| G→H | an `AGENTS.md` covering list identifiers under the owner's own heading | `withholds List identifiers where the owner's own words cover it` |
+| GC→HC | an `AGENTS.md` carrying the List identifiers text | `offers nothing where the file already carries the current List identifiers text` |
+| G→H | a List identifiers section not carrying the current text, and an empty history | `judges a List identifiers section it did not write as the owner's own while the addition has no retired wording` |
+| G1→I | the current List identifiers text edited in place, and an empty history | `offers the current List identifiers text where that text was edited in place` |
+| P0→P1N | a reworded List identifiers text, an empty history, and a harness scoring Delegation only | `puts a reworded List identifiers text to the owner without offering measurement` |
+| P2→I | the owner answers that a List identifiers section came from this package | `offers the List identifiers replacement when the owner says the section came from this package` |
+| F | the List identifiers addition absent | `recommends the owner's global file for List identifiers` |
+| Z | a run over both additions | `reports a verdict for every addition` |
 | barred | a nested `AGENTS.md` carrying a retired wording | `writes to no file other than the root AGENTS.md` |
 | barred | a repository whose CI workflow names an agent harness | `changes no file outside the repository's agent configuration` |
 | barred | an addition whose wording would sit better in this repository reworded | `offers the text as written rather than adapted to the repository` |
@@ -253,10 +268,13 @@ A run following a **declined** offer gets no row of its own. The repository it l
 | U→U1 | an addition that can be offered | `keeps every wording it has retired` |
 | U1 | a revision replacing an addition's offered text | `stores a retired wording exactly as it was offered` |
 | U→X | a new addition shipping its first wording | `leaves an addition that has never been revised with an empty history` |
+| T | the shipped List identifiers reference | `states what already covers the List identifiers subject` |
+| U | the shipped List identifiers reference | `points the List identifiers stale check at its own history file` |
+| R→T | the shipped List identifiers reference | `offers List identifiers text that says what the issue asked for` |
 
 ## References
 
 - `../../../../skills/enhance/SKILL.md` is the shipped skill: the merged view, the five-way detection, and the approval gate this node specifies.
-- `../../../../skills/enhance/references/delegation.md` is the one addition shipped today; its sibling `delegation.history.md` holds the wordings it has retired, which is the artifact `G` compares against.
+- `../../../../skills/enhance/references/delegation.md` and `../../../../skills/enhance/references/list-identifiers.md` are the additions shipped today; each sibling `*.history.md` holds the wordings that addition has retired, which is the artifact `G` compares against.
 - `../init/` owns consolidation and the material/non-material discriminator this skill's approval rule rests on.
 - [AGENTS.md](https://agents.md/) defines the open, project-level instruction format every addition is written into.
