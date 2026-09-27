@@ -139,7 +139,7 @@ flowchart TD
 
 The survey and the classification write nothing, which is what makes the plan at `C` worth presenting: it is composed from what is on disk rather than from what has already happened to it. The branch at `D` is per step rather than per run — the approval is asked for *any* step that replaces what a person wrote — so one run can create a directory unasked, replace a file on approval, and leave a third alone because the owner declined it.
 
-The graph rejoins at `I` after a decline, and that edge is the shipped skill's **structure** rather than a rule it states: the skill gates each step and never says what a decline does to the steps already approved. The scenario at `G→H` therefore asserts only what is written down — the declined file is left alone — and the continuation is reported as a gap rather than specified as behavior (issue #79).
+The graph rejoins at `I` after a decline: the decline drops that one write, and the other approved steps are applied without asking again. The scenario at `G→H` asserts both.
 
 ## Scenario map
 
