@@ -182,10 +182,12 @@ describe('the process boundary', () => {
 			'skills/doctor-buddy-agent-harness/scripts/doctor.mjs',
 			'skills/init-buddy-agent-harness/scripts/doctor.mjs',
 			'skills/init-buddy-agent-harness/scripts/init.mjs',
+			'skills/load-reference/scripts/reference.mjs',
 			'skills/repair/scripts/doctor.mjs',
 			// The sources the bundles above are built from, not a second writer of their own.
 			'src/skill-scripts/doctor.ts',
 			'src/skill-scripts/init.ts',
+			'src/skill-scripts/reference.ts',
 		])
 	})
 })
