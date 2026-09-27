@@ -12,7 +12,7 @@ The split matters: initialization has to run everywhere and invent nothing, so i
 
 Every addition is **offered, never written on sight**. An addition asserts something about how the repository is worked in — it stays true whether or not this tool ever ran — so it is material under the rule in `../init/references/agents-md.md`, and material content needs approval. Nothing here goes inside the `buddy-agent-harness` managed region; that region is for the tool's own bookkeeping.
 
-Two additions ship today: `references/delegation.md` and `references/list-identifiers.md`. Classify, offer, and report each one on its own; the owner's answer to one decides nothing about the other. Each addition's reference file carries the text to offer, a `## Covered when` criterion for the subject already being present, a `## Stale when` criterion for the file already carrying a **wording this addition has since retired**, and a `## Where it belongs` recommendation naming which instruction file the text should go in. The retired wordings themselves are kept beside it — `references/<addition>.history.md` — and are what a present section is compared against.
+Two additions ship today: `references/delegation.md` and `references/list-identifiers.md`. Classify, offer, and report each one on its own; the owner's answer to one decides nothing about the other. Each addition's reference file carries the text to offer, a `## Covered when` criterion for the subject already being present, a `## Stale when` section naming the history file its stale check reads and what else that check needs for this addition, and a `## Where it belongs` recommendation naming which instruction file the text should go in. The retired wordings themselves are kept beside it — `references/<addition>.history.md` — and are what a present section is compared against.
 
 ## 1. Find the instruction file
 
@@ -40,24 +40,56 @@ When in doubt, treat it as covered and say why. A missing offer costs the user n
 
 **A heading inside a fenced code block is not a heading.** Text between ``` or ~~~ fences is an example of a file, not part of this one, and an addition quoted inside a fence is being shown rather than adopted. This is not hypothetical: every addition here is offered as a fenced block containing its own heading, so a repository documenting this tool — or an `AGENTS.md` that quotes one — carries the exact heading the addition would write, inside a fence, while remaining entirely uncovered. Judge only the prose the agent actually reads as instruction.
 
-Then ask the second question **of text that read as covered, and only of that text**: did that text come from this addition, at a version it used to ship? Never ask it of text that read as uncovered, and never ask it first.
+A text **carries the current text** of an addition when it holds every sentence of the text the addition offers now, in order — the owner may have added paragraphs of their own around or between them, and those are theirs to keep — **and** asserts no sentence found only in a retired wording. Containment, not resemblance: a text holding the current wording that still asserts a retired sentence does not carry it. This one test is used below on both the repository's text and your own instructions.
 
-Answer it against the addition's own texts, which its reference keeps beside it: the one it offers now, and the ones it has retired, in a sibling history file. The reference states how under `## Stale when`.
+**Before offering an uncovered addition, check your own instructions.** Where instructions you load from outside the repository — the owner's global file, however your harness reaches it — carry the current text, the addition is **already global**. You can check without opening a file; they are in front of you. Do not count the repository's own files, which the merged view already judged, nor another repository's that your harness loaded from the working directory.
 
-**First, is the section already current?** It is when it carries every sentence of the text you would offer, in order — the owner may have added paragraphs of their own around or between them — and asserts no sentence found only in a retired wording. Say so and stop. Resemblance is not enough; containment is the test. Where your instructions from outside the repository carry the same text, say the owner reads it twice, once from each place.
+Then ask the second question **of text that read as covered, and only of that text**: did that text come from this addition, at a version it used to ship? Never ask it of text that read as uncovered, and never ask it first. A global copy (below) is covering text of its own, and is asked it.
 
-**Otherwise, compare against the retired wordings, and never weigh a section against the current text to decide it is stale** — differing from the current wording tells you nothing, since differing is what a rewrite produces. The one exception: an addition whose history holds no retired wording yet has its current text stand in for one, and its reference says so.
+Answer it against the addition's own texts: the one its reference offers now, and the ones it has retired, in the history file its `## Stale when` names. That section also carries what is specific to the addition; apply it with the procedure below.
 
-**Before offering an uncovered addition, check your own instructions.** Where instructions you load from outside the repository — the owner's global file, however your harness reaches it — carry every sentence of its current text, in order, and assert no sentence found only in a retired wording, it is **already global**. You can check without opening a file; they are in front of you. Do not count the repository's own files, which the merged view already judged, nor another repository's that your harness loaded from the working directory.
+**First, is the section already current?** It is when it carries the current text; then it is **already current**, and you compare it against no retired wording. A section that does not carry it goes on to the two questions.
+
+**Otherwise, compare the section against each retired wording, and never weigh it against the current text to decide it is stale** — differing from the current wording is what a rewrite produces. The one exception: an addition whose history holds no retired wording yet has its current text stand in for one, and its reference says so.
+
+Ask two questions about the section, and only these two:
+
+1. **Do whole sentences of that wording survive verbatim in it?** Not a phrase — a whole sentence.
+2. **Does that wording's structure survive?** Its sentences, in its order, each doing its job.
+
+**Each answers yes or no, never neither** — where you cannot tell whether a sentence survives, or whether the structure does, the answer is **no**. **When the two answers agree, they decide. When they disagree, you cannot tell.**
+
+| whole sentences | structure | |
+| --- | --- | --- |
+| yes | yes | **Stale.** It is that wording, edited. Offer the replacement. |
+| no | no | **The owner's.** Written from scratch. Offer nothing. |
+| yes | no | **You cannot tell.** A line of ours carried into prose they wrote — or a line they reached themselves. |
+| no | yes | **You cannot tell.** Their words in our shape — a reword of ours, or the order the subject naturally takes. |
+
+**Do not decide the two disagreeing cases.** Show the owner the three texts and ask (step 4).
+
+Match a sentence literally. A shared idea is not a sentence surviving, a paraphrase of one is not that sentence, and no phrase, however memorable, answers question 1.
+
+**A quoted sentence is not an asserted one, and does not count for question 1.** A sentence inside quotation marks, inside a fence, or in a sentence that disputes it is being shown, not followed. A section that quotes one in order to reject it is the owner's prose.
+
+Once both answers are yes, offer the replacement. Do **not** then read the section's remaining sentences against the current text and reconsider. That applies to the section's other prose only; it changes nothing about how the two questions are answered.
+
+**Do not shortcut any of this on the subject a section talks about.** Only the two questions decide, and they decide against the texts themselves.
+
+**Where your instructions from outside the repository cover the subject in another form, classify that copy.** An uncovered addition whose subject they cover — judged by meaning, as above — is not absent. Ask the second question of that **global copy**, against the same texts and in the same way as of a repository section, and offer nothing for the repository whatever it answers. Its verdict is the one a repository section would get, placed **in your instructions from outside the repository**: from a retired wording, the owner's own, or you cannot tell. Say, as for already global, that a copy in the root `AGENTS.md` would add the team and nothing else, that the owner would then read the subject twice, and that they can ask for it.
+
+Classify a global copy the same way whatever the repository holds — a covered or already-current section included — and hand over the current text for one from a retired wording (step 4).
 
 Each addition ends this step in one of six states:
 
 - **already global** — uncovered here, and your instructions from outside the repository carry the current text. Offer nothing. Say that a copy in the root `AGENTS.md` would add the team and nothing else, that the owner would then read the text twice, and that they can ask for it. Write that copy only if they do; the request is the approval.
 - **already current** — the section carries the text you would offer. Offer nothing, and say that is why. Do **not** report it as the owner's own: they did not write it, this package did, and telling someone they authored your text is the same mistake as replacing what they did author.
-- **absent** — uncovered, and not already global. Offer it as an addition.
-- **from a retired wording, in the root `AGENTS.md`** — offer the current text as a replacement. For an addition with no retired wording yet, report it as an edited copy of the current text.
-- **the owner's own** — offer nothing, and name what covers it.
+- **absent** — uncovered, and your instructions from outside the repository do not cover it either. Offer it as an addition.
+- **from a retired wording, in the root `AGENTS.md`** — offer the current text as a replacement. For an addition with no retired wording yet, report it as an edited copy of the current text. Where your instructions from outside the repository carry the current text, the offer says so and puts removal beside it (step 4).
+- **the owner's own** — offer nothing, and name what covers it. Where your instructions from outside the repository carry the current text, say so, and that the owner reads the subject twice, once in each wording; which to keep is theirs, and you change neither.
 - **you cannot tell** — do not decide it either way. Put it to the owner (step 4).
+
+A global copy that carries the current text is already global, or, beside a repository section, reported as current. Otherwise it takes the last three, placed in your instructions from outside the repository, and is offered nothing for the repository.
 
 A section from a retired wording in a file that is **not** the root `AGENTS.md` — a `CLAUDE.md`, a `.cursorrules` — is reported by name and offered nothing. This skill writes one file; replacing the root copy while an older copy stays in a harness file leaves the repository holding two versions instead of one. Recommend `init` and carry on.
 
@@ -76,6 +108,10 @@ Name both destinations and what each buys — the global file reaches every repo
 Where an addition came from a **retired wording**, show the section as it stands in `AGENTS.md`, then the current text **verbatim**, say that it would replace that section and nothing else, and ask.
 
 **Name what the replacement would take with it.** A stale section often carries paragraphs the owner added to it — rules of their own, sitting under the same heading. Replacing the section removes those too. So before you ask, name every paragraph in that section that appears in no retired wording — or, for an addition with none yet, not in the current text — say the replacement would remove it, and let the owner weigh that. An approval given for "refresh the wording" is not an approval to delete what they wrote.
+
+**Where your instructions from outside the repository carry the current text, put removal beside the replacement.** Offer the replacement as above, and say that it would have the owner read the text twice, once from each place. Then offer removing the section as the other answer: name every paragraph of the owner's it would take, and say the team's agents would no longer read it. This holds however the section was placed — by the comparison, by the owner's answer, or by measurement.
+
+Where a **global copy** came from a retired wording — whatever the repository holds, a current section included — show it as it stands, then the current text **verbatim**, name the file that holds it where you can see it, and say the current text would replace that section there. Name the owner's paragraphs it would take, as for a replacement. This skill writes nothing outside the repository, so this is handed over, as a global placement is; say so. Where a global copy cannot be placed, put it to the owner exactly as below; an answer that it came from here, or a measurement that puts the current text ahead, hands the current text over.
 
 Where you **cannot tell**, say that first, in those words. Then show three texts — the section as it stands, the retired wording it partly tracks, and the current text — and put three answers to the owner:
 
@@ -106,11 +142,13 @@ On approval of a **replacement**, replace that one section in place — from its
 
 Strip the fence when you write. The ``` markers around the addition in its reference file are there so you can see where the text begins and ends; the section goes into `AGENTS.md` as prose, not as a code block.
 
+On approval of a **removal**, remove that one section — from its heading through to the next heading of the same or higher level — and leave every other byte of the file as it was.
+
 On a decline, write nothing. A declined replacement leaves the section exactly where it stands, and so does an unanswered question.
 
 ## 6. Report
 
-Report every run, whichever way it went: what you read, the verdict for each addition and why — already global, already current, absent, the owner's own, from a retired wording, undecidable, or not judged — what you offered, which destination you recommended, and what was written. For an already-current addition your instructions from outside the repository also carry, say the owner reads it twice. A hand-off for the owner to place globally is an outcome, not a decline; say so. A run that offers nothing still reports — that is the only way the user can tell "already covered" from "did not look".
+Report every run, whichever way it went: what you read, the verdict for each addition and why — already global, already current, absent, the owner's own, from a retired wording, undecidable, or not judged — what you offered, which destination you recommended, and what was written. For an already-current addition your instructions from outside the repository also carry, say the owner reads it twice. Wherever those instructions cover an addition's subject, name that copy and its verdict. A hand-off for the owner to place globally is an outcome, not a decline; say so. A run that offers nothing still reports — that is the only way the user can tell "already covered" from "did not look".
 
 ## Rules
 
