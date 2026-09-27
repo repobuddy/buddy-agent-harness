@@ -104,7 +104,8 @@ export default defineConfig({
 						{ label: 'init', slug: 'cli/init' },
 						{ label: 'doctor', slug: 'cli/doctor' },
 						{ label: 'dep-plugins', slug: 'cli/dep-plugins' },
-						{ label: 'governance', slug: 'cli/governance' },
+						{ label: 'reference', slug: 'cli/reference' },
+						{ label: 'governance (deprecated)', slug: 'cli/governance' },
 					],
 				},
 				{
@@ -115,6 +116,7 @@ export default defineConfig({
 						{ label: 'Instruction Purpose', slug: 'agent-configuration/instruction-purpose' },
 						{ label: 'Instruction Target', slug: 'agent-configuration/instruction-target' },
 						{ label: 'Writing Portable Skills', slug: 'agent-configuration/portable-skills' },
+						{ label: 'References and Skills', slug: 'agent-configuration/references' },
 						{ label: 'Skill Scripts', slug: 'agent-configuration/skill-scripts' },
 						{ label: 'Lookup Files', slug: 'agent-configuration/lookup-files' },
 						{ label: 'MCP Servers', slug: 'agent-configuration/mcp-servers' },

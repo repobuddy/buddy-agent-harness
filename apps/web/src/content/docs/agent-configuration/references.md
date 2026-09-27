@@ -1,0 +1,68 @@
+---
+title: References and Skills
+description: When supplementary instructions belong in a reference fetched by name rather than in a skill, and how layered references combine.
+---
+
+A **reference** is a Markdown document an agent reads on demand: a style guide, a playbook, a checklist, domain notes, a governance. It is fetched by name with [`reference show`](/cli/reference/), and it costs nothing until it is fetched.
+
+"Reference" is the [Agent Skills specification](https://agentskills.io/specification)'s term for material an agent reads on demand. It is deliberately not a vendor term for context that is always loaded: Cursor rules, Copilot instructions, and `AGENTS.md` are all read whether or not the task needs them.
+
+## The session-start trade-off
+
+A skill and a reference differ in when they cost context.
+
+| | Skill | Reference |
+| --- | --- | --- |
+| Loaded at session start | its `name` and `description`, for every installed skill | nothing |
+| Loaded when used | the `SKILL.md` body, when the agent activates it | the whole document, when something asks for it by name |
+| Found by | the harness matching the `description` to the task | a name someone wrote down, or [`reference search`](/cli/reference/#reference-search) |
+| Good for | a capability the agent should reach for unprompted | instructions another instruction points to |
+
+The Agent Skills specification puts the startup cost at roughly 100 tokens of metadata per skill, with the body loaded on activation and a skill's own resources on demand. That is cheap per skill and adds up per session: every installed skill pays it in every conversation, used or not.
+
+A reference pays nothing up front. The price is that nothing loads it by itself: an `AGENTS.md` line, a skill, or a person has to name it. So choose by who starts the read:
+
+- **The agent should decide, from the task, that it needs this.** Make it a skill. Its description is the trigger.
+- **Something else already knows it is needed.** Make it a reference, and name it there: `Read the testing reference before writing tests`, or a skill step that loads `release-checklist`.
+
+A governance, the bar a skill holds its own output to, is the second case. The skill knows which bar it needs, so the bar does not need a description in every session.
+
+## Where references live
+
+References resolve through tiers, highest precedence first:
+
+| Tier | Where |
+| --- | --- |
+| `managed` | the machine-wide folder, for a machine owner |
+| `local` | `.agents/references.local/`, personal and gitignored |
+| `project` | `.agents/references/`, committed with the repository |
+| `user` | `~/.agents/references/` |
+| `plugin` | a `references/` folder shipped by this package or by a declared dependency |
+
+In a monorepo, the project and local tiers are read at every level from the working directory up to the repository root, and the nearest level wins. A package can then carry its own `testing` reference over the one at the root.
+
+Documents written for the older [`governance`](/cli/governance/) command, in `governances/` folders, are still read, one layer below `references/` in the same tier.
+
+## How layers combine
+
+When more than one layer holds a name, the higher document decides how it combines with the ones below, in its frontmatter:
+
+```md
+---
+merge: merge-sections
+---
+
+## Testing
+
+Use the fixtures in `test/fixtures`.
+```
+
+- **`first-wins`**, the default: the higher document replaces everything below it.
+- **`combine`**: every layer is returned whole, highest first, each labeled.
+- **`merge-sections`**: the higher document replaces the lower one heading by heading, so a project can override one section of a shared reference and keep the rest. A `<!-- merge: combine -->` line under a heading keeps both versions of that section, and `<!-- merge: remove -->` drops it.
+
+The resolver never compares prose. If two layers contradict each other, the merge mode decides which text survives; deciding which is *right* is left to whoever reads the result.
+
+A repository can stop a contributor's local copy from overriding a project reference by adding `final: true` to the project reference's frontmatter.
+
+[`reference show --trace`](/cli/reference/#--trace) shows which layer answered and why the others did not, and [`reference list`](/cli/reference/#reference-list) marks every shadowed layer.
