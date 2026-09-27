@@ -22,7 +22,13 @@ const inlineDeps = {
 	// Alias to its ESM build instead — unlisted in `exports`, but resolvable as a direct subpath.
 	alias: { 'jsonc-parser': 'jsonc-parser/lib/esm/main.js' },
 	deps: {
-		alwaysBundle: [/^@toon-format\/toon(\/|$)/, /^clibuilder(\/|$)/, /^smol-toml(\/|$)/, /^yaml(\/|$)/],
+		alwaysBundle: [
+			/^@toon-format\/toon(\/|$)/,
+			/^clibuilder(\/|$)/,
+			/^jsonc-parser(\/|$)/,
+			/^smol-toml(\/|$)/,
+			/^yaml(\/|$)/,
+		],
 		onlyBundle: false,
 	},
 } as const
@@ -48,6 +54,7 @@ export default defineConfig([
 	},
 	...skillScriptConfig('doctor'),
 	...skillScriptConfig('init'),
+	...skillScriptConfig('mcp'),
 	...skillScriptConfig('reference'),
 ])
 

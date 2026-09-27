@@ -358,11 +358,24 @@ describe('the detect-and-repair seam', () => {
 			expect(entry.skillRepair({ file: '<path>' })).toContain(repairSkillInvocation)
 	})
 
-	// Correcting a drifted server set is the user's judgment about which side is right, so no skill
-	// is named in either rendering.
-	it('names no skill for any MCP finding, in either rendering', () => {
-		expect(mcpRepairs.length).toBeGreaterThan(0)
-		for (const entry of mcpRepairs) {
+	// `mcp project` can only ever write where the golden set is plainly ahead — an absent server or a
+	// field only the golden side moved — so those two findings alone hand off to the repair skill.
+	// Correcting a drifted server set anywhere else is the user's judgment about which side is right,
+	// so no skill is named in either rendering.
+	const mcpProjectable = ['mcp-unprojected', 'mcp-diverged-golden']
+
+	it('sends the two findings `mcp project` can fix to the repair skill', () => {
+		for (const entry of mcpRepairs.filter((repair) => mcpProjectable.includes(repair.problem))) {
+			const { instruction } = entry.repair({ file: '<path>', server: 'linear' }, commandInvocation)
+			expect(entry.skillRepair({ file: '<path>', server: 'linear' })).toContain(repairSkillInvocation)
+			expect(instruction).toContain(repairSkillInvocation)
+		}
+	})
+
+	it('names no skill for every other MCP finding, in either rendering', () => {
+		const rest = mcpRepairs.filter((repair) => !mcpProjectable.includes(repair.problem))
+		expect(rest.length).toBeGreaterThan(0)
+		for (const entry of rest) {
 			const { command, instruction } = entry.repair({ file: '<path>' }, commandInvocation)
 			for (const text of [entry.skillRepair({ file: '<path>' }), command, instruction]) {
 				expect(text).not.toContain(initSkillInvocation)

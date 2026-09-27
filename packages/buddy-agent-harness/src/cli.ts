@@ -4,6 +4,7 @@ import { depPluginsCommand } from './dep-plugins/dep-plugins.command.ts'
 import { doctorCommand } from './diagnose-bridges/doctor.command.ts'
 import { governanceCommand } from './governance-overrides/governance.command.ts'
 import { initCommand } from './initialize-harnesses/init.command.ts'
+import { mcpCommand } from './project-mcp/mcp.command.ts'
 import { referenceCommand } from './references/reference.command.ts'
 
 /**
@@ -28,6 +29,7 @@ function app() {
 	})
 		.command(initCommand)
 		.command(doctorCommand)
+		.command(mcpCommand)
 		.command(depPluginsCommand)
 		.command(referenceCommand)
 		.command(governanceCommand)

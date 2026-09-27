@@ -11,7 +11,7 @@ Where `doctor` looks inside a repository.
 | detection directory | `.codex` |
 | skills projection | none — reads `.agents/skills` natively |
 | instruction bridge | none |
-| MCP configuration | `.codex/config.toml` — the `mcp_servers` key, toml |
+| MCP configuration | `.codex/config.toml` — the `mcp_servers` key, toml, shared with other settings |
 
 ## User scope
 

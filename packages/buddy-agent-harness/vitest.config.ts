@@ -15,6 +15,7 @@ export default defineConfig({
 				'src/**/*.test.ts',
 				'src/skill-scripts/doctor.ts',
 				'src/skill-scripts/init.ts',
+				'src/skill-scripts/mcp.ts',
 				'src/skill-scripts/reference.ts',
 			],
 			thresholds: {

@@ -108,7 +108,7 @@ describe('parseGoldenSet', () => {
 })
 
 describe('parseTarget', () => {
-	const json = { path: '.cursor/mcp.json', key: 'mcpServers', format: 'json' } as const
+	const json = { path: '.mcp.json', key: 'mcpServers', format: 'json', dialect: 'claude-code' } as const
 
 	it('reads no servers from an absent file', () => {
 		expect(parseTarget(json, undefined)).toEqual({ kind: 'absent' })

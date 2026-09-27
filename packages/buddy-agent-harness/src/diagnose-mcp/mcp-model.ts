@@ -43,8 +43,14 @@ function sameValue(field: McpField, left: unknown, right: unknown): boolean {
 	return JSON.stringify(left) === JSON.stringify(right)
 }
 
-export function divergingFields(golden: McpServer, target: McpServer): McpField[] {
+/** Only over `fields`: a golden field the target has no place for is dropped on write, not drift. */
+export function divergingFields(
+	golden: McpServer,
+	target: McpServer,
+	fields: ReadonlySet<McpField> = new Set(mcpFields),
+): McpField[] {
 	return mcpFields.filter((field) => {
+		if (!fields.has(field)) return false
 		const declared = golden[field]
 		if (declared === undefined) return false
 		if (mapFields.has(field) && isRecord(declared) && isRecord(target[field])) {
@@ -58,4 +64,49 @@ export function divergingFields(golden: McpServer, target: McpServer): McpField[
 /** Whether one field of two models agrees, for naming the side that moved. */
 export function sameField(field: McpField, left: McpServer | undefined, right: McpServer | undefined): boolean {
 	return sameValue(field, left?.[field], right?.[field])
+}
+
+function stringMap(value: unknown): Record<string, string> | undefined {
+	if (!isRecord(value)) return undefined
+	const entries = Object.entries(value).filter(([, item]) => typeof item === 'string') as [string, string][]
+	return entries.length ? Object.fromEntries(entries) : undefined
+}
+
+const transports = new Set<string>(['stdio', 'http', 'sse'])
+
+/**
+ * Infers transport when unstated (`url` → `http`, `command` → `stdio`), so a `url` entry in one
+ * file compares equal to a `type: http` entry in another.
+ */
+function transportOf(entry: Record<string, unknown>): McpTransport | undefined {
+	const declared = entry['type'] ?? entry['transport']
+	if (typeof declared === 'string' && transports.has(declared)) return declared as McpTransport
+	if (typeof entry['url'] === 'string') return 'http'
+	if (typeof entry['command'] === 'string') return 'stdio'
+	return undefined
+}
+
+/**
+ * One host or golden entry, converted into the shared model; a field of the wrong type is dropped
+ * rather than carried through, so a `timeout` that is a string does not report as a divergence.
+ * Also used by `mcp-inventory.ts`, which normalizes its own raw shapes into these same fields
+ * first.
+ */
+export function serverFrom(entry: Record<string, unknown>): McpServer {
+	const args = Array.isArray(entry['args']) && entry['args'].every((item) => typeof item === 'string')
+	const transport = transportOf(entry)
+	const env = stringMap(entry['env'])
+	const headers = stringMap(entry['headers'])
+	return {
+		...(transport ? { transport } : {}),
+		...(typeof entry['command'] === 'string' ? { command: entry['command'] } : {}),
+		...(args ? { args: entry['args'] as string[] } : {}),
+		...(env ? { env } : {}),
+		...(typeof entry['url'] === 'string' ? { url: entry['url'] } : {}),
+		...(headers ? { headers } : {}),
+		...(typeof entry['description'] === 'string' ? { description: entry['description'] } : {}),
+		...(typeof entry['enabled'] === 'boolean' ? { enabled: entry['enabled'] } : {}),
+		...(typeof entry['timeout'] === 'number' ? { timeout: entry['timeout'] } : {}),
+		...(typeof entry['source'] === 'string' ? { source: entry['source'] } : {}),
+	}
 }

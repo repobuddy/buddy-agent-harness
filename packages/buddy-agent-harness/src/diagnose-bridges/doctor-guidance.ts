@@ -372,10 +372,10 @@ const mcpTable: Record<McpProblem, RepairRow> = {
 		detail: 'the golden set declares this server and the harness config does not carry it',
 		repair: ({ file, server }) => ({
 			command: '',
-			instruction: `add the server ${server} to ${file}, or drop it from the golden set`,
+			instruction: `add the server ${server} to ${file}, or drop it from the golden set — \`${repairSkillInvocation}\` offers the correction`,
 		}),
 		skillRepair: (at) =>
-			`add the server at ${locatorText(at)} to that file from its golden entry, or drop it from the golden set`,
+			`hand ${locatorText(at)} to \`${repairSkillInvocation}\`, which projects it from its golden entry with \`mcp project\` — or drop it from the golden set`,
 	},
 	'mcp-undeclared': {
 		detail: 'the harness config carries this server and the golden set does not declare it',
@@ -393,8 +393,12 @@ const mcpTable: Record<McpProblem, RepairRow> = {
 	},
 	'mcp-diverged-golden': {
 		detail: 'only the golden set changed since the two last agreed — the harness copy is stale',
-		repair: (at) => ({ command: '', instruction: `update ${locatorText(at)} from the golden entry` }),
-		skillRepair: (at) => `update ${locatorText(at)} from the golden entry`,
+		repair: (at) => ({
+			command: '',
+			instruction: `update ${locatorText(at)} from the golden entry — \`${repairSkillInvocation}\` offers the correction`,
+		}),
+		skillRepair: (at) =>
+			`hand ${locatorText(at)} to \`${repairSkillInvocation}\`, which updates it from the golden entry with \`mcp project\``,
 	},
 	'mcp-diverged-both': {
 		detail: 'both sides changed since they last agreed — merging either way would discard the other',
@@ -762,7 +766,7 @@ ${repairTable(configurationRepairs)}
 
 A repository may keep a **golden MCP server set** at \`${goldenSet}\` — one canonical entry per server, in the superset of fields the supported hosts accept, written by the user. Where it exists, \`doctor\` compares it against each harness's own MCP configuration and reports how the two have drifted. **No golden set means no MCP drift findings at all**, and a harness with no MCP file yet has nothing that could have drifted.
 
-Comparison is semantic. Six config keys across three file formats means no two of these files are ever byte-equal, so each side is parsed into one model and the models are compared. A field the golden set leaves unset is never a difference, however a harness fills it in: a host restating its own default and a user's deliberate edit are indistinguishable there, and treating both as changes is what makes a golden set accumulate noise.
+Comparison is semantic. Six config keys across three file formats means no two of these files are ever byte-equal, so each side is parsed into one model and the models are compared. Each harness file is read in that harness's own spelling, and only over the fields it has a place for: a golden \`description\` Cursor cannot hold is not drift. A field the golden set leaves unset is never a difference, however a harness fills it in: a host restating its own default and a user's deliberate edit are indistinguishable there, and treating both as changes is what makes a golden set accumulate noise.
 
 Each finding names a **locator**, not a file: \`.cursor/mcp.json#servers.linear.command\` is the server and field, and that is what you route on.
 
