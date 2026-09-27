@@ -28,8 +28,8 @@ runs this command on every governance a skill reads, and almost always finds not
 from an already-installed copy rather than through `npx`, and the answer a skill needs — *is there an
 override* — is carried by the **exit code**, which costs nothing to read.
 
-**An override is a choice, never a fault.** `doctor` reports what the layers hold and stops there.
-Nothing here diagnoses.
+**An override is a choice, never a fault.** Nothing here diagnoses. `doctor` reports these layers
+through `reference` now (`../references/`), as legacy layers of the reference tiers.
 
 **Key terms**
 
@@ -72,8 +72,6 @@ Nothing here diagnoses.
   `show` to read one.
 - **an agent working outside a skill** — reads a governance it was told to follow, with no skill
   folder to read it from.
-- **`doctor`** — reports the overrides the layers hold, as a section of its own report.
-- **`init`** — creates the project layer, so a repository has one obvious place to put an override.
 
 **Goals, and where each is served**
 
@@ -86,8 +84,6 @@ Nothing here diagnoses.
 | person at a shell | read a governance as the Markdown it is | `show <name>` |
 | person at a shell | learn which layers exist and which one is answering | `list` |
 | another program | take the document and the layer it came from together | `show --format json` |
-| `doctor` | report what is overridden without calling any of it a fault | the override layers |
-| `init` | leave a repository with somewhere to put an override | the project layer |
 
 **Entry point**
 
@@ -233,23 +229,14 @@ The two graphs share the layer construction and nothing else. `list` never reads
 | N→O | an unsupported format | `rejects an unsupported output format rather than falling back` |
 | →T | a failure with no message | `reports a failure it cannot read a message from` |
 
-### the project layer, at `init` and at `doctor`
-
-| Edge | Path (Given) | Scenario |
-| --- | --- | --- |
-| — | a repository with no project layer | `creates the project override layer and reports what it holds` |
-| — | a repository holding an override | `reports the overrides the layers hold without turning any of them into a finding` |
-| — | a report naming a layer | `names the directory each override was read from` |
-| — | no override anywhere | `states the zero outright when no layer holds an override` |
-
 ## References
 
 - `../../../../src/governance-overrides/governance-overrides.ts` is the resolver: the layers, the
   lookup order, the name check, and the two reads.
 - `../../../../src/governance-overrides/governance.command.ts` is the command surface.
 - `../command-output/` owns the encoder and the verbatim document write `show` uses in `text`.
-- `../diagnosis-report/` states the `governances` section of `doctor`'s report; `../../skills/harness-init/`
-  states that `init` creates the project layer and counts it.
+- `../references/` reads these layers as legacy layers; `doctor` and `init` report them through it
+  (`../diagnosis-report/`, `../../skills/harness-init/`) and no longer through this command.
 - `../../../../../../.agents/plans/122-governance-retrieval.design.md` is the design this implements,
   including the three-step lookup order a skill follows and why step 2 never runs through `npx`.
 - AXI §5 backs the stated zero; AXI §10 backs the home collapse.

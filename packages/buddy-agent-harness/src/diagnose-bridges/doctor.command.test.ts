@@ -114,46 +114,63 @@ describe('doctor command', () => {
 	})
 })
 
-describe('the governance override section', () => {
-	// Reported, never diagnosed: an override is a choice someone made, so it is a section of its own
+describe('the references section', () => {
+	function report(): { references: unknown; findings: unknown } {
+		return JSON.parse(stdout.mock.calls.map(([value]) => String(value)).join(''))
+	}
+
+	// Reported, never diagnosed: a reference is a choice someone made, so it is a section of its own
 	// and the finding families are left exactly as they were.
-	it('reports the overrides the layers hold without turning any of them into a finding', () => {
-		const root = mkdtempSync(join(tmpdir(), 'doctor-governances-'))
-		mkdirSync(join(root, '.agents', 'governances'), { recursive: true })
-		writeFileSync(join(root, '.agents', 'governances', 'agent-tool-output.md'), '# Rules')
+	it('reports the references the tiers hold without turning any of them into a finding', () => {
+		const root = mkdtempSync(join(tmpdir(), 'doctor-references-'))
+		mkdirSync(join(root, '.agents', 'references'), { recursive: true })
+		writeFileSync(join(root, '.agents', 'references', 'testing.md'), '# Testing')
 
 		expect(run({ format: 'json', root })).toBe(0)
 
-		const report = JSON.parse(stdout.mock.calls.map(([value]) => String(value)).join(''))
-		expect(report.governances).toEqual([
-			{
-				name: 'agent-tool-output',
-				scope: 'project',
-				path: join(root, '.agents', 'governances', 'agent-tool-output.md'),
-			},
-		])
-		expect(typeof report.findings).toBe('string')
+		expect(report().references).toContainEqual({
+			name: 'testing',
+			tier: 'project',
+			path: collapseHome(homedir(), join(root, '.agents', 'references', 'testing.md')),
+			status: 'used',
+		})
+		expect(typeof report().findings).toBe('string')
 	})
 
-	// There are two machine-wide layers now, so the scope alone no longer settles which directory
-	// answered — and an admin reading a row from the deprecated one has to see that before they can
-	// move it. The path is collapsed the same way `bin` is, which `command-output` covers.
-	it('names the directory each override was read from', () => {
-		const root = mkdtempSync(join(tmpdir(), 'doctor-governances-'))
+	it('gives each row the status reference list gives, legacy governances folders included', () => {
+		const root = mkdtempSync(join(tmpdir(), 'doctor-references-'))
+		mkdirSync(join(root, '.agents', 'references'), { recursive: true })
 		mkdirSync(join(root, '.agents', 'governances'), { recursive: true })
+		writeFileSync(join(root, '.agents', 'references', 'testing.md'), '# Testing')
+		writeFileSync(join(root, '.agents', 'governances', 'testing.md'), '# Old testing')
 		writeFileSync(join(root, '.agents', 'governances', 'agent-tool-output.md'), '# Rules')
 
 		run({ format: 'json', root })
 
-		const report = JSON.parse(stdout.mock.calls.map(([value]) => String(value)).join(''))
-		expect(report.governances[0].path).toBe(
-			collapseHome(homedir(), join(root, '.agents', 'governances', 'agent-tool-output.md')),
-		)
+		const rows = report().references as { name: string; path: string; status: string }[]
+		const project = rows.filter(({ path }) => path.startsWith(collapseHome(homedir(), root)))
+		expect(project.map(({ name, status }) => ({ name, status }))).toEqual([
+			{ name: 'agent-tool-output', status: 'used' },
+			{ name: 'testing', status: 'used' },
+			{ name: 'testing', status: 'shadowed by project (first-wins)' },
+		])
 	})
 
-	it('states the zero outright when no layer holds an override', () => {
-		expect(buildDoctorReport('~/bin/bah', healthy).governances).toBe(
-			'0 governance overrides — no .agents/governances at project, user, or machine scope',
+	it('leaves out what a plugin ships', () => {
+		const root = mkdtempSync(join(tmpdir(), 'doctor-references-'))
+		writeFileSync(join(root, 'package.json'), JSON.stringify({ dependencies: { shipped: '1.0.0' } }))
+		mkdirSync(join(root, 'node_modules', 'shipped', 'references'), { recursive: true })
+		writeFileSync(join(root, 'node_modules', 'shipped', 'package.json'), JSON.stringify({ name: 'shipped' }))
+		writeFileSync(join(root, 'node_modules', 'shipped', 'references', 'shipped-only.md'), '# Shipped')
+
+		run({ format: 'json', root })
+
+		expect(JSON.stringify(report().references)).not.toContain('shipped-only')
+	})
+
+	it('states the zero outright when no layer holds a reference', () => {
+		expect(buildDoctorReport('~/bin/bah', healthy).references).toBe(
+			'0 references — no layer outside the plugin tier holds one',
 		)
 	})
 })
@@ -164,7 +181,7 @@ describe('buildDoctorReport', () => {
 			bin: '~/bin/bah',
 			bridges: healthy.bridges,
 			instructions: [],
-			governances: '0 governance overrides — no .agents/governances at project, user, or machine scope',
+			references: '0 references — no layer outside the plugin tier holds one',
 			findings: '0 problems found — the 1 bridge resolves and the configuration around them is current',
 		})
 	})

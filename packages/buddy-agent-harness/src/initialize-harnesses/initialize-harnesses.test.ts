@@ -184,16 +184,20 @@ describe('initializeHarnesses', () => {
 	})
 
 	// The same contract the canonical skills directory has: a repository gets the directory, so there
-	// is one obvious place to put an override rather than a path someone has to be told.
-	it('creates the project override layer and reports what it holds', () => {
+	// is one obvious place to put a reference rather than a path someone has to be told.
+	it('creates the project references layer and reports what the project tier holds', () => {
 		const root = repository()
 
-		expect(initializeHarnesses({ root }).governances).toBe(0)
-		expect(existsSync(join(root, '.agents', 'governances'))).toBe(true)
+		expect(initializeHarnesses({ root }).references).toBe(0)
+		expect(existsSync(join(root, '.agents', 'references'))).toBe(true)
+		expect(existsSync(join(root, '.agents', 'governances'))).toBe(false)
 
+		writeFileSync(join(root, '.agents', 'references', 'testing.md'), '# Testing')
+		mkdirSync(join(root, '.agents', 'governances'))
 		writeFileSync(join(root, '.agents', 'governances', 'agent-tool-output.md'), '# Rules')
+		writeFileSync(join(root, '.agents', 'governances', 'testing.md'), '# Testing')
 
-		expect(initializeHarnesses({ root }).governances).toBe(1)
+		expect(initializeHarnesses({ root }).references).toBe(2)
 	})
 
 	// The enabled set is recomputed from detection on every run, so persisting it would be a second

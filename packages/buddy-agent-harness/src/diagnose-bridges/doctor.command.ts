@@ -5,26 +5,24 @@ import { collapseHome, displayBinPath, parseFormat, writeResult } from '../comma
 import { type ConfigurationFinding, diagnoseConfiguration } from '../diagnose-configuration/diagnose-configuration.ts'
 import { diagnoseMcp } from '../diagnose-mcp/diagnose-mcp.ts'
 import { diagnoseNonstandard } from '../diagnose-nonstandard/diagnose-nonstandard.ts'
-import {
-	type GovernanceScope,
-	governanceLayers,
-	listGovernances,
-	overrideLayers,
-} from '../governance-overrides/governance-overrides.ts'
 import { parseHarnesses } from '../harness-registry/harness-registry.ts'
+import { listReferences, type ReferenceRow } from '../references/reference-catalog.ts'
+import { referenceLayers } from '../references/reference-layers.ts'
 import { type DiagnoseResult, diagnoseBridges } from './diagnose-bridges.ts'
 import { commandInvocation, type DoctorProblem, type RepairAction } from './doctor-guidance.ts'
 import { GitBridgeState } from './git-bridge-state.ts'
+
+export type DoctorReference = Pick<ReferenceRow, 'name' | 'tier' | 'path' | 'status'>
 
 export type DoctorReport = {
 	bin: string
 	bridges: DiagnoseResult['bridges']
 	instructions: DiagnoseResult['instructions']
 	/**
-	 * Governance overrides in play, each at the layer that would win; reported rather than
-	 * diagnosed, since an override is a choice, not a fault.
+	 * References the managed, project, and user tiers hold, with the status `reference list` gives;
+	 * reported rather than diagnosed, since a reference is a choice, not a fault.
 	 */
-	governances: { name: string; scope: GovernanceScope; path: string }[] | string
+	references: DoctorReference[] | string
 	divergence?: DiagnoseResult['divergence']
 	/**
 	 * The repair is lifted out into `help`; `problem` stays on the row so a caller routes without
@@ -46,12 +44,10 @@ export function buildDoctorReport(
 	bin: string,
 	result: DiagnoseResult,
 	configuration: ConfigurationFinding[] = [],
-	overrides: { name: string; scope: GovernanceScope; path: string }[] = [],
+	held: DoctorReference[] = [],
 ): DoctorReport {
 	const findings = [...result.findings, ...configuration]
-	const governances = overrides.length
-		? overrides
-		: '0 governance overrides — no .agents/governances at project, user, or machine scope'
+	const references = held.length ? held : '0 references — no layer outside the plugin tier holds one'
 	// Counted together so a reader doesn't add up two numbers to learn that nothing is wrong.
 	if (!findings.length) {
 		const count = result.bridges.length + result.instructions.length
@@ -60,7 +56,7 @@ export function buildDoctorReport(
 			bin,
 			bridges: result.bridges,
 			instructions: result.instructions,
-			governances,
+			references,
 			findings: `0 problems found — ${bridges} and the configuration around them is current`,
 		}
 	}
@@ -69,7 +65,7 @@ export function buildDoctorReport(
 		bin,
 		bridges: result.bridges,
 		instructions: result.instructions,
-		governances,
+		references,
 		...(result.divergence.length ? { divergence: result.divergence } : {}),
 		findings: findings.map(({ path, problem, detail }) => ({ path, problem, detail })),
 		// Deduped on the whole pair: several findings often share one repair, and repeating it
@@ -118,21 +114,17 @@ export const doctorCommand: cli.Command = command({
 				...diagnoseMcp({ root, git, cli: commandInvocation }),
 				...diagnoseNonstandard({ root, cli: commandInvocation }),
 			]
-			// Override layers only: what a skill ships is the skill's own business, not a
-			// repository setting.
-			const overrides = listGovernances(
-				overrideLayers(
-					governanceLayers({
-						root,
-						home,
-						platform: process.platform,
-						programData: process.env['ProgramData'],
-					}),
-				),
-			).map(({ name, scope, path }) => ({ name, scope, path: collapseHome(home, path) }))
+			const { rows } = listReferences(
+				referenceLayers({ root, home, platform: process.platform, programData: process.env['ProgramData'] }),
+			)
+			// Resolved across every tier so each status matches `reference list`, but plugin rows are
+			// left out: what a plugin ships is its own business, not a repository setting.
+			const held = rows
+				.filter(({ tier }) => tier !== 'plugin')
+				.map(({ name, tier, path, status }) => ({ name, tier, path: collapseHome(home, path), status }))
 			// Exit stays 0 even with findings: a non-zero code reads to an agent as "this command
 			// is broken".
-			writeResult(buildDoctorReport(displayBinPath(home, process.argv[1]), result, configuration, overrides), format)
+			writeResult(buildDoctorReport(displayBinPath(home, process.argv[1]), result, configuration, held), format)
 			return exitCodes.success
 		} catch (error) {
 			process.stderr.write(`error: ${error instanceof Error ? error.message : 'Harness diagnosis failed.'}\n`)
