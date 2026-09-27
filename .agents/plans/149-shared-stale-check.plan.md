@@ -12,6 +12,8 @@ todos:
     status: completed
   - content: Changeset, pnpm verify, PR referencing #149
     status: completed
+  - content: Rebase onto main after #156 and #158; reconcile the already-current and already-global checks
+    status: completed
 ---
 
 # 149 — one home for the `enhance` stale-check procedure
@@ -23,6 +25,13 @@ CR against `packages/buddy-agent-harness`, run headless. Seed intent is the issu
 - Each `## Stale when` keeps its history file, its heading, and what is specific to that addition.
 - No suite change: the frozen scenarios pin only that each `## Stale when` directs the comparison at its
   own history file, which still holds. #147 edits the same suite in parallel; this diff stays out of it.
+
+- Rebased after #156 (CR 147, issue 157) added an already-global check to step 3. Both checks are
+  one containment test applied to two texts: the covered section (already current) and the
+  instructions loaded from outside the repository (already global). Step 3 states the test once as
+  "carries the current text" and each check names it; already global sits on the uncovered branch,
+  where the spec flowchart puts `EG`. Still no suite change: #156 left the two `## Stale when`
+  scenarios as they were, and its new scenarios are behavioral.
 
 ## NEXT
 
