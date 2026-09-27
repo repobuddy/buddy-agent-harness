@@ -485,12 +485,12 @@ describe('merge modes', () => {
 			'.agents/references/name.md',
 			'---\nmerge: merge-sections\n---\n## Testing\n\n```\n## not a heading\n```\n\nproject body\n',
 		)
-		write(fakeHome.value, '.agents/references/name.md', '## Testing\n\nbase body\n')
+		write(fakeHome.value, '.agents/references/name.md', '## Testing\n\nbase body\n\n## Not a heading\n\nbase kept\n')
 
 		expect(show(['name'], { root })).toBe(0)
 		const content = written()
-		expect(content).toContain('## not a heading')
-		expect(content).toContain('project body')
+		expect(content).toContain('```\n## not a heading\n```\n\nproject body')
+		expect(content).toContain('## Not a heading\n\nbase kept')
 		expect(content).not.toContain('base body')
 	})
 
@@ -529,7 +529,11 @@ describe('merge modes', () => {
 
 	it('warns when a merge comment matches nothing or a heading path repeats', () => {
 		const root = repo()
-		write(root, '.agents/references/name.md', '---\nmerge: merge-sections\n---\n## Missing\n<!-- merge: remove -->\n')
+		write(
+			root,
+			'.agents/references/name.md',
+			'---\nmerge: merge-sections\n---\n## Testing\n\noverlay body\n\n## Missing\n<!-- merge: remove -->\n',
+		)
 		write(fakeHome.value, '.agents/references/name.md', '## Testing\n\nfirst\n\n## Testing\n\nsecond\n')
 
 		expect(show(['name'], { root, format: 'json' })).toBe(0)
@@ -537,7 +541,7 @@ describe('merge modes', () => {
 		const warnings = (entry?.warnings ?? []).join(' ')
 		expect(warnings).toContain('matches no section below')
 		expect(warnings).toContain('appears more than once')
-		expect(entry?.content).toContain('first')
+		expect(entry?.content).toBe('## Testing\n\noverlay body\n\n## Testing\n\nsecond\n')
 	})
 
 	it('applies layers bottom-up', () => {
@@ -658,6 +662,8 @@ describe('show output', () => {
 		expect(content).toContain('name="a"')
 		expect(content).toContain('name="b"')
 		expect(content).toContain('name="missing" status="missing"')
+		expect(content.indexOf('name="a"')).toBeLessThan(content.indexOf('name="missing"'))
+		expect(content.indexOf('name="missing"')).toBeLessThan(content.indexOf('name="b"'))
 		expect(stderrLines().some((line) => line.includes('no reference named "missing"'))).toBe(true)
 	})
 
