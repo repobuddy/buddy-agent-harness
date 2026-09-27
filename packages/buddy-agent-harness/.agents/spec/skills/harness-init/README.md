@@ -9,7 +9,7 @@ concept: harness-compatibility
 
 `harness-init` initializes or updates one consumer repository's standards-based agent configuration so it can be used effectively by multiple agent harnesses. The canonical configuration is the repository root's `AGENTS.md` and `.agents/` tree: shared behavior lives in `.agents/AGENTS.md`, reusable capabilities live in `.agents/skills/**/SKILL.md`, and tool settings remain separately named artifacts. Vendor files are projections of compatible canonical artifacts, not competing sources of truth. The active harness is always enabled; explicit user preferences may add other supported harnesses.
 
-This node is the **command**. The `init` **skill** that runs it is a different subject with its own node at `../init/`: the five-phase job around this call, which of its writes need approval, and the instruction bridges this command does not write.
+This node is the **command**. The `init` **skill** that runs it is a different subject with its own node at `../init-buddy-agent-harness/`: the five-phase job around this call, which of its writes need approval, and the instruction bridges this command does not write.
 
 The skill is for local agent-configuration setup only. It preserves user-authored policy and does not invent instructions, rewrite unsupported tool settings, change CI, repository settings, security scanning, branch rules, or unrelated project files.
 
@@ -21,7 +21,7 @@ The skill is for local agent-configuration setup only. It preserves user-authore
 - **active harness** — the harness that invokes initialization.
 - **enabled harness** — the active harness and any additional supported harnesses the user explicitly prefers.
 - **consumer root** — the Git repository root.
-- **project governance override layer** — `.agents/governances/` in the consumer repository, which this command creates when it is absent and counts. `../../cli/governance-overrides/` owns what the layer means and how it is read.
+- **project references layer** — `.agents/references/` in the consumer repository, which this command creates when it is absent. The count covers the whole project tier, the legacy `.agents/governances/` included. `../../cli/references/` owns what the tier means and how it is read.
 
 ## Use Cases
 
@@ -39,7 +39,7 @@ flowchart TD
   A[Locate repository root] --> B{Requested output format valid?}
   B -->|no| C[Report format error]
   B -->|yes| D[Inspect canonical agent configuration]
-  D --> D2[Create the canonical skills directory and the project governance override layer if absent]
+  D --> D2[Create the canonical skills directory and the project references layer if absent]
   D2 --> E[Read instructions, skills, and tool settings]
   E --> F[Select compatible canonical artifacts]
   F --> G[Select active harness]
@@ -86,9 +86,9 @@ The consumer root is always the repository root, including in a monorepo. The ac
 | Write result               | JSON output requested                                    | `reports the requested copy option as JSON`                              |
 | Reject format              | an unsupported output format is requested                | `rejects an unsupported output format`                                   |
 
-The command creates the project governance override layer alongside the canonical skills directory, and reports how many documents it holds, for the same reason it reports the skill count: a repository is left with one obvious place to put an override rather than a path someone has to be told. It reads nothing from the layer and follows no lookup order — that is [`../../cli/governance-overrides/`](../../cli/governance-overrides/README.md).
+The command creates the project references layer alongside the canonical skills directory, and reports how many references the project tier holds, for the same reason it reports the skill count: a repository is left with one obvious place to put a reference rather than a path someone has to be told. It no longer creates `.agents/governances/`, which `reference` still reads as a legacy layer; a repository that has one gets its documents counted. It resolves nothing and follows no lookup order — that is [`../../cli/references/`](../../cli/references/README.md).
 
 ## References
 
-- [`../../cli/governance-overrides/`](../../cli/governance-overrides/README.md) owns the layer this command creates, and the command that reads it.
+- [`../../cli/references/`](../../cli/references/README.md) owns the tier this command creates a layer in, and the command that reads it.
 - [AGENTS.md](https://agents.md/) defines the open, project-level instruction format used for canonical agent behavior here.

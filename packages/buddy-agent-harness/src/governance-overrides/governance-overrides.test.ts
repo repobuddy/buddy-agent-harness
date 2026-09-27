@@ -1,9 +1,8 @@
-import { existsSync, mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, sep } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import {
-	countProjectGovernances,
 	deprecatedManagedGovernancesDir,
 	type GovernanceLayer,
 	governanceLayers,
@@ -213,22 +212,5 @@ describe('listGovernances', () => {
 
 		expect(listGovernances([{ scope: 'managed', dir: join(project.dir, 'absent') }])).toEqual([])
 		expect(listGovernances([{ scope: 'managed', dir: file }])).toEqual([])
-	})
-})
-
-describe('countProjectGovernances', () => {
-	it('creates the project layer when it is absent, so there is one place to put an override', () => {
-		const root = mkdtempSync(join(tmpdir(), 'governance-root-'))
-
-		expect(countProjectGovernances(root)).toBe(0)
-		expect(existsSync(projectGovernancesDir(root))).toBe(true)
-	})
-
-	it('counts the documents an existing layer holds', () => {
-		const root = mkdtempSync(join(tmpdir(), 'governance-root-'))
-		mkdirSync(projectGovernancesDir(root), { recursive: true })
-		writeFileSync(join(projectGovernancesDir(root), 'agent-tool-output.md'), '# Rules')
-
-		expect(countProjectGovernances(root)).toBe(1)
 	})
 })

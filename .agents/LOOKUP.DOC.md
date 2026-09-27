@@ -16,6 +16,7 @@ Where to look when writing or checking documentation in this repository. Pointer
 | how to run an agent blind, without the host's user-scope instructions | `.agents/skills/eval-delegation/scripts/blind-claude.mjs`; the run policy for the `enhance` suite is in `packages/buddy-agent-harness/.agents/spec/skills/enhance/README.md` |
 | a term the spec suite binds | `packages/buddy-agent-harness/.agents/spec/glossary.md` |
 | a correction to a claim already published | `apps/web/src/content/docs/sources.md`, Corrections section (rule in `CONTRIBUTING.md`) |
+| how a test must reach a table the source keeps | `CONTRIBUTING.md`, "Writing a test against a table the source keeps" |
 | which command gates a change before it ships | `turbo.json`, the `verify` task — `pnpm verify` runs every step in it, the docs-site build included |
 | whether a harness's JSON config accepts comments | `apps/web/src/content/docs/agent-configuration/harness-differences.md` |
 | where a harness keeps its MCP servers, and what the golden set is | `apps/web/src/content/docs/agent-configuration/mcp-servers.md` |

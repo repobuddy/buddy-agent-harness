@@ -47,9 +47,9 @@ is nothing to repair. `governance list` carries a `status` on that layer's row a
 [`doctor`](/cli/doctor/) names the directory each override was read from, so an admin can see both
 that there is somewhere else to put it and where it currently is.
 
-`init` creates the project layer, `<root>/.agents/governances/`, when it is absent; see
-[`init`](/cli/init/). `doctor` reports what is in the project, user, and managed layers as a
-`governances` section, never as a finding; see [`doctor`](/cli/doctor/).
+`init` no longer creates the project layer; it creates `<root>/.agents/references/` instead. `doctor`
+reports these layers' documents in its `references` section, marked as `reference list` marks them;
+see [`doctor`](/cli/doctor/).
 
 ## `--overrides-only`
 

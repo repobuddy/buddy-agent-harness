@@ -20,6 +20,15 @@ Record the evidence that forced the change in `.research/<topic>/evidence.md` wi
 
 Give the corrected claim one home and link the other locations to it. A claim restated in six places is corrected in one and stale in five.
 
+## Writing a test against a table the source keeps
+
+A test that writes down a set the source already holds is evidence only that the test agrees with itself. When the source adds an entry, the hand-written copy does not change, and the test keeps passing about a set it no longer describes.
+
+- Where the source has the table, import it. Export it from its module if it is private. Do not rebuild it as a fixture or a literal list of its keys.
+- Do not derive a category by excluding the others. Import each category by name, and assert that the categories partition the whole table, so a new category fails that assertion instead of being absorbed into one of the others.
+
+A literal list is still right where it is the expectation itself: a closed set the test asserts the table produces, such as the problems whose repair has no command.
+
 ## Validation
 
 Run `pnpm verify`, then `git diff --check`. `verify` is the whole gate — it runs `biome check` at the root and builds the docs site along with the package, so `pnpm check` and `pnpm web build` are steps inside it rather than commands to run beside it. Reach for one of those directly only to iterate on that one step.

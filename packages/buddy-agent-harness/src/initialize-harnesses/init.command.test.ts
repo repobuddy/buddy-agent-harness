@@ -36,7 +36,7 @@ describe('init command', () => {
 			skipped: [],
 			deprecated: [],
 			skills: 1,
-			governances: 0,
+			references: 0,
 			copied: true,
 		})
 
@@ -59,7 +59,7 @@ describe('init command', () => {
 			skipped: [],
 			deprecated: [],
 			skills: 0,
-			governances: 0,
+			references: 0,
 			copied: false,
 		})
 
@@ -94,7 +94,7 @@ describe('init command', () => {
 			skipped: [],
 			deprecated: [{ name: 'windsurf', replacedBy: 'devin-desktop' }],
 			skills: 0,
-			governances: 0,
+			references: 0,
 			copied: false,
 		})
 

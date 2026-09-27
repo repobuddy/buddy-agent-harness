@@ -98,24 +98,31 @@ Feature: Report every doctor finding through one output shape
     And a report with nothing wrong holds no `help` section at all
 
   @behavior
-  Scenario: reports the overrides the layers hold without turning any of them into a finding
-    Given a repository holding a project governance override
+  Scenario: reports the references the tiers hold without turning any of them into a finding
+    Given a repository holding a project reference
     When the command builds its report
-    Then the report holds a `governances` section naming that override and its layer
-    And the override is not reported as a finding, a repair, or a change of exit code
+    Then the report holds a `references` section naming that reference, its tier, the file it was read from, and its status
+    And the user's home directory is collapsed in the path
+    And the reference is not reported as a finding, a repair, or a change of exit code
 
   @behavior
-  Scenario: names the directory each override was read from
-    Given a repository holding a project governance override
+  Scenario: gives each row the status reference list gives, legacy governances folders included
+    Given one name in the project `.agents/references/` and legacy `.agents/governances/`, and another only in the legacy folder
     When the command builds its report
-    Then each row names the governance, the layer it came from, and that directory
-    And the user's home directory is collapsed in it
+    Then the legacy-only name is `used`
+    And the name in both folders is `used` from `references/` and shadowed from `governances/`, as `reference list` marks them
 
   @behavior
-  Scenario: states the zero outright when no layer holds an override
-    Given a repository with no override at project, user, or machine scope
+  Scenario: leaves out what a plugin ships
+    Given a reference only a declared dependency ships
     When the command builds its report
-    Then the `governances` section holds a sentence stating that zero were found
+    Then the `references` section does not name it
+
+  @behavior
+  Scenario: states the zero outright when no layer holds a reference
+    Given a repository with no reference at the managed, project, or user tier
+    When the command builds its report
+    Then the `references` section holds a sentence stating that zero were found
     And the section is present rather than absent
 
   @behavior

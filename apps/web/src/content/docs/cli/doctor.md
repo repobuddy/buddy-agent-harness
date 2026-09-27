@@ -47,8 +47,9 @@ bridges[2]{harness,path,kind,status}:
 instructions[2]{harness,path,kind,status}:
   gemini-cli,.gemini/settings.json,none,missing
   claude-code,CLAUDE.md,file,shadowing
-governances[1]{name,scope,path}:
-  agent-tool-output,project,~/code/acme/.agents/governances/agent-tool-output.md
+references[2]{name,tier,path,status}:
+  testing,project,~/code/acme/.agents/references/testing.md,used
+  testing,user,~/.agents/references/testing.md,shadowed by project (first-wins)
 findings[4]{path,problem,detail}:
   .claude/skills,degraded,expected a directory but found a regular file — checkout without core.symlinks
   .windsurf/skills,missing,no bridge at this path — the harness sees zero project skills
@@ -83,7 +84,7 @@ bridges[2]{harness,path,kind,status}:
   windsurf,.windsurf/skills,symlink,ok
 instructions[1]{harness,path,kind,status}:
   gemini-cli,.gemini/settings.json,settings-entry,ok
-governances: 0 governance overrides — no .agents/governances at project, user, or machine scope
+references: 0 references — no layer outside the plugin tier holds one
 findings: 0 problems found — all 3 bridges resolve and the configuration around them is current
 ```
 
@@ -106,9 +107,10 @@ instructions:
   gemini-cli   .gemini/settings.json  none    missing
   claude-code  CLAUDE.md              file    shadowing
 
-governances:
-  name               scope    path
-  agent-tool-output  project  ~/code/acme/.agents/governances/agent-tool-output.md
+references:
+  name     tier     path                                      status
+  testing  project  ~/code/acme/.agents/references/testing.md  used
+  testing  user     ~/.agents/references/testing.md            shadowed by project (first-wins)
 
 findings:
   path                   problem                 detail
@@ -172,11 +174,11 @@ A repository with no root `AGENTS.md` gets one finding saying so, provided somet
 
 Which harnesses are checked is the same question as for skills: the registry records, per harness, an instruction bridge or the filenames that shadow `AGENTS.md`, and `--harness` gates both kinds together. Codex, Cursor, Copilot CLI, and Devin Desktop read `AGENTS.md` where it lies and nothing documented suppresses it, so they get no rows — see [Harness Differences](/agent-configuration/harness-differences/).
 
-## Governance overrides
+## References
 
-`doctor` also reports the [governance](/cli/governance/) overrides in play on this machine: one row per override, `{ name, scope, path }`, drawn from the project, user, and both machine-wide layers only — never what a skill ships, which is that skill's own business. It is never a finding: an override is a choice someone made, not a fault, and it never changes `doctor`'s exit code.
+`doctor` also reports the [references](/agent-configuration/references/) the managed, project, and user tiers hold: one row per name per layer, `{ name, tier, path, status }`. `status` is the one [`reference list`](/cli/reference/#reference-list) gives, such as `used` or `shadowed by project (first-wins)`. The legacy `governances/` folders are included, since `reference` still reads them. What a plugin ships is left out; that is the plugin's own business. The section is never a finding: a reference is a choice someone made, not a fault, and it never changes `doctor`'s exit code.
 
-When there is no override, the section is the sentence `0 governance overrides — no .agents/governances at project, user, or machine scope` rather than an empty list, the same "state the zero" convention the rest of this report follows. The path is on the row because the scope no longer settles it: there are [two machine-wide directories](/cli/governance/#the-machine-wide-directories), and an admin reading a row from the deprecated one needs to see which one answered before they can move it. The home directory is collapsed to `~`, as in `bin`.
+When no layer holds a reference, the section is the sentence `0 references — no layer outside the plugin tier holds one` rather than an empty list, the same "state the zero" convention the rest of this report follows. The path is on the row because the tier does not settle it: a tier can hold a `references/` folder and a legacy `governances/` folder, and the managed tier also reads the folder `universal-plugin` wrote. The home directory is collapsed to `~`, as in `bin`.
 
 ## Divergence
 
