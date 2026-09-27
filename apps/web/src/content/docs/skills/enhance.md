@@ -52,6 +52,9 @@ The cost to avoid is reading the same text twice. Every copy is loaded into ever
 
 - **The repository lacks the section, and your global instructions carry it.** The verdict is *already global*. Nothing is offered, and the report says a repository copy would reach your team but give you the text twice. The skill writes that copy only if you ask for it.
 - **Both carry the current text.** The verdict stays *already current*, and the report names the duplicate.
+- **The repository lacks the section, and your global instructions cover the subject in another form.** The skill checks that global copy the same way it checks a repository section, and offers nothing for the repository. If the copy is a wording the skill has retired, you get the current text to put in its place in that file. If it is your own words, the report names it and leaves it alone. If the skill cannot tell, it asks you.
+- **The repository holds a retired wording, and your global instructions carry the current text.** Replacing the section would give you the current text twice, and leaving it gives you two versions. So the skill offers to remove the section, and says your team's agents would lose it. If the team should keep it, ask for the replacement instead.
+- **The repository holds your own words, and your global instructions carry the current text.** Nothing is offered. The report names both, and says you read the subject twice. Which one to keep is your call.
 
 ## When a section is out of date
 
