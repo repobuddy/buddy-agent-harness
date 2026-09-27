@@ -72,7 +72,7 @@ Match a sentence literally. A shared idea is not a sentence surviving, a paraphr
 
 **A quoted sentence is not an asserted one, and does not count for question 1.** A sentence inside quotation marks, inside a fence, or in a sentence that disputes it is being shown, not followed. A section that quotes one in order to reject it is the owner's prose.
 
-Once both answers are yes, offer the replacement. Do **not** then read the section's remaining sentences against the current text and reconsider. That applies to the section's other prose only; it changes nothing about how the two questions are answered.
+Once both answers are yes, offer the replacement, or its removal where step 4 says so. Do **not** then read the section's remaining sentences against the current text and reconsider. That applies to the section's other prose only; it changes nothing about how the two questions are answered.
 
 **Do not shortcut any of this on the subject a section talks about.** Only the two questions decide, and they decide against the texts themselves.
 
@@ -87,7 +87,7 @@ Each addition ends this step in one of six states:
 - **the owner's own** — offer nothing, and name what covers it. Where your instructions from outside the repository carry the current text, say so, and that the owner reads the subject twice, once in each wording; which to keep is theirs, and you change neither.
 - **you cannot tell** — do not decide it either way. Put it to the owner (step 4).
 
-A global copy takes the last three, placed in your instructions from outside the repository, and is offered nothing for the repository.
+A global copy that carries the current text is already global, or, beside a repository section, reported as current. Otherwise it takes the last three, placed in your instructions from outside the repository, and is offered nothing for the repository.
 
 A section from a retired wording in a file that is **not** the root `AGENTS.md` — a `CLAUDE.md`, a `.cursorrules` — is reported by name and offered nothing. This skill writes one file; replacing the root copy while an older copy stays in a harness file leaves the repository holding two versions instead of one. Recommend `init` and carry on.
 
