@@ -104,6 +104,14 @@ Feature: Offer the current wording of a vetted section to a repository that alre
     And `AGENTS.md` is unchanged
 
   @behavior
+  Scenario: hands over the current text when the owner says a global section came from this package
+    Given the `enhance` skill has asked the owner which of the two a `## Delegation` section in the instructions the agent loads from outside the repository is
+    When the owner answers that it is an edited copy of the retired wording
+    Then the owner is shown the current text byte-identical to the text inside the fence in `references/delegation.md`, for the file holding that section
+    And no `## Delegation` section is offered for the repository's `AGENTS.md`
+    And no file outside the repository is written
+
+  @behavior
   Scenario: offers to remove a retired wording the agent's own instructions already carry in its current form
     Given instructions the agent loads from outside the repository already carry the `## Delegation` text exactly as `references/delegation.md` offers it
     And a root `AGENTS.md` holding a `## Delegation` section identical to a wording in `references/delegation.history.md`

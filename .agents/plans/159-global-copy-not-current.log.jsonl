@@ -1,0 +1,1 @@
+{"kind":"correction","cr-ref":"159","ts":"2026-09-27T02:49:15Z","correction-kind":"judge-iteration","cause":"coverage-gap","what":"Spec round one: the run-environment convention pinned only the addition text, not its subject, and the owner answer that a global copy came from this package had no scenario. Convention widened, one scenario and its map row added."}

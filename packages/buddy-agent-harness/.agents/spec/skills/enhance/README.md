@@ -245,11 +245,12 @@ flowchart TD
 | E→F | an `AGENTS.md` whose prose says nothing about handing work to a subagent | `offers an addition the merged view does not cover` |
 | F | an addition naming a destination that is not this repository | `recommends the destination the addition names, not the repository by default` |
 | EG→FG, FG1→Z | the agent's instructions from outside the repository already carrying the text | `says when the agent's own instructions already carry the text` |
-| FG1→M | an already-global verdict and an owner asking for a team copy | `writes a team copy of an already-global addition when the owner asks for it` |
+| FG1→M | an already-global verdict and an owner asking for a team copy; `GH` and `GO` reach `M` through the same `FG1` | `writes a team copy of an already-global addition when the owner asks for it` |
 | GC→HC | the current text both in the root `AGENTS.md` and in the agent's instructions from outside the repository | `reports a section held both in the repository and in the agent's own instructions` |
 | EC→GG→GH | a retired wording verbatim in the agent's instructions from outside the repository, and none in the repository | `hands over the current text for a retired wording the agent's own instructions carry` |
 | EC→GG→GO | the owner's own words on the subject in the agent's instructions from outside the repository, and none in the repository | `offers nothing where the agent's own instructions cover the subject in the owner's words` |
 | GG→GP | a global copy carrying one sentence of a retired wording inside prose that wording does not contain | `puts a global section it cannot place to the owner instead of deciding` |
+| GP2→GH | the owner answers that an unplaceable global copy came from this package | `hands over the current text when the owner says a global section came from this package` |
 | GX→R | a retired wording in the root `AGENTS.md` and the current text in the agent's instructions from outside the repository | `offers to remove a retired wording the agent's own instructions already carry in its current form` |
 | R1→RM | the owner approves the removal, the only offer on the table | `removes only that section when the owner approves the removal` |
 | R1→N | the owner asks for the replacement instead | `replaces the section when the owner asks for the replacement instead of the removal` |
@@ -305,7 +306,7 @@ flowchart TD
 | barred | a repository whose CI workflow names an agent harness | `changes no file outside the repository's agent configuration` |
 | barred | an addition whose wording would sit better in this repository reworded | `offers the text as written rather than adapted to the repository` |
 
-A scenario whose Given says nothing of an addition's text in the instructions the agent loads from outside the repository runs with none of them carrying it. Otherwise an absent addition reads as already global, and every scenario expecting an offer would depend on the machine running it.
+A scenario whose Given says nothing of an addition's subject in the instructions the agent loads from outside the repository runs with none of them covering it. Otherwise an absent addition reads as already global, or as covered by a global copy, and every scenario expecting an offer would depend on the machine running it.
 
 A run makes an offer for every addition the file lacks or carries in a stale form, so a scenario whose Then covers the whole `AGENTS.md` settles the other addition in its Given: the file already holds that addition's current text, or the offer or question the scenario answers is the run's only one. A Then that names what is offered or replaced names the addition or the section it means.
 
