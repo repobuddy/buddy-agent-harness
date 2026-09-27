@@ -80,7 +80,7 @@ A subagent inherits your model if you do not pick one, and none of your context 
 
 Nothing in this text is about the repository in front of you. It says how to work with subagents, which holds in every repository the owner opens — so the global file is the one home for it, written once and applying everywhere, with no per-repository copies to drift apart. That is the argument this package makes about `AGENTS.md` itself, applied one level up.
 
-On Claude Code that file is `~/.claude/CLAUDE.md`, and it loads *alongside* a repository's `AGENTS.md` rather than instead of it. Where the harness in use documents no such file, say so and let the owner place the text. Never guess a path.
+That file is `~/.agents/AGENTS.md`. It loads *alongside* a repository's `AGENTS.md` rather than instead of it, through the harness's own user-scope file, as step 4 of the skill says.
 
 Offer this repository's `AGENTS.md` as the alternative, and name what each one buys:
 
@@ -90,8 +90,6 @@ Offer this repository's `AGENTS.md` as the alternative, and name what each one b
 | this repository's `AGENTS.md` | everyone who clones it, and any agent CI runs | a copy per repository, and a second copy in context for anyone who already has it globally |
 
 The project file is the right pick for one reason and it is worth stating: a team's agents read the repository, not the maintainer's home directory. Where the owner wants the guidance to reach contributors, `AGENTS.md` is the only lever, and the duplicate copy is what that costs.
-
-**Say when your own always-loaded instructions already carry this text.** You can check that without opening a file — they are in front of you. Where they do, the repository copy adds nothing but the team, and the owner is deciding whether to pay a second copy in their own sessions for it. State it plainly and leave the choice alone.
 
 This skill writes the root `AGENTS.md` and nothing else, so a global placement is **handed over, not made**: give the text and the path, say it goes at the end of that file, and stop there.
 

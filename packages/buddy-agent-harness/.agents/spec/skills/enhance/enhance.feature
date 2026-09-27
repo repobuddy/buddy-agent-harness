@@ -35,12 +35,33 @@ Feature: Offer the current wording of a vetted section to a repository that alre
 
   @behavior
   Scenario: says when the agent's own instructions already carry the text
-    Given the agent's always-loaded instructions already hold the `## Delegation` text
-    And a root `AGENTS.md` the section is absent from
-    When the `## Delegation` section is offered
-    Then the offer states that the repository copy would add the team and nothing else
-    And it states that the owner would then carry the text twice
-    And the choice is left to the owner rather than decided
+    Given instructions the agent loads from outside the repository already carry the `## Delegation` text exactly as `references/delegation.md` offers it
+    And a root `AGENTS.md` holding a build-commands section and a code-style section
+    And the root `AGENTS.md` also holds the `## List identifiers` section exactly as `references/list-identifiers.md` offers it
+    When the agent runs the `enhance` skill
+    Then the report gives the `## Delegation` addition the verdict already global
+    And the `## Delegation` text is not offered
+    And the report says a copy in the repository's `AGENTS.md` would add the team and nothing else
+    And it says the owner would then carry the text twice
+    And the report says the owner may ask for that copy
+    And `AGENTS.md` is unchanged until the owner asks for that copy
+
+  @behavior
+  Scenario: writes a team copy of an already-global addition when the owner asks for it
+    Given the `enhance` skill has said the `## Delegation` addition is already global and that the owner may ask for a team copy
+    When the owner asks for a copy in the repository's `AGENTS.md`
+    Then `AGENTS.md` carries the `## Delegation` section
+    And that section holds the text inside the fence in `references/delegation.md`
+
+  @behavior
+  Scenario: reports a section held both in the repository and in the agent's own instructions
+    Given instructions the agent loads from outside the repository already carry the `## Delegation` text exactly as `references/delegation.md` offers it
+    And a root `AGENTS.md` holding the `## Delegation` section exactly as `references/delegation.md` offers it
+    And the root `AGENTS.md` also holds the `## List identifiers` section exactly as `references/list-identifiers.md` offers it
+    When the agent runs the `enhance` skill
+    Then the report gives the `## Delegation` addition the verdict already current
+    And the report says the owner reads the `## Delegation` text twice, once from each place
+    And `AGENTS.md` is unchanged
 
   @behavior
   Scenario: hands a global placement over rather than writing outside the repository
@@ -51,11 +72,18 @@ Feature: Offer the current wording of a vetted section to a repository that alre
     And the run reports the hand-off as an outcome rather than as a decline
 
   @behavior
-  Scenario: names no global instruction file the harness in use does not document
-    Given a harness that documents no user-scope instruction file
+  Scenario: names ~/.agents/AGENTS.md as the global instruction file
+    Given a root `AGENTS.md` the `## Delegation` section is absent from
     When the `## Delegation` section is offered
-    Then no path is guessed for it
-    And the report says the harness documents none and leaves the placement to the owner
+    Then the global destination it names is `~/.agents/AGENTS.md`
+
+  @behavior
+  Scenario: says the harness loads the global file only through its own user-scope file
+    Given a harness in use that documents a user-scope instruction file other than `~/.agents/AGENTS.md`, or documents none
+    And a root `AGENTS.md` the `## Delegation` section is absent from
+    When the `## Delegation` section is offered
+    Then the global destination it names is still `~/.agents/AGENTS.md`
+    And the offer says that harness reads the text only where a user-scope instruction file of its own loads `~/.agents/AGENTS.md`
 
   @behavior
   Scenario: treats a heading inside a fenced block as an example rather than as coverage
@@ -75,14 +103,16 @@ Feature: Offer the current wording of a vetted section to a repository that alre
   Scenario: withholds an offer the owner's own words already cover
     Given a root `AGENTS.md` holding a `## Working with subagents` section written by the repository owner
     And that section says which work to hand to a subagent and which to keep
+    And the root `AGENTS.md` also holds the `## List identifiers` section exactly as `references/list-identifiers.md` offers it
     When the agent runs the `enhance` skill
     Then no `## Delegation` section is offered
-    And the report names that section as what covers the subject
+    And the report names the `## Working with subagents` section as what covers the subject
     And `AGENTS.md` is unchanged
 
   @behavior
   Scenario: treats thin guidance as covering the subject and says why
     Given a root `AGENTS.md` whose only subagent guidance is one line under `## Research` saying to hand long reading to a helper session
+    And the root `AGENTS.md` also holds the `## List identifiers` section exactly as `references/list-identifiers.md` offers it
     When the agent runs the `enhance` skill
     Then no `## Delegation` section is offered
     And the report names the `## Research` line as what covers the subject
@@ -91,6 +121,7 @@ Feature: Offer the current wording of a vetted section to a repository that alre
   @behavior
   Scenario: offers nothing where the file already carries the current text
     Given a root `AGENTS.md` holding the `## Delegation` section exactly as `references/delegation.md` offers it
+    And the root `AGENTS.md` also holds the `## List identifiers` section exactly as `references/list-identifiers.md` offers it
     When the agent runs the `enhance` skill
     Then no `## Delegation` section is offered
     And no replacement is offered
@@ -107,6 +138,7 @@ Feature: Offer the current wording of a vetted section to a repository that alre
   Scenario: treats the current text with the owner's own paragraphs added as already current
     Given a root `AGENTS.md` holding a `## Delegation` section that contains the text `references/delegation.md` offers, whole and verbatim
     And one further paragraph after it appears in no wording the addition has offered
+    And the root `AGENTS.md` also holds the `## List identifiers` section exactly as `references/list-identifiers.md` offers it
     When the agent runs the `enhance` skill
     Then the report says the section is already the text the addition offers
     And no replacement is offered
@@ -132,6 +164,7 @@ Feature: Offer the current wording of a vetted section to a repository that alre
     Given a root `AGENTS.md` holding a `## Delegation` section no sentence of which appears verbatim in any wording in `references/delegation.history.md`
     And its sentences follow the order of no wording in that file
     And it does not carry every sentence of the text `references/delegation.md` offers
+    And the root `AGENTS.md` also holds the `## List identifiers` section exactly as `references/list-identifiers.md` offers it
     When the agent runs the `enhance` skill
     Then no replacement is offered
     And the report says the section was judged the owner's own
@@ -143,6 +176,7 @@ Feature: Offer the current wording of a vetted section to a repository that alre
     And it quotes one sentence of a wording in `references/delegation.history.md` inside quotation marks
     And the sentence around that quotation disputes it
     And it does not carry every sentence of the text `references/delegation.md` offers
+    And the root `AGENTS.md` also holds the `## List identifiers` section exactly as `references/list-identifiers.md` offers it
     When the agent runs the `enhance` skill
     Then the report says the section was judged the owner's own
     And no replacement is offered
@@ -161,6 +195,7 @@ Feature: Offer the current wording of a vetted section to a repository that alre
     Given a root `AGENTS.md` holding a `## Delegation` section of five sentences
     And each does the job of the sentence at that position in a wording in `references/delegation.history.md`
     And no sentence of that wording appears in it verbatim
+    And the root `AGENTS.md` also holds the `## List identifiers` section exactly as `references/list-identifiers.md` offers it
     When the agent runs the `enhance` skill
     Then the report says the section cannot be placed
     And the owner is asked which of the two the section is
@@ -173,6 +208,7 @@ Feature: Offer the current wording of a vetted section to a repository that alre
     And one sentence of a wording in `references/delegation.history.md` appears verbatim inside its first paragraph
     And its remaining sentences appear in no wording in `references/delegation.history.md`
     And the repository has a harness for scoring instruction wordings
+    And the root `AGENTS.md` also holds the `## List identifiers` section exactly as `references/list-identifiers.md` offers it
     When the agent runs the `enhance` skill
     Then the report says the section cannot be placed
     And the owner is shown the section, the wording in `references/delegation.history.md` it partly tracks, and the current text
@@ -183,14 +219,15 @@ Feature: Offer the current wording of a vetted section to a repository that alre
 
   @behavior
   Scenario: leaves the file alone when the owner says the section is theirs
-    Given the `enhance` skill has asked the owner which of the two a section is
+    Given the `enhance` skill has asked the owner which of the two a `## Delegation` section is
+    And that is the only offer or question the run has put to the owner
     When the owner answers that they wrote it
     Then `AGENTS.md` is byte-identical to what it was before the run
     And the report records the answer
 
   @behavior
   Scenario: offers the replacement when the owner says the section came from this package
-    Given the `enhance` skill has asked the owner which of the two a section is
+    Given the `enhance` skill has asked the owner which of the two a `## Delegation` section is
     When the owner answers that it is an edited copy of the retired wording
     Then the current `## Delegation` text is offered as a replacement for that section
 
@@ -207,14 +244,15 @@ Feature: Offer the current wording of a vetted section to a repository that alre
 
   @behavior
   Scenario: replaces the section when measurement puts the current wording ahead
-    Given the owner has asked for the `eval-delegation` harness to settle an unplaceable section
+    Given the owner has asked for the `eval-delegation` harness to settle an unplaceable `## Delegation` section
     When the harness scores the current `## Delegation` text above the section as it stands
     Then the report gives both scores
     And the current text is offered as a replacement on the strength of those scores
 
   @behavior
   Scenario: keeps the owner's wording when measurement does not put ours ahead
-    Given the owner has asked for the `eval-delegation` harness to settle an unplaceable section
+    Given the owner has asked for the `eval-delegation` harness to settle an unplaceable `## Delegation` section
+    And that is the only offer or question the run has put to the owner
     When the harness scores the section as it stands level with or above the current `## Delegation` text
     Then the report gives both scores
     And no replacement is offered
@@ -232,15 +270,17 @@ Feature: Offer the current wording of a vetted section to a repository that alre
 
   @behavior
   Scenario: writes nothing while the question is unanswered
-    Given the `enhance` skill has asked the owner which of the two a section is
+    Given the `enhance` skill has asked the owner which of the two a `## Delegation` section is
+    And that is the only offer or question the run has put to the owner
     When the run ends without an answer
     Then `AGENTS.md` is byte-identical to what it was before the run
 
   @behavior
   Scenario: offers the current wording where the file carries a retired one verbatim
     Given a root `AGENTS.md` holding a `## Delegation` section identical to a wording in `references/delegation.history.md`
+    And the root `AGENTS.md` also holds the `## List identifiers` section exactly as `references/list-identifiers.md` offers it
     When the agent runs the `enhance` skill
-    Then the current `## Delegation` text is offered as a replacement for that section
+    Then the current `## Delegation` text is offered as a replacement for the `## Delegation` section
     And `AGENTS.md` is unchanged until the owner answers
 
   @behavior
@@ -267,26 +307,27 @@ Feature: Offer the current wording of a vetted section to a repository that alre
     And a root `AGENTS.md` holding a build-commands section and no `## Delegation` section
     When the agent runs the `enhance` skill
     Then the report names `CLAUDE.md` as the file holding that retired wording
-    And no replacement is offered
+    And no replacement is offered for the `CLAUDE.md` section
     And `CLAUDE.md` is unchanged
 
   @behavior
   Scenario: shows the addition verbatim rather than a summary of it
     Given a root `AGENTS.md` holding a build-commands section and a code-style section
     When the agent runs the `enhance` skill
-    Then the offered text is byte-identical to the text inside the fence in `references/delegation.md`
-    And the offer names the place in `AGENTS.md` the section would go
+    Then the offered `## Delegation` text is byte-identical to the text inside the fence in `references/delegation.md`
+    And the `## Delegation` offer says where the section would go
 
   @behavior
   Scenario: shows the current text beside the section it would replace
     Given a root `AGENTS.md` holding a `## Delegation` section identical to a wording in `references/delegation.history.md`
     When the agent runs the `enhance` skill
-    Then the offer shows the section as it stands in `AGENTS.md`
-    And the offer shows the replacement text byte-identical to the text inside the fence in `references/delegation.md`
+    Then the replacement offer shows the `## Delegation` section as it stands in `AGENTS.md`
+    And that offer shows the replacement text byte-identical to the text inside the fence in `references/delegation.md`
 
   @behavior
   Scenario: reports the decline and leaves the instruction file unchanged
     Given the `enhance` skill has presented an offer and is waiting on an answer
+    And that is the only offer or question the run has put to the owner
     When the owner declines it
     Then `AGENTS.md` is byte-identical to what it was before the run
     And the report records the decline
@@ -304,6 +345,7 @@ Feature: Offer the current wording of a vetted section to a repository that alre
   Scenario: names the owner's own paragraphs a replacement would remove
     Given a root `AGENTS.md` holding a `## Delegation` section whose first paragraph is a wording in `references/delegation.history.md` verbatim
     And two further paragraphs under that same heading appear in no wording in that file
+    And the root `AGENTS.md` also holds the `## List identifiers` section exactly as `references/list-identifiers.md` offers it
     When the agent runs the `enhance` skill
     Then the offer names each of those two paragraphs
     And the offer says the replacement would remove them
@@ -322,7 +364,7 @@ Feature: Offer the current wording of a vetted section to a repository that alre
     Given a repository at a path that is not the working directory
     And that repository holds a root `AGENTS.md` with a build-commands section and a code-style section
     When the agent runs the `enhance` skill with `--root` naming that path
-    Then the offer names that repository's `AGENTS.md` as where the section would go
+    Then any repository `AGENTS.md` an offer names is the one at that path
     And no file outside that repository is read as its merged view
 
   @behavior
@@ -330,7 +372,6 @@ Feature: Offer the current wording of a vetted section to a repository that alre
     Given a repository the `enhance` skill has been run in
     When the run reaches any of its outcomes
     Then the report names the files it read
-    And the report gives a verdict for the `## Delegation` addition
     And the report names what was written, or states that nothing was
 
   @behavior
@@ -346,13 +387,13 @@ Feature: Offer the current wording of a vetted section to a repository that alre
     And a `.github/workflows/ci.yml` naming an agent harness
     When the agent runs the `enhance` skill
     Then `.github/workflows/ci.yml` is byte-identical to what it was before the run
-    And no offer names a file outside the repository's agent configuration
+    And no offer names a file in the repository outside its agent configuration
 
   @behavior
   Scenario: offers the text as written rather than adapted to the repository
     Given a root `AGENTS.md` whose prose is written in the second person plural
     When the agent runs the `enhance` skill
-    Then the offered text is byte-identical to the text inside the fence in `references/delegation.md`
+    Then the offered `## Delegation` text is byte-identical to the text inside the fence in `references/delegation.md`
     And no reworded variant of it is offered
 
   # ── /buddy-agent-harness:enhance — the List identifiers addition ──
@@ -383,6 +424,7 @@ Feature: Offer the current wording of a vetted section to a repository that alre
     Given a root `AGENTS.md` holding a `## Answering the user` section written by the repository owner
     And that section says to number each option put to the user and to keep those numbers when the options are revised
     And no sentence of it appears verbatim in the text `references/list-identifiers.md` offers
+    And the root `AGENTS.md` also holds the `## Delegation` section exactly as `references/delegation.md` offers it
     When the agent runs the `enhance` skill
     Then no `## List identifiers` section is offered
     And the report names the `## Answering the user` section as what covers the subject
@@ -391,6 +433,7 @@ Feature: Offer the current wording of a vetted section to a repository that alre
   @behavior
   Scenario: offers nothing where the file already carries the current List identifiers text
     Given a root `AGENTS.md` holding the `## List identifiers` section exactly as `references/list-identifiers.md` offers it
+    And the root `AGENTS.md` also holds the `## Delegation` section exactly as `references/delegation.md` offers it
     When the agent runs the `enhance` skill
     Then no `## List identifiers` section is offered
     And the report says the section is already the text the addition offers
@@ -402,6 +445,7 @@ Feature: Offer the current wording of a vetted section to a repository that alre
     And no sentence of it appears verbatim in the text `references/list-identifiers.md` offers
     And its sentences do not follow the order of that text
     And `references/list-identifiers.history.md` names no retired wording
+    And the root `AGENTS.md` also holds the `## Delegation` section exactly as `references/delegation.md` offers it
     When the agent runs the `enhance` skill
     Then no replacement is offered
     And the report says the section was judged the owner's own
@@ -413,9 +457,10 @@ Feature: Offer the current wording of a vetted section to a repository that alre
     And that section keeps the sentence order of that text
     And its remaining sentences are that text's, reworded
     And `references/list-identifiers.history.md` names no retired wording
+    And the root `AGENTS.md` also holds the `## Delegation` section exactly as `references/delegation.md` offers it
     When the agent runs the `enhance` skill
-    Then the report does not describe that section as the owner's own words
-    And the current `## List identifiers` text is offered as a replacement for that section
+    Then the report does not describe the `## List identifiers` section as the owner's own words
+    And the current `## List identifiers` text is offered as a replacement for the `## List identifiers` section
     And `AGENTS.md` is unchanged until the owner answers
 
   @behavior
@@ -425,10 +470,11 @@ Feature: Offer the current wording of a vetted section to a repository that alre
     And no sentence of that text appears in it verbatim
     And `references/list-identifiers.history.md` names no retired wording
     And the repository has the `eval-delegation` harness for scoring `## Delegation` wordings
+    And the root `AGENTS.md` also holds the `## Delegation` section exactly as `references/delegation.md` offers it
     When the agent runs the `enhance` skill
     Then the report says the section cannot be placed
     And the owner is asked whether the section is theirs
-    And the `eval-delegation` harness is not offered as an answer for that section
+    And the `eval-delegation` harness is not offered as an answer for the `## List identifiers` section
     And the report says settling it by measurement would need a harness this repository does not have
     And no replacement is offered ahead of that answer
     And `AGENTS.md` is unchanged

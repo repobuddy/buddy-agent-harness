@@ -11,13 +11,15 @@ The `enhance` skill's conduct: which vetted sections it offers to a repository t
 
 `../init/` consolidates what a repository already has and invents nothing, so it is safe to run anywhere. This skill is the opposite half by design: every section it carries is an opinion, and an opinion is worth having only where its subject is missing — or where the repository took an earlier version of it and never heard that the wording moved. Keeping the two apart is what lets `init` stay unopinionated.
 
-Three properties make it a node rather than a paragraph inside `../init/`.
+These properties make it a node rather than a paragraph inside `../init/`.
 
-**Where a section goes is part of what it offers.** A subject that is not about the repository has no business being copied into every repository the owner works in — that is the drift this package exists to remove, one level up from the file it removes it in. So an addition names its destination, the offer leads with it, and the one destination this skill cannot write is the one it recommends for delegation and list identifiers: a global placement is handed over, never made.
+**Where a section goes is part of what it offers.** A subject that is not about the repository has no business being copied into every repository the owner works in — that is the drift this package exists to remove, one level up from the file it removes it in. So an addition names its destination, the offer leads with it, and the one destination this skill cannot write is the one it recommends for delegation and list identifiers: a global placement is handed over, never made. The global file is `~/.agents/AGENTS.md`, the user-scope counterpart of the root `AGENTS.md`, for the same reason `.agents/skills/` has `~/.agents/skills/`: one home per fact, and each harness pointed at it.
+
+**The same text loaded twice is a cost this node avoids.** The owner's agent already reads its own always-loaded instructions, including those from outside the repository. Where those carry an addition's current text and the merged view does not cover its subject, the recommendation is already met, so the run offers nothing and says so. A copy in the repository still reaches the team, and it is written only when the owner asks for it, because it costs the owner a second copy of the text in every session.
 
 **It writes material content, and material content needs a person's word.** A section here asserts something about how the repository is worked in — it stays true whether or not this tool ever ran — so it falls on the material side of the discriminator `../init/` applies, and nothing here is ever written on sight. `../init/` may create an absent file unasked; this skill may not add a sentence unasked.
 
-**Its detection has five outcomes, not two.** A repository can be **missing** a subject; can **cover** it in the owner's own words; can already carry the **text the addition would offer**; can carry a **wording this addition has since retired**, edits and all; or can carry something the skill genuinely **cannot place** between the last two. Absent is offered as an addition, a retired wording as a replacement, the owner's own and the already-current left alone, and the undecidable **put to the owner**. Already-current and the owner's own reach the same silence by different routes, and the report says which: a section this package wrote is not credited to the person reading the report.
+**Its detection has six outcomes, not two.** A repository can be **missing** a subject while the agent's own instructions from outside it already carry the text, which is **already global**; can be missing it outright; can **cover** it in the owner's own words; can already carry the **text the addition would offer**; can carry a **wording this addition has since retired**, edits and all; or can carry something the skill genuinely **cannot place** between the last two. Already global is reported and offered nothing unless the owner asks for a team copy, absent is offered as an addition, a retired wording as a replacement, the owner's own and the already-current left alone, and the undecidable **put to the owner**. Already-current and the owner's own reach the same silence by different routes, and the report says which: a section this package wrote is not credited to the person reading the report.
 
 **The undecidable outcome is the whole safety of the feature.** Replacing an owner's own delegation guidance with this package's wording is a worse failure than never offering at all — but silently skipping a genuinely outdated section is the failure this node exists to fix, so neither direction is a safe default for a case that could be either. An honest "I cannot tell whose this is" costs the owner one question and cannot get it wrong.
 
@@ -26,8 +28,9 @@ Three properties make it a node rather than a paragraph inside `../init/`.
 **Key terms**
 
 - **addition** — a named block of instruction content this skill can offer, shipped as a reference file carrying the text to offer, the criterion for the subject already being present, the criterion that compares a present section against the wordings this addition has retired, and the destination it recommends. Two additions ship today: `## Delegation` and `## List identifiers`. Each is classified, offered, and reported on its own.
-- **destination** — which instruction file an addition's text belongs in, declared by the addition rather than assumed. An addition about the repository belongs in the repository's `AGENTS.md`; one about how the agent works belongs in the owner's own global file, where it is written once for every repository they open. Delegation and list identifiers are both the second kind.
-- **merged view** — the root `AGENTS.md` together with every harness instruction file whose content still belongs in it. It is the text a downstream agent effectively reads, so guidance sitting in a Cursor always-on rule counts as present.
+- **destination** — which instruction file an addition's text belongs in, declared by the addition rather than assumed. An addition about the repository belongs in the repository's `AGENTS.md`; one about how the agent works belongs in the owner's own global file, where it is written once for every repository they open. Delegation and list identifiers are both the second kind. The global file is `~/.agents/AGENTS.md`; a harness reads it only where a user-scope instruction file of its own loads it.
+- **already global** — the merged view does not cover an addition, and instructions the agent loads from outside the repository, other than another repository's, carry every sentence of its current text, in order, and assert no sentence found only in a retired wording. The recommended destination already holds it.
+- **merged view** — the root `AGENTS.md` together with every harness instruction file whose content still belongs in it. It is the text a downstream agent effectively reads, so guidance sitting in a Cursor always-on rule counts as present. It never includes instructions the agent loads from outside the repository.
 - **covered** — the merged view already tells the agent what the addition would tell it, judged by meaning rather than by heading or wording.
 - **retired wording** — a text an addition used to offer, kept verbatim beside it after a revision. A present section is checked for containment of the current text first; to decide whether it is stale, it is compared against these, never weighed against the text that would be offered.
 - **from a retired wording** — the section could be produced by a handful of edits to one of them. Semantic closeness is coverage; provenance is a question about whole passages.
@@ -46,7 +49,7 @@ Three properties make it a node rather than a paragraph inside `../init/`.
 
 **Fit:** partial
 
-The skill is judged on **conduct**, not on activation: its routing against `init`, `repair`, and `doctor` is co-owned across a seam this node holds one side of, so the suite asserts no firing and carries no near-miss. What is graded is the five-way detection, the approval gate that governs both an addition and a replacement, and what an addition reference has to state before it can be offered at all.
+The skill is judged on **conduct**, not on activation: its routing against `init`, `repair`, and `doctor` is co-owned across a seam this node holds one side of, so the suite asserts no firing and carries no near-miss. What is graded is the six-way detection, the approval gate that governs both an addition and a replacement, and what an addition reference has to state before it can be offered at all.
 
 **Actors**
 
@@ -60,7 +63,7 @@ The skill is judged on **conduct**, not on activation: its routing against `init
 
 | Actor | Goal | Entry point |
 | --- | --- | --- |
-| invoking agent | leave the repository carrying the current wording of every addition whose subject it needs | `/buddy-agent-harness:enhance` |
+| invoking agent | leave the agent reading the current wording of every addition whose subject it needs | `/buddy-agent-harness:enhance` |
 | repository owner | nothing is added to my file, and nothing of mine is replaced, without my word | the approval on each offer |
 | addition author | revise a shipped wording and have repositories on the old one told, rather than silently kept there | the addition's reference file |
 | downstream agent | the guidance I load is whichever wording actually serves me better, not merely whichever is newer | the outcome of a run, and the evaluation when one is asked for |
@@ -70,12 +73,12 @@ The skill is judged on **conduct**, not on activation: its routing against `init
 
 | Entry point | Trigger | Inputs | Outcome |
 | --- | --- | --- | --- |
-| `/buddy-agent-harness:enhance` | an agent is asked to improve a repository's agent configuration, or `init` has just finished and the owner accepted its offer to continue | the repository root, and the merged view read from it | every uncovered addition offered, every stale one offered as a replacement, the approved ones written, and a report either way |
+| `/buddy-agent-harness:enhance` | an agent is asked to improve a repository's agent configuration, or `init` has just finished and the owner accepted its offer to continue | the repository root, and the merged view read from it | every uncovered addition offered unless it is already global, every stale one offered as a replacement, the approved ones and any team copy the owner asks for written, and a report either way |
 | an addition's reference file | a maintainer adds an addition or revises one's wording | the text to offer and the two criteria that classify a repository against it | a reference a run can classify against, or a rejection naming what disqualifies it |
 
 **Surface**
 
-The skill takes one argument, `--root <dir>`, naming the repository to work on; a run given none locates the Git repository root itself. It is required by the invoking agent's goal in the one case that goal cannot otherwise be reached — a repository that is not the working directory. There are no other elements and no forbidden combinations. A run given one judges and writes inside that directory only.
+The skill takes one argument, `--root <dir>`, naming the repository to work on; a run given none locates the Git repository root itself. It is required by the invoking agent's goal in the one case that goal cannot otherwise be reached — a repository that is not the working directory. There are no other elements and no forbidden combinations. A run given one reads its merged view from, and writes inside, that directory only.
 
 **Extensions**
 
@@ -97,6 +100,9 @@ For `/buddy-agent-harness:enhance`:
 - **A style rule numbers the lists in documents the agent writes.** Not coverage for list identifiers: it governs files, not the lists the agent puts to the user.
 - **A section on list identifiers, while the addition has no retired wording.** The current text stands in for a retired wording at `G`, so the same four outcomes apply: that text edited is offered the replacement, a section sharing neither its sentences nor its structure is the owner's own, and a disagreement goes to the owner. It is never credited to the owner merely because there is no history to match.
 - **No harness scores the addition's wording.** `P0` asks about a harness for that addition, not any harness. `eval-delegation` scores Delegation's wording only, so a repository carrying that harness and no other gives an unplaceable List identifiers section two answers.
+- **The agent's instructions from outside the repository already carry the text.** Where the merged view does not cover the subject, the verdict is already global: nothing is offered, and the report says a repository copy would add the team and a second copy for the owner. It is written only when the owner asks for it. Where the merged view already carries the current text, the verdict stays already current and the report names the duplicate.
+- **The harness in use reads a user-scope file other than `~/.agents/AGENTS.md`, or documents none.** The destination is still `~/.agents/AGENTS.md`, and the offer says that harness reads the text only where a user-scope file of its own loads it.
+- **The instructions from outside the repository carry a retired wording, or the owner's own words on the subject.** Out of scope for now: already global is containment of the current text only, so the addition is offered as absent. Recorded as a follow-up, with two neighbouring cases: a retired wording in the repository beside the current text outside it, and the owner's own words in the repository beside the current text outside it.
 - **The section was approved on an earlier run and has since been deleted.** It reads as absent and is offered again. Absence is the whole state; the skill keeps no memory of a run.
 
 For an addition's reference file:
@@ -114,9 +120,14 @@ flowchart TD
   B -->|no| C[Say there is nothing to add to]
   B -->|yes| D[Read AGENTS.md and every harness instruction file still holding content bound for it as one merged view]
   D --> E{Does the prose the agent reads as instruction already tell it what this addition would?}
-  E -->|no| F[Present the addition verbatim and say where it would go]
+  E -->|no| EG{Do instructions the agent loads from outside the repository carry every sentence of the current text in order, and assert no sentence found only in a retired wording?}
+  EG -->|no| F[Present the addition verbatim and say where it would go]
+  EG -->|yes| FG[Say the addition is already global, offer nothing, and say a team copy adds the team only, doubles the owner's copy, and is the owner's to ask for]
+  FG --> FG1{Does the owner ask for a team copy?}
+  FG1 -->|yes| M
+  FG1 -->|no, or unanswered| Z
   E -->|yes| GC{Does the section carry every sentence of the current text in order, and assert no sentence found only in a retired wording?}
-  GC -->|yes| HC[Say the section is already the text this addition offers, and offer nothing]
+  GC -->|yes| HC[Say the section is already the text this addition offers, name any copy the agent also loads from outside the repository, and offer nothing]
   GC -->|no| G{Do whole sentences of a retired wording — or of the current text, where the addition has none — survive, and does its structure survive?}
   G -->|neither| H[Name what covers it and offer nothing]
   G -->|both| G1{Does that section sit in the root AGENTS.md?}
@@ -149,6 +160,8 @@ flowchart TD
   M --> Z
   N --> Z
 ```
+
+`EG` is asked only of an uncovered addition, and it is containment, the same test as `GC`, against the text the agent already loads from outside the repository. It is the recommended destination already met. Recommending the global file there would ask the owner to write down what their agent already reads, and offering the repository copy as the alternative would give the owner the same text twice. So the default is silence with a reason, and a team copy is the owner's to ask for. The merged view never includes these instructions, since they are not the repository's and reach none of its other readers.
 
 The decision at `E` is unchanged from the skill as it shipped: coverage is judged by meaning, and doubt resolves as covered, because a missed offer costs the user nothing while a duplicate section teaches every future agent that the file repeats itself.
 
@@ -205,9 +218,12 @@ flowchart TD
 | D | a `.cursorrules` holds delegation guidance that was never consolidated | `judges coverage across instructions that are not yet consolidated` |
 | E→F | an `AGENTS.md` whose prose says nothing about handing work to a subagent | `offers an addition the merged view does not cover` |
 | F | an addition naming a destination that is not this repository | `recommends the destination the addition names, not the repository by default` |
-| F | the agent's own always-loaded instructions already holding the text | `says when the agent's own instructions already carry the text` |
+| EG→FG, FG1→Z | the agent's instructions from outside the repository already carrying the text | `says when the agent's own instructions already carry the text` |
+| FG1→M | an already-global verdict and an owner asking for a team copy | `writes a team copy of an already-global addition when the owner asks for it` |
+| GC→HC | the current text both in the root `AGENTS.md` and in the agent's instructions from outside the repository | `reports a section held both in the repository and in the agent's own instructions` |
 | F | an owner choosing their global file over the repository | `hands a global placement over rather than writing outside the repository` |
-| F | a harness documenting no user-scope instruction file | `names no global instruction file the harness in use does not document` |
+| F | an addition whose recommended destination is global | `names ~/.agents/AGENTS.md as the global instruction file` |
+| F | a harness documenting a user-scope file other than `~/.agents/AGENTS.md`, or none | `says the harness loads the global file only through its own user-scope file` |
 | E→F | an `AGENTS.md` that quotes the addition inside a fenced block | `treats a heading inside a fenced block as an example rather than as coverage` |
 | E→F | an `AGENTS.md` that carried the section and no longer does | `offers again once an approved section is removed` |
 | G→H | an `AGENTS.md` covering the subject under the owner's own heading | `withholds an offer the owner's own words already cover` |
@@ -223,19 +239,19 @@ flowchart TD
 | P0→P1 | a section carrying one sentence of a retired wording inside prose that wording does not contain, in a repository that has a scoring harness | `puts a section it cannot place to the owner instead of deciding` |
 | G→P0 | a section whose sentences do the jobs of a retired wording's, in its order, none of them verbatim | `puts a reworded retired wording to the owner instead of deciding` |
 | P0→P1N | the same section, in a repository that has none | `names measurement as unavailable where the repository has no harness` |
-| P2→K | the owner answers that the section is theirs | `leaves the file alone when the owner says the section is theirs` |
+| P2→K | the owner answers "mine" to the only question on the table | `leaves the file alone when the owner says the section is theirs` |
 | P4→I | the owner asked for measurement and the current text scores higher | `replaces the section when measurement puts the current wording ahead` |
-| P4→K | the owner asked for measurement and the section scores level or higher | `keeps the owner's wording when measurement does not put ours ahead` |
+| P4→K | the owner asked for measurement on the only question on the table and the section scores level or higher | `keeps the owner's wording when measurement does not put ours ahead` |
 | P2 | an unplaceable section and no answer from the owner | `runs no evaluation the owner did not ask for` |
 | P2→I | the owner answers that the section is an edited copy | `offers the replacement when the owner says the section came from this package` |
-| P1 | a question on the table at the end of a run | `writes nothing while the question is unanswered` |
+| P1 | the only question on the table at the end of a run | `writes nothing while the question is unanswered` |
 | G1→I | a root `AGENTS.md` carrying a retired wording verbatim | `offers the current wording where the file carries a retired one verbatim` |
 | GC→G1 | a retired wording verbatim, every sentence of which the current text still carries, because the revision only added a sentence | `does not call a retired wording current because the current text still carries all its sentences` |
 | G1→I | that retired wording with an owner's sentence at the place the revision added one | `offers the current wording where an owner filled the gap a revision added` |
 | G1→G2 | a `CLAUDE.md` carrying a retired wording and a root `AGENTS.md` that does not | `reports a retired wording outside the root file rather than replacing it` |
 | F | an addition about to be presented | `shows the addition verbatim rather than a summary of it` |
 | I | a replacement about to be presented | `shows the current text beside the section it would replace` |
-| J→K | any offer on the table | `reports the decline and leaves the instruction file unchanged` |
+| J→K | the only offer on the table | `reports the decline and leaves the instruction file unchanged` |
 | L→M | an approved addition and an `AGENTS.md` holding a managed region | `appends an approved addition outside the managed region` |
 | I | a stale section carrying paragraphs the owner added under the same heading | `names the owner's own paragraphs a replacement would remove` |
 | L→N | an approved replacement | `replaces only that section and leaves the rest of the file byte-identical` |
@@ -256,6 +272,10 @@ flowchart TD
 | barred | a repository whose CI workflow names an agent harness | `changes no file outside the repository's agent configuration` |
 | barred | an addition whose wording would sit better in this repository reworded | `offers the text as written rather than adapted to the repository` |
 
+A scenario whose Given says nothing of an addition's text in the instructions the agent loads from outside the repository runs with none of them carrying it. Otherwise an absent addition reads as already global, and every scenario expecting an offer would depend on the machine running it.
+
+A run makes an offer for every addition the file lacks or carries in a stale form, so a scenario whose Then covers the whole `AGENTS.md` settles the other addition in its Given: the file already holds that addition's current text, or the offer or question the scenario answers is the run's only one. A Then that names what is offered or replaced names the addition or the section it means.
+
 A run following a **declined** offer gets no row of its own. The repository it leaves behind is byte-identical to one that was never offered anything — the skill records nothing — so it reaches `E→F` by the same path class as `offers an addition the merged view does not cover` and would be a duplicate rather than a permutation. The rule that covers both is stated once, at `E`: detection decides every run, and absence is the whole state.
 
 ### an addition's reference file
@@ -274,7 +294,7 @@ A run following a **declined** offer gets no row of its own. The repository it l
 
 ## References
 
-- `../../../../skills/enhance/SKILL.md` is the shipped skill: the merged view, the five-way detection, and the approval gate this node specifies.
+- `../../../../skills/enhance/SKILL.md` is the shipped skill: the merged view, the six-way detection, and the approval gate this node specifies.
 - `../../../../skills/enhance/references/delegation.md` and `../../../../skills/enhance/references/list-identifiers.md` are the additions shipped today; each sibling `*.history.md` holds the wordings that addition has retired, which is the artifact `G` compares against.
 - `../init/` owns consolidation and the material/non-material discriminator this skill's approval rule rests on.
 - [AGENTS.md](https://agents.md/) defines the open, project-level instruction format every addition is written into.

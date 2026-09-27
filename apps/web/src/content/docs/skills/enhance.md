@@ -37,6 +37,22 @@ Detection decides every run. There is no first-run path and no memory of a previ
 
 Every run reports, whichever way it went: what it read, the verdict for each addition and why, what it offered, and what was written. A run that offers nothing still reports. That is the only way to tell "already covered" from "did not look".
 
+## Where an addition goes
+
+Each addition says where it belongs. One about the repository belongs in its `AGENTS.md`. Delegation and List identifiers both describe how the agent works, and that holds in every repository you open, so the skill recommends your global instruction file first and names this repository's `AGENTS.md` as the alternative.
+
+| Destination | Reaches | Costs |
+| --- | --- | --- |
+| `~/.agents/AGENTS.md` | every repository you open, you only | one copy |
+| this repository's `AGENTS.md` | everyone who clones it, and any agent CI runs | a copy per repository |
+
+`~/.agents/AGENTS.md` is the user-scope counterpart of the root `AGENTS.md`, the same way `~/.agents/skills/` is for `.agents/skills/`. A harness reads it through its own user-scope file, so that file has to load it. On Claude Code that is `~/.claude/CLAUDE.md`, for example as a symlink to `~/.agents/AGENTS.md`. The skill writes only the root `AGENTS.md`. For a global placement, it gives you the text and the path, and you add it yourself.
+
+The cost to avoid is reading the same text twice. Every copy is loaded into every session that reaches it, so a section in both your global file and a repository is paid for twice. The skill checks the instructions its agent already loads from outside the repository:
+
+- **The repository lacks the section, and your global instructions carry it.** The verdict is *already global*. Nothing is offered, and the report says a repository copy would reach your team but give you the text twice. The skill writes that copy only if you ask for it.
+- **Both carry the current text.** The verdict stays *already current*, and the report names the duplicate.
+
 ## When a section is out of date
 
 Judging by meaning has one blind spot, and it took a while to notice. A wording that ships here can change. The `## Delegation` text was rewritten once already. A repository that took the earlier version keeps a section that covers the subject perfectly well, so every later run judged it covered and the new wording was never mentioned. The file quietly stayed a release behind, and nothing in the report said so.
@@ -146,7 +162,7 @@ A subagent inherits your model if you do not pick one, and none of your context 
 
 The wordings this replaced are kept in `references/delegation.history.md`, which is what an existing `## Delegation` section is compared against.
 
-You see the text in full before you answer. On approval it is appended to the root `AGENTS.md`, outside the `buddy-agent-harness` managed region: the section asserts something about how the repository is worked in and holds true whether or not the tool ever ran, which makes it material content, and material content needs approval. The managed region is for the tool's own bookkeeping.
+You see the text in full before you answer. If you choose this repository over your global file, it is appended to the root `AGENTS.md` on approval, outside the `buddy-agent-harness` managed region: the section asserts something about how the repository is worked in and holds true whether or not the tool ever ran, which makes it material content, and material content needs approval. The managed region is for the tool's own bookkeeping.
 
 #### Why the Delegation wording
 

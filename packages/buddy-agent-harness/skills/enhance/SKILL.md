@@ -44,14 +44,17 @@ Then ask the second question **of text that read as covered, and only of that te
 
 Answer it against the addition's own texts, which its reference keeps beside it: the one it offers now, and the ones it has retired, in a sibling history file. The reference states how under `## Stale when`.
 
-**First, is the section already current?** It is when it carries every sentence of the text you would offer, in order — the owner may have added paragraphs of their own around or between them — and asserts no sentence found only in a retired wording. Say so and stop. Resemblance is not enough; containment is the test.
+**First, is the section already current?** It is when it carries every sentence of the text you would offer, in order — the owner may have added paragraphs of their own around or between them — and asserts no sentence found only in a retired wording. Say so and stop. Resemblance is not enough; containment is the test. Where your instructions from outside the repository carry the same text, say the owner reads it twice, once from each place.
 
 **Otherwise, compare against the retired wordings, and never weigh a section against the current text to decide it is stale** — differing from the current wording tells you nothing, since differing is what a rewrite produces. The one exception: an addition whose history holds no retired wording yet has its current text stand in for one, and its reference says so.
 
-Each addition ends this step in one of five states:
+**Before offering an uncovered addition, check your own instructions.** Where instructions you load from outside the repository — the owner's global file, however your harness reaches it — carry every sentence of its current text, in order, and assert no sentence found only in a retired wording, it is **already global**. You can check without opening a file; they are in front of you. Do not count the repository's own files, which the merged view already judged, nor another repository's that your harness loaded from the working directory.
 
+Each addition ends this step in one of six states:
+
+- **already global** — uncovered here, and your instructions from outside the repository carry the current text. Offer nothing. Say that a copy in the root `AGENTS.md` would add the team and nothing else, that the owner would then read the text twice, and that they can ask for it. Write that copy only if they do; the request is the approval.
 - **already current** — the section carries the text you would offer. Offer nothing, and say that is why. Do **not** report it as the owner's own: they did not write it, this package did, and telling someone they authored your text is the same mistake as replacing what they did author.
-- **absent** — offer it as an addition.
+- **absent** — uncovered, and not already global. Offer it as an addition.
 - **from a retired wording, in the root `AGENTS.md`** — offer the current text as a replacement. For an addition with no retired wording yet, report it as an edited copy of the current text.
 - **the owner's own** — offer nothing, and name what covers it.
 - **you cannot tell** — do not decide it either way. Put it to the owner (step 4).
@@ -64,7 +67,9 @@ Where an addition is **absent**, show its text **verbatim** — the whole thing,
 
 **Where it goes is part of the offer, and the addition decides it.** Read its `## Where it belongs` and lead with what that section recommends. An addition whose subject is the repository belongs in the repository's `AGENTS.md`; one whose subject is how the agent works belongs in the owner's own global instruction file, because it holds in every repository they open and a copy per repository is a copy per repository to keep in step. Delegation and list identifiers are both the second kind, and their references recommend the global file.
 
-Name both destinations and what each buys — the global file reaches every repository the owner opens and nobody else; the project file reaches everyone who clones it, at a copy per repository. Where your own always-loaded instructions already carry the text, say so: the project copy then adds nothing but the team, and arrives twice for the owner.
+The global file is `~/.agents/AGENTS.md`, the user-scope counterpart of the root `AGENTS.md`. Say that the harness in use reads it only where a user-scope instruction file of its own loads it. Where the harness documents that file, name it: on Claude Code it is `~/.claude/CLAUDE.md`.
+
+Name both destinations and what each buys — the global file reaches every repository the owner opens and nobody else; the project file reaches everyone who clones it, at a copy per repository.
 
 **A global placement is handed over, not written.** This skill writes the root `AGENTS.md` and nothing else, so give the text and the path and stop there. Do not offer to write outside the repository, and do not treat the hand-off as a decline — report it as what it is.
 
@@ -93,9 +98,9 @@ Do not argue for any of it past one sentence. The user is reading the actual tex
 
 ## 5. Write what was approved
 
-On approval of an **addition** for the repository, write the section into the root `AGENTS.md` at the end of the owner's prose, outside the managed region, preserving the surrounding file exactly.
+On approval of an **addition** for the repository, or a request for the team copy of an **already global** one, write the section into the root `AGENTS.md` at the end of the owner's prose, outside the managed region, preserving the surrounding file exactly.
 
-On approval of a **global placement**, write nothing. Give the text and the file it goes in, and say it belongs at the end of that file. Nothing in a repository changes, and the run still reports.
+On approval of a **global placement**, write nothing. Give the text and `~/.agents/AGENTS.md`, and say it belongs at the end of that file. Nothing in a repository changes, and the run still reports.
 
 On approval of a **replacement**, replace that one section in place — from its heading through to the next heading of the same or higher level — and leave every other byte of the file as it was. Do not relocate it, do not reformat around it, and do not touch the managed region.
 
@@ -105,7 +110,7 @@ On a decline, write nothing. A declined replacement leaves the section exactly w
 
 ## 6. Report
 
-Report every run, whichever way it went: what you read, the verdict for each addition and why — already current, absent, the owner's own, from a retired wording, undecidable, or not judged — what you offered, which destination you recommended, and what was written. A hand-off for the owner to place globally is an outcome, not a decline; say so. A run that offers nothing still reports — that is the only way the user can tell "already covered" from "did not look".
+Report every run, whichever way it went: what you read, the verdict for each addition and why — already global, already current, absent, the owner's own, from a retired wording, undecidable, or not judged — what you offered, which destination you recommended, and what was written. For an already-current addition your instructions from outside the repository also carry, say the owner reads it twice. A hand-off for the owner to place globally is an outcome, not a decline; say so. A run that offers nothing still reports — that is the only way the user can tell "already covered" from "did not look".
 
 ## Rules
 
@@ -115,6 +120,6 @@ Report every run, whichever way it went: what you read, the verdict for each add
 - **Never guess whose words they are.** Where you cannot tell an edited copy of a retired wording from the owner's own prose, say so and ask. Deciding it silently in either direction is the one failure this path exists to avoid.
 - **Never run an evaluation unasked.** It costs the owner many model runs. Offer it; wait.
 - **Never edit an addition to fit a repository.** The wording is fixed. Offer it as written or not at all.
-- **Never guess a global instruction file's path.** Name one only where the harness in use documents it — `~/.claude/CLAUDE.md` for Claude Code. Otherwise say the harness documents none here and let the owner place the text.
+- **Name `~/.agents/AGENTS.md` as the global file.** Name a harness's own user-scope file only where that harness documents it.
 - **Never touch the managed region**, a nested `AGENTS.md`, or any file other than the root `AGENTS.md`.
 - Local agent configuration only. Do not change workflows, repository settings, or unrelated project files.
