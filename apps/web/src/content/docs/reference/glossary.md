@@ -19,7 +19,9 @@ Each entry gives the short definition and links to the page that owns the topic.
 
 **golden set**: the user-authored canonical list of MCP servers at `.agents/buddy-agent-harness/mcp.toml`, one entry per server in the superset of fields the supported hosts accept. See [MCP Servers](/agent-configuration/mcp-servers/).
 
-**governance**: a version-pinned Markdown rule set that a skill loads, such as `skill-design` or `agent-tool-output`. Each skill ships its own committed copy; the project layer at `.agents/governances/`, the user layer, and the machine-wide layers can override it. See [`governance`](/cli/governance/).
+**governance**: a version-pinned Markdown rule set that a skill loads, such as `skill-design` or `agent-tool-output`. A governance is one use of a reference. See [`reference`](/cli/reference/).
+
+**reference**: a Markdown document an agent reads on demand, fetched by name rather than loaded at session start. It resolves through the managed, project, user, and plugin tiers, and the higher layer decides how it combines with the ones below. See [References and Skills](/agent-configuration/references/).
 
 **last-projected record**: `.agents/buddy-agent-harness/mcp.projected.json`, the per-target record of what was last written from the golden set, and the drift baseline for a file git cannot speak for. See [MCP Servers](/agent-configuration/mcp-servers/#which-side-moved).
 

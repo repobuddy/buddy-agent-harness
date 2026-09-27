@@ -8,6 +8,7 @@ import { buildDoctorReport, doctorCommand } from './diagnose-bridges/doctor.comm
 import { governanceCommand } from './governance-overrides/governance.command.ts'
 import * as publicApi from './index.ts'
 import { activate, initCommand } from './initialize-harnesses/init.command.ts'
+import { referenceCommand } from './references/reference.command.ts'
 
 const packageRoot = dirname(dirname(fileURLToPath(import.meta.url)))
 
@@ -49,6 +50,7 @@ describe('run', () => {
 
 		expect(command).toHaveBeenCalledWith(initCommand)
 		expect(command).toHaveBeenCalledWith(doctorCommand)
+		expect(command).toHaveBeenCalledWith(referenceCommand)
 		expect(command).toHaveBeenCalledWith(governanceCommand)
 		expect(parse).toHaveBeenCalledWith(argv)
 		expect(process.argv).toEqual(before)
@@ -158,6 +160,7 @@ describe('the public entry point', () => {
 		expect(publicApi.initCommand).toBe(initCommand)
 		expect(publicApi.doctorCommand).toBe(doctorCommand)
 		expect(publicApi.governanceCommand).toBe(governanceCommand)
+		expect(publicApi.referenceCommand).toBe(referenceCommand)
 		expect(Object.keys(publicApi)).not.toContain('app')
 		expect(Object.values(publicApi)).not.toContainEqual(expect.objectContaining({ parse: expect.any(Function) }))
 	})

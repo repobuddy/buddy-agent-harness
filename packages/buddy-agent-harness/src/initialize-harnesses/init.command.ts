@@ -4,6 +4,7 @@ import { parseFormat, writeResult } from '../command-output/command-output.ts'
 import { doctorCommand } from '../diagnose-bridges/doctor.command.ts'
 import { governanceCommand } from '../governance-overrides/governance.command.ts'
 import { parseHarnesses } from '../harness-registry/harness-registry.ts'
+import { referenceCommand } from '../references/reference.command.ts'
 import { parseForce } from '../skill-projection/skill-projection.ts'
 import { initializeHarnesses } from './initialize-harnesses.ts'
 
@@ -62,7 +63,7 @@ export const initCommand: cli.Command = command({
 export const harnessCommand: cli.Command = command({
 	name: 'agent-harness',
 	description: 'Commands for configuring agent harness compatibility.',
-	commands: [initCommand, doctorCommand, governanceCommand],
+	commands: [initCommand, doctorCommand, referenceCommand, governanceCommand],
 })
 
 export function activate({ addCommand }: { addCommand(command: typeof harnessCommand): void }): void {

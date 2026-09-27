@@ -41,6 +41,9 @@ function layersFor(args: Args): GovernanceLayer[] {
 	return args['overrides-only'] ? overrideLayers(layers) : layers
 }
 
+export const GOVERNANCE_DEPRECATED =
+	'warning: "governance" is deprecated and will be removed in the next major version; use "reference show|list" instead.\n'
+
 export const DEPRECATED_MANAGED = 'deprecated — move these documents to the managed layer above'
 
 const rootOption = {
@@ -67,6 +70,7 @@ export const governanceListCommand: cli.Command = command({
 		},
 	},
 	run(args: Args) {
+		process.stderr.write(GOVERNANCE_DEPRECATED)
 		try {
 			const format = parseFormat(args.format)
 			const home = homedir()
@@ -106,6 +110,7 @@ export const governanceShowCommand: cli.Command = command({
 		},
 	},
 	run(args: Args & { name: string }) {
+		process.stderr.write(GOVERNANCE_DEPRECATED)
 		try {
 			const format = parseFormat(args.format)
 			const name = parseGovernanceName(args.name)
@@ -142,6 +147,7 @@ export const governanceShowCommand: cli.Command = command({
 
 export const governanceCommand: cli.Command = command({
 	name: 'governance',
-	description: 'Read the governance documents the project, user, and machine-wide override layers hold. Read-only.',
+	description:
+		'Deprecated: use `reference`. Read the governance documents the project, user, and machine-wide override layers hold. Read-only.',
 	commands: [governanceListCommand, governanceShowCommand],
 })

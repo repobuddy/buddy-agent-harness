@@ -3,6 +3,10 @@ title: 'CLI: governance'
 description: 'CLI reference for buddy-agent-harness governance: listing and showing the governance documents the override layers hold.'
 ---
 
+:::caution[Deprecated]
+Use [`reference`](/cli/reference/) instead. `governance` keeps its behavior until the next major version, and writes one line on stderr saying so. `reference` reads the same `governances/` folders, below the `references/` folder in each tier.
+:::
+
 ```sh
 buddy-agent-harness governance list [--root <directory>] [--overrides-only] [--format toon|json|text]
 buddy-agent-harness governance show <name> [--root <directory>] [--overrides-only] [--format toon|json|text]

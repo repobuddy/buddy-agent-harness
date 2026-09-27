@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { collapseHome } from '../command-output/command-output.ts'
 import {
 	DEPRECATED_MANAGED,
+	GOVERNANCE_DEPRECATED,
 	type GovernanceListReport,
 	governanceCommand,
 	governanceListCommand,
@@ -252,5 +253,17 @@ describe('governance show', () => {
 
 		expect(show('agent-tool-output', { root: repository() })).toBe(1)
 		expect(stderr).toHaveBeenCalledWith('error: Governance lookup failed.\n')
+	})
+})
+
+describe('the deprecation', () => {
+	it('keeps the governance command working, with a deprecation note', () => {
+		const root = repository({ 'skill-design': '# project\n' })
+
+		expect(show('skill-design', { root })).toBe(0)
+		expect(written()).toBe('# project\n')
+		expect(list({ root })).toBe(0)
+		expect(stderr.mock.calls.map(([value]: unknown[]) => value)).toEqual([GOVERNANCE_DEPRECATED, GOVERNANCE_DEPRECATED])
+		expect(GOVERNANCE_DEPRECATED).toContain('use "reference show|list"')
 	})
 })

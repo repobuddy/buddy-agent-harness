@@ -1,0 +1,39 @@
+---
+cr-ref: 153
+source: https://github.com/repobuddy/buddy-agent-harness/issues/153
+project-path: packages/buddy-agent-harness
+status: active
+todos:
+  - content: New node cli/references — spec README + suite for show, list, search, tiers, merge modes, trace
+    status: completed
+  - content: Spec gate — ALIGNED on round 3 (pre-flight, then a coverage gap); self-asserted, auto-spec leash
+    status: completed
+  - content: Build src/references (layers, documents, merge, resolve, search, command) with 100% coverage
+    status: completed
+  - content: Governance alias warns deprecation; legacy governances folders read by reference
+    status: completed
+  - content: Docs — references concept page, CLI reference page, glossary; changeset
+    status: completed
+  - content: Impl gate — all 48 pass on round 3 (2 change rounds, tests only); paused for owner ratification
+    status: completed
+  - content: PR referencing #153; report the show contract to operator
+    status: completed
+---
+
+# 153 — `reference show|list|search`
+
+CR against `packages/buddy-agent-harness`, run headless. Seed intent is the issue body (P1–P8, S1–S8).
+Scope: #153 only. No `load-reference` skill (#154). Plugin tier limited to this package and declared
+dependencies; harness-managed folders and enabled-plugin discovery wait on harness detection.
+
+Settled here (headless calls, reported to the owner):
+- `governance list|show` keeps its own resolver and output unchanged; it only adds a deprecation line on stderr.
+- A qualified `<plugin>/<name>` picks the plugin layer; every tier above still resolves the bare `<name>`.
+- Legacy `governances/` sits below `references/` in the same tier.
+- Owner redirect (review of the first PR revision): no local tier, no monorepo walk, and so no `final`. The project tier is `<root>/.agents/` only.
+- One name in text: the bare document. Several: each wrapped in `<reference name="…">` tags. JSON/TOON: always an array.
+- `--trace` in text goes to stderr, so stdout stays the document.
+
+## NEXT
+
+Landed on a PR against main. Owner to ratify both gates and review the settled calls above.

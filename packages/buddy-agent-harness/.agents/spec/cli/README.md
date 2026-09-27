@@ -2,7 +2,7 @@
 
 > Descriptive index — the package's command-line product surface.
 
-The package publishes one binary. `init` writes a repository's canonical configuration and the bridges into it, `doctor` reports what is wrong with what is already there, and `governance` reads the rule sets a repository, a person, or a machine owner has overridden.
+The package publishes one binary. `init` writes a repository's canonical configuration and the bridges into it, `doctor` reports what is wrong with what is already there, `reference` reads on-demand documents by name through layered tiers, and `governance`, its deprecated predecessor, reads the rule sets a repository, a person, or a machine owner has overridden.
 
 `doctor` is the larger surface, and it is **one command reporting several families of fault through one output shape**. The families are independent — each answers a different question about the same repository, and a single run reports as many as it finds, across all of them. The shape they share is a node of its own, because a field added to the report belongs to every family at once and to none of them in particular, and because the set of families grows.
 
@@ -14,6 +14,7 @@ The package publishes one binary. `init` writes a repository's canonical configu
 | [`mcp-diagnosis/`](./mcp-diagnosis/README.md) | Whether the golden MCP server set and the harness copies of it have drifted |
 | [`diagnosis-report/`](./diagnosis-report/README.md) | The one output shape every family is reported through |
 | [`governance-overrides/`](./governance-overrides/README.md) | Where a governance comes from when someone has overridden it |
+| [`references/`](./references/README.md) | How a reference is read by name, found by search, and layered across tiers |
 | [`entry-point/`](./entry-point/README.md) | How the package is called, and what it answers with |
 | [`command-output/`](./command-output/README.md) | How a result becomes the bytes on stdout, for every command |
 
