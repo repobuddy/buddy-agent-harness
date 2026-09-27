@@ -48,6 +48,7 @@ export default defineConfig([
 	},
 	...skillScriptConfig('doctor'),
 	...skillScriptConfig('init'),
+	...skillScriptConfig('reference'),
 ])
 
 /**
@@ -63,7 +64,9 @@ function skillScriptConfig(subcommand: string) {
 			minify: true,
 			// Forces every dynamically-imported module into this one file — a copied-out skill
 			// script has no sibling chunk files to resolve them from.
-			outputOptions: { codeSplitting: false },
+			// `keepNames`: clibuilder tells a zod array argument from a scalar by its constructor's
+			// name, which minifying renames — `<names...>` then rejects every value.
+			outputOptions: { codeSplitting: false, keepNames: true },
 			// `cli.ts` reads `__PACKAGE_VERSION__` in preference to `package.json` when the
 			// identifier is defined; this is the one build that defines it.
 			define: { __PACKAGE_VERSION__: JSON.stringify(version) },

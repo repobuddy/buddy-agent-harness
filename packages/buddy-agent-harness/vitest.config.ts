@@ -11,7 +11,12 @@ export default defineConfig({
 			// Process-boundary entries excluded from coverage; exercised behaviorally instead by
 			// `doctor-guidance.test.ts` (runs the built bundle) and `pack-check.ts` (runs the
 			// packed copy).
-			exclude: ['src/**/*.test.ts', 'src/skill-scripts/doctor.ts', 'src/skill-scripts/init.ts'],
+			exclude: [
+				'src/**/*.test.ts',
+				'src/skill-scripts/doctor.ts',
+				'src/skill-scripts/init.ts',
+				'src/skill-scripts/reference.ts',
+			],
 			thresholds: {
 				statements: 100,
 				branches: 100,

@@ -13,6 +13,8 @@ A **reference** is a Markdown document an agent reads on demand. [References and
 
 `--root` is the directory whose `.agents/` holds the project tier. It defaults to the current directory.
 
+A skill does not run this command itself. It names the [`load-reference` skill](/skills/load-reference/), which runs `show` from a launcher bundled in its own folder.
+
 ## Tiers
 
 A name resolves through these tiers, highest precedence first. Each tier holds one or more layers.
