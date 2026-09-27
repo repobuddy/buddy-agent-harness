@@ -112,32 +112,44 @@ Feature: Offer the current wording of a vetted section to a repository that alre
     And no file outside the repository is written
 
   @behavior
-  Scenario: offers to remove a retired wording the agent's own instructions already carry in its current form
+  Scenario: offers the replacement, and removal as the other answer, where the agent's own instructions already carry the current text
     Given instructions the agent loads from outside the repository already carry the `## Delegation` text exactly as `references/delegation.md` offers it
     And a root `AGENTS.md` holding a `## Delegation` section identical to a wording in `references/delegation.history.md`
     And the root `AGENTS.md` also holds the `## List identifiers` section exactly as `references/list-identifiers.md` offers it
     When the agent runs the `enhance` skill
     Then the report gives the `## Delegation` addition the verdict from a retired wording
-    And the report says the agent's instructions from outside the repository already carry the current text
-    And the removal of that `## Delegation` section is offered
+    And the current `## Delegation` text is offered as a replacement for that section
+    And the report says the agent's instructions from outside the repository already carry the current text, so the owner would read it twice
+    And the removal of that `## Delegation` section is offered as the other answer
     And the removal offer says the team's agents would no longer read the section
-    And no replacement is offered ahead of the owner's answer
-    And the report says a replacement would leave the owner reading the text twice, and that the owner may ask for it
     And `AGENTS.md` is unchanged
 
   @behavior
-  Scenario: removes only that section when the owner approves the removal
-    Given the `enhance` skill has offered to remove a `## Delegation` section from the root `AGENTS.md`
+  Scenario: removes only that section when the owner picks the removal
+    Given the `enhance` skill has offered the replacement of a `## Delegation` section in the root `AGENTS.md`, and its removal as the other answer
     And that is the only offer or question the run has put to the owner
-    When the owner approves the removal
+    When the owner picks the removal
     Then `AGENTS.md` carries no `## Delegation` section
     And every byte of `AGENTS.md` outside that section is as it was before the run
 
   @behavior
-  Scenario: replaces the section when the owner asks for the replacement instead of the removal
-    Given the `enhance` skill has offered to remove a `## Delegation` section from the root `AGENTS.md` and said the owner may ask for a replacement
-    When the owner asks for the replacement
+  Scenario: replaces the section when the owner approves the replacement over the removal
+    Given the `enhance` skill has offered the replacement of a `## Delegation` section in the root `AGENTS.md`, and its removal as the other answer
+    When the owner approves the replacement
     Then that `## Delegation` section holds the text inside the fence in `references/delegation.md`
+
+  @behavior
+  Scenario: hands over the current text for a retired global copy beside a current repository section
+    Given instructions the agent loads from outside the repository carry a `## Delegation` section identical to a wording in `references/delegation.history.md`
+    And a root `AGENTS.md` holding the `## Delegation` section exactly as `references/delegation.md` offers it
+    And the root `AGENTS.md` also holds the `## List identifiers` section exactly as `references/list-identifiers.md` offers it
+    When the agent runs the `enhance` skill
+    Then the report gives the `## Delegation` addition the verdict already current
+    And the report says the agent's instructions from outside the repository carry a retired `## Delegation` wording, and names the file holding it
+    And the owner is shown that section as it stands beside the current text byte-identical to the text inside the fence in `references/delegation.md`
+    And no replacement is offered for the repository's `AGENTS.md`
+    And no file outside the repository is written
+    And `AGENTS.md` is unchanged
 
   @behavior
   Scenario: says the owner reads the subject twice where their own words sit beside the current text outside the repository
