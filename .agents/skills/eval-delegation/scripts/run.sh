@@ -3,9 +3,8 @@
 #
 #   run.sh <prompt.md> <n> <outdir>
 #
-# Every run is a fresh `claude -p` with HOME pointed at a sandbox that holds credentials and
-# nothing else, and a cwd that is an empty directory. This is what keeps the user's own
-# ~/.claude/CLAUDE.md and any project CLAUDE.md out of the runner's context.
+# Every run is a fresh `claude -p` through blind-claude.mjs, from a cwd that is an empty directory.
+# That keeps the user's own ~/.claude/CLAUDE.md and any project CLAUDE.md out of the runner's context.
 #
 # Spawning runners as subagents does NOT do this: subagents inherit every CLAUDE.md level, so a
 # machine whose global CLAUDE.md already carries a Delegation section puts that section in all
@@ -14,19 +13,12 @@
 set -euo pipefail
 
 prompt="$1"; n="$2"; out="$3"
-mkdir -p "$out"
-
-sandbox="$out/.home"
-mkdir -p "$sandbox/.claude" "$out/.cwd"
-cp "$HOME/.claude/.credentials.json" "$sandbox/.claude/" 2>/dev/null || true
-if [ -e "$sandbox/.claude/CLAUDE.md" ]; then
-	echo "run.sh: sandbox HOME is not clean, refusing" >&2; exit 1
-fi
+blind="$(cd "$(dirname "$0")" && pwd)/blind-claude.mjs"
+mkdir -p "$out/.cwd"
 
 for i in $(seq 1 "$n"); do
 	(
-		cd "$out/.cwd"
-		HOME="$sandbox" timeout 180 claude -p "$(cat "$prompt")" \
+		node "$blind" --cwd "$out/.cwd" -- -p "$(cat "$prompt")" \
 			--disallowed-tools Read Bash Glob Grep Edit Write \
 			> "$out/run-$i.txt" 2>&1 || echo "RUN FAILED" >> "$out/run-$i.txt"
 	) &

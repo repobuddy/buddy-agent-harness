@@ -21,7 +21,7 @@ This is the `eval-delegation` method applied to a second section. Read `../eval-
    node .agents/skills/eval-list-identifiers/scripts/run.mjs --section <candidate.md> --arm <name> --out <workdir>
    ```
 
-   Each task is a fresh `claude -p` session, six per task, with HOME pointed at a sandbox holding credentials only and a `CLAUDE.md` holding the project stub and the arm's section. The revision tasks resume their parent's session for a second turn. Every arm uses the same model.
+   Each task is a fresh `claude -p` session, six per task, launched through `../eval-delegation/scripts/blind-claude.mjs` so none of the host's user-scope instructions load, from a directory whose `CLAUDE.md` is holding the project stub and the arm's section. The revision tasks resume their parent's session for a second turn. Every arm uses the same model.
 
 3. **Score blind:**
 

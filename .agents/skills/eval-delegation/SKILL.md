@@ -39,7 +39,7 @@ This skill is narrow on purpose — one section, one backlog, one scoring key. G
 
    Any difference below that marker invalidates the comparison. Fix it before spawning anything.
 
-4. **Spawn the runs.** Three per roster, six total, all on the same model, each a fresh subagent told only to read its prompt file and follow it. Never tell a runner it is being evaluated, and never mention delegation outside the prompt file.
+4. **Run them.** Three per roster, six total, all on the same model, each through `scripts/run.sh <prompt.md> 3 <outdir>`. Never spawn a runner as a subagent: it inherits the host's `~/.claude/CLAUDE.md`. Never tell a runner it is being evaluated, and never mention delegation outside the prompt file.
 
 5. **Score** each run against the key in `references/backlog.md`, then compare against the baseline recorded there.
 

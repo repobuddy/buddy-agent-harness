@@ -13,6 +13,7 @@ Where to look when writing or checking documentation in this repository. Pointer
 | a term used on the site | `apps/web/src/content/docs/reference/glossary.md` |
 | a score, run count, or task from the Delegation wording evaluation | `.agents/skills/eval-delegation/references/backlog.md` |
 | a score, run count, or task from the List identifiers wording evaluation | `.agents/skills/eval-list-identifiers/references/backlog.md` |
+| how to run an agent blind, without the host's user-scope instructions | `.agents/skills/eval-delegation/scripts/blind-claude.mjs`; the run policy for the `enhance` suite is in `packages/buddy-agent-harness/.agents/spec/skills/enhance/README.md` |
 | a term the spec suite binds | `packages/buddy-agent-harness/.agents/spec/glossary.md` |
 | a correction to a claim already published | `apps/web/src/content/docs/sources.md`, Corrections section (rule in `CONTRIBUTING.md`) |
 | which command gates a change before it ships | `turbo.json`, the `verify` task — `pnpm verify` runs every step in it, the docs-site build included |

@@ -87,8 +87,18 @@ but the Agent tool description.
 Telling the runner in its spawn brief to ignore other instructions does not fix this. The text is
 still there.
 
-Use `scripts/run.sh`. It runs each run as `claude -p` with HOME pointed at a sandbox holding
-credentials and nothing else, and cwd an empty directory. Never spawn runners as subagents.
+Use `scripts/run.sh`. It runs each run as `claude -p` through `scripts/blind-claude.mjs`, from an
+empty directory. Never spawn runners as subagents.
+
+The launcher leaves out the `user` setting source instead of pointing HOME at a sandbox. A sandbox
+HOME needs the credentials copied into it, and it does not hold where `CLAUDE_CONFIG_DIR` points
+back at the host's config; the excluded source holds either way. Measured 2026-09-26 on this
+section: with the host's config, `enhance` on a repository lacking Delegation reports it
+**already global** and offers nothing; through the launcher, it reports it absent and offers it.
+
+Two sources the launcher cannot exclude, so it refuses to run instead: an instruction file in a
+directory above the run's (the `project` source walks up), and an organization's managed
+`CLAUDE.md`, which no flag or setting removes.
 
 ## Scoring without an empty control
 
