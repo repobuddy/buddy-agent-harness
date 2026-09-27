@@ -107,7 +107,7 @@ For `/buddy-agent-harness:enhance`:
 - **The harness in use reads a user-scope file other than `~/.agents/AGENTS.md`, or documents none.** The destination is still `~/.agents/AGENTS.md`, and the offer says that harness reads the text only where a user-scope file of its own loads it.
 - **The instructions from outside the repository carry a retired wording, or the owner's own words on the subject, and the merged view does not cover it.** The global copy is classified with the same check as a repository section, and nothing is offered for the repository. A retired wording there has the current text handed over for the file that holds it; the owner's own words there are named and left alone; a copy that cannot be placed is put to the owner, and an answer that it came from this package hands over the current text. A team copy is still the owner's to ask for.
 - **The root `AGENTS.md` holds a retired wording and the instructions from outside the repository carry the current text.** The replacement is offered as for any stale section, and the offer says the owner would then read the text twice. Removal is the other answer, naming what it takes with it and that the team's agents lose it.
-- **The root `AGENTS.md` carries the current text and the instructions from outside the repository carry a retired wording.** The verdict stays already current, and the current text is handed over for the global copy, exactly as where the repository has none.
+- **The instructions from outside the repository carry a retired wording, and the merged view covers the subject.** The repository section is judged as it would be without it, and the current text is handed over for the global copy as well, exactly as where the repository has none: beside an already-current section, the owner's own words, a stale section, or one the skill cannot place.
 - **A retired wording in a harness file other than the root `AGENTS.md`, beside a global copy.** No offer here; consolidation is `../init/`'s, and once it runs the section is in the root `AGENTS.md` and judged there.
 - **The root `AGENTS.md` covers the subject in the owner's own words and the instructions from outside the repository carry the current text.** Nothing is offered. The report names both and says the owner reads the subject twice; which to keep is the owner's call, and neither copy is changed.
 - **The section was approved on an earlier run and has since been deleted.** It reads as absent and is offered again. Absence is the whole state; the skill keeps no memory of a run.
@@ -151,7 +151,7 @@ flowchart TD
   G -->|they disagree| P0{Does this repository have a harness scoring this addition's wordings?}
   P0 -->|yes| P1[Say it cannot be placed, show the three texts — the section, the wording it partly tracks, and the current text, the last two one text where the addition has no retired wording — and put three answers: theirs, ours, or settle it by measurement]
   P0 -->|no| P1N[Say it cannot be placed, show the three texts, put the two answers, and name measurement as needing a harness this repository lacks]
-  G1 -->|no| G2[Name the file holding it and offer nothing]
+  G1 -->|no| G2[Name the file holding it, and any global copy on the subject, and offer nothing]
   G1 -->|yes| GX{Do instructions the agent loads from outside the repository carry the current text?}
   GX -->|no| I[Present the current text beside the section it would replace, naming every paragraph in it that no retired wording — or, where the addition has none, the current text — contains]
   P1N --> P2
@@ -178,14 +178,14 @@ flowchart TD
   HG -->|no| Z
   GHC --> Z
   C --> Z[Report what was read, what was judged, and what was written]
-  H --> Z
-  G2 --> Z
-  P1 --> Z
-  P1N --> Z
-  K --> Z
+  H --> HG
+  G2 --> HG
+  P1 --> HG
+  P1N --> HG
+  K --> HG
   M --> Z
-  N --> Z
-  RM --> Z
+  N --> HG
+  RM --> HG
 ```
 
 `EG` is asked only of an uncovered addition, and it is containment, the same test as `GC`, against the text the agent already loads from outside the repository. It is the recommended destination already met. Recommending the global file there would ask the owner to write down what their agent already reads, and offering the repository copy as the alternative would give the owner the same text twice. So the default is silence with a reason, and a team copy is the owner's to ask for. The merged view never includes these instructions, since they are not the repository's and reach none of its other readers.
@@ -194,7 +194,7 @@ flowchart TD
 
 `GX` is where a stale repository section meets a current global one. The replacement stays the offer: the repository's section is what the team reads, and refreshing it is the default for any stale section. The owner already reads the current text, so the offer says the replacement puts it in front of them twice, and puts removal beside it as the answer that leaves them reading it once, at the cost of the team's copy.
 
-`HG` hands over the current text for a retired global copy even where the repository's section is current. The global file is the owner's, and a retired wording there is read in every repository they open, beside the current text in this one. `H` has no counterpart offer: the owner's own words are never removed or replaced, so the report names both copies and leaves the choice with them.
+`HG` sits at the end of every path on which the merged view covers the subject, so a retired global copy has the current text handed over whatever the repository's section turned out to be, current included. The global file is the owner's, and a retired wording there is read in every repository they open, beside the current text in this one. `H` has no counterpart offer: the owner's own words are never removed or replaced, so the report names both copies and leaves the choice with them.
 
 The decision at `E` is unchanged from the skill as it shipped: coverage is judged by meaning, and doubt resolves as covered, because a missed offer costs the user nothing while a duplicate section teaches every future agent that the file repeats itself.
 
@@ -261,6 +261,7 @@ flowchart TD
 | GX→R | a retired wording in the root `AGENTS.md` and the current text in the agent's instructions from outside the repository | `offers the replacement, and removal as the other answer, where the agent's own instructions already carry the current text` |
 | R1→RM | the owner picks the removal, the only offer on the table | `removes only that section when the owner picks the removal` |
 | R1→N | the owner approves the replacement | `replaces the section when the owner approves the replacement over the removal` |
+| H→HG→GHC | the owner's own words in the root `AGENTS.md` and a retired wording in the agent's instructions from outside the repository | `hands over the current text for a retired global copy beside the owner's own section` |
 | HC→HG→GHC | the current text in the root `AGENTS.md` and a retired wording in the agent's instructions from outside the repository | `hands over the current text for a retired global copy beside a current repository section` |
 | G→H | the owner's own words in the root `AGENTS.md` and the current text in the agent's instructions from outside the repository | `says the owner reads the subject twice where their own words sit beside the current text outside the repository` |
 | F | an owner choosing their global file over the repository | `hands a global placement over rather than writing outside the repository` |

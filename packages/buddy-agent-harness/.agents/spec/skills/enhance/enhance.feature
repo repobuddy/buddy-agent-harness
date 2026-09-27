@@ -152,6 +152,20 @@ Feature: Offer the current wording of a vetted section to a repository that alre
     And `AGENTS.md` is unchanged
 
   @behavior
+  Scenario: hands over the current text for a retired global copy beside the owner's own section
+    Given instructions the agent loads from outside the repository carry a `## Delegation` section identical to a wording in `references/delegation.history.md`
+    And a root `AGENTS.md` holding a `## Working with subagents` section written by the repository owner
+    And that section says which work to hand to a subagent and which to keep
+    And the root `AGENTS.md` also holds the `## List identifiers` section exactly as `references/list-identifiers.md` offers it
+    When the agent runs the `enhance` skill
+    Then the report names the `## Working with subagents` section as what covers the subject
+    And the report says the agent's instructions from outside the repository carry a retired `## Delegation` wording, and names the file holding it
+    And the owner is shown that section as it stands beside the current text byte-identical to the text inside the fence in `references/delegation.md`
+    And no replacement is offered for the repository's `AGENTS.md`
+    And no file outside the repository is written
+    And `AGENTS.md` is unchanged
+
+  @behavior
   Scenario: says the owner reads the subject twice where their own words sit beside the current text outside the repository
     Given instructions the agent loads from outside the repository already carry the `## Delegation` text exactly as `references/delegation.md` offers it
     And a root `AGENTS.md` holding a `## Working with subagents` section written by the repository owner
