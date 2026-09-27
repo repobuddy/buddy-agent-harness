@@ -14,6 +14,11 @@ chooses. Before that path is committed to, one question has to be answered:
 
 **In**: where MCP configuration files live, and whether that location is standardizing. The
 project-scope path, config key, and serialization format of each harness this project supports.
+Also in scope: the per-field shape of each harness's server entry — the exact field names for
+stdio command/args/env/cwd, remote url, transport selection, headers, auth-from-env-var fields,
+environment-variable reference syntax, timeout fields and units, and enable/disable/description
+fields — as primary-sourced groundwork for writing forward and reverse converters between a
+canonical MCP server entry and each harness's file (E-MCP-12 through E-MCP-16).
 
 **Out**: the MCP wire protocol. Whether the mapping between host formats is lossless —
 `.research/agent-install-implementation/` (E-MCP-01 through E-MCP-05, recorded in

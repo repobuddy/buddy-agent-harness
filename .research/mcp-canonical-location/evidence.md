@@ -105,3 +105,162 @@ which holds E-MCP-01 through E-MCP-05. Same subject, same numbering.
 - **Why it matters here**: Copilot CLI is a supported harness with no project-scope MCP target,
   so it takes no MCP entry in the registry. That is a documented absence, not an omission, and
   the unverified migration report is the thing to re-check before it changes.
+
+## E-MCP-12 — Claude Code's per-entry field shape: `type`-gated transport, `${VAR}`/`${VAR:-default}` expansion, millisecond timeout
+
+- **Date**: 2026-09-27
+- **Status**: confirmed
+- **Confidence**: high
+- **Source**: Claude Code docs — https://code.claude.com/docs/en/mcp — vendor's own documentation,
+  fetched 2026-09-27
+- **Notes**: An `mcpServers` entry carries `type`, whose documented values are `stdio`, `http`
+  (`streamable-http` accepted as an alias — *"the MCP specification uses the name
+  `streamable-http` for this transport, so configurations copied from server documentation work
+  without modification"*), `sse` (*"deprecated. Use HTTP servers instead, where available"*),
+  `ws`, and `sdk` (in-process, SDK hosts only). `type` is required whenever `url` is present:
+  *"A JSON entry that has a `url` but no `type` is a configuration error, because Claude Code
+  reads an entry with no `type` as a stdio server"* — so `type` defaults to `stdio` only in the
+  absence of `url`. Stdio fields: `command` (required), `args`, `env`, `cwd`. Remote fields:
+  `url` (required), `headers`, `headersHelper` (a command that prints headers at connection
+  time). Common optional fields: `timeout` (per-tool execution limit, **milliseconds**; "values
+  below 1000 are ignored"), `alwaysLoad` (HTTP/SSE only, force startup connection), `description`,
+  and an `oauth` object (`clientId`, `callbackPort`, `scopes`, `authServerMetadataUrl`). No
+  top-level enable/disable field is documented; there is no MCP-specific auth-from-env-var field
+  analogous to Codex's `bearer_token_env_var` — bearer tokens go directly in `headers` as an
+  expanded `${VAR}` value. Expansion syntax `${VAR}` and `${VAR:-default}` is documented as
+  supported in `command`, `args`, `env` (stdio) and `url`, `headers`, `headersHelper` (remote);
+  expansion happens "before the server starts." The docs also warn that specific credential-shaped
+  variable names (`ANTHROPIC_API_KEY`, `ANTHROPIC_AUTH_TOKEN`, `AWS_BEARER_TOKEN_BEDROCK`,
+  `HTTPS_PROXY`, `NPM_TOKEN`, others) resolve to empty inside `url`/`headers` specifically to
+  block credential leakage, so a custom variable name is the documented workaround.
+- **Why it matters here**: this is the reference shape a forward converter into `.mcp.json` must
+  produce and a reverse converter must parse — including the required-`type`-with-`url` rule,
+  which is the one place an entry lacking `type` is silently misread rather than rejected.
+
+## E-MCP-13 — Cursor's per-entry field shape: `type: "stdio"` documented, no equivalent field named for remote transport selection; `${env:VAR}` syntax; no timeout/enable/description fields found
+
+- **Date**: 2026-09-27
+- **Status**: confirmed for what is documented; **unverified** for transport-selection field on
+  remote entries and for timeout/enable/description (absence from a fetched page is evidence of
+  non-documentation, not proof the field does not exist)
+- **Confidence**: medium
+- **Source**: Cursor docs — https://cursor.com/docs/context/mcp — vendor's own documentation,
+  fetched 2026-09-27
+- **Notes**: Stdio entries: `command` (required), `type: "stdio"` (documented as required
+  alongside `command`), `args`, `env`, `envFile` (path to an env file to load additional
+  variables — a field none of the other three targets document). Remote entries: `url`
+  (required), `headers` ("supports interpolation"), `auth` (an OAuth object with `CLIENT_ID`,
+  `CLIENT_SECRET`, `scopes`). The page states Cursor "supports three transport methods" in a
+  table but the fetch could not surface a documented field that selects among them for a remote
+  entry, or confirm whether `type` takes values like `sse`/`http`/`streamable-http` there; treat
+  transport selection for remote Cursor entries as **unverified** pending a closer read of that
+  table. Variable interpolation is documented for `command`, `args`, `env`, `url`, `headers`, and
+  `auth`, with syntax `${env:NAME}` (environment variables), plus non-env placeholders
+  `${userHome}`, `${workspaceFolder}`, `${workspaceFolderBasename}`, `${pathSeparator}`/`${/}`.
+  No `timeout`, enable/disable, or `description` field appears anywhere on the fetched page;
+  recorded as **not found in this source**, not as "documented absent" (Cursor's docs do not
+  state these fields don't exist, they simply aren't mentioned here).
+- **Why it matters here**: `envFile` and the `${env:VAR}` spelling (vs. Claude Code's bare
+  `${VAR}`) are both mapping hazards for a converter — a value carrying `${env:VAR}` cannot be
+  copied verbatim into a Claude Code `${VAR}` field or vice versa without a syntax rewrite. The
+  unresolved remote-transport-selection field and the unfound timeout/enable/description fields
+  are gaps a reverse converter must treat as "may lose no data" only provisionally, pending
+  confirmation.
+
+## E-MCP-14 — Codex's `mcp_servers.<id>` table: transport is inferred from `command` vs. `url`, no SSE, second-based timeouts, explicit env-var-to-header/bearer-token fields, no `${VAR}` expansion documented
+
+- **Date**: 2026-09-27
+- **Status**: confirmed
+- **Confidence**: high
+- **Source**: OpenAI's Codex config reference — https://learn.chatgpt.com/docs/config-file/config-reference
+  (reached via the documented redirect chain from https://developers.openai.com/codex/config-reference,
+  itself linked from https://github.com/openai/codex/blob/main/docs/config.md, which as of
+  2026-09-27 only points to the developers.openai.com pages rather than stating the fields
+  in-repo) — vendor's own documentation, fetched 2026-09-27
+- **Notes**: There is no `type` field. `mcp_servers.<id>.command` ("Launcher command for an MCP
+  stdio server") and `mcp_servers.<id>.url` ("Endpoint for an MCP streamable HTTP server") are
+  each documented on their own transport and are how Codex distinguishes stdio from remote — one
+  table means one transport, selected by which of `command`/`url` is present. Stdio fields:
+  `command`, `args`, `cwd`, `env` (map, "forwarded to the MCP stdio server"), `env_vars` (array or
+  table, "additional environment variables to whitelist"). Remote (HTTP) fields: `url`,
+  `bearer_token_env_var` ("environment variable sourcing the bearer token"), `http_headers`
+  (static map), `env_http_headers` (map of header name to **environment variable name**, not an
+  interpolation syntax inside a string value), `http_headers_helper` (a command printing a JSON
+  header object), `auth` (`oauth` or `chatgpt`, "authentication fallback ... after configured
+  bearer tokens and authorization headers"), plus an `oauth` sub-table (`client_id`,
+  `callback_url`, `callback_port`), `scopes`, `oauth_resource`. Transport-agnostic fields:
+  `startup_timeout_sec` (default 10s) with an alias `startup_timeout_ms` ("Alias for
+  startup_timeout_sec in milliseconds"), `tool_timeout_sec` (default 60s), `enabled` (boolean,
+  disables without deleting config — this is Codex's enable/disable field), `required` (boolean,
+  fail startup if an enabled server can't initialize), `enabled_tools`/`disabled_tools`
+  (allow/deny lists), `default_tools_approval_mode` and `tools.<tool>.approval_mode`
+  (`auto`/`prompt`/`writes`/`approve`), `tools.<tool>.output_token_limit`, and
+  `experimental_environment` (`local`/`remote`). No `description` field is documented. **SSE is
+  not documented as a supported transport** — the reference names only "MCP stdio server" and
+  "MCP streamable HTTP server"; this is a documented absence (the terms are used consistently and
+  deliberately throughout, not merely missing from an example), so record SSE support for Codex
+  as **documented not supported**, not unverified. No `${VAR}`-style expansion syntax is
+  documented for values inside `env`, `args`, `url`, or header maps — `env_http_headers` supplies
+  an environment variable's value into a header by naming the variable in a dedicated field, not
+  by interpolating a token inside a string, and no evidence of runtime interpolation inside
+  ordinary string fields was found.
+- **Why it matters here**: Codex is the one target with no free-form `${VAR}` expansion syntax
+  and no SSE support — both are hard converter constraints, not stylistic ones. A canonical entry
+  carrying an `${VAR}` reference or an SSE transport has no direct Codex projection; the forward
+  converter must either resolve/reject the `${VAR}` case and reject (or flag) the SSE case rather
+  than emit an unsupported shape.
+
+## E-MCP-15 — Gemini CLI's `mcpServers` entry: `url` (SSE) vs. `httpUrl` (streamable HTTP) as separate fields, POSIX-and-Windows env syntax, milliseconds default 600000, `trust`/`includeTools`/`excludeTools`
+
+- **Date**: 2026-09-27
+- **Status**: confirmed
+- **Confidence**: high
+- **Source**: gemini-cli docs —
+  https://github.com/google-gemini/gemini-cli/blob/main/docs/tools/mcp-server.md — vendor's own
+  documentation, fetched 2026-09-27 (same page as E-MCP-10, re-fetched for field-level detail)
+- **Notes**: There is no single `type` field; transport is selected by which mutually-exclusive
+  field is present: `command` (stdio), `url` (SSE transport), or `httpUrl` (streamable HTTP
+  transport) — Gemini CLI is the only one of the four targets that names SSE and streamable HTTP
+  as two distinct fields rather than two values of one field. Stdio-only fields: `args`, `cwd`.
+  `env` is a map whose values documented as supporting `$VAR` and `${VAR}` (POSIX syntax, "on all
+  platforms") and `%VAR%` (Windows syntax, Windows only) — no `${VAR:-default}` default-value
+  form is documented, and no `${env:VAR}` form either. `headers` is a map for HTTP-transport
+  servers. `timeout` (milliseconds; default 600000 = 10 minutes) is transport-agnostic. `trust`
+  (boolean, default false, bypasses tool-confirmation prompts) is Gemini-specific. `includeTools`
+  / `excludeTools` filter exposed tools, with `excludeTools` taking precedence. An OAuth-adjacent
+  set (`authProviderType`, `targetAudience`, `targetServiceAccount`) supports service-account
+  impersonation. No `description` field is documented. Enable/disable is **not** a config-file
+  field: enablement state lives in a separate file, `~/.gemini/mcp-server-enablement.json`,
+  toggled by the `/mcp disable` and `/mcp enable` commands rather than by editing
+  `.gemini/settings.json` — a converter that only reads/writes `settings.json` cannot see or
+  change this state.
+- **Why it matters here**: the `url`/`httpUrl` split is the one transport-selection scheme
+  incompatible with all three other targets' single-field approach, so a forward converter must
+  map canonical "SSE" to `url` and canonical "streamable HTTP" to `httpUrl` specifically, never to
+  a shared field. The enablement file outside `settings.json` means "disabled" has no in-file
+  representation to round-trip for this target.
+
+## E-MCP-16 — Environment-variable reference syntax differs across all four targets; none round-trips into another verbatim
+
+- **Date**: 2026-09-27
+- **Status**: confirmed (as a comparison of what each of E-MCP-12 through E-MCP-15 already
+  documents; no new source)
+- **Confidence**: high
+- **Source**: same four vendor pages as E-MCP-12 through E-MCP-15
+- **Notes**: Claude Code: `${VAR}`, `${VAR:-default}`, expands in `command`/`args`/`env` and
+  `url`/`headers`/`headersHelper`, resolved before server start, with named credential variables
+  forced empty in `url`/`headers`. Cursor: `${env:NAME}` for environment variables specifically
+  (distinguishable from its own `${userHome}`/`${workspaceFolder}` placeholders, which are not
+  environment variables), expands in `command`/`args`/`env`/`url`/`headers`/`auth`; no
+  default-value form documented. Codex: no interpolation syntax documented in any string field;
+  environment access instead goes through dedicated fields (`env`, `env_vars`,
+  `env_http_headers`, `bearer_token_env_var`) that name a variable rather than embed a token in a
+  value. Gemini CLI: `$VAR`/`${VAR}` (POSIX, cross-platform) and `%VAR%` (Windows-only), in `env`
+  values; no default-value form and no `${env:VAR}` form documented for headers/url specifically
+  (the page's examples show it only in `env`; whether it also expands in `url`/`headers` is
+  **unverified**, not confirmed either way, from this fetch).
+- **Why it matters here**: four different syntaxes for the same concept mean a reverse converter
+  reading, say, a Claude Code `${VAR:-default}` value cannot copy it into a Cursor, Codex, or
+  Gemini entry unverbatim — the default-value form has no target to receive it at all (only
+  Claude Code documents it), and the token spelling itself (`${VAR}` vs `${env:VAR}` vs a
+  named-field reference vs `%VAR%`) must be rewritten per target rather than passed through.
