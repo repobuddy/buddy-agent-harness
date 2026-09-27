@@ -200,6 +200,7 @@ Feature: Consolidate a repository's agent configuration and bridge the harnesses
     When the owner declines it
     Then that file is unchanged
     And no pointer is written in its place
+    And the other approved steps are applied without asking again
 
   @behavior
   Scenario: preserves the history of a skill it moves

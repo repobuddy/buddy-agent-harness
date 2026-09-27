@@ -250,6 +250,6 @@ The two graphs share the layer construction and nothing else. `list` never reads
 - `../command-output/` owns the encoder and the verbatim document write `show` uses in `text`.
 - `../diagnosis-report/` states the `governances` section of `doctor`'s report; `../../skills/harness-init/`
   states that `init` creates the project layer and counts it.
-- `../../../../../../.agents/plans/governance-retrieval.design.md` is the design this implements,
+- `../../../../../../.agents/plans/122-governance-retrieval.design.md` is the design this implements,
   including the three-step lookup order a skill follows and why step 2 never runs through `npx`.
 - AXI §5 backs the stated zero; AXI §10 backs the home collapse.

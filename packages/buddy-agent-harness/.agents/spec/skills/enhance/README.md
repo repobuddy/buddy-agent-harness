@@ -9,15 +9,15 @@ concept: harness-compatibility
 
 The `enhance` skill's conduct: which vetted sections it offers to a repository that already has an `AGENTS.md`, when it offers the **current** wording of a section the repository already carries in an **older** form, and what it will not write without being told to.
 
-`../init/` consolidates what a repository already has and invents nothing, so it is safe to run anywhere. This skill is the opposite half by design: every section it carries is an opinion, and an opinion is worth having only where its subject is missing — or where the repository took an earlier version of it and never heard that the wording moved. Keeping the two apart is what lets `init` stay unopinionated.
+`../init-buddy-agent-harness/` consolidates what a repository already has and invents nothing, so it is safe to run anywhere. This skill is the opposite half by design: every section it carries is an opinion, and an opinion is worth having only where its subject is missing — or where the repository took an earlier version of it and never heard that the wording moved. Keeping the two apart is what lets `init` stay unopinionated.
 
-These properties make it a node rather than a paragraph inside `../init/`.
+These properties make it a node rather than a paragraph inside `../init-buddy-agent-harness/`.
 
 **Where a section goes is part of what it offers.** A subject that is not about the repository has no business being copied into every repository the owner works in — that is the drift this package exists to remove, one level up from the file it removes it in. So an addition names its destination, the offer leads with it, and the one destination this skill cannot write is the one it recommends for delegation and list identifiers: a global placement is handed over, never made. The global file is `~/.agents/AGENTS.md`, the user-scope counterpart of the root `AGENTS.md`, for the same reason `.agents/skills/` has `~/.agents/skills/`: one home per fact, and each harness pointed at it.
 
 **The same text loaded twice is a cost this node avoids.** The owner's agent already reads its own always-loaded instructions, including those from outside the repository. Where those carry an addition's current text and the merged view does not cover its subject, the recommendation is already met, so the run offers nothing and says so. A copy in the repository still reaches the team, and it is written only when the owner asks for it, because it costs the owner a second copy of the text in every session.
 
-**It writes material content, and material content needs a person's word.** A section here asserts something about how the repository is worked in — it stays true whether or not this tool ever ran — so it falls on the material side of the discriminator `../init/` applies, and nothing here is ever written on sight. `../init/` may create an absent file unasked; this skill may not add a sentence unasked.
+**It writes material content, and material content needs a person's word.** A section here asserts something about how the repository is worked in — it stays true whether or not this tool ever ran — so it falls on the material side of the discriminator `../init-buddy-agent-harness/` applies, and nothing here is ever written on sight. `../init-buddy-agent-harness/` may create an absent file unasked; this skill may not add a sentence unasked.
 
 **Its detection has six outcomes, not two.** A repository can be **missing** a subject while the agent's own instructions from outside it already carry the text, which is **already global**; can be missing it outright; can **cover** it in the owner's own words; can already carry the **text the addition would offer**; can carry a **wording this addition has since retired**, edits and all; or can carry something the skill genuinely **cannot place** between the last two. Already global is reported and offered nothing unless the owner asks for a team copy, absent is offered as an addition, a retired wording as a replacement, the owner's own and the already-current left alone, and the undecidable **put to the owner**. Already-current and the owner's own reach the same silence by different routes, and the report says which: a section this package wrote is not credited to the person reading the report.
 
@@ -37,14 +37,14 @@ These properties make it a node rather than a paragraph inside `../init/`.
 - **covered** — the merged view already tells the agent what the addition would tell it, judged by meaning rather than by heading or wording.
 - **retired wording** — a text an addition used to offer, kept verbatim beside it after a revision. A present section is checked for containment of the current text first; to decide whether it is stale, it is compared against these, never weighed against the text that would be offered.
 - **from a retired wording** — the section could be produced by a handful of edits to one of them. Semantic closeness is coverage; provenance is a question about whole passages.
-- **managed region** — the marked block `../init/` maintains for its own bookkeeping. Additions are the owner's content and never go inside it.
+- **managed region** — the marked block `../init-buddy-agent-harness/` maintains for its own bookkeeping. Additions are the owner's content and never go inside it.
 
 **Non-goals**
 
-- **Consolidating harness instruction files.** This skill reads them into the merged view and moves none of them; consolidation has one home, `../init/`. Where a run finds content that should be consolidated it says so and recommends that skill.
+- **Consolidating harness instruction files.** This skill reads them into the merged view and moves none of them; consolidation has one home, `../init-buddy-agent-harness/`. Where a run finds content that should be consolidated it says so and recommends that skill.
 - **The wording of `## Delegation`.** What it says was settled by blind A/B evaluation and is fixed; the repo-private `eval-delegation` skill owns it. This node specifies **when that text is surfaced**, never what it says. The `## List identifiers` text is scored by the repo-private `eval-list-identifiers` skill, so this node owns what it must direct — the rules issue #146 asked for — and not its exact wording.
 - **Correcting agent configuration that is present and wrong.** `../repair/`. A stale addition is not a fault in the repository — it is this package's wording having moved.
-- **Creating an `AGENTS.md`.** `../init/`'s. A repository without one is reported and left alone.
+- **Creating an `AGENTS.md`.** `../init-buddy-agent-harness/`'s. A repository without one is reported and left alone.
 - **Anything outside local agent configuration.** Workflows, repository settings, and project source are out of reach whatever a run finds in them — a bar the suite asserts as a barred scenario rather than a path, since no decision in the graph can reach them.
 - **Deciding activation.** Which of the shipped skills a request reaches is co-owned across four descriptions and the harness that matches them. Not this node's.
 
@@ -87,8 +87,8 @@ The skill takes one argument, `--root <dir>`, naming the repository to work on; 
 
 For `/buddy-agent-harness:enhance`:
 
-- **No root `AGENTS.md`.** Reported and stopped. This skill adds to a file that exists; creating one is `../init/`'s.
-- **Harness instruction files still hold content bound for `AGENTS.md`.** Read into the merged view and left where they are. The run says they should be consolidated and recommends `../init/`, then carries on with its judgment rather than blocking on it.
+- **No root `AGENTS.md`.** Reported and stopped. This skill adds to a file that exists; creating one is `../init-buddy-agent-harness/`'s.
+- **Harness instruction files still hold content bound for `AGENTS.md`.** Read into the merged view and left where they are. The run says they should be consolidated and recommends `../init-buddy-agent-harness/`, then carries on with its judgment rather than blocking on it.
 - **The addition's own heading appears inside a fenced code block.** Not coverage. A fenced block is an example of a file rather than part of this one — and since every addition is *shown* as a fenced block, a repository documenting this tool carries the exact heading while remaining entirely uncovered.
 - **The merged view carries only a thin line on the subject.** Covered, and the run names the line. Doubt at the coverage question resolves toward covered and says why — a missed offer costs nothing, a duplicate section teaches every future agent that the file repeats itself.
 - **The subject is covered in the owner's own words.** Offered nothing, and the run names what covers it. Coverage is judged by meaning, so a repository covering delegation under `## Working with subagents`, or in three sentences of a longer section, is covered.
@@ -108,7 +108,7 @@ For `/buddy-agent-harness:enhance`:
 - **The instructions from outside the repository carry a retired wording, or the owner's own words on the subject, and the merged view does not cover it.** The global copy is classified with the same check as a repository section, and nothing is offered for the repository. A retired wording there has the current text handed over for the file that holds it; the owner's own words there are named and left alone; a copy that cannot be placed is put to the owner, and an answer that it came from this package hands over the current text. A team copy is still the owner's to ask for.
 - **The root `AGENTS.md` holds a retired wording and the instructions from outside the repository carry the current text.** The replacement is offered as for any stale section, and the offer says the owner would then read the text twice. Removal is the other answer, naming what it takes with it and that the team's agents lose it.
 - **The instructions from outside the repository carry a retired wording, and the merged view covers the subject.** The repository section is judged as it would be without it, and the current text is handed over for the global copy as well, exactly as where the repository has none: beside an already-current section, the owner's own words, a stale section, or one the skill cannot place.
-- **A retired wording in a harness file other than the root `AGENTS.md`, beside a global copy.** No offer for that file; consolidation is `../init/`'s, and once it runs the section is in the root `AGENTS.md` and judged there.
+- **A retired wording in a harness file other than the root `AGENTS.md`, beside a global copy.** No offer for that file; consolidation is `../init-buddy-agent-harness/`'s, and once it runs the section is in the root `AGENTS.md` and judged there.
 - **The root `AGENTS.md` covers the subject in the owner's own words and the instructions from outside the repository carry the current text.** Nothing is offered. The report names both and says the owner reads the subject twice; which to keep is the owner's call, and neither copy is changed.
 - **The section was approved on an earlier run and has since been deleted.** It reads as absent and is offered again. Absence is the whole state; the skill keeps no memory of a run.
 
@@ -339,5 +339,5 @@ A run following a **declined** offer gets no row of its own. The repository it l
 
 - `../../../../skills/enhance/SKILL.md` is the shipped skill: the merged view, the six-way detection, and the approval gate this node specifies.
 - `../../../../skills/enhance/references/delegation.md` and `../../../../skills/enhance/references/list-identifiers.md` are the additions shipped today; each sibling `*.history.md` holds the wordings that addition has retired, which is the artifact `G` compares against.
-- `../init/` owns consolidation and the material/non-material discriminator this skill's approval rule rests on.
+- `../init-buddy-agent-harness/` owns consolidation and the material/non-material discriminator this skill's approval rule rests on.
 - [AGENTS.md](https://agents.md/) defines the open, project-level instruction format every addition is written into.
