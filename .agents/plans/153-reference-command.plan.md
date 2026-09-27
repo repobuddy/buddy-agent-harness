@@ -9,15 +9,15 @@ todos:
   - content: Spec gate — ALIGNED on round 3 (pre-flight, then a coverage gap); self-asserted, auto-spec leash
     status: completed
   - content: Build src/references (layers, documents, merge, resolve, search, command) with 100% coverage
-    status: in_progress
+    status: completed
   - content: Governance alias warns deprecation; legacy governances folders read by reference
     status: completed
   - content: Docs — references concept page, CLI reference page, glossary; changeset
     status: completed
-  - content: Impl gate — cold impl-judge per scenario; pnpm verify
-    status: pending
+  - content: Impl gate — all 48 pass on round 3 (2 change rounds, tests only); paused for owner ratification
+    status: completed
   - content: PR referencing #153; report the show contract to operator
-    status: pending
+    status: completed
 ---
 
 # 153 — `reference show|list|search`
@@ -36,4 +36,4 @@ Settled here (headless calls, reported to the owner):
 
 ## NEXT
 
-Suite frozen (48 scenarios). Finish per-scenario tests to 100% coverage, then the cold impl-judge and `pnpm verify`.
+Landed on a PR against main. Owner to ratify both gates and review the settled calls above.

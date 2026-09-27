@@ -401,7 +401,9 @@ describe('merge modes', () => {
 
 		expect(show(['name'], { root })).toBe(0)
 		const content = written()
-		expect(content).toContain('Combined from 2 layers, highest precedence first')
+		expect(content).toContain(
+			'Combined from 2 layers, highest precedence first. Where they conflict, the first layer wins.',
+		)
 		const projectIndex = content.indexOf('# project')
 		const userIndex = content.indexOf('# user')
 		expect(projectIndex).toBeGreaterThan(-1)
@@ -768,9 +770,16 @@ describe('list', () => {
 		expect(firstUser).toBeGreaterThan(tiers.lastIndexOf('project'))
 		expect(firstPlugin).toBeGreaterThan(tiers.lastIndexOf('user'))
 
-		const legacyStatuses = report.layers.filter((layer) => layer.status !== '').map((layer) => layer.status)
-		expect(legacyStatuses.some((status) => status.includes('legacy'))).toBe(true)
-		expect(legacyStatuses.some((status) => status.includes('deprecated'))).toBe(true)
+		for (const layer of report.layers) {
+			if (layer.path.endsWith('universal-plugin/governances') || layer.path.endsWith('UniPlugin/governances')) {
+				expect(layer.status).toContain('deprecated')
+			} else if (layer.path.endsWith('governances')) expect(layer.status).toContain('legacy')
+			else expect(layer.status).toBe('')
+		}
+		expect(report.layers.filter((layer) => layer.status.includes('legacy')).map((layer) => layer.tier)).toEqual(
+			expect.arrayContaining(['managed', 'project', 'user', 'plugin']),
+		)
+		expect(report.layers.filter((layer) => layer.status.includes('deprecated'))).toHaveLength(1)
 	})
 
 	it('marks shadowed and blocked layers in the listing', () => {
@@ -810,7 +819,9 @@ describe('search', () => {
 
 		expect(search('test', { root, format: 'json' })).toBe(0)
 		const report = JSON.parse(written()) as ReferenceSearchReport
-		const matches = report.references as { name: string; match: string }[]
+		const matches = report.references as { name: string; tier: string; match: string; description: string }[]
+		expect(matches.every((match) => match.tier === 'project')).toBe(true)
+		expect(matches.map((match) => match.description)).toEqual(['', '', '', 'covers test coverage', '', ''])
 		expect(matches.map((match) => match.name)).toEqual(['test', 'testing', 'best', 'alpha', 'beta', 'gamma'])
 		expect(matches.map((match) => match.match)).toEqual([
 			'name',
