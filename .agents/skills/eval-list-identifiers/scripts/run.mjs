@@ -6,12 +6,11 @@
 // Writes <out>/<arm>/<task>-<rep>.txt, and for a task with a revision round
 // <out>/<arm>/<revision>-<rep>.txt from a second turn of the same session.
 
-import { spawn } from 'node:child_process'
 import { randomUUID } from 'node:crypto'
-import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
-import { homedir } from 'node:os'
-import { dirname, join, resolve } from 'node:path'
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { join, resolve } from 'node:path'
 import { parseArgs } from 'node:util'
+import { assertBlind, blindClaude } from '../../eval-delegation/scripts/blind-claude.mjs'
 import { NO_ACCESS, PROJECT, TASKS } from './backlog.mjs'
 
 const { values } = parseArgs({
@@ -40,38 +39,17 @@ if (section && !/^##\s+\S/m.test(section)) {
 }
 
 const armDir = resolve(values.out, values.arm)
-const sandbox = join(armDir, '.home')
 const cwd = join(armDir, '.cwd')
-mkdirSync(join(sandbox, '.claude'), { recursive: true })
 mkdirSync(cwd, { recursive: true })
-copyFileSync(join(homedir(), '.claude', '.credentials.json'), join(sandbox, '.claude', '.credentials.json'))
-
-// claude loads every CLAUDE.md from cwd up to the root, so a run directory inside a repository
-// would put that repository's instructions in every arm.
-for (let dir = dirname(cwd); dir !== dirname(dir); dir = dirname(dir)) {
-	for (const name of ['CLAUDE.md', 'CLAUDE.local.md', 'AGENTS.md']) {
-		if (existsSync(join(dir, name))) {
-			process.stdout.write(`error: ${join(dir, name)} would load into every run; put --out outside it\n`)
-			process.exit(1)
-		}
-	}
-}
+assertBlind(cwd)
 
 writeFileSync(join(cwd, 'CLAUDE.md'), section ? `${PROJECT}\n${section}\n` : PROJECT)
 
-function claude(prompt, sessionArgs) {
-	return new Promise((done) => {
-		const child = spawn(
-			'claude',
-			['-p', prompt, '--model', values.model, ...sessionArgs, '--tools', '', '--strict-mcp-config'],
-			{ cwd, env: { ...process.env, HOME: sandbox }, stdio: ['ignore', 'pipe', 'pipe'], timeout: 300_000 },
-		)
-		let out = ''
-		child.stdout.on('data', (d) => {
-			out += d
-		})
-		child.on('close', (code) => done(code === 0 ? out : `${out}\nRUN FAILED (${code})\n`))
+async function claude(prompt, sessionArgs) {
+	const { code, out } = await blindClaude(['-p', prompt, '--model', values.model, ...sessionArgs, '--tools', ''], {
+		cwd,
 	})
+	return code === 0 ? out : `${out}\nRUN FAILED (${code})\n`
 }
 
 const jobs = []

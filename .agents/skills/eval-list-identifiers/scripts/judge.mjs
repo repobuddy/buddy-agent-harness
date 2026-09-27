@@ -6,11 +6,10 @@
 // Each reply goes to a fresh judge with the task, the key line, and nothing naming its arm.
 // Writes <out>/scores.json and prints the per-arm table.
 
-import { spawn } from 'node:child_process'
-import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
-import { homedir } from 'node:os'
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { parseArgs } from 'node:util'
+import { assertBlind, blindClaude } from '../../eval-delegation/scripts/blind-claude.mjs'
 import { TASKS } from './backlog.mjs'
 
 const { values } = parseArgs({
@@ -26,11 +25,9 @@ if (!values.out) {
 }
 
 const out = resolve(values.out)
-const sandbox = join(out, '.judge-home')
 const cwd = join(out, '.judge-cwd')
-mkdirSync(join(sandbox, '.claude'), { recursive: true })
 mkdirSync(cwd, { recursive: true })
-copyFileSync(join(homedir(), '.claude', '.credentials.json'), join(sandbox, '.claude', '.credentials.json'))
+assertBlind(cwd)
 
 const arms = readdirSync(out, { withFileTypes: true })
 	.filter((d) => d.isDirectory() && !d.name.startsWith('.'))
@@ -73,20 +70,9 @@ Criterion: ${key}
 Answer with exactly one line: PASS or FAIL, then " - ", then a reason of at most 25 words.`
 }
 
-function claude(prompt) {
-	return new Promise((done) => {
-		const child = spawn('claude', ['-p', prompt, '--model', values.model, '--tools', '', '--strict-mcp-config'], {
-			cwd,
-			env: { ...process.env, HOME: sandbox },
-			stdio: ['ignore', 'pipe', 'pipe'],
-			timeout: 300_000,
-		})
-		let text = ''
-		child.stdout.on('data', (d) => {
-			text += d
-		})
-		child.on('close', () => done(text.trim()))
-	})
+async function claude(prompt) {
+	const { out } = await blindClaude(['-p', prompt, '--model', values.model, '--tools', ''], { cwd })
+	return out.trim()
 }
 
 // Shuffled so no judge sees one arm's runs in a block.
