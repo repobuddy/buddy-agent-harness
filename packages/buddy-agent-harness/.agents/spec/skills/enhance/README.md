@@ -108,7 +108,7 @@ For `/buddy-agent-harness:enhance`:
 - **The instructions from outside the repository carry a retired wording, or the owner's own words on the subject, and the merged view does not cover it.** The global copy is classified with the same check as a repository section, and nothing is offered for the repository. A retired wording there has the current text handed over for the file that holds it; the owner's own words there are named and left alone; a copy that cannot be placed is put to the owner, and an answer that it came from this package hands over the current text. A team copy is still the owner's to ask for.
 - **The root `AGENTS.md` holds a retired wording and the instructions from outside the repository carry the current text.** The replacement is offered as for any stale section, and the offer says the owner would then read the text twice. Removal is the other answer, naming what it takes with it and that the team's agents lose it.
 - **The instructions from outside the repository carry a retired wording, and the merged view covers the subject.** The repository section is judged as it would be without it, and the current text is handed over for the global copy as well, exactly as where the repository has none: beside an already-current section, the owner's own words, a stale section, or one the skill cannot place.
-- **A retired wording in a harness file other than the root `AGENTS.md`, beside a global copy.** No offer here; consolidation is `../init/`'s, and once it runs the section is in the root `AGENTS.md` and judged there.
+- **A retired wording in a harness file other than the root `AGENTS.md`, beside a global copy.** No offer for that file; consolidation is `../init/`'s, and once it runs the section is in the root `AGENTS.md` and judged there.
 - **The root `AGENTS.md` covers the subject in the owner's own words and the instructions from outside the repository carry the current text.** Nothing is offered. The report names both and says the owner reads the subject twice; which to keep is the owner's call, and neither copy is changed.
 - **The section was approved on an earlier run and has since been deleted.** It reads as absent and is offered again. Absence is the whole state; the skill keeps no memory of a run.
 
@@ -180,8 +180,6 @@ flowchart TD
   C --> Z[Report what was read, what was judged, and what was written]
   H --> HG
   G2 --> HG
-  P1 --> HG
-  P1N --> HG
   K --> HG
   M --> Z
   N --> HG

@@ -146,7 +146,7 @@ Feature: Offer the current wording of a vetted section to a repository that alre
     When the agent runs the `enhance` skill
     Then the report gives the `## Delegation` addition the verdict already current
     And the report says the agent's instructions from outside the repository carry a retired `## Delegation` wording, and names the file holding it
-    And the owner is shown that section as it stands beside the current text byte-identical to the text inside the fence in `references/delegation.md`
+    And the owner is shown the `## Delegation` section outside the repository as it stands beside the current text byte-identical to the text inside the fence in `references/delegation.md`
     And no replacement is offered for the repository's `AGENTS.md`
     And no file outside the repository is written
     And `AGENTS.md` is unchanged
@@ -160,7 +160,7 @@ Feature: Offer the current wording of a vetted section to a repository that alre
     When the agent runs the `enhance` skill
     Then the report names the `## Working with subagents` section as what covers the subject
     And the report says the agent's instructions from outside the repository carry a retired `## Delegation` wording, and names the file holding it
-    And the owner is shown that section as it stands beside the current text byte-identical to the text inside the fence in `references/delegation.md`
+    And the owner is shown the `## Delegation` section outside the repository as it stands beside the current text byte-identical to the text inside the fence in `references/delegation.md`
     And no replacement is offered for the repository's `AGENTS.md`
     And no file outside the repository is written
     And `AGENTS.md` is unchanged
