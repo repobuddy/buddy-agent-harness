@@ -78,7 +78,7 @@ Once both answers are yes, offer the replacement. Do **not** then read the secti
 
 **Where your instructions from outside the repository cover the subject in another form, classify that copy.** An uncovered addition whose subject they cover — judged by meaning, as above — is not absent. Ask the second question of that **global copy**, against the same texts and in the same way as of a repository section, and offer nothing for the repository whatever it answers. Its verdict is the one a repository section would get, placed **in your instructions from outside the repository**: from a retired wording, the owner's own, or you cannot tell. Say, as for already global, that a copy in the root `AGENTS.md` would add the team and nothing else, that the owner would then read the subject twice, and that they can ask for it.
 
-A global copy from a retired wording has the current text handed over (step 4) whatever the repository holds, including a section that is already current.
+Classify a global copy the same way whatever the repository holds — a covered or already-current section included — and hand over the current text for one from a retired wording (step 4).
 
 Each addition ends this step in one of six states:
 
