@@ -64,7 +64,7 @@ Sort each finding into exactly one bucket:
 
 Present the plan before touching anything the user wrote: what will be created, which content moves into `AGENTS.md`, which harness files would become pointers, any frontmatter to be added (show the derived `name` and `description` verbatim), which harnesses will be enabled, and what is being left alone and why.
 
-Get explicit approval before any step that deletes, replaces, or rewrites a user-authored file. Creating a missing directory or a missing `AGENTS.md` needs no approval, and neither does the non-material region in `references/agents-md.md` — report these rather than asking.
+Get explicit approval before any step that deletes, replaces, or rewrites a user-authored file. Creating a missing directory, a missing `AGENTS.md`, or a missing `.gemini/settings.json` needs no approval, and neither does the non-material region in `references/agents-md.md` — report these rather than asking. A declined step drops that one write; apply the other approved steps without asking again.
 
 **A superseded `CLAUDE.md` is offered, never assumed.** Deleting it is safe on a current Claude Code and not on every session: a version before v2.1.277, a third-party provider such as Amazon Bedrock, telemetry disabled, or hooks disabled all fall back to reading `CLAUDE.md` alone. Say that, name the file, and take the answer. Keeping it costs nothing — the import never makes Claude read `AGENTS.md` twice.
 
@@ -89,7 +89,7 @@ A `CLAUDE.local.md` is its own case. It is personal, usually gitignored, and it 
 
 ## 5. Verify and report
 
-Confirm each projection resolves into `.agents/skills`, that no `CLAUDE.md` is left carrying content beside an `AGENTS.md`, and that every migrated `SKILL.md` parses and has valid frontmatter. The command reports the enabled set itself; it records nothing on disk, so there is no file to reconcile against. Report what was created, consolidated, linked, and left canonical-only.
+Confirm each projection resolves into `.agents/skills`, that no `CLAUDE.md` is left carrying content beside an `AGENTS.md`, and that every migrated `SKILL.md` parses and has valid frontmatter. The command reports the enabled set itself; it records nothing on disk, so there is no file to reconcile against. Report what was created, consolidated, linked, and left canonical-only, with the reason each canonical-only artifact was left.
 
 Report the artifacts only one harness can read that are still there, split by why: declined, or no canonical form to convert into. Re-running `doctor` gives the same list, and a repository works toward having none of them — that is a direction, not a state anything here blocks on.
 

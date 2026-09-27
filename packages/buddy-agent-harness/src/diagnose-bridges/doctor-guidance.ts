@@ -10,7 +10,7 @@ import { type Locator, locatorText } from './locator.ts'
  * generated from this table, so the shipped skill cannot drift from what the command says.
  */
 
-/** Every way a skills bridge can fail, in the order `doctor` reports them. */
+/** Every way a skills bridge fails to resolve, or resolves and is still unsafe, in the order `doctor` reports them. */
 export type BridgeProblem =
 	| 'no-canonical'
 	| 'missing'

@@ -237,6 +237,6 @@ The two graphs share the layer construction and nothing else. `list` never reads
 - `../command-output/` owns the encoder and the verbatim document write `show` uses in `text`.
 - `../references/` reads these layers as legacy layers; `doctor` and `init` report them through it
   (`../diagnosis-report/`, `../../skills/harness-init/`) and no longer through this command.
-- `../../../../../../.agents/plans/governance-retrieval.design.md` is the design this implements,
+- `../../../../../../.agents/plans/122-governance-retrieval.design.md` is the design this implements,
   including the three-step lookup order a skill follows and why step 2 never runs through `npx`.
 - AXI §5 backs the stated zero; AXI §10 backs the home collapse.
