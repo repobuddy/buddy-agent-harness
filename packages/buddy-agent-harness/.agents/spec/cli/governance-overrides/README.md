@@ -7,6 +7,10 @@ concept: command-interface
 
 ## What
 
+> **Deprecated.** [`../references/`](../references/README.md) is the read path now. This command keeps
+> its resolver, its output, and its exit codes for one major version, and adds one line on stderr
+> pointing to `reference`.
+
 Where a **governance** comes from when someone has overridden it, and how a caller reads it.
 
 A governance is a version-pinned Markdown rule set that a skill loads — `skill-design`,
