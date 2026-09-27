@@ -15,9 +15,8 @@ rule that appears only in a skill body — this addition is for the always-loade
 
 ## Stale when
 
-Apply the procedure under `## Stale when` in `delegation.md` exactly — the already-current check
-first, then the two questions and their table — reading it with this addition's heading
-`## List identifiers`, the text below, and `list-identifiers.history.md` in place of Delegation's.
+Compare the `## List identifiers` section already in the file against `list-identifiers.history.md`
+by the procedure in step 3 of the skill, with the text below as the current text.
 
 `list-identifiers.history.md` holds no retired wording yet. Until it does, a section that is not
 already current is compared against the text below, standing in for a retired wording: both answers

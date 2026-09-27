@@ -12,7 +12,7 @@ The split matters: initialization has to run everywhere and invent nothing, so i
 
 Every addition is **offered, never written on sight**. An addition asserts something about how the repository is worked in — it stays true whether or not this tool ever ran — so it is material under the rule in `../init/references/agents-md.md`, and material content needs approval. Nothing here goes inside the `buddy-agent-harness` managed region; that region is for the tool's own bookkeeping.
 
-Two additions ship today: `references/delegation.md` and `references/list-identifiers.md`. Classify, offer, and report each one on its own; the owner's answer to one decides nothing about the other. Each addition's reference file carries the text to offer, a `## Covered when` criterion for the subject already being present, a `## Stale when` criterion for the file already carrying a **wording this addition has since retired**, and a `## Where it belongs` recommendation naming which instruction file the text should go in. The retired wordings themselves are kept beside it — `references/<addition>.history.md` — and are what a present section is compared against.
+Two additions ship today: `references/delegation.md` and `references/list-identifiers.md`. Classify, offer, and report each one on its own; the owner's answer to one decides nothing about the other. Each addition's reference file carries the text to offer, a `## Covered when` criterion for the subject already being present, a `## Stale when` section naming the history file its stale check reads and what else that check needs for this addition, and a `## Where it belongs` recommendation naming which instruction file the text should go in. The retired wordings themselves are kept beside it — `references/<addition>.history.md` — and are what a present section is compared against.
 
 ## 1. Find the instruction file
 
@@ -40,15 +40,41 @@ When in doubt, treat it as covered and say why. A missing offer costs the user n
 
 **A heading inside a fenced code block is not a heading.** Text between ``` or ~~~ fences is an example of a file, not part of this one, and an addition quoted inside a fence is being shown rather than adopted. This is not hypothetical: every addition here is offered as a fenced block containing its own heading, so a repository documenting this tool — or an `AGENTS.md` that quotes one — carries the exact heading the addition would write, inside a fence, while remaining entirely uncovered. Judge only the prose the agent actually reads as instruction.
 
+A text **carries the current text** of an addition when it holds every sentence of the text the addition offers now, in order — the owner may have added paragraphs of their own around or between them, and those are theirs to keep — **and** asserts no sentence found only in a retired wording. Containment, not resemblance: a text holding the current wording that still asserts a retired sentence does not carry it. This one test is used twice below, on two different texts.
+
+**Before offering an uncovered addition, check your own instructions.** Where instructions you load from outside the repository — the owner's global file, however your harness reaches it — carry the current text, the addition is **already global**. You can check without opening a file; they are in front of you. Do not count the repository's own files, which the merged view already judged, nor another repository's that your harness loaded from the working directory.
+
 Then ask the second question **of text that read as covered, and only of that text**: did that text come from this addition, at a version it used to ship? Never ask it of text that read as uncovered, and never ask it first.
 
-Answer it against the addition's own texts, which its reference keeps beside it: the one it offers now, and the ones it has retired, in a sibling history file. The reference states how under `## Stale when`.
+Answer it against the addition's own texts: the one its reference offers now, and the ones it has retired, in the history file its `## Stale when` names. That section also carries what is specific to the addition; apply it with the procedure below.
 
-**First, is the section already current?** It is when it carries every sentence of the text you would offer, in order — the owner may have added paragraphs of their own around or between them — and asserts no sentence found only in a retired wording. Say so and stop. Resemblance is not enough; containment is the test. Where your instructions from outside the repository carry the same text, say the owner reads it twice, once from each place.
+**First, is the section already current?** It is when it carries the current text; then it is **already current**, and you compare it against no retired wording. A section that does not carry it goes on to the two questions.
 
-**Otherwise, compare against the retired wordings, and never weigh a section against the current text to decide it is stale** — differing from the current wording tells you nothing, since differing is what a rewrite produces. The one exception: an addition whose history holds no retired wording yet has its current text stand in for one, and its reference says so.
+**Otherwise, compare the section against each retired wording, and never weigh it against the current text to decide it is stale** — differing from the current wording is what a rewrite produces. The one exception: an addition whose history holds no retired wording yet has its current text stand in for one, and its reference says so.
 
-**Before offering an uncovered addition, check your own instructions.** Where instructions you load from outside the repository — the owner's global file, however your harness reaches it — carry every sentence of its current text, in order, and assert no sentence found only in a retired wording, it is **already global**. You can check without opening a file; they are in front of you. Do not count the repository's own files, which the merged view already judged, nor another repository's that your harness loaded from the working directory.
+Ask two questions about the section, and only these two:
+
+1. **Do whole sentences of that wording survive verbatim in it?** Not a phrase — a whole sentence.
+2. **Does that wording's structure survive?** Its sentences, in its order, each doing its job.
+
+**Each answers yes or no, never neither** — where you cannot tell whether a sentence survives, or whether the structure does, the answer is **no**. **When the two answers agree, they decide. When they disagree, you cannot tell.**
+
+| whole sentences | structure | |
+| --- | --- | --- |
+| yes | yes | **Stale.** It is that wording, edited. Offer the replacement. |
+| no | no | **The owner's.** Written from scratch. Offer nothing. |
+| yes | no | **You cannot tell.** A line of ours carried into prose they wrote — or a line they reached themselves. |
+| no | yes | **You cannot tell.** Their words in our shape — a reword of ours, or the order the subject naturally takes. |
+
+**Do not decide the two disagreeing cases.** Show the owner the three texts and ask (step 4).
+
+Match a sentence literally. A shared idea is not a sentence surviving, a paraphrase of one is not that sentence, and no phrase, however memorable, answers question 1.
+
+**A quoted sentence is not an asserted one, and does not count for question 1.** A sentence inside quotation marks, inside a fence, or in a sentence that disputes it is being shown, not followed. A section that quotes one in order to reject it is the owner's prose.
+
+Once both answers are yes, offer the replacement. Do **not** then read the section's remaining sentences against the current text and reconsider. That applies to the section's other prose only; it changes nothing about how the two questions are answered.
+
+**Do not shortcut any of this on the subject a section talks about.** Only the two questions decide, and they decide against the texts themselves.
 
 Each addition ends this step in one of six states:
 
