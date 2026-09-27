@@ -5,22 +5,22 @@ status: active
 todos:
   - id: design
     content: Decide report and offer for the three cases where the global copy and the repository copy disagree
-    status: pending
+    status: completed
   - id: spec
     content: Add scenarios for the three cases to skills/enhance, update the node README and scenario map
-    status: pending
+    status: completed
   - id: spec-gate
     content: Cold spec-judge until aligned; self-assert within leash
-    status: pending
+    status: completed
   - id: build
     content: Update enhance SKILL.md, the docs page, and add a changeset
-    status: pending
+    status: completed
   - id: impl-gate
     content: Cold impl-judge over the new scenarios; pnpm verify
-    status: pending
+    status: completed
   - id: handoff
     content: PR referencing #159, report to operator
-    status: pending
+    status: completed
 ---
 
 # CR 159: the global copy is not the current text
@@ -35,4 +35,4 @@ Design:
 
 ## NEXT
 
-Draft the scenarios.
+Landed on a PR against main. Owner to ratify the impl gate and the case 2 removal default.
