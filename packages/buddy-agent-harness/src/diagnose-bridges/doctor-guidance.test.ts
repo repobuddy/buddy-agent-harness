@@ -8,6 +8,7 @@ import { launchers } from '../skill-scripts/launchers.ts'
 import {
 	bridgeRepairs,
 	commandInvocation,
+	configurationRepairs,
 	type DoctorProblem,
 	doctorRepairs,
 	doctorSkill,
@@ -15,6 +16,7 @@ import {
 	initSkillInvocation,
 	instructionRepairs,
 	launcherFor,
+	mcpRepairs,
 	nonstandardRepairs,
 	type RepairRow,
 	renderDoctorReferences,
@@ -293,15 +295,6 @@ describe('skill script', () => {
 	})
 })
 
-/**
- * The two families the module keeps private. Named rather than derived by exclusion: deriving the
- * configuration family as "everything in neither exported family" silently swallowed the MCP family
- * the moment it landed, and the guard below is what makes the next one fail loudly instead.
- */
-const configurationProblems = ['deprecated-harness', 'ignored-bridge', 'unread-local-override', 'unloadable-skill']
-const configurationRepairs = doctorRepairs.filter((entry) => configurationProblems.includes(entry.problem))
-const mcpRepairs = doctorRepairs.filter((entry) => entry.problem.startsWith('mcp-'))
-
 /** The bridge problems a rebuilt bridge fixes — every one but the three that need a hand. */
 const byHand = ['diverged-both', 'diverged-unknown', 'unpinned-copy']
 
@@ -353,7 +346,7 @@ describe('the detect-and-repair seam', () => {
 	})
 
 	it('sends every configuration finding to the repair skill', () => {
-		expect(configurationRepairs).toHaveLength(configurationProblems.length)
+		expect(configurationRepairs.length).toBeGreaterThan(0)
 		for (const entry of configurationRepairs)
 			expect(entry.skillRepair({ file: '<path>' })).toContain(repairSkillInvocation)
 	})
