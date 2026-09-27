@@ -25,7 +25,7 @@ Do not read `.agents/references/`, `.agents/governances/`, `~/.agents/`, or any 
 
 One name prints the document. Several print each as `<reference name="…" tier="…">` … `</reference>`, in the order asked. A name that did not resolve prints `<reference name="…" status="missing" />` or `status="ambiguous"` in its place, and an `error:` line on stderr that names it. Exit 0 means every name resolved; 1 means at least one did not.
 
-**A rejected name.** When the only output is an `error:` line saying a name is a path or a file, the command rejected the whole call and read nothing. That name is **rejected**: never read the path it names, and do not look for a copy of it. Run the command again without it, and read that run instead. If no name remains, do not run it again.
+**A rejected name.** When the only output is an `error:` line saying a name is a file or is not a reference name, the command rejected the whole call and read nothing. That name is **rejected**: never read the path it names, and do not look for a copy of it. Run the command again without it, and read that run instead. If no name remains, do not run it again.
 
 **The command ran** when every name you asked for appears in the output as a document, a `status=` marker, or an `error:` line; for a single name, exit 0 with a document on stdout also counts. Anything else — `Cannot find module`, `node: not found`, a stack trace, no mention of the names — means it did not run: go to step 3.
 

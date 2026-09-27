@@ -3,7 +3,7 @@ title: Sources & Confidence
 description: How well-sourced each harness claim is, and which ones are not established.
 ---
 
-The harness claims across this site are not equally well-sourced, and the difference matters when you are deciding how much to rely on one. Supporting evidence is recorded in `.research/agentic-configuration-standards/` `.research/mcp-canonical-location/`, and `.research/plugin-skill-naming/` in the repository.
+The harness claims across this site are not equally well-sourced, and the difference matters when you are deciding how much to rely on one. Supporting evidence is recorded in `.research/agentic-configuration-standards/`, `.research/mcp-canonical-location/`, and `.research/plugin-skill-naming/` in the repository.
 
 | Claim | Confidence | Basis |
 | --- | --- | --- |

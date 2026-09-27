@@ -27,15 +27,16 @@ In Claude Code, add the [cyberplace](https://github.com/cyberuni/cyberplace) mar
 /plugin install buddy-agent-harness@cyberplace
 ```
 
-All five come with it:
+Four of them you run yourself:
 
 ```text
 /buddy-agent-harness:init-buddy-agent-harness
 /buddy-agent-harness:doctor-buddy-agent-harness
 /buddy-agent-harness:enhance
 /buddy-agent-harness:repair
-/buddy-agent-harness:load-reference
 ```
+
+`load-reference` comes with it too. You never run it: other skills load it.
 
 ## The commands behind them
 

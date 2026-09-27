@@ -9,15 +9,15 @@ todos:
   - content: Spec gate — ALIGNED on round 3 (20 scenarios, frozen); self-asserted, auto-spec leash
     status: completed
   - content: Ship skills/load-reference with a bundled scripts/reference.mjs launcher; pack-check runs it standalone
-    status: pending
-  - content: Docs — load-reference page, CLI reference page pointer, glossary; changeset
-    status: pending
-  - content: Impl gate — aced-impl-judge over the frozen suite, vitest for the launcher scenarios
-    status: pending
+    status: completed
+  - content: Docs — load-reference page, skills index, reference pages, sources; changeset
+    status: completed
+  - content: Impl gate — all 20 pass on round 1; paused for owner ratification (auto-spec leash)
+    status: completed
   - content: S4 — skill-design (cyberuni/cyberplace) names load-reference as the only lookup; separate PR
-    status: pending
+    status: completed
   - content: PR referencing #154; report to operator
-    status: pending
+    status: completed
 ---
 
 # 154 — `load-reference` skill
@@ -36,4 +36,4 @@ Settled here (headless calls, reported to the owner):
 
 ## NEXT
 
-Deliver: skill, launcher and docs built; run the impl gate (aced-impl-judge + vitest).
+Landed on a PR against main, with the S4 skill-design change in a cyberplace PR. Owner to ratify both gates and review the settled calls above.
