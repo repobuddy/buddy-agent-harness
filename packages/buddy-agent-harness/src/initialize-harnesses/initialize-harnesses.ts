@@ -1,6 +1,8 @@
+import { mkdirSync } from 'node:fs'
 import { join } from 'node:path'
-import { countProjectGovernances } from '../governance-overrides/governance-overrides.ts'
 import { type HarnessName, selectHarnesses } from '../harness-registry/harness-registry.ts'
+import { projectReferenceLayers, projectReferencesDir } from '../references/reference-layers.ts'
+import { referenceNames } from '../references/resolve-reference.ts'
 import { countSkills, type ForceSelection, projectSkills } from '../skill-projection/skill-projection.ts'
 
 export type InitializeOptions = {
@@ -23,10 +25,11 @@ export type InitializeResult = {
 	deprecated: { name: HarnessName; replacedBy: HarnessName }[]
 	skills: number
 	/**
-	 * Documents in the project override layer (created here when absent); counted, like `skills`,
-	 * so a fresh repo reports zero rather than leaving it unclear.
+	 * References the project tier holds, legacy `governances/` included; `.agents/references` is
+	 * created when absent and counted, like `skills`, so a fresh repo reports zero rather than
+	 * leaving it unclear.
 	 */
-	governances: number
+	references: number
 	copied: boolean
 }
 
@@ -38,7 +41,8 @@ export function initializeHarnesses({
 }: InitializeOptions): InitializeResult {
 	const canonicalSkills = join(root, '.agents', 'skills')
 	const skills = countSkills(canonicalSkills)
-	const governances = countProjectGovernances(root)
+	mkdirSync(projectReferencesDir(root), { recursive: true })
+	const references = referenceNames(projectReferenceLayers(root)).length
 	const harnesses = selectHarnesses(root, preferred)
 	const { linked, skipped } = projectSkills({ root, canonicalSkills, harnesses, copy, force })
 
@@ -52,7 +56,7 @@ export function initializeHarnesses({
 			.filter((harness) => harness.deprecated)
 			.map((harness) => ({ name: harness.name, replacedBy: harness.deprecated as HarnessName })),
 		skills,
-		governances,
+		references,
 		copied: copy,
 	}
 }

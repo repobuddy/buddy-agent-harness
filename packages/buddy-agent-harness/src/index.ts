@@ -15,7 +15,7 @@ export type {
 	InstructionStatus,
 } from './diagnose-bridges/diagnose-instructions.ts'
 export { diagnoseInstructions } from './diagnose-bridges/diagnose-instructions.ts'
-export type { DoctorReport } from './diagnose-bridges/doctor.command.ts'
+export type { DoctorReference, DoctorReport } from './diagnose-bridges/doctor.command.ts'
 export { buildDoctorReport, doctorCommand } from './diagnose-bridges/doctor.command.ts'
 export type {
 	BridgeProblem,

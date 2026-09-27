@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, readdirSync, readFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -135,14 +135,4 @@ export function listGovernances(layers: readonly GovernanceLayer[]): GovernanceE
 		}
 	}
 	return [...found.values()].sort((a, b) => a.name.localeCompare(b.name))
-}
-
-/**
- * Creates the directory if absent — a fresh repository gets one obvious place to put an override,
- * and a count of zero.
- */
-export function countProjectGovernances(root: string): number {
-	const dir = projectGovernancesDir(root)
-	mkdirSync(dir, { recursive: true })
-	return documentNames(dir).length
 }

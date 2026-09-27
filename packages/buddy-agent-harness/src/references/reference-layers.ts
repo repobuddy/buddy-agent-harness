@@ -38,6 +38,17 @@ export function managedReferencesDir(platform: NodeJS.Platform, programData?: st
 	return join(dirname(managedGovernancesDir(platform, programData)), 'references')
 }
 
+export function projectReferencesDir(root: string): string {
+	return join(root, '.agents', 'references')
+}
+
+export function projectReferenceLayers(root: string): ReferenceLayer[] {
+	return [
+		{ tier: 'project', dir: projectReferencesDir(root), plugins: [], status: '' },
+		{ tier: 'project', dir: join(root, '.agents', 'governances'), plugins: [], status: LEGACY_STATUS },
+	]
+}
+
 function readJson(path: string): unknown {
 	try {
 		return JSON.parse(readFileSync(path, 'utf8'))
@@ -112,8 +123,7 @@ export function referenceLayers({
 		layer('managed', managedReferencesDir(platform, programData)),
 		layer('managed', managedGovernancesDir(platform, programData), LEGACY_STATUS),
 		layer('managed', deprecatedManagedGovernancesDir(platform, programData), DEPRECATED_STATUS),
-		layer('project', join(root, '.agents', 'references')),
-		layer('project', join(root, '.agents', 'governances'), LEGACY_STATUS),
+		...projectReferenceLayers(root),
 		layer('user', join(home, '.agents', 'references')),
 		layer('user', join(home, '.agents', 'governances'), LEGACY_STATUS),
 		{ tier: 'plugin', dir: join(packageRoot, 'references'), plugins: self, status: '' },
