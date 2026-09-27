@@ -48,7 +48,7 @@ export type ReferenceSearchReport = { query: string; references: SearchMatch[] |
 type CommonArgs = { root: string | undefined; format: string | undefined }
 
 const rootOption = {
-	description: 'Directory the project tier walks up from, to the repository root. Defaults to the current directory.',
+	description: 'Directory whose `.agents/` holds the project tier. Defaults to the current directory.',
 	type: z.optional(z.string()),
 }
 
@@ -187,7 +187,7 @@ const listFormatOption = {
 
 export const referenceListCommand: cli.Command = command({
 	name: 'list',
-	description: 'List every layer, and every reference at every layer that holds it, marked used, shadowed, or blocked.',
+	description: 'List every layer, and every reference at every layer that holds it, marked used or shadowed.',
 	options: { root: rootOption, format: listFormatOption },
 	run(args: CommonArgs) {
 		try {
@@ -244,6 +244,6 @@ export const referenceSearchCommand: cli.Command = command({
 export const referenceCommand: cli.Command = command({
 	name: 'reference',
 	description:
-		'Read on-demand reference documents by name, layered across the managed, local, project, user, and plugin tiers. Read-only.',
+		'Read on-demand reference documents by name, layered across the managed, project, user, and plugin tiers. Read-only.',
 	commands: [referenceShowCommand, referenceListCommand, referenceSearchCommand],
 })

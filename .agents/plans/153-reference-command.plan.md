@@ -4,7 +4,7 @@ source: https://github.com/repobuddy/buddy-agent-harness/issues/153
 project-path: packages/buddy-agent-harness
 status: active
 todos:
-  - content: New node cli/references — spec README + suite for show, list, search, tiers, merge modes, walk, trace
+  - content: New node cli/references — spec README + suite for show, list, search, tiers, merge modes, trace
     status: completed
   - content: Spec gate — ALIGNED on round 3 (pre-flight, then a coverage gap); self-asserted, auto-spec leash
     status: completed
@@ -29,8 +29,8 @@ dependencies; harness-managed folders and enabled-plugin discovery wait on harne
 Settled here (headless calls, reported to the owner):
 - `governance list|show` keeps its own resolver and output unchanged; it only adds a deprecation line on stderr.
 - A qualified `<plugin>/<name>` picks the plugin layer; every tier above still resolves the bare `<name>`.
-- Project and local tiers both walk; legacy `governances/` sits below `references/` at the same level.
-- `final` is honored only in project references; elsewhere it is ignored with a warning.
+- Legacy `governances/` sits below `references/` in the same tier.
+- Owner redirect (review of the first PR revision): no local tier, no monorepo walk, and so no `final`. The project tier is `<root>/.agents/` only.
 - One name in text: the bare document. Several: each wrapped in `<reference name="…">` tags. JSON/TOON: always an array.
 - `--trace` in text goes to stderr, so stdout stays the document.
 

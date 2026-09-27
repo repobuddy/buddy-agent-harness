@@ -156,33 +156,16 @@ export function resolveReference(
 
 	const result: ResolvedReference = { name: ref.raw, status: 'missing', layers: [], warnings, plugins: [], trace }
 
-	let candidates = found
-	const finalIn = found.find(({ layer, metadata }) => layer.tier === 'project' && metadata['final'] === true)
-	for (const { layer, metadata, entry } of found) {
-		if (metadata['final'] === true && layer.tier !== 'project') {
-			warnings.push(`${display(entry.path)}: final is only honored in project references; ignored here`)
-		}
-	}
-	if (finalIn) {
-		candidates = found.filter(({ layer, entry }) => {
-			if (layer.tier !== 'local') return true
-			entry.outcome = 'blocked by final in project'
-			return false
-		})
-	}
-
-	const stop = candidates.findIndex(({ merge }) => merge === 'first-wins')
-	const chain = stop === -1 ? candidates : candidates.slice(0, stop + 1)
-	const shadowed = stop === -1 ? [] : candidates.slice(stop + 1)
+	const stop = found.findIndex(({ merge }) => merge === 'first-wins')
+	const chain = stop === -1 ? found : found.slice(0, stop + 1)
+	const shadowed = stop === -1 ? [] : found.slice(stop + 1)
 	const base = chain.at(-1)
 
 	// Plugins are alternatives, not a stack: once resolution reaches the plugin tier, two plugins
 	// holding the name leave nothing to choose between them.
-	const holders = [
-		...new Set(candidates.filter(({ layer }) => layer.tier === 'plugin').map(({ entry }) => entry.plugin)),
-	]
+	const holders = [...new Set(found.filter(({ layer }) => layer.tier === 'plugin').map(({ entry }) => entry.plugin))]
 	if (ref.plugin === undefined && holders.length > 1 && chain.some(({ layer }) => layer.tier === 'plugin')) {
-		for (const { entry } of candidates) entry.outcome = 'ambiguous'
+		for (const { entry } of found) entry.outcome = 'ambiguous'
 		result.status = 'ambiguous'
 		result.plugins = holders.map((plugin) => `${plugin}/${ref.name}`)
 		return result

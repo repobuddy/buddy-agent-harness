@@ -16,18 +16,6 @@ function write(root: string, relPath: string, content: string): string {
 }
 
 describe('referenceLayers', () => {
-	it('marks a repository root by a `workspaces` key alone, with no `.git` or workspace file', () => {
-		const root = tempDir()
-		write(root, 'package.json', JSON.stringify({ workspaces: ['packages/*'] }))
-		write(root, '.agents/references/name.md', 'root\n')
-		const nested = join(root, 'packages', 'pkg-a')
-		mkdirSync(nested, { recursive: true })
-
-		const layers = referenceLayers({ root: nested, home: tempDir(), platform: 'linux' })
-		const projectLayers = layers.filter((layer) => layer.tier === 'project' && layer.status === '')
-		expect(projectLayers.map((layer) => layer.dir)).toContain(join(root, '.agents', 'references'))
-	})
-
 	it('never treats a dependency without a `references/` folder as a plugin', () => {
 		const root = tempDir()
 		write(root, 'package.json', JSON.stringify({ dependencies: { 'dep-c': '1.0.0' } }))

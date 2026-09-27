@@ -87,16 +87,13 @@ function write(root: string, relPath: string, content: string): string {
 	return path
 }
 
-/** Marks a directory as the repository root the monorepo walk stops at. */
+/** A workspace marker — the project tier must not climb to it. */
 function markRoot(dir: string): void {
 	writeFileSync(join(dir, 'pnpm-workspace.yaml'), '')
 }
 
-/** A fresh repository root, marked, with its own project reference layer ready to receive files. */
 function repo(): string {
-	const root = tempDir('reference-repo-')
-	markRoot(root)
-	return root
+	return tempDir('reference-repo-')
 }
 
 /** Declares `dependencies` in a manifest at `root`, so the plugin tier picks it up. */
@@ -141,13 +138,12 @@ afterEach(() => {
 // ── tiers ──
 
 describe('tiers', () => {
-	it('resolves managed over local over project over user over plugin', () => {
+	it('resolves managed over project over user over plugin', () => {
 		const programData = tempDir('reference-programdata-')
 		withPlatform('win32', programData, () => {
 			const root = repo()
 			declareDependency(root, 'dep-a')
 			installDependency(root, 'dep-a', { name: 'plugin\n' })
-			write(root, '.agents/references.local/name.md', 'local\n')
 			write(root, '.agents/references/name.md', 'project\n')
 			write(fakeHome.value, '.agents/references/name.md', 'user\n')
 			const managedPath = write(managedReferencesDir('win32', programData), 'name.md', 'managed\n')
@@ -156,11 +152,6 @@ describe('tiers', () => {
 			expect(written()).toBe('managed\n')
 
 			rmSync(managedPath)
-			stdout.mockClear()
-			expect(show(['name'], { root })).toBe(0)
-			expect(written()).toBe('local\n')
-
-			rmSync(join(root, '.agents/references.local/name.md'))
 			stdout.mockClear()
 			expect(show(['name'], { root })).toBe(0)
 			expect(written()).toBe('project\n')
@@ -220,9 +211,10 @@ describe('tiers', () => {
 		expect(written()).toBe('user\n')
 	})
 
-	it('reads the project tier at the root alone when no repository root is above it', () => {
+	it('reads the project tier at the root alone', () => {
 		const base = tempDir('reference-base-')
-		const root = join(base, 'level')
+		markRoot(base)
+		const root = join(base, 'packages', 'pkg-a')
 		mkdirSync(root, { recursive: true })
 		write(base, '.agents/references/ancestor-doc.md', 'ancestor\n')
 
@@ -231,47 +223,11 @@ describe('tiers', () => {
 		const report = JSON.parse(written()) as ReferenceListReport
 		const projectLayers = report.layers.filter((layer) => layer.tier === 'project')
 		expect(projectLayers).toHaveLength(2)
-		for (const layer of projectLayers) expect(layer.path.startsWith(root)).toBe(true)
+		expect(projectLayers.map((layer) => layer.path)).toEqual([
+			join(root, '.agents', 'references'),
+			join(root, '.agents', 'governances'),
+		])
 		expect(JSON.stringify(report.references)).not.toContain('ancestor-doc')
-	})
-
-	it('walks from the root up to the repository root, nearest level first', () => {
-		const root = repo()
-		write(root, '.agents/references/name.md', 'workspace\n')
-		const packageDir = join(root, 'packages', 'pkg-a')
-		write(packageDir, '.agents/references/name.md', 'package\n')
-
-		expect(show(['name'], { root: packageDir })).toBe(0)
-		expect(written()).toBe('package\n')
-
-		stdout.mockClear()
-		expect(show(['name'], { root: packageDir, format: 'json', trace: true })).toBe(0)
-		const [entry] = JSON.parse(written()) as ReferenceShowEntry[]
-		const shadowed = entry?.trace?.find((step) => step.path === join(root, '.agents', 'references', 'name.md'))
-		expect(shadowed?.outcome).toBe('shadowed by project (first-wins)')
-	})
-
-	it('stops the walk at the repository root', () => {
-		const base = tempDir('reference-base-')
-		write(base, '.agents/references/ancestor-only.md', 'ancestor\n')
-		const root = join(base, 'repo')
-		mkdirSync(root, { recursive: true })
-		markRoot(root)
-
-		expect(list({ root, format: 'json' })).toBe(0)
-
-		const report = JSON.parse(written()) as ReferenceListReport
-		expect(JSON.stringify(report.references)).not.toContain('ancestor-only')
-	})
-
-	it('reads local overrides at every level of the walk', () => {
-		const root = repo()
-		write(root, '.agents/references.local/name.md', 'local\n')
-		const packageDir = join(root, 'packages', 'pkg-a')
-		write(packageDir, '.agents/references/name.md', 'project\n')
-
-		expect(show(['name'], { root: packageDir })).toBe(0)
-		expect(written()).toBe('local\n')
 	})
 
 	it("reads a declared dependency's references as a plugin", () => {
@@ -562,30 +518,6 @@ describe('merge modes', () => {
 		expect(content).not.toContain('user body')
 	})
 
-	it('blocks local overrides when a project reference is final', () => {
-		const root = repo()
-		write(root, '.agents/references/name.md', '---\nfinal: true\n---\n# project\n')
-		write(root, '.agents/references.local/name.md', '# local\n')
-
-		expect(show(['name'], { root, format: 'json', trace: true })).toBe(0)
-		const [entry] = JSON.parse(written()) as ReferenceShowEntry[]
-		expect(entry?.content).toBe('# project\n')
-		const localStep = entry?.trace?.find((step) => step.tier === 'local' && step.found)
-		expect(localStep?.outcome).toBe('blocked by final in project')
-	})
-
-	it('ignores final outside the project tier, with a warning', () => {
-		const root = repo()
-		declareDependency(root, 'dep-a')
-		installDependency(root, 'dep-a', { name: '---\nfinal: true\n---\n# plugin\n' })
-		write(root, '.agents/references/name.md', '# project\n')
-
-		expect(show(['name'], { root, format: 'json' })).toBe(0)
-		const [entry] = JSON.parse(written()) as ReferenceShowEntry[]
-		expect(entry?.content).toBe('# project\n')
-		expect((entry?.warnings ?? []).some((warning) => warning.includes('final is only honored in project'))).toBe(true)
-	})
-
 	it('adds a trailing newline when the document has none', () => {
 		const root = repo()
 		write(root, '.agents/references/name.md', '# project')
@@ -693,17 +625,18 @@ describe('show output', () => {
 
 	it('traces every path checked, the candidate, the merge mode, and why a layer was dropped', () => {
 		const root = repo()
-		write(root, '.agents/references.local/name.md', '# local\n')
 		write(root, '.agents/references/name.md', '# project\n')
+		write(fakeHome.value, '.agents/references/name.md', '# user\n')
 
 		expect(show(['name'], { root, format: 'json', trace: true })).toBe(0)
 		const [entry] = JSON.parse(written()) as ReferenceShowEntry[]
 		expect(entry?.trace?.length).toBeGreaterThan(1)
+		const userStep = entry?.trace?.find((step) => step.tier === 'user' && step.found)
+		expect(userStep?.outcome).toBe('shadowed by project (first-wins)')
 		const projectStep = entry?.trace?.find((step) => step.tier === 'project' && step.found)
-		expect(projectStep?.outcome).toBe('shadowed by local (first-wins)')
-		const localStep = entry?.trace?.find((step) => step.tier === 'local' && step.found)
-		expect(localStep?.candidate).toBe('name.md')
-		expect(localStep?.merge).toBe('first-wins')
+		expect(projectStep?.candidate).toBe('name.md')
+		expect(projectStep?.merge).toBe('first-wins')
+		expect(projectStep?.outcome).toBe('used')
 		const emptyStep = entry?.trace?.find((step) => !step.found)
 		expect(emptyStep).toBeDefined()
 	})
@@ -765,8 +698,7 @@ describe('list', () => {
 		const firstUser = tiers.indexOf('user')
 		const firstPlugin = tiers.indexOf('plugin')
 		expect(tiers[0]).toBe('managed')
-		expect(tiers.indexOf('local')).toBeGreaterThan(tiers.lastIndexOf('managed'))
-		expect(tiers.indexOf('project')).toBeGreaterThan(tiers.lastIndexOf('local'))
+		expect(tiers.indexOf('project')).toBeGreaterThan(tiers.lastIndexOf('managed'))
 		expect(firstUser).toBeGreaterThan(tiers.lastIndexOf('project'))
 		expect(firstPlugin).toBeGreaterThan(tiers.lastIndexOf('user'))
 
@@ -782,17 +714,15 @@ describe('list', () => {
 		expect(report.layers.filter((layer) => layer.status.includes('deprecated'))).toHaveLength(1)
 	})
 
-	it('marks shadowed and blocked layers in the listing', () => {
+	it('marks shadowed layers in the listing', () => {
 		const root = repo()
-		write(root, '.agents/references/name.md', '---\nfinal: true\n---\n# project\n')
-		write(root, '.agents/references.local/name.md', '# local\n')
+		write(root, '.agents/references/name.md', '# project\n')
 		write(fakeHome.value, '.agents/references/name.md', '# user\n')
 
 		expect(list({ root, format: 'json' })).toBe(0)
 		const report = JSON.parse(written()) as ReferenceListReport
 		const rows = report.references as { tier: string; status: string }[]
 		expect(rows.find((row) => row.tier === 'project')?.status).toBe('used')
-		expect(rows.find((row) => row.tier === 'local')?.status).toBe('blocked by final in project')
 		expect(rows.find((row) => row.tier === 'user')?.status).toBe('shadowed by project (first-wins)')
 	})
 

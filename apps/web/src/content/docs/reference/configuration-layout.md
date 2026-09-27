@@ -18,7 +18,6 @@ repository/
     │   └── <skill>/SKILL.md  # reusable capabilities
     ├── references/
     │   └── <name>.md         # on-demand reference documents
-    ├── references.local/     # personal overrides, gitignored
     ├── governances/
     │   └── <name>.md         # legacy governance overrides
     └── <tool-setting>        # separately named tool configuration
@@ -28,7 +27,7 @@ Each immediate directory under `.agents/skills/` is a canonical skill. Files at 
 
 `.agents/governances/` is the project's [governance](/cli/governance/) override layer: one Markdown file per name, each overriding the copy a skill would otherwise load from its own package. `init` creates the directory when it is absent, and [`governance list`](/cli/governance/) and [`doctor`](/cli/doctor/) both report what is in it, alongside the user layer at `~/.agents/governances/` and the [machine-wide layers](/cli/governance/#the-machine-wide-directories).
 
-`.agents/references/` is the project tier of [references](/agent-configuration/references/): documents an agent reads by name with [`reference show`](/cli/reference/). `.agents/references.local/` is the local tier above it, for personal overrides kept out of version control.
+`.agents/references/` is the project tier of [references](/agent-configuration/references/): documents an agent reads by name with [`reference show`](/cli/reference/).
 
 Tool settings stay in separately named files rather than being merged into one, because each setting has its own schema and compatibility rules.
 

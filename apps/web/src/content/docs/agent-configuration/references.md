@@ -34,12 +34,9 @@ References resolve through tiers, highest precedence first:
 | Tier | Where |
 | --- | --- |
 | `managed` | the machine-wide folder, for a machine owner |
-| `local` | `.agents/references.local/`, personal and gitignored |
 | `project` | `.agents/references/`, committed with the repository |
 | `user` | `~/.agents/references/` |
 | `plugin` | a `references/` folder shipped by this package or by a declared dependency |
-
-In a monorepo, the project and local tiers are read at every level from the working directory up to the repository root, and the nearest level wins. A package can then carry its own `testing` reference over the one at the root.
 
 Documents written for the older [`governance`](/cli/governance/) command, in `governances/` folders, are still read, one layer below `references/` in the same tier.
 
@@ -62,7 +59,5 @@ Use the fixtures in `test/fixtures`.
 - **`merge-sections`**: the higher document replaces the lower one heading by heading, so a project can override one section of a shared reference and keep the rest. A `<!-- merge: combine -->` line under a heading keeps both versions of that section, and `<!-- merge: remove -->` drops it.
 
 The resolver never compares prose. If two layers contradict each other, the merge mode decides which text survives; deciding which is *right* is left to whoever reads the result.
-
-A repository can stop a contributor's local copy from overriding a project reference by adding `final: true` to the project reference's frontmatter.
 
 [`reference show --trace`](/cli/reference/#--trace) shows which layer answered and why the others did not, and [`reference list`](/cli/reference/#reference-list) marks every shadowed layer.

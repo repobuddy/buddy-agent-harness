@@ -4,8 +4,8 @@ Feature: Read references by name through layered tiers
   # ── tiers ──
 
   @behavior
-  Scenario: resolves managed over local over project over user over plugin
-    Given one reference name held by the managed, local, project, user, and plugin tiers, each `first-wins`
+  Scenario: resolves managed over project over user over plugin
+    Given one reference name held by the managed, project, user, and plugin tiers, each `first-wins`
     When the command shows it
     Then the managed document answers
     And removing each answering tier in turn hands the answer to the next in that order
@@ -30,30 +30,11 @@ Feature: Read references by name through layered tiers
     Then the user document answers and the command exits 0
 
   @behavior
-  Scenario: reads the project tier at the root alone when no repository root is above it
-    Given a root whose every ancestor is a plain folder holding `.agents/references/`
+  Scenario: reads the project tier at the root alone
+    Given a root inside a workspace whose parent folder holds `.agents/references/`
     When the command lists the references
-    Then the project tier has exactly one level, the root
-    And no ancestor's folder is read
-
-  @behavior
-  Scenario: walks from the root up to the repository root, nearest level first
-    Given a package folder below a workspace root, each level holding the same name in `.agents/references/`
-    When the command shows it from the package folder
-    Then the package folder's document answers
-    And the workspace root's document is reported as shadowed
-
-  @behavior
-  Scenario: stops the walk at the repository root
-    Given a directory above the repository root holding `.agents/references/`
-    When the command lists the references from inside the repository
-    Then no layer above the repository root is read
-
-  @behavior
-  Scenario: reads local overrides at every level of the walk
-    Given a `.agents/references.local/` document at the repository root and the same name in a package's project tier
-    When the command shows it from the package folder
-    Then the local document answers
+    Then the project tier is the root's `.agents/references/` and `.agents/governances/` alone
+    And no parent folder's document is reported
 
   @behavior
   Scenario: reads a declared dependency's references as a plugin
@@ -63,7 +44,7 @@ Feature: Read references by name through layered tiers
 
   @behavior
   Scenario: never reads a package the repository did not declare
-    Given an installed package shipping `references/` that no `package.json` on the walk declares
+    Given an installed package shipping `references/` that the nearest `package.json` does not declare
     When the command lists the references
     Then none of its documents are reported
 
@@ -179,20 +160,6 @@ Feature: Read references by name through layered tiers
     Then the user sections apply over the plugin document and the project sections apply over that result
 
   @behavior
-  Scenario: blocks local overrides when a project reference is final
-    Given a project document with `final: true` and a local document of the same name
-    When the command shows it
-    Then the project document answers
-    And the local layer is reported as blocked by final in project
-
-  @behavior
-  Scenario: ignores final outside the project tier, with a warning
-    Given a plugin document with `final: true` below a project document of the same name
-    When the command shows it
-    Then the project document answers
-    And a warning says final is only honored in project references
-
-  @behavior
   Scenario: adds a trailing newline when the document has none
     Given a document whose file does not end in a newline
     When the command shows it as text
@@ -254,10 +221,10 @@ Feature: Read references by name through layered tiers
 
   @behavior
   Scenario: traces every path checked, the candidate, the merge mode, and why a layer was dropped
-    Given a name held by a local and a project layer, with other layers empty
+    Given a name held by a project and a user layer, with other layers empty
     When the command shows it with `--trace` as JSON
     Then the trace lists every layer path checked, found or missing
-    And the found ones name their candidate file and merge mode, and the dropped one says shadowed by local (first-wins)
+    And the found ones name their candidate file and merge mode, and the dropped one says shadowed by project (first-wins)
 
   @behavior
   Scenario: writes the trace to stderr in text so stdout stays the document
@@ -283,14 +250,14 @@ Feature: Read references by name through layered tiers
   Scenario: lists every layer in precedence order, with the legacy layers marked
     Given a repository holding one project reference
     When the command lists the references
-    Then the layers are reported managed, local, project, user, plugin, in that order
+    Then the layers are reported managed, project, user, plugin, in that order
     And each legacy `governances/` layer and the deprecated machine-wide layer carries a status saying where its documents belong
 
   @behavior
-  Scenario: marks shadowed and blocked layers in the listing
-    Given one name held by a local, a final project, and a user layer
+  Scenario: marks shadowed layers in the listing
+    Given one name held by a project and a user layer
     When the command lists the references
-    Then the project row is used, the local row is blocked by final in project, and the user row is shadowed by project (first-wins)
+    Then the project row is used and the user row is shadowed by project (first-wins)
 
   @behavior
   Scenario: states the zero when no layer holds a reference

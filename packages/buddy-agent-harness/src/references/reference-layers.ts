@@ -10,7 +10,7 @@ import {
 import { isRecord } from '../is-record/is-record.ts'
 
 /** Order here is precedence order, highest first. */
-export type ReferenceTier = 'managed' | 'local' | 'project' | 'user' | 'plugin'
+export type ReferenceTier = 'managed' | 'project' | 'user' | 'plugin'
 
 export type ReferenceLayer = {
 	tier: ReferenceTier
@@ -51,28 +51,6 @@ function isDirectory(path: string): boolean {
 		return statSync(path).isDirectory()
 	} catch {
 		return false
-	}
-}
-
-function isRepositoryRoot(dir: string): boolean {
-	if (existsSync(join(dir, '.git')) || existsSync(join(dir, 'pnpm-workspace.yaml'))) return true
-	const manifest = readJson(join(dir, 'package.json'))
-	return isRecord(manifest) && manifest['workspaces'] !== undefined
-}
-
-/**
- * Nearest first. With no repository root above, the root alone — climbing on would reach the home
- * directory and read the user tier a second time as a project level.
- */
-export function walkLevels(root: string): string[] {
-	const levels: string[] = []
-	let dir = root
-	for (;;) {
-		levels.push(dir)
-		if (isRepositoryRoot(dir)) return levels
-		const parent = dirname(dir)
-		if (parent === dir) return [root]
-		dir = parent
 	}
 }
 
@@ -123,7 +101,6 @@ export function referenceLayers({
 	programData,
 	packageRoot = dirname(packageGovernancesDir()),
 }: ReferenceLayerOptions): ReferenceLayer[] {
-	const levels = walkLevels(root)
 	const layer = (tier: ReferenceTier, dir: string, status = ''): ReferenceLayer => ({
 		tier,
 		dir,
@@ -135,11 +112,8 @@ export function referenceLayers({
 		layer('managed', managedReferencesDir(platform, programData)),
 		layer('managed', managedGovernancesDir(platform, programData), LEGACY_STATUS),
 		layer('managed', deprecatedManagedGovernancesDir(platform, programData), DEPRECATED_STATUS),
-		...levels.map((level) => layer('local', join(level, '.agents', 'references.local'))),
-		...levels.flatMap((level) => [
-			layer('project', join(level, '.agents', 'references')),
-			layer('project', join(level, '.agents', 'governances'), LEGACY_STATUS),
-		]),
+		layer('project', join(root, '.agents', 'references')),
+		layer('project', join(root, '.agents', 'governances'), LEGACY_STATUS),
 		layer('user', join(home, '.agents', 'references')),
 		layer('user', join(home, '.agents', 'governances'), LEGACY_STATUS),
 		{ tier: 'plugin', dir: join(packageRoot, 'references'), plugins: self, status: '' },

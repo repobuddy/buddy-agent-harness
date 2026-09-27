@@ -11,7 +11,7 @@ buddy-agent-harness reference search <query> [--root <directory>] [--format toon
 
 A **reference** is a Markdown document an agent reads on demand. [References and Skills](/agent-configuration/references/) covers when to write one instead of a skill. `reference` is read-only: it never writes a document.
 
-`--root` is the directory the project tier walks up from. It defaults to the current directory.
+`--root` is the directory whose `.agents/` holds the project tier. It defaults to the current directory.
 
 ## Tiers
 
@@ -20,8 +20,7 @@ A name resolves through these tiers, highest precedence first. Each tier holds o
 | Tier | Layers, in order |
 | --- | --- |
 | `managed` | the machine-wide `references/`, then the machine-wide `governances/`, then the folder `universal-plugin` wrote |
-| `local` | `.agents/references.local/` at each level of the walk, nearest first |
-| `project` | `.agents/references/`, then `.agents/governances/`, at each level of the walk, nearest first |
+| `project` | `<root>/.agents/references/`, then `<root>/.agents/governances/` |
 | `user` | `~/.agents/references/`, then `~/.agents/governances/` |
 | `plugin` | this package's `references/` as the plugin `buddy-agent-harness`, and the `references/` folder of each dependency in the nearest `package.json` |
 
@@ -33,9 +32,9 @@ The machine-wide folders:
 
 The `governances/` folders are the ones [`governance`](/cli/governance/) reads, kept so existing documents keep resolving. `list` marks each of them as legacy.
 
-**The walk.** The project and local tiers are read at every directory from `--root` up to the repository root: the first directory holding `.git`, `pnpm-workspace.yaml`, or a `package.json` with `workspaces`. With no repository root above `--root`, only `--root` is read.
+The project tier is read at `--root` only. A parent folder, such as a monorepo root above a package, is not read.
 
-**Plugins.** Only packages listed in `dependencies` or `devDependencies` are read, never a transitive dependency. Two plugins holding the same name is an error that names both; ask for one as `<plugin>/<name>`. A qualified name picks that plugin's copy, and a project or local copy of `<name>` still overrides it.
+**Plugins.** Only packages listed in `dependencies` or `devDependencies` are read, never a transitive dependency. Two plugins holding the same name is an error that names both; ask for one as `<plugin>/<name>`. A qualified name picks that plugin's copy, and a project, user, or managed copy of `<name>` still overrides it.
 
 Harness-managed folders and plugins enabled in a harness are not read yet.
 
@@ -54,7 +53,6 @@ When two exist in one layer, the earlier answers and a warning names the other.
 | Field | Meaning |
 | --- | --- |
 | `merge` | `first-wins` (default), `combine`, or `merge-sections`: how this document combines with the layers below it |
-| `final` | `true` in a project reference blocks every local override of that name |
 | `description` | one line, shown by `list` and `search` |
 | `tags` | matched by `search` |
 
@@ -116,7 +114,7 @@ An ambiguous entry carries `plugins`, the qualified names to ask for instead.
 
 ### `--trace`
 
-Reports, per name, every layer checked, whether it held the name, the file that matched, the merge mode it declared, and its outcome: `used`, `missing`, `shadowed by <tier> (first-wins)`, `blocked by final in project`, or `ambiguous`. With `--format json` or `toon` it is the entry's `trace` field. With `text` it is written to stderr, so stdout is still only the documents.
+Reports, per name, every layer checked, whether it held the name, the file that matched, the merge mode it declared, and its outcome: `used`, `missing`, `shadowed by <tier> (first-wins)`, or `ambiguous`. With `--format json` or `toon` it is the entry's `trace` field. With `text` it is written to stderr, so stdout is still only the documents.
 
 ## `reference list`
 
@@ -129,7 +127,6 @@ buddy-agent-harness reference list --format text
 ```
 references:
   name     tier     plugin  path                                          status                        description
-  testing  local            ~/code/acme/.agents/references.local/testing.md  blocked by final in project
   testing  project          ~/code/acme/.agents/references/testing.md        used                          How we test
   testing  user             ~/.agents/references/testing.md                  shadowed by project (first-wins)
 ```
