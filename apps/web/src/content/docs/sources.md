@@ -34,6 +34,7 @@ The harness claims across this site are not equally well-sourced, and the differ
 | A standard local-override file (`AGENTS.local.md`) | Low | absent from the standard; three open issues, two candidate names |
 | MCP configuration having a cross-harness mapping that is not lossless | High | primary vendor documentation per host, plus inspection of the published `agent-install` registry |
 | Per-harness project-scope MCP files, keys, and formats | High | primary vendor documentation per host |
+| Per-harness MCP entry shape — transport selection, reference syntax, timeout unit | High / Medium | primary vendor documentation per host; Cursor's remote-transport-selection field and its timeout/enable/description fields are unverified rather than confirmed absent |
 | No standard naming an MCP configuration location | High | the MCP specification's silence, plus the open standards-track proposals themselves |
 | The `.agents/mcp.json` proposal being unaffiliated and unadopted | Medium | the draft's own site; nothing establishes that anyone reads it |
 | Only Claude Code addresses a plugin's skill as `plugin:skill` and lets one plugin depend on another; Codex, Cursor, and Copilot CLI name skills bare | High | primary vendor documentation for each; the absence claims are checks of each vendor's plugin manifest and skills reference |
