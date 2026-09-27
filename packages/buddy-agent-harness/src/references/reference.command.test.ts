@@ -432,16 +432,18 @@ describe('merge modes', () => {
 		write(
 			root,
 			'.agents/references/name.md',
-			'---\nmerge: merge-sections\n---\n## Testing\n<!-- merge: combine -->\n\nproject body\n',
+			'---\nmerge: merge-sections\n---\n## Testing\n<!-- merge: combine -->\n\nproject body\n\n### Fixtures\n\nproject fixtures\n\n### Mocks\n<!-- merge: remove -->\n',
 		)
-		write(fakeHome.value, '.agents/references/name.md', '## Testing\n\nuser body\n')
+		write(
+			fakeHome.value,
+			'.agents/references/name.md',
+			'## Testing\n\nuser body\n\n### Fixtures\n\nuser fixtures\n\n### Mocks\n\nuser mocks\n\n### Coverage\n\nuser coverage\n',
+		)
 
 		expect(show(['name'], { root })).toBe(0)
-		const content = written()
-		const userIndex = content.indexOf('user body')
-		const projectIndex = content.indexOf('project body')
-		expect(userIndex).toBeGreaterThan(-1)
-		expect(projectIndex).toBeGreaterThan(userIndex)
+		expect(written()).toBe(
+			'## Testing\n\nuser body\n\nproject body\n\n### Fixtures\n\nproject fixtures\n\n### Coverage\n\nuser coverage\n',
+		)
 	})
 
 	it('drops a section marked remove', () => {
