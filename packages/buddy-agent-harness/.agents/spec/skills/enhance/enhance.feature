@@ -64,6 +64,122 @@ Feature: Offer the current wording of a vetted section to a repository that alre
     And `AGENTS.md` is unchanged
 
   @behavior
+  Scenario: hands over the current text for a retired wording the agent's own instructions carry
+    Given instructions the agent loads from outside the repository carry a `## Delegation` section identical to a wording in `references/delegation.history.md`
+    And a root `AGENTS.md` holding a build-commands section and a code-style section
+    And the root `AGENTS.md` also holds the `## List identifiers` section exactly as `references/list-identifiers.md` offers it
+    When the agent runs the `enhance` skill
+    Then the report says the agent's instructions from outside the repository carry a retired `## Delegation` wording
+    And the report names the file holding that wording
+    And no `## Delegation` section is offered for the repository's `AGENTS.md`
+    And the owner is shown that section as it stands beside the current text byte-identical to the text inside the fence in `references/delegation.md`
+    And the report says the current text would replace that section in that file, and that the skill writes nothing outside the repository
+    And no file outside the repository is written
+    And `AGENTS.md` is unchanged
+
+  @behavior
+  Scenario: offers nothing where the agent's own instructions cover the subject in the owner's words
+    Given instructions the agent loads from outside the repository carry a `## Working with subagents` section written by the owner
+    And that section says which work to hand to a subagent and which to keep
+    And a root `AGENTS.md` holding a build-commands section and a code-style section
+    And the root `AGENTS.md` also holds the `## List identifiers` section exactly as `references/list-identifiers.md` offers it
+    When the agent runs the `enhance` skill
+    Then no `## Delegation` section is offered
+    And the report names the `## Working with subagents` section, in the instructions from outside the repository, as what covers the subject
+    And the report says the owner may ask for a copy in the repository's `AGENTS.md`
+    And `AGENTS.md` is unchanged
+
+  @behavior
+  Scenario: puts a global section it cannot place to the owner instead of deciding
+    Given instructions the agent loads from outside the repository carry a `## Delegation` section of three paragraphs
+    And one sentence of a wording in `references/delegation.history.md` appears verbatim inside its first paragraph
+    And its remaining sentences appear in no wording in `references/delegation.history.md`
+    And a root `AGENTS.md` holding a build-commands section and a code-style section
+    And the root `AGENTS.md` also holds the `## List identifiers` section exactly as `references/list-identifiers.md` offers it
+    When the agent runs the `enhance` skill
+    Then the report says the section in the instructions from outside the repository cannot be placed
+    And the owner is asked which of the two the section is
+    And no `## Delegation` section is offered for the repository's `AGENTS.md`
+    And no file outside the repository is written
+    And `AGENTS.md` is unchanged
+
+  @behavior
+  Scenario: hands over the current text when the owner says a global section came from this package
+    Given the `enhance` skill has asked the owner which of the two a `## Delegation` section in the instructions the agent loads from outside the repository is
+    When the owner answers that it is an edited copy of the retired wording
+    Then the owner is shown the current text byte-identical to the text inside the fence in `references/delegation.md`, for the file holding that section
+    And no `## Delegation` section is offered for the repository's `AGENTS.md`
+    And no file outside the repository is written
+
+  @behavior
+  Scenario: offers the replacement, and removal as the other answer, where the agent's own instructions already carry the current text
+    Given instructions the agent loads from outside the repository already carry the `## Delegation` text exactly as `references/delegation.md` offers it
+    And a root `AGENTS.md` holding a `## Delegation` section identical to a wording in `references/delegation.history.md`
+    And the root `AGENTS.md` also holds the `## List identifiers` section exactly as `references/list-identifiers.md` offers it
+    When the agent runs the `enhance` skill
+    Then the report gives the `## Delegation` addition the verdict from a retired wording
+    And the current `## Delegation` text is offered as a replacement for that section
+    And the report says the agent's instructions from outside the repository already carry the current text, so the owner would read it twice
+    And the removal of that `## Delegation` section is offered as the other answer
+    And the removal offer says the team's agents would no longer read the section
+    And `AGENTS.md` is unchanged
+
+  @behavior
+  Scenario: removes only that section when the owner picks the removal
+    Given the `enhance` skill has offered the replacement of a `## Delegation` section in the root `AGENTS.md`, and its removal as the other answer
+    And that is the only offer or question the run has put to the owner
+    When the owner picks the removal
+    Then `AGENTS.md` carries no `## Delegation` section
+    And every byte of `AGENTS.md` outside that section is as it was before the run
+
+  @behavior
+  Scenario: replaces the section when the owner approves the replacement over the removal
+    Given the `enhance` skill has offered the replacement of a `## Delegation` section in the root `AGENTS.md`, and its removal as the other answer
+    When the owner approves the replacement
+    Then that `## Delegation` section holds the text inside the fence in `references/delegation.md`
+
+  @behavior
+  Scenario: hands over the current text for a retired global copy beside a current repository section
+    Given instructions the agent loads from outside the repository carry a `## Delegation` section identical to a wording in `references/delegation.history.md`
+    And a root `AGENTS.md` holding the `## Delegation` section exactly as `references/delegation.md` offers it
+    And the root `AGENTS.md` also holds the `## List identifiers` section exactly as `references/list-identifiers.md` offers it
+    When the agent runs the `enhance` skill
+    Then the report gives the `## Delegation` addition the verdict already current
+    And the report says the agent's instructions from outside the repository carry a retired `## Delegation` wording, and names the file holding it
+    And the owner is shown the `## Delegation` section outside the repository as it stands beside the current text byte-identical to the text inside the fence in `references/delegation.md`
+    And no replacement is offered for the repository's `AGENTS.md`
+    And no file outside the repository is written
+    And `AGENTS.md` is unchanged
+
+  @behavior
+  Scenario: hands over the current text for a retired global copy beside the owner's own section
+    Given instructions the agent loads from outside the repository carry a `## Delegation` section identical to a wording in `references/delegation.history.md`
+    And a root `AGENTS.md` holding a `## Working with subagents` section written by the repository owner
+    And that section says which work to hand to a subagent and which to keep
+    And the root `AGENTS.md` also holds the `## List identifiers` section exactly as `references/list-identifiers.md` offers it
+    When the agent runs the `enhance` skill
+    Then the report names the `## Working with subagents` section as what covers the subject
+    And the report says the agent's instructions from outside the repository carry a retired `## Delegation` wording, and names the file holding it
+    And the owner is shown the `## Delegation` section outside the repository as it stands beside the current text byte-identical to the text inside the fence in `references/delegation.md`
+    And no replacement is offered for the repository's `AGENTS.md`
+    And no file outside the repository is written
+    And `AGENTS.md` is unchanged
+
+  @behavior
+  Scenario: says the owner reads the subject twice where their own words sit beside the current text outside the repository
+    Given instructions the agent loads from outside the repository already carry the `## Delegation` text exactly as `references/delegation.md` offers it
+    And a root `AGENTS.md` holding a `## Working with subagents` section written by the repository owner
+    And that section says which work to hand to a subagent and which to keep
+    And the root `AGENTS.md` also holds the `## List identifiers` section exactly as `references/list-identifiers.md` offers it
+    When the agent runs the `enhance` skill
+    Then no `## Delegation` section is offered
+    And no replacement or removal is offered
+    And the report names the `## Working with subagents` section as what covers the subject
+    And the report says the agent's instructions from outside the repository also carry the current `## Delegation` text
+    And the report says the owner reads the subject twice, once in each wording
+    And `AGENTS.md` is unchanged
+
+  @behavior
   Scenario: hands a global placement over rather than writing outside the repository
     Given an owner who picks their global instruction file over the repository's `AGENTS.md`
     When the agent applies the answer
