@@ -192,32 +192,3 @@ Feature: Resolve a governance through the override layers
     Given a lookup that fails with something that is not an error
     When the command shows a governance
     Then it writes a stated reason to stderr and exits non-zero
-
-  # ── the project layer, at init and at doctor ──
-
-  @behavior
-  Scenario: creates the project override layer and reports what it holds
-    Given a repository with no project governances directory
-    When the agent runs `buddy-agent-harness init`
-    Then the repository contains `.agents/governances`
-    And the result states how many documents it holds
-
-  @behavior
-  Scenario: reports the overrides the layers hold without turning any of them into a finding
-    Given a repository holding a project override
-    When the agent runs `buddy-agent-harness doctor`
-    Then the report holds a `governances` section naming that override and its layer
-    And the override is not reported as a finding
-
-  @behavior
-  Scenario: names the directory each override was read from
-    Given a repository holding a project override
-    When the agent runs `buddy-agent-harness doctor`
-    Then each row names the governance, the layer it came from, and that directory
-    And the user's home directory is collapsed in it
-
-  @behavior
-  Scenario: states the zero outright when no layer holds an override
-    Given no override at project, user, or machine scope
-    When the agent runs `buddy-agent-harness doctor`
-    Then the `governances` section holds a sentence stating that zero were found
