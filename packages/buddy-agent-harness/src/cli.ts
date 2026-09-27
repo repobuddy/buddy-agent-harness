@@ -4,6 +4,7 @@ import { depPluginsCommand } from './dep-plugins/dep-plugins.command.ts'
 import { doctorCommand } from './diagnose-bridges/doctor.command.ts'
 import { governanceCommand } from './governance-overrides/governance.command.ts'
 import { initCommand } from './initialize-harnesses/init.command.ts'
+import { referenceCommand } from './references/reference.command.ts'
 
 /**
  * `../package.json` resolves from both `src/cli.ts` and the bundled `dist/cli.mjs` — one directory
@@ -28,6 +29,7 @@ function app() {
 		.command(initCommand)
 		.command(doctorCommand)
 		.command(depPluginsCommand)
+		.command(referenceCommand)
 		.command(governanceCommand)
 }
 

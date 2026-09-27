@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { doctorCommand } from '../diagnose-bridges/doctor.command.ts'
 import { governanceCommand } from '../governance-overrides/governance.command.ts'
+import { referenceCommand } from '../references/reference.command.ts'
 import { activate, harnessCommand, initCommand } from './init.command.ts'
 import { initializeHarnesses } from './initialize-harnesses.ts'
 
@@ -116,6 +117,6 @@ describe('init command', () => {
 		expect(addCommand).toHaveBeenCalledWith(harnessCommand)
 		// The mounted name is what consumers type, so it is pinned here rather than left to the object.
 		expect(harnessCommand.name).toBe('agent-harness')
-		expect(harnessCommand.commands).toEqual([initCommand, doctorCommand, governanceCommand])
+		expect(harnessCommand.commands).toEqual([initCommand, doctorCommand, referenceCommand, governanceCommand])
 	})
 })

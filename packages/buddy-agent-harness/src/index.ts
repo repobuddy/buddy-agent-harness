@@ -66,3 +66,23 @@ export type { InitializeOptions, InitializeResult } from './initialize-harnesses
 export { initializeHarnesses } from './initialize-harnesses/initialize-harnesses.ts'
 export type { ListMcpServersOptions, McpServerEntry } from './mcp-inventory/mcp-inventory.ts'
 export { listMcpServers } from './mcp-inventory/mcp-inventory.ts'
+export type {
+	ReferenceListReport,
+	ReferenceSearchReport,
+	ReferenceShowEntry,
+} from './references/reference.command.ts'
+export { referenceCommand } from './references/reference.command.ts'
+export type { MatchKind, ReferenceListing, ReferenceRow, SearchMatch } from './references/reference-catalog.ts'
+export { listReferences, searchReferences } from './references/reference-catalog.ts'
+export type { MergeMode } from './references/reference-document.ts'
+export type { ReferenceLayer, ReferenceLayerOptions, ReferenceTier } from './references/reference-layers.ts'
+export { managedReferencesDir, referenceLayers } from './references/reference-layers.ts'
+export type {
+	ReferenceName,
+	ReferenceStatus,
+	ResolvedReference,
+	ResolveOptions,
+	TraceEntry,
+	UsedLayer,
+} from './references/resolve-reference.ts'
+export { parseReferenceName, resolveReference } from './references/resolve-reference.ts'
