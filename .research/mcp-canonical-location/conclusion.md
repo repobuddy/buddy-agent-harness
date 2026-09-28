@@ -27,7 +27,7 @@ Project scope, primary-sourced, for the harnesses this project supports:
 | Cursor | `.cursor/mcp.json` | `mcpServers` | JSON |
 | Codex | `.codex/config.toml` | `mcp_servers` | TOML |
 | Gemini CLI | `.gemini/settings.json` | `mcpServers` | JSON |
-| Copilot CLI | none documented (E-MCP-11) | — | — |
+| Copilot CLI | `.mcp.json`, `.github/mcp.json` (E-MCP-19); not yet a registry target | `mcpServers` | JSON |
 | Devin Desktop | none documented | — | — |
 
 Two of those files hold far more than MCP configuration — `.gemini/settings.json` also carries the
@@ -40,5 +40,8 @@ SEP-2633 and discussion #2218. If either is accepted **with** a stated directory
 is the first primary-sourced answer to the location question and the trigger to revisit. Vendor-by-
 vendor convergence is not that trigger; a ratified proposal is.
 
-Separately, the unconfirmed report that Copilot CLI gained a project-scope MCP file (E-MCP-11) is
-worth re-checking against GitHub's own documentation before Copilot CLI is left out again.
+As of 2026-09-27 neither has moved: SEP-2633 is still a draft and #2218 is closed (E-MCP-20).
+
+The report that Copilot CLI gained a project-scope MCP file is now confirmed (E-MCP-19, superseding
+E-MCP-11). Its first file is `.mcp.json`, which Claude Code also reads, so whether and where to
+project for Copilot CLI is an open design question rather than a lookup.

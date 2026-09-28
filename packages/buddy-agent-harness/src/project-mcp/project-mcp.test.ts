@@ -247,7 +247,7 @@ describe('projectMcp', () => {
 		expect(refusal?.detail).toMatch(/command|url/)
 	})
 
-	it('refuses a reference Gemini CLI would not expand', () => {
+	it('writes a header reference into Gemini CLI as written', () => {
 		const root = repository()
 		write(
 			root,
@@ -258,8 +258,9 @@ describe('projectMcp', () => {
 
 		const plan = planned(root)
 
-		expect(row(plan, gemini, 'linear')).toMatchObject({ action: 'refuse' })
-		expect(row(plan, gemini, 'linear')?.detail).toContain('headers')
+		expect(row(plan, gemini, 'linear')).toMatchObject({ action: 'add' })
+		const entry = plan.entries.find((entry) => entry.target === gemini && entry.server === 'linear')
+		expect(JSON.parse(entry?.entry as string).linear.headers).toEqual({ Authorization: `Bearer ${ref('TOKEN')}` })
 	})
 
 	it('refuses a variable Codex would have to rename', () => {

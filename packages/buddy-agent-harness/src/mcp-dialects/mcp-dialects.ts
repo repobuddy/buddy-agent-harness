@@ -67,10 +67,10 @@ function mapValues(
 }
 
 /** The fields that run a server, restricted to a target that expands no reference in them. */
-function noReferenceIn(server: McpServer, fields: readonly McpField[], harness: string): void {
+function noReferenceIn(server: McpServer, fields: readonly ('command' | 'args' | 'url')[], harness: string): void {
 	for (const field of fields) {
 		const value = server[field]
-		const values = Array.isArray(value) ? value : isRecord(value) ? Object.values(value) : [value]
+		const values = Array.isArray(value) ? value : [value]
 		if (values.some((item) => typeof item === 'string' && anyReference.test(item)))
 			refuse(field, `${harness} documents no reference expansion here`)
 	}
@@ -237,7 +237,10 @@ const codex: McpDialect = {
 		}),
 }
 
-/** Gemini CLI splits the two remote transports into two fields (E-MCP-15). */
+/**
+ * Gemini CLI splits the two remote transports into two fields (E-MCP-15), and expands `${NAME}` and
+ * `${NAME:-default}` in every string of its settings file (E-MCP-18), so a reference passes through.
+ */
 function fromGemini(entry: Record<string, unknown>): Record<string, unknown> {
 	const { httpUrl, url, ...rest } = entry
 	if (typeof httpUrl === 'string') return { ...rest, type: 'http', url: httpUrl }
@@ -250,11 +253,6 @@ const geminiCli: McpDialect = {
 	write: (server) =>
 		rendering(() => {
 			assertRunnable(server)
-			// Expansion is documented for `env` values only; anywhere else a reference would be sent literally.
-			noReferenceIn(server, ['command', 'args', 'url', 'headers'], 'Gemini CLI')
-			for (const value of Object.values(server.env ?? {}))
-				if (/\$\{(?![A-Za-z_][A-Za-z0-9_]*\})/.test(value))
-					refuse('env', 'Gemini CLI expands only a plain variable reference')
 			return defined({
 				command: server.command,
 				args: server.args,

@@ -264,3 +264,93 @@ which holds E-MCP-01 through E-MCP-05. Same subject, same numbering.
   Gemini entry unverbatim — the default-value form has no target to receive it at all (only
   Claude Code documents it), and the token spelling itself (`${VAR}` vs `${env:VAR}` vs a
   named-field reference vs `%VAR%`) must be rewritten per target rather than passed through.
+
+## E-MCP-17 — Cursor still names no field that selects SSE vs streamable HTTP for a remote server
+
+- **Date**: 2026-09-27
+- **Status**: confirmed (as documented absence on the vendor's page; unchanged from E-MCP-13)
+- **Confidence**: medium
+- **Source**: Cursor docs — https://cursor.com/docs/context/mcp — vendor's own documentation,
+  re-fetched 2026-09-27 for this question alone (the `.md` variant returns 404); Cursor's
+  changelog was not found to say otherwise
+- **Notes**: The page's transport table reads, row by row: `stdio` — "Local", "shell command";
+  `SSE` — "Local/Remote", "URL to an SSE endpoint"; `Streamable HTTP` — "Local/Remote", "URL to an
+  HTTP endpoint". Its only remote-server example is `{"url": "http://localhost:3000/mcp",
+  "headers": {"API_KEY": "value"}}`, with no `type`. No field, value, or auto-detection rule is
+  stated for choosing between the two remote transports. The only documented `type` value is
+  `"stdio"`.
+- **Why it matters here**: the Cursor dialect keeps writing a remote server with `url` alone and
+  keeps leaving transport out of the comparison. Writing an undocumented `type: "sse"` or
+  `type: "http"` would be a guess. Absence from the vendor page is not proof that no such field
+  exists, so this is the fact to re-check if Cursor publishes a config schema.
+
+## E-MCP-18 — Gemini CLI expands `$VAR`, `${VAR}`, and `${VAR:-default}` in every string of its settings file, not only in `env`
+
+- **Date**: 2026-09-27
+- **Status**: confirmed (documented, and matched in source)
+- **Confidence**: high
+- **Source**: gemini-cli configuration reference —
+  https://github.com/google-gemini/gemini-cli/blob/main/docs/reference/configuration.md —
+  vendor's own documentation; gemini-cli source at commit
+  `2fe7c2d3f065dc40ad573d50b2091116f8a4aa18` (2026-09-25):
+  `packages/cli/src/config/settings.ts` (`load`), `packages/cli/src/utils/envVarResolver.ts`,
+  `packages/core/src/tools/mcp-client.ts` — primary
+- **Notes**: The configuration reference states: *"String values within your `settings.json` and
+  `gemini-extension.json` files can reference environment variables using `$VAR_NAME`,
+  `${VAR_NAME}`, or `${VAR_NAME:-DEFAULT_VALUE}` syntax. These variables will be automatically
+  resolved when the settings are loaded."* The source matches: `load()` passes the whole parsed
+  file through `resolveEnvVarsInObject` before validation, and that function recurses into every
+  string, array, and object. `load()` is called for the user file and for the workspace file
+  (`.gemini/settings.json`), so `mcpServers.*.url`, `httpUrl`, `headers`, `command`, and `args`
+  are all expanded. A variable that is unset and has no default is left as the literal
+  placeholder. The MCP client then expands `headers` and `env` a second time at connection time
+  (`expandEnvVars`, via `dotenv-expand`) against a sanitized environment. The MCP server page
+  (E-MCP-15) documents expansion only under `env`; that page is narrower than the product, not
+  in conflict with it.
+- **Why it matters here**: this supersedes the "unverified" note in E-MCP-16 for Gemini CLI. A
+  golden-set reference, with or without a default, can be written into Gemini CLI as written in
+  any field, so the dialect no longer refuses one.
+
+## E-MCP-19 — Copilot CLI now reads project-scope MCP servers from `.mcp.json` and `.github/mcp.json`
+
+- **Date**: 2026-09-27
+- **Status**: confirmed
+- **Confidence**: high
+- **Source**: GitHub Docs —
+  https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-mcp-servers —
+  primary, re-fetched 2026-09-27 (same page as E-MCP-11)
+- **Notes**: Under "Adding per-repository MCP servers": *"Copilot CLI looks for project-level
+  configuration in the following locations"* — `.mcp.json` *"(in any directory from your working
+  directory up to the repository root)"*, and `.github/mcp.json`, *"Shared configuration that is
+  committed to the repository"*. *"If both `.mcp.json` and `.github/mcp.json` exist in the same
+  directory, `.mcp.json` takes precedence"*, and *"Project-level definitions also take precedence
+  over those in `~/.copilot/mcp-config.json`."* Project files accept either the `mcpServers`
+  object or a bare top-level map of server names. They load only after folder trust is confirmed.
+  Entry `type` values documented on the same page are `local`/`stdio`, `http`, and `sse`, with
+  `tools` and a millisecond `timeout`. No environment-variable expansion syntax for project files
+  is documented on this page. The date the feature landed was not established from a primary
+  source.
+- **Why it matters here**: this supersedes E-MCP-11. Copilot CLI's absence from the registry is no
+  longer a documented absence. Adding it is a design decision rather than a lookup: its
+  higher-precedence file is `.mcp.json`, which is Claude Code's projection target, so Copilot CLI
+  already reads whatever is projected for Claude Code, and a `.github/mcp.json` entry of the same
+  name would be shadowed by it.
+
+## E-MCP-20 — SEP-2633 is still an open draft, and discussion #2218 was closed without an answer; neither states a location
+
+- **Date**: 2026-09-27
+- **Status**: confirmed
+- **Confidence**: high
+- **Source**: SEP-2633 —
+  https://github.com/modelcontextprotocol/modelcontextprotocol/pull/2633; discussion #2218 —
+  https://github.com/modelcontextprotocol/modelcontextprotocol/discussions/2218 — primary, read
+  through the GitHub API on 2026-09-27
+- **Notes**: SEP-2633: `state: OPEN`, `isDraft: true`, `mergedAt: null`, last updated
+  2026-07-28. Discussion #2218: closed, `stateReason: OUTDATED`, no accepted answer; a maintainer
+  closed it because Discussions in that repository are now limited to meeting notes, and a
+  comment points to issue #2219 for tracking. Issue #2219, "RFC: Standardize MCP Configuration
+  File Schema Across Tools", is itself closed (last updated 2026-02-06); it tabulates each tool's
+  existing path and proposes no new one. None of the three states a directory convention.
+- **Why it matters here**: the watch trigger in the conclusion, a ratified proposal with a stated
+  location, has not fired. `.agents/buddy-agent-harness/mcp.toml` stands, and SEP-2633 is the one
+  proposal still open.

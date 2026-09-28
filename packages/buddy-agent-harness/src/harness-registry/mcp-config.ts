@@ -1,6 +1,7 @@
 /**
  * Where one harness keeps its MCP servers at project scope, as its vendor documents it. A harness
- * with no documented project-scope file gets no entry (E-MCP-11, `.research/mcp-canonical-location/`).
+ * with no entry is never read or written: Devin Desktop documents no project-scope file, and Copilot
+ * CLI's (E-MCP-19, `.research/mcp-canonical-location/`) is not chosen yet.
  */
 import type { McpDialectName } from '../mcp-dialects/mcp-dialects.ts'
 
