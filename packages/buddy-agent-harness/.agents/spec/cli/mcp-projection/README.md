@@ -122,7 +122,7 @@ servers this run left alone. `doctor` reads it as the baseline.
 | Concept | Claude Code | Cursor | Codex | Gemini CLI |
 | --- | --- | --- | --- | --- |
 | transport | `type` | `type: "stdio"` only; SSE and streamable HTTP are not told apart | from `command` vs `url`; **no SSE** | `command`; `url` is SSE; `httpUrl` is streamable HTTP |
-| reference | `${NAME}` as written | `${env:NAME}`; no default form | no expansion: `env_vars`, `env_http_headers`, `bearer_token_env_var` | `$NAME` / `${NAME}` in `env` only |
+| reference | `${NAME}` as written | `${env:NAME}`; no default form | no expansion: `env_vars`, `env_http_headers`, `bearer_token_env_var` | `${NAME}` as written, in every field |
 | timeout | `timeout`, ms | none | `tool_timeout_sec`, seconds | `timeout`, ms |
 | other | `description` | — | `enabled` | — |
 
@@ -138,9 +138,8 @@ The golden set writes a reference as `${NAME}`, and each dialect translates it.
   field and never the value. Writing it would copy the credential into up to four more files.
 - **The golden server has no command or url.** It is refused. There is nothing to run.
 - **The target cannot hold the transport.** It is refused. Codex has no SSE (E-MCP-14).
-- **A reference the target cannot expand.** It is refused, naming the field. Codex expands none,
-  and Gemini CLI documents expansion only in `env`. Sent literally, the reference would reach the
-  server as the text `${NAME}`.
+- **A reference the target cannot expand.** It is refused, naming the field. Codex expands none.
+  Sent literally, the reference would reach the server as the text `${NAME}`.
 - **A variable renamed on the way into Codex.** `A = "${B}"` cannot be expressed by `env_vars`,
   which passes a variable through under its own name, so it is refused.
 - **A JSON file with no object at its root, or a non-object under the MCP key.** There is no safe

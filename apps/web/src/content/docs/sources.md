@@ -70,6 +70,18 @@ What is documented is what has been verified and what initialization depends on.
 
 A claim that turns out to be wrong is corrected in place and recorded here. The entry stays after the page is fixed, so you can tell whether something you read earlier has since changed.
 
+### 2026-09-27 — Gemini CLI was said to expand a variable only inside `env`
+
+[`mcp project`](/cli/mcp/) stated that Gemini CLI expands a variable reference only inside a server's `env`, and refused a server with a reference anywhere else, such as `Authorization = "Bearer ${TOKEN}"`. That was wrong. Gemini CLI's configuration reference documents expansion of `$VAR`, `${VAR}`, and `${VAR:-default}` in every string value of `settings.json`, and its source does the same.
+
+Corrected at [Dialects](/cli/mcp/#dialects). The behavior changed with it: `mcp project` now writes such a server into `.gemini/settings.json` as written.
+
+### 2026-09-27 — Copilot CLI was said to document no project-scope MCP file
+
+[MCP Servers](/agent-configuration/mcp-servers/) stated that Copilot CLI's absence from the MCP targets was a documented absence. That is no longer true. GitHub now documents project-scope `.mcp.json` and `.github/mcp.json` for Copilot CLI.
+
+Corrected in place. The behavior has not changed: Copilot CLI is still not an MCP target, because its first file is Claude Code's `.mcp.json` and which file to write for it is undecided.
+
 ### 2026-08-18 — MCP was said to have no cross-harness mapping
 
 Six pages and skill files stated that MCP servers stay canonical because "no safe cross-harness mapping exists". That was wrong. One exists and is published, mapping server configuration across fourteen hosts, six config keys, and three file formats.

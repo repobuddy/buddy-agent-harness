@@ -43,7 +43,7 @@ actions:
   .codex/config.toml     linear  add     appends the server
   .codex/config.toml     old     refuse  transport: Codex supports no SSE transport
   .gemini/settings.json  fs      add     appends the server
-  .gemini/settings.json  linear  refuse  headers: Gemini CLI documents no reference expansion here
+  .gemini/settings.json  linear  add     appends the server
   .gemini/settings.json  old     add     appends the server
 
 entries:
@@ -69,7 +69,7 @@ Three things to notice:
 
 - The golden set's `${LINEAR_TOKEN}` reference is rewritten per dialect: `${env:LINEAR_TOKEN}` for Cursor, and Codex's dedicated `bearer_token_env_var` field for Codex — never a literal token, and never the same syntax twice. See [dialects](#dialects).
 - The `old` server, on the SSE transport, is written for Claude Code, Cursor, and Gemini CLI, but **refused** for Codex, which documents no SSE support at all.
-- The `linear` server's header reference is refused for Gemini CLI, which documents expansion only inside `env`, not inside a header value.
+- The `linear` server's header reference is written into Gemini CLI as `${LINEAR_TOKEN}`, since Gemini CLI expands a reference in every string of its settings file.
 
 `--write` applies the same plan, writes each changed target, and records what was projected:
 
@@ -97,7 +97,7 @@ A server already in agreement produces no row at all, so a run with nothing to d
 | A literal credential in the golden set | writing it would copy the credential into up to four more files; the field is named, never the value |
 | No `command` or `url` on the server | there is nothing to run |
 | An SSE server projected into Codex | Codex documents no SSE transport at all (E-MCP-14) |
-| A reference the target cannot expand | Codex expands none (E-MCP-14); Gemini CLI documents expansion only inside `env`, not inside a header or URL (E-MCP-15) |
+| A reference the target cannot expand | Codex expands none (E-MCP-14) |
 | A variable renamed on the way into Codex, such as `A = "${B}"` | Codex's `env_vars` passes a variable through under its own name, so it cannot express a rename (E-MCP-14) |
 | A target that does not parse | that target is refused and left alone; the others still proceed |
 
@@ -110,11 +110,11 @@ Each harness's MCP file has its own shape for the same concepts. `mcp project` r
 | Concept | Claude Code | Cursor | Codex | Gemini CLI |
 | --- | --- | --- | --- | --- |
 | transport | `type` | `type: "stdio"` only; SSE and streamable HTTP are not told apart | from `command` vs `url`; no SSE | `command`; `url` is SSE; `httpUrl` is streamable HTTP |
-| reference | `${NAME}` as written | `${env:NAME}`; no default form | no expansion: `env_vars`, `env_http_headers`, `bearer_token_env_var` | `$NAME` / `${NAME}` in `env` only |
+| reference | `${NAME}` as written | `${env:NAME}`; no default form | no expansion: `env_vars`, `env_http_headers`, `bearer_token_env_var` | `${NAME}` as written, in every field |
 | timeout | `timeout`, ms | none | `tool_timeout_sec`, seconds | `timeout`, ms |
 | other | `description` | — | `enabled` | — |
 
-The golden set writes a reference as `${NAME}`, and each dialect translates it on the way out. `.research/mcp-canonical-location/evidence.md` E-MCP-12 through E-MCP-16 back this table; E-MCP-13 is why Cursor has no remote transport field, E-MCP-14 is why Codex refuses SSE and every inline reference, and E-MCP-15 is why Gemini CLI splits `url` and `httpUrl` and expands only inside `env`.
+The golden set writes a reference as `${NAME}`, and each dialect translates it on the way out. `.research/mcp-canonical-location/evidence.md` E-MCP-12 through E-MCP-16 back this table; E-MCP-13 is why Cursor has no remote transport field, E-MCP-14 is why Codex refuses SSE and every inline reference, E-MCP-15 is why Gemini CLI splits `url` and `httpUrl`, and E-MCP-18 is why a reference passes into Gemini CLI unchanged.
 
 ## The last-projected record
 

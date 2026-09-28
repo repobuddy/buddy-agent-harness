@@ -66,10 +66,10 @@ Each supported harness keeps its project-scope MCP servers where its own vendor 
 | Cursor | `.cursor/mcp.json` | `mcpServers` | JSON |
 | Codex | `.codex/config.toml` | `mcp_servers` | TOML |
 | Gemini CLI | `.gemini/settings.json` | `mcpServers` | JSON |
-| Copilot CLI | none documented | — | — |
+| Copilot CLI | not a target yet | — | — |
 | Devin Desktop | none documented | — | — |
 
-Copilot CLI's absence is documented, not a gap: [GitHub's own page](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-mcp-servers) names `~/.copilot/mcp-config.json` at user scope and states that `.vscode/mcp.json` is not read. Harnesses with no project-scope file are never reported against.
+Copilot CLI is not a target yet. [GitHub's own page](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-mcp-servers) documents project-scope `.mcp.json`, searched from the working directory up to the repository root, and `.github/mcp.json`, with `.mcp.json` taking precedence. `.mcp.json` is also Claude Code's file, so which one to write for Copilot CLI is still open. A harness that is not a target is never reported against.
 
 `.gemini/settings.json` holds far more than MCP — it also carries the [instruction bridge](/agent-configuration/harnesses/gemini-cli/) — so `doctor` reads only the `mcpServers` key and says nothing about the rest of the file.
 

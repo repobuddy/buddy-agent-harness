@@ -226,19 +226,26 @@ describe('gemini-cli dialect', () => {
 		})
 	})
 
-	it('writes a plain env reference and refuses one with a default form', () => {
-		expect(entry(dialect.write({ transport: 'stdio', command: 'npx', env: { A: ref('A') } }))).toMatchObject({
-			env: { A: ref('A') },
+	it('writes a reference, with or without a default, as written in every field', () => {
+		const server: McpServer = {
+			transport: 'http',
+			url: `https://mcp.example.com/${ref('TENANT')}`,
+			headers: { Authorization: bearer('TOKEN'), Region: withDefault('REGION') },
+		}
+		expect(entry(dialect.write(server))).toEqual({
+			httpUrl: server.url,
+			headers: server.headers,
 		})
-		expect(refused(dialect.write({ transport: 'stdio', command: 'npx', env: { A: withDefault('A') } })).field).toBe(
-			'env',
-		)
-	})
-
-	it('refuses a reference in a header, since expansion is documented only in env', () => {
 		expect(
-			refused(dialect.write({ transport: 'http', url: 'https://mcp.example.com', headers: { H: ref('H') } })).field,
-		).toBe('headers')
+			entry(
+				dialect.write({
+					transport: 'stdio',
+					command: ref('BIN'),
+					args: [ref('ARG')],
+					env: { A: withDefault('A') },
+				}),
+			),
+		).toEqual({ command: ref('BIN'), args: [ref('ARG')], env: { A: withDefault('A') } })
 	})
 
 	it('refuses a server with nothing to run', () => {

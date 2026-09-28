@@ -32,3 +32,26 @@ because conversion would have to invent values the user did not write. Nothing h
 and this change converts nothing: it reads a golden set the user authored and reports drift. The
 claim is narrowed by a later change only if something starts writing. Per `CONTRIBUTING.md`, that
 makes this an expansion rather than a correction, and it takes no Corrections entry.
+
+## Gemini CLI takes a reference in any field
+
+E-MCP-18 confirms that Gemini CLI expands `$VAR`, `${VAR}`, and `${VAR:-default}` in every string
+of `.gemini/settings.json`, not only in `env`. The Gemini CLI dialect stops refusing a reference in
+`url`, `headers`, `command`, or `args`, and stops refusing the default form in `env`. A remote
+server with `Authorization = "Bearer ${TOKEN}"` is now written for Gemini CLI as it stands. The
+site's claim that Gemini CLI expands only inside `env` was wrong and takes a Corrections entry.
+
+## Cursor's remote transport stays out of the comparison
+
+E-MCP-17 re-checks E-MCP-13 and finds no documented field. The Cursor dialect is unchanged.
+
+## Copilot CLI has a project-scope file, and it is not projected yet
+
+E-MCP-19 supersedes E-MCP-11: Copilot CLI documents `.mcp.json` and `.github/mcp.json`. The site's
+statement that its absence is documented was wrong and takes a Corrections entry. The registry does
+not gain a Copilot CLI target in this change, because the higher-precedence file is Claude Code's
+`.mcp.json` and choosing a target is a design decision.
+
+## No standard location yet
+
+E-MCP-20: SEP-2633 is still a draft and discussion #2218 is closed. The golden set's path stands.

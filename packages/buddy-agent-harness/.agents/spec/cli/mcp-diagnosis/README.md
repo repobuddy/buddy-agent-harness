@@ -131,9 +131,9 @@ the same transcript and buys nothing the field path does not.
   position, because none is available without reading the parser's message.
 - **The repository is not a git repository.** Tracking cannot be read, so a literal credential is
   reported at its untracked severity rather than guessed at, and the git baseline is unavailable.
-- **A harness has no documented project-scope MCP file.** Copilot CLI and Devin Desktop are in
-  this position. They take no MCP entry and are never reported against — a documented absence, not
-  a gap.
+- **A harness has no MCP entry in the registry.** Devin Desktop documents no project-scope MCP
+  file. Copilot CLI documents `.mcp.json` and `.github/mcp.json` (E-MCP-19), but which one to
+  target is undecided. Neither takes an MCP entry, and neither is reported against.
 - **A field the golden set leaves unset.** Never a divergence, however the target fills it. A
   target's own default and a user's deliberate edit are indistinguishable in that position, and
   treating the pair as a difference is what makes a golden set accumulate noise on every

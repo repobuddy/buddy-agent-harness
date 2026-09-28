@@ -111,11 +111,11 @@ Feature: Project a golden MCP server set into each harness's own MCP file
     Then it refuses that server, naming the missing field
 
   @behavior
-  Scenario: refuses a reference Gemini CLI would not expand
+  Scenario: writes a header reference into Gemini CLI as written
     Given a golden set holding a remote server whose `Authorization` header is `Bearer ${TOKEN}`
     And a `.gemini` directory
     When the command projects MCP configuration
-    Then it refuses that server for `.gemini/settings.json`, naming `headers`
+    Then `.gemini/settings.json` carries that header as `Bearer ${TOKEN}`
 
   @behavior
   Scenario: refuses a variable Codex would have to rename
