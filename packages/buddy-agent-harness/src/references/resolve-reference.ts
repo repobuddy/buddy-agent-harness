@@ -5,6 +5,7 @@ import {
 	mergeSections,
 	parseDocument,
 	parseSections,
+	readFinal,
 	readMergeMode,
 	renderSections,
 	stripMergeComments,
@@ -81,7 +82,10 @@ type FoundDocument = {
 	metadata: Record<string, unknown>
 	body: string
 	merge: MergeMode
+	final: boolean
 }
+
+export const BLOCKED_BY_FINAL = 'blocked by final in project'
 
 export type ResolveOptions = {
 	/** How a path is shown in a label or a warning — the command collapses the home directory. */
@@ -149,23 +153,30 @@ export function resolveReference(
 		const warn = (message: string) => warnings.push(`${display(path)}: ${message}`)
 		const { metadata, body } = parseDocument(hit.raw, warn)
 		const merge = readMergeMode(metadata, warn)
+		const final = readFinal(metadata, warn)
+		if (final && layer.tier !== 'project')
+			warn(`final applies only to a project reference; ignored in the ${layer.tier} tier`)
 		const description = typeof metadata['description'] === 'string' ? metadata['description'] : ''
 		Object.assign(entry, { path, found: true, candidate: hit.candidate, merge, outcome: '', description })
-		found.push({ layer, entry, metadata, body, merge })
+		found.push({ layer, entry, metadata, body, merge, final: final && layer.tier === 'project' })
 	}
 
 	const result: ResolvedReference = { name: ref.raw, status: 'missing', layers: [], warnings, plugins: [], trace }
 
-	const stop = found.findIndex(({ merge }) => merge === 'first-wins')
-	const chain = stop === -1 ? found : found.slice(0, stop + 1)
-	const shadowed = stop === -1 ? [] : found.slice(stop + 1)
+	const blocked = found.some(({ final }) => final) ? found.filter(({ layer }) => layer.tier === 'local') : []
+	for (const { entry } of blocked) entry.outcome = BLOCKED_BY_FINAL
+	const readable = found.filter((document) => !blocked.includes(document))
+
+	const stop = readable.findIndex(({ merge }) => merge === 'first-wins')
+	const chain = stop === -1 ? readable : readable.slice(0, stop + 1)
+	const shadowed = stop === -1 ? [] : readable.slice(stop + 1)
 	const base = chain.at(-1)
 
 	// Plugins are alternatives, not a stack: once resolution reaches the plugin tier, two plugins
 	// holding the name leave nothing to choose between them.
 	const holders = [...new Set(found.filter(({ layer }) => layer.tier === 'plugin').map(({ entry }) => entry.plugin))]
 	if (ref.plugin === undefined && holders.length > 1 && chain.some(({ layer }) => layer.tier === 'plugin')) {
-		for (const { entry } of found) entry.outcome = 'ambiguous'
+		for (const { entry } of readable) entry.outcome = 'ambiguous'
 		result.status = 'ambiguous'
 		result.plugins = holders.map((plugin) => `${plugin}/${ref.name}`)
 		return result

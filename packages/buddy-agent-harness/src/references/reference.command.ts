@@ -48,7 +48,8 @@ export type ReferenceSearchReport = { query: string; references: SearchMatch[] |
 type CommonArgs = { root: string | undefined; format: string | undefined }
 
 const rootOption = {
-	description: 'Directory whose `.agents/` holds the project tier. Defaults to the current directory.',
+	description:
+		'Directory the local and project tiers are read from, and each folder above it up to the repository root. Defaults to the current directory.',
 	type: z.optional(z.string()),
 }
 
@@ -244,6 +245,6 @@ export const referenceSearchCommand: cli.Command = command({
 export const referenceCommand: cli.Command = command({
 	name: 'reference',
 	description:
-		'Read on-demand reference documents by name, layered across the managed, project, user, and plugin tiers. Read-only.',
+		'Read on-demand reference documents by name, layered across the managed, local, project, user, and plugin tiers. Read-only.',
 	commands: [referenceShowCommand, referenceListCommand, referenceSearchCommand],
 })

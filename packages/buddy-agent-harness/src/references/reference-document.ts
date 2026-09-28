@@ -31,6 +31,13 @@ export function readMergeMode(metadata: Record<string, unknown>, warn: (message:
 	return 'first-wins'
 }
 
+export function readFinal(metadata: Record<string, unknown>, warn: (message: string) => void): boolean {
+	const value = metadata['final']
+	if (value === undefined || typeof value === 'boolean') return value === true
+	warn(`final is "${String(value)}", not true or false; read as false`)
+	return false
+}
+
 const mergeCommentPattern = /^\s*<!--\s*merge:\s*([\w-]*)\s*-->\s*$/
 const headingPattern = /^ {0,3}(#{1,6})(?:[ \t]+(.*?))?(?:[ \t]+#+)?[ \t]*$/
 const fenceOpenPattern = /^ {0,3}(`{3,}|~{3,})/

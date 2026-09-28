@@ -30,11 +30,37 @@ Feature: Read references by name through layered tiers
     Then the user document answers and the command exits 0
 
   @behavior
-  Scenario: reads the project tier at the root alone
-    Given a root inside a workspace whose parent folder holds `.agents/references/`
-    When the command lists the references
-    Then the project tier is the root's `.agents/references/` and `.agents/governances/` alone
-    And no parent folder's document is reported
+  Scenario: resolves local above project and below managed
+    Given one reference name held by the managed, local, and project tiers, each `first-wins`
+    When the command shows it
+    Then the managed document answers
+    And removing it hands the answer to local, then removing local hands it to project
+
+  @behavior
+  Scenario: walks the project tier up to the workspace root, the nearest layer first
+    Given a root two folders below a `pnpm-workspace.yaml`, and a document of one name at the root, at the workspace root, and above it
+    When the command shows the name
+    Then the root's document answers, and removing it hands the answer to the workspace root's
+    And the project layers are listed nearest first, one pair per folder of the walk
+    And no document above the workspace root is reported
+
+  @behavior
+  Scenario: stops the walk at the git root or a package.json declaring workspaces
+    Given a root below a folder holding `.git`, or a `package.json` with `workspaces`
+    When the command shows a name held only above that folder
+    Then it is missing
+
+  @behavior
+  Scenario: reads the root alone when no repository root is above it
+    Given a root with no `.git` or workspace marker above it, and a parent folder holding a document
+    When the command shows that document's name
+    Then it is missing
+
+  @behavior
+  Scenario: reads a local layer at every level of the walk, above every project layer
+    Given a project document at the root and a local document of the name at the workspace root
+    When the command shows it
+    Then the local document answers
 
   @behavior
   Scenario: reads a declared dependency's references as a plugin
@@ -185,6 +211,45 @@ Feature: Read references by name through layered tiers
     Then the project document answers alone
     And a warning names the unknown mode
 
+  # ── the monorepo walk and final ──
+
+  @behavior
+  Scenario: merges project layers farthest first, then local
+    Given a workspace-root document, a `merge-sections` document at the root, and a `merge-sections` local document
+    When the command shows the name
+    Then each section comes from the nearest layer that holds it, local over the root over the workspace root
+
+  @behavior
+  Scenario: blocks a local override of a final project reference, and says so in the trace and the listing
+    Given a project document with `final: true` and a local document of the name
+    When the command shows it with `--trace`, and lists the references
+    Then the project document answers
+    And the local layer's trace step and listing row read `blocked by final in project`
+
+  @behavior
+  Scenario: blocks a local override when any project layer of the walk is final
+    Given a `final` workspace-root document, a root document, and a local document of the name
+    When the command shows it
+    Then the root's project document answers
+
+  @behavior
+  Scenario: leaves the managed tier above a final project reference
+    Given a `final` project document and a managed document of the name
+    When the command shows it
+    Then the managed document answers
+
+  @behavior
+  Scenario: ignores final outside the project tier, with a warning
+    Given a plugin document with `final: true` and a local document of the name
+    When the command shows it
+    Then the local document answers, and a warning says `final` is ignored in the plugin tier
+
+  @behavior
+  Scenario: reads a final that is not true or false as false, with a warning
+    Given a project document whose `final` is neither true nor false, and a local document of the name
+    When the command shows it
+    Then the local document answers, with a warning
+
   # ── show output ──
 
   @behavior
@@ -250,7 +315,7 @@ Feature: Read references by name through layered tiers
   Scenario: lists every layer in precedence order, with the legacy layers marked
     Given a repository holding one project reference
     When the command lists the references
-    Then the layers are reported managed, project, user, plugin, in that order
+    Then the layers are reported managed, local, project, user, plugin, in that order
     And each legacy `governances/` layer and the deprecated machine-wide layer carries a status saying where its documents belong
 
   @behavior
