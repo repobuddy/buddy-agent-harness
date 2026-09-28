@@ -1,5 +1,6 @@
 import { lstatSync } from 'node:fs'
 import { join } from 'node:path'
+import { type HarnessId, skillsDirectories } from '@cyberuni/agent-harness'
 import type { InstructionBridge } from './instruction-bridge.ts'
 import type { McpConfig } from './mcp-config.ts'
 import type { NonstandardArtifact } from './nonstandard-artifact.ts'
@@ -55,13 +56,32 @@ export type Harness = {
 	deprecated?: HarnessName
 }
 
-/** See `.research/agentic-configuration-standards/` for the per-harness sources. */
+/**
+ * Throws on a harness `skillsDirectories` does not confirm: treating it as native would silently
+ * drop a projection it may need.
+ */
+export function skillsProjection(
+	harness: HarnessId,
+	scope: HarnessScopeName,
+	directories: readonly string[] | undefined = skillsDirectories(harness)?.[scope],
+): Pick<HarnessScope, 'skillsDirectory'> {
+	const listed = directories ?? []
+	const [first] = listed
+	if (first === undefined)
+		throw new Error(`@cyberuni/agent-harness records no ${scope} skills directories for ${harness}.`)
+	return listed.includes('.agents/skills') ? {} : { skillsDirectory: first }
+}
+
+/**
+ * Skills directories come from `@cyberuni/agent-harness`, except for the harnesses it does not know
+ * (`devin-desktop`, `windsurf`); see `.research/agentic-configuration-standards/` for the rest.
+ */
 export const harnessRegistry: readonly Harness[] = [
 	{
 		name: 'claude-code',
 		project: {
 			detect: '.claude',
-			skillsDirectory: '.claude/skills',
+			...skillsProjection('claude-code', 'project'),
 			shadowedBy: ['CLAUDE.md', '.claude/CLAUDE.md', 'CLAUDE.local.md'],
 			mcpConfig: { path: '.mcp.json', key: 'mcpServers', format: 'json', dialect: 'claude-code' },
 			nonstandard: [
@@ -70,12 +90,13 @@ export const harnessRegistry: readonly Harness[] = [
 				{ path: '.claude/agents', shape: 'directory', kind: 'subagent' },
 			],
 		},
-		user: { detect: '.claude', skillsDirectory: '.claude/skills' },
+		user: { detect: '.claude', ...skillsProjection('claude-code', 'user') },
 	},
 	{
 		name: 'cursor',
 		project: {
 			detect: '.cursor',
+			...skillsProjection('cursor', 'project'),
 			mcpConfig: { path: '.cursor/mcp.json', key: 'mcpServers', format: 'json', dialect: 'cursor' },
 			nonstandard: [
 				{ path: '.cursorrules', shape: 'file', kind: 'instructions' },
@@ -84,33 +105,36 @@ export const harnessRegistry: readonly Harness[] = [
 				{ path: '.cursor/skills', shape: 'directory', kind: 'skill' },
 			],
 		},
-		user: { detect: '.cursor' },
+		user: { detect: '.cursor', ...skillsProjection('cursor', 'user') },
 	},
 	{
 		name: 'codex',
 		project: {
 			detect: '.codex',
+			...skillsProjection('codex', 'project'),
 			mcpConfig: { path: '.codex/config.toml', key: 'mcp_servers', format: 'toml', dialect: 'codex', shared: true },
 			nonstandard: [{ path: '.codex/skills', shape: 'directory', kind: 'skill' }],
 		},
-		user: { detect: '.codex' },
+		user: { detect: '.codex', ...skillsProjection('codex', 'user') },
 	},
 	{
 		name: 'copilot-cli',
 		project: {
 			detect: '.github/skills',
+			...skillsProjection('copilot-cli', 'project'),
 			nonstandard: [
 				{ path: '.github/copilot-instructions.md', shape: 'file', kind: 'instructions' },
 				{ path: '.github/instructions', shape: 'directory', kind: 'instructions' },
 				{ path: '.github/skills', shape: 'directory', kind: 'skill' },
 			],
 		},
-		user: { detect: '.copilot' },
+		user: { detect: '.copilot', ...skillsProjection('copilot-cli', 'user') },
 	},
 	{
 		name: 'gemini-cli',
 		project: {
 			detect: '.gemini',
+			...skillsProjection('gemini-cli', 'project'),
 			instructionBridge: { kind: 'settings-entry', path: '.gemini/settings.json', key: 'context.fileName' },
 			mcpConfig: {
 				path: '.gemini/settings.json',
@@ -124,7 +148,7 @@ export const harnessRegistry: readonly Harness[] = [
 				{ path: '.gemini/skills', shape: 'directory', kind: 'skill' },
 			],
 		},
-		user: { detect: '.gemini' },
+		user: { detect: '.gemini', ...skillsProjection('gemini-cli', 'user') },
 	},
 	{ name: 'devin-desktop', project: { detect: '.devin' } },
 	{

@@ -23,6 +23,7 @@ const inlineDeps = {
 	alias: { 'jsonc-parser': 'jsonc-parser/lib/esm/main.js' },
 	deps: {
 		alwaysBundle: [
+			/^@cyberuni\/agent-harness(\/|$)/,
 			/^@toon-format\/toon(\/|$)/,
 			/^clibuilder(\/|$)/,
 			/^jsonc-parser(\/|$)/,

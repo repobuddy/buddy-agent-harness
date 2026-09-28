@@ -2,7 +2,13 @@ import { mkdirSync, mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { type HarnessName, harnessRegistry, parseHarnesses, selectHarnesses } from './harness-registry.ts'
+import {
+	type HarnessName,
+	harnessRegistry,
+	parseHarnesses,
+	selectHarnesses,
+	skillsProjection,
+} from './harness-registry.ts'
 
 function entry(name: HarnessName) {
 	const harness = harnessRegistry.find((candidate) => candidate.name === name)
@@ -42,6 +48,22 @@ describe('harnessRegistry', () => {
 
 		expect(copilot.project.detect).toBe('.github/skills')
 		expect(copilot.user?.detect).toBe('.copilot')
+	})
+})
+
+describe('skillsProjection', () => {
+	it('projects into the first listed directory when .agents/skills is not read', () => {
+		expect(skillsProjection('cline', 'project', ['.cline/skills', '.claude/skills'])).toEqual({
+			skillsDirectory: '.cline/skills',
+		})
+	})
+
+	it('projects nothing when .agents/skills is read among others', () => {
+		expect(skillsProjection('cursor', 'project', ['.cursor/skills', '.agents/skills'])).toEqual({})
+	})
+
+	it('throws when @cyberuni/agent-harness does not confirm the directories', () => {
+		expect(() => skillsProjection('kilo', 'user')).toThrow('records no user skills directories for kilo')
 	})
 })
 
