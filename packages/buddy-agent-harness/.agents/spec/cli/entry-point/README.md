@@ -91,7 +91,7 @@ No option, argument, or flag is added, removed, or renamed. Every existing invoc
 - **The command reports a failure.** It returns a non-zero code rather than writing one, so the code reaches the caller through the return.
 - **The command found problems.** Exit code stays `0`: the diagnosis succeeded. A non-zero code reads to an agent as "this command is broken, try something else".
 - **`--version` or `--help`.** Answered by the application; exit code `0`. Asking for help is not a usage error.
-- **The invocation itself is wrong.** `clibuilder` answers an unknown option or unknown command by printing help and writing the usage code to `process.exitCode` **itself**, returning nothing. `run` therefore returns `0` on a path where the process must still exit `2`. `bin` and the launchers close the gap by applying the returned code **only when it is non-zero**, so the code `clibuilder` already recorded is not overwritten. This is the one exit path `run`'s return does not carry; it is `clibuilder`'s own reporting contract, and correcting it belongs upstream.
+- **The invocation itself is wrong.** `clibuilder` answers an unknown option or unknown command by printing help and returning the usage code, which `run` returns like any other. `bin` and the launchers apply the returned code unconditionally.
 - **The report is fetched as a value rather than printed.** The builder returns it unchanged — the same union in `findings`, the same sections absent rather than empty. Passing through the export is not an opportunity to normalize it.
 
 ## Control Flow
@@ -103,20 +103,16 @@ flowchart TD
   C --> D{Parse the argv against the registered commands}
   D -->|the command returned a code| E[Return that code]
   D -->|the command returned nothing| F[Return 0]
-  D -->|clibuilder rejected the invocation and recorded the usage code itself| G[Return 0]
+  D -->|clibuilder rejected the invocation| G[Return the usage code clibuilder returned]
   D -->|parsing threw| H[Write the message to stderr]
   H --> I[Return 2]
-  E --> J{Is the returned code non-zero?}
-  F --> J
-  G --> J
-  I --> J
-  J -->|yes| K[Caller writes it to process.exitCode]
-  J -->|no| L[Caller writes nothing, leaving any recorded code standing]
+  E --> K[Caller writes it to process.exitCode]
+  F --> K
+  G --> K
+  I --> K
 ```
 
 The application is built **inside** `run`, not once at module load: `cli()` builds state, and state built at import time is shared by every later call and by every test in the file.
-
-`J` is the only decision the **caller** makes, and it exists solely for edge `G`. Everywhere else applying the code unconditionally would be equivalent.
 
 ## Scenario map
 
@@ -134,7 +130,7 @@ export. Both kinds are booleans; only the first has a path through the graph.
 | D→E | a command that reports a failure | `returns the code the command reported` |
 | D→F | a diagnosis that found problems | `keeps the exit code at 0 when the diagnosis found problems` |
 | D→F | `--version` | `reports the version the package manifest carries` |
-| D→G | an option no command declares | `returns 0 when clibuilder rejected the invocation and recorded the code itself` |
+| D→G | an option no command declares | `returns the usage code when clibuilder rejected the invocation` |
 | D→H | parsing threw an Error | `writes the failure to stderr, not to the stream the report is parsed from` |
 | D→H | parsing threw a non-Error | `still reports a failure it cannot read a message from` |
 | H→I | the message has been written | `returns the usage code when the invocation could not be parsed` |
@@ -143,8 +139,8 @@ export. Both kinds are booleans; only the first has a path through the graph.
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
-| J→K | a non-zero code | `applies a reported failure to the process` |
-| G→J, J→L | a zero returned over a code clibuilder recorded | `leaves a usage code clibuilder recorded on the process alone` |
+| E→K | a code the command reported | `applies a reported failure to the process` |
+| G→K | the usage code clibuilder returned | `applies a rejected invocation's usage code to the process` |
 | — | the shipped application sources | `writes process.exitCode nowhere but bin, the skill-script sources, and the launchers built from them` |
 | — | the entry point's own module | `neither reads process.argv nor writes process.exitCode` |
 

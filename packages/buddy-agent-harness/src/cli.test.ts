@@ -94,14 +94,13 @@ describe('run', () => {
 		expect(stderr).toHaveBeenCalledWith('error: Invalid command.\n')
 	})
 
-	// The one exit path `run`'s return cannot carry, so it runs against the real clibuilder rather
-	// than the stub: a stub could only re-assert the design instead of testing it.
-	it('returns 0 when clibuilder rejected the invocation and recorded the code itself', async () => {
+	// Runs against the real clibuilder rather than the stub: the code comes from clibuilder's own
+	// usage reporting, which a stub could only re-assert.
+	it('returns the usage code when clibuilder rejected the invocation', async () => {
 		const { cli: actualCli } = await vi.importActual<typeof import('clibuilder')>('clibuilder')
 		mockedCli.mockImplementation(actualCli as typeof cli)
 
-		await expect(run(['node', 'buddy-agent-harness', 'doctor', '--nope'])).resolves.toBe(0)
-		expect(process.exitCode).toBe(2)
+		await expect(run(['node', 'buddy-agent-harness', 'doctor', '--nope'])).resolves.toBe(2)
 	})
 
 	it('returns the usage code when the invocation could not be parsed', async () => {

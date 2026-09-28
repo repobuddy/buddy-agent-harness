@@ -42,9 +42,6 @@ function app() {
 export async function run(argv: string[]): Promise<number> {
 	try {
 		const code = await app().parse<number | undefined>(argv)
-		// clibuilder answers an unknown option/command by printing help and writing `process.exitCode`
-		// itself, returning nothing — `run` reports 0 there, so a caller applies this only when
-		// non-zero.
 		return typeof code === 'number' ? code : exitCodes.success
 	} catch (error) {
 		// stderr, not stdout — stdout carries TOON an agent parses; an error there would land

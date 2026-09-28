@@ -9,7 +9,7 @@ const packageRoot = dirname(dirname(fileURLToPath(import.meta.url)))
 /**
  * Driven as a real process rather than by importing it: what these scenarios are about is the exit
  * code the operating system sees, and every in-process stand-in for that asserts the design back at
- * itself. Inverting `bin`'s condition leaves the rest of the suite green, which is what this file
+ * itself. Dropping `bin`'s assignment leaves the rest of the suite green, which is what this file
  * exists to stop.
  */
 function bah(...args: string[]): { status: number | null; stdout: string; stderr: string } {
@@ -31,9 +31,7 @@ describe('the process boundary', () => {
 		expect(stdout).toBe('')
 	})
 
-	// The one code `run` cannot report through its return. `bin` applies its zero unconditionally and
-	// this becomes 0, which is the regression the condition exists to prevent.
-	it('leaves a usage code clibuilder recorded on the process alone', () => {
+	it("applies a rejected invocation's usage code to the process", () => {
 		expect(bah('doctor', '--nope').status).toBe(2)
 		expect(bah('no-such-command').status).toBe(2)
 	})
@@ -47,7 +45,7 @@ describe('the process boundary', () => {
 })
 
 /**
- * The launchers carry the same two-line rule as `bin`, from the renderer rather than by hand. They
+ * The launchers carry the same assignment as `bin`, from the renderer rather than by hand. They
  * are driven here too, so the generated copy cannot drift away from the one above unnoticed.
  */
 describe('a generated launcher', () => {
@@ -65,7 +63,7 @@ describe('a generated launcher', () => {
 		expect(stdout).toBe('')
 	})
 
-	it('leaves a usage code clibuilder recorded on the process alone', () => {
+	it("applies a rejected invocation's usage code to the process", () => {
 		expect(launcher('doctor-buddy-agent-harness', 'doctor.mjs', '--nope').status).toBe(2)
 	})
 
