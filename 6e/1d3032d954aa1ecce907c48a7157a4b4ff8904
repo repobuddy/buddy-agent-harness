@@ -1,0 +1,50 @@
+.agents/skills/harness-update/SKILL.md
+  h_77abf33af1f9fb 47
+.changeset/cursor-reads-agents-md-in-every-mode.md
+  h_77abf33af1f9fb 1-14
+.research/agentic-configuration-standards/changes.md
+  h_77abf33af1f9fb 3-35
+.research/agentic-configuration-standards/conclusion.md
+  h_77abf33af1f9fb 56,110,134
+.research/agentic-configuration-standards/evidence.md
+  h_77abf33af1f9fb 106-107,664-690
+.research/agentic-configuration-standards/topic.md
+  h_77abf33af1f9fb 70
+apps/web/src/content/docs/agent-configuration/harness-differences.md
+  h_77abf33af1f9fb 20,24
+apps/web/src/content/docs/agent-configuration/harnesses/cursor.md
+  h_77abf33af1f9fb 3,10,12,14,16,18-40,44-45,48,57-60
+apps/web/src/content/docs/getting-started/migrating.md
+  h_77abf33af1f9fb 38
+apps/web/src/content/docs/sources.md
+  h_77abf33af1f9fb 67-76
+packages/buddy-agent-harness/.agents/spec/skills/init-buddy-agent-harness/README.md
+  h_77abf33af1f9fb 138
+packages/buddy-agent-harness/.agents/spec/skills/init-buddy-agent-harness/init-buddy-agent-harness.feature
+  h_77abf33af1f9fb 55,57,60-66
+packages/buddy-agent-harness/skills/doctor-buddy-agent-harness/references/harnesses/copilot-cli.md
+  h_77abf33af1f9fb 33-34
+packages/buddy-agent-harness/skills/doctor-buddy-agent-harness/references/harnesses/cursor.md
+  h_77abf33af1f9fb 33
+packages/buddy-agent-harness/skills/doctor-buddy-agent-harness/references/harnesses/gemini-cli.md
+  h_77abf33af1f9fb 33
+packages/buddy-agent-harness/skills/doctor-buddy-agent-harness/references/harnesses/windsurf.md
+  h_77abf33af1f9fb 26
+packages/buddy-agent-harness/skills/init-buddy-agent-harness/SKILL.md
+  h_77abf33af1f9fb 24,73-75
+packages/buddy-agent-harness/skills/init-buddy-agent-harness/references/harnesses/cursor.md
+  h_77abf33af1f9fb 7,9,11,13-16,20-21,23,27,30-32
+packages/buddy-agent-harness/src/diagnose-bridges/doctor-guidance.ts
+  h_77abf33af1f9fb 451,616
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "6e1d3032d954aa1ecce907c48a7157a4b4ff8904",
+  "prompts": {},
+  "humans": {
+    "h_77abf33af1f9fb": {
+      "author": "unional <homawong@gmail.com>"
+    }
+  }
+}
