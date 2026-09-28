@@ -84,11 +84,24 @@ record: .agents/buddy-agent-harness/mcp.projected.json
 | --- | --- |
 | `add` | the server is written into a target that did not carry it, creating the file if there was none |
 | `update` | the fields only the golden side changed are rewritten in place |
-| `edit` | the change is due, but this command will not make it byte-safely; the entry is listed for a person or the [`repair` skill](/skills/repair/) to apply |
+| `edit` | the change is due, but this command will not make it byte-safely; the entry is listed for a person or the [`repair` skill](/skills/repair/) to apply. See [what it keeps](#what-it-keeps) |
 | `skip` | the target moved, both sides moved, or no baseline can say which side moved, so nothing is written |
 | `refuse` | the target cannot hold this server as written, or the golden set holds a literal credential; `detail` names the field and why |
 
 A server already in agreement produces no row at all, so a run with nothing to do states its zero rather than printing an empty section.
+
+## What it keeps
+
+Every byte outside the entry being written stays as it was, comments included. That holds in the shared files too: `.gemini/settings.json` also carries Gemini CLI's other settings, and `.codex/config.toml` all of Codex's project configuration.
+
+- **JSON:** the server's value is replaced at its offsets in the parse tree.
+- **TOML:** the `[mcp_servers.<name>]` table and every `[mcp_servers.<name>.*]` sub-table are replaced, wherever they sit in the file.
+
+The change becomes an `edit` when the command cannot make it that way:
+
+- **The entry holds a comment.** Replacing the entry would drop the comment, and where a comment belongs in a rewritten entry is your call. A comment on the entry's last line counts as inside it.
+- **A Codex server is not written as a `[mcp_servers.<name>]` table.** An inline table (`linear = { command = "npx" }`) or dotted keys (`linear.command = "npx"`) are left for you.
+- **The new text does not read back.** Each write is parsed again. The server must come back equal to the golden server, with every other server unchanged.
 
 ## What is refused, and why
 
