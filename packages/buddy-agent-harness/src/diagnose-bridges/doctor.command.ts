@@ -97,7 +97,7 @@ export const doctorCommand: cli.Command = command({
 			default: 'toon',
 		},
 	},
-	run(args) {
+	async run(args) {
 		try {
 			const format = parseFormat(args.format)
 			const harnesses = parseHarnesses(args.harness)
@@ -115,7 +115,13 @@ export const doctorCommand: cli.Command = command({
 				...diagnoseNonstandard({ root, cli: commandInvocation }),
 			]
 			const { rows } = listReferences(
-				referenceLayers({ root, home, platform: process.platform, programData: process.env['ProgramData'] }),
+				await referenceLayers({
+					root,
+					home,
+					platform: process.platform,
+					programData: process.env['ProgramData'],
+					env: process.env,
+				}),
 			)
 			// Resolved across every tier so each status matches `reference list`, but plugin rows are
 			// left out: what a plugin ships is its own business, not a repository setting.

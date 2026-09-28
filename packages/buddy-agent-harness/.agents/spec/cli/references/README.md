@@ -39,9 +39,11 @@ replaces `governance-overrides` as the read path; that command stays, unchanged,
 
 **Non-goals**
 
-- **Harness-managed folders and enabled-plugin discovery.** Both need harness detection, which is a
-  separate change. The managed tier here is this package's machine-wide folder only; the plugin tier
-  is this package and the repository's declared dependencies.
+- **Harness facts.** Which harness runs, where it keeps managed policy, which plugins it has enabled
+  and where each is installed all come from `@cyberuni/agent-harness`. This node decides only what
+  to read from them.
+- **Scanning for plugins.** Nothing under `node_modules` is globbed, and a plugin a harness has
+  installed but not enabled is never read: installing a plugin does not activate it.
 - **Loading a reference from inside a skill.** That is the `load-reference` skill, a separate change
   that builds on the `show` contract below.
 - **Recording each fetch.** `show` is the single read path so a record can be added there later.
@@ -61,7 +63,9 @@ replaces `governance-overrides` as the read path; that command stays, unchanged,
   or why it did not: `list` and `show --trace`.
 - **repository owner** — ships project references for every contributor, at the repository root or
   in one package of a monorepo.
-- **machine owner** — installs references every repository on the machine should see.
+- **machine owner** — installs references every repository on the machine should see, in this
+  package's machine-wide folder or beside a harness's managed settings.
+- **plugin user** — enables a plugin in their harness and expects the references it ships to answer.
 - **package author** — ships `references/` in a package so every repository depending on it can read
   them.
 
@@ -78,6 +82,9 @@ replaces `governance-overrides` as the read path; that command stays, unchanged,
 | repository owner | give every contributor the same references | the project tier |
 | repository owner | give one package of a monorepo its own references | the monorepo walk |
 | machine owner | a reference no repository can override | the managed tier |
+| machine owner | put references beside the harness's own managed settings | the harness-managed layers |
+| person at a shell | see which managed policy could not be read, and why | the `not read` layers in `--trace` and `list` |
+| plugin user | read references from the plugins the harness has enabled | the enabled-plugin layers |
 | package author | ship references a dependent repository can read and override | the plugin tier |
 | machine owner, repository owner | keep documents written for `governance` working | the legacy `governances/` layers |
 
@@ -98,14 +105,29 @@ person who reads (`text`); `--trace` serves the person asking why a layer did no
 
 | Tier | Layers, in order |
 | --- | --- |
-| `managed` | this package's machine-wide `references/`, then its `governances/`, then the one `universal-plugin` wrote (deprecated) |
+| `managed` | this package's machine-wide `references/`, then a `references/` for each detected harness, then this package's `governances/`, then the one `universal-plugin` wrote (deprecated) |
 | `project` | `<dir>/.agents/references/`, then `<dir>/.agents/governances/`, for each `<dir>` of the monorepo walk, nearest first |
 | `user` | `~/.agents/references/`, then `~/.agents/governances/` |
-| `plugin` | this package's own `references/` and `governances/` as the plugin `buddy-agent-harness`, and each declared dependency that ships `references/` |
+| `plugin` | this package's own `references/` and `governances/` as the plugin `buddy-agent-harness`, each plugin a detected harness has enabled, and each declared dependency that ships `references/` |
 
 The machine-wide root per platform is `/etc/buddy-agent-harness`, `/Library/Application
 Support/BuddyAgentHarness`, or `%ProgramData%\BuddyAgentHarness`; the deprecated one is the
 `universal-plugin` root `governance` already reads.
+
+**Detected harnesses.** `detectHarness` from the environment. Its `candidates` are read, so
+nested harnesses, which leave it `unknown`, are each read. None detected is itself a `not read` layer,
+so `--trace` says no harness folder was consulted.
+
+**The harness-managed layers.** Per detected harness, `managedPolicyLocations`: a `references/` in the
+folder of each `file` location, and in each `directory` location that is not inside such a folder (a
+drop-in `managed-settings.d` belongs to the folder above it). Paths are joined for the platform asked,
+so a Windows location keeps its separators. A location of any other kind — MDM managed preferences,
+the Windows registry, the vendor's server — cannot be read locally: it is a layer that is **not
+read**, carrying the reason as its status and trace outcome.
+
+**A layer that is not read.** Listed with the other layers, with a status starting `not read —` and
+saying why. Resolution records it in the trace with that outcome and never reads it; `list` and
+`search` take no name from it.
 
 **The monorepo walk.** The project tier is read at `--root` (default: the working
 directory) and at each folder above it, up to and including the repository root. The nearest folder's
@@ -118,6 +140,18 @@ plugin. A plugin is named by its package name, or by its `plugin.json` name when
 is not a stack: an unqualified name held by two plugins is **ambiguous**, and `show` names both and
 asks for `<plugin>/<name>`. A qualified name selects that plugin's layer; every tier above it still
 resolves the bare `<name>`, so a project can override a plugin's reference without naming the plugin.
+
+**Enabled plugins.** Per detected harness, the plugins `enabledPlugins` reports enabled, each joined by
+id with `installedPlugins` to find its folder, and named by the plugin segment of `<plugin>@<marketplace>`.
+They rank after this package's own layers and before declared dependencies. Where a plugin has several
+installs, the one whose project is the nearest folder of the walk wins, then one with no project. Not
+read, with the reason:
+- an enabled plugin with no install for this project;
+- a harness that keeps no readable record of enabled plugins;
+- policy that can also enable plugins but cannot be read locally, one layer per harness.
+
+An enabled plugin that ships no `references/` is not a layer, as a dependency is not, and one whose
+folder is this package's own is not a second layer.
 
 ### File names
 
@@ -172,7 +206,7 @@ at the first `first-wins` document; every layer below it is **shadowed**.
   `content`, and the `layers` used; `warnings`; `suggestions` for a miss; `plugins` for an ambiguity;
   `trace` with `--trace`.
 - **`--trace`**: every path checked, per name, with the candidate file that matched, the merge mode
-  applied, and why a layer was not used — `shadowed by project (first-wins)`. Carried as `trace` in `json`/`toon`, and written to stderr in `text` so stdout stays the
+  applied, and why a layer was not used — `shadowed by project (first-wins)`, or `not read — <reason>`. Carried as `trace` in `json`/`toon`, and written to stderr in `text` so stdout stays the
   document.
 - **Warnings** go to stderr in `text`, and into `warnings` otherwise.
 
@@ -194,6 +228,8 @@ by name. No match states its zero and exits 0.
 - **A document that does not end in a newline.** One is added.
 - **A qualified name for a plugin that is not a dependency.** That layer is missing; the tiers above
   still answer.
+- **A qualified name for an enabled plugin with no install folder.** Its `not read` layer is the one
+  traced; the tiers above still answer.
 
 ## Control Flow
 
@@ -201,9 +237,13 @@ by name. No match states its zero and exits 0.
 flowchart TD
   A[Parse format and names] --> B{Valid?}
   B -->|no| C[Reason on stderr, exit 1]
-  B -->|yes| D[Build layers: managed, project along the walk, user, plugins]
+  B -->|yes| D0[Detect harnesses from the environment]
+  D0 --> D[Build layers: managed with each harness's folder, project along the walk, user, plugins with each harness's enabled ones]
   D --> E[Per name: read the first file candidate in every layer]
-  E --> E1{Layer readable as a folder?}
+  E --> E0{Layer marked not read?}
+  E0 -->|yes| E3[Trace the reason; ask the next layer]
+  E0 -->|no| E1{Layer readable as a folder?}
+  E3 --> F
   E1 -->|no| E2[Empty: ask the next layer]
   E1 -->|yes| F{Plugin tier: one holder?}
   E2 --> F
@@ -262,6 +302,17 @@ flowchart TD
 | D | no repository root above the root | `reads the root alone when no repository root is above it` |
 | D | a declared dependency shipping `references/` | `reads a declared dependency's references as a plugin` |
 | D | an installed package nobody declared | `never reads a package the repository did not declare` |
+| D0→D | a detected harness with managed files on disk | `reads references beside each detected harness's managed files, above the project tier` |
+| D0→D | two nested harnesses | `reads the managed folder of every nested harness` |
+| D | a managed file and a drop-in folder inside its folder | `treats a drop-in folder as part of the harness folder above it` |
+| D | this package's folder and a harness folder | `ranks a harness folder below this package's own references and above its governances` |
+| E0→E3 | policy in MDM or on the vendor's server | `skips managed policy that cannot be read locally, and says so in the trace` |
+| E0→E3 | no harness detected | `says in the trace that no harness was detected` |
+| D | a plugin the harness has enabled | `reads references from each plugin the harness has enabled` |
+| D | a plugin installed but not enabled | `never reads a plugin the harness has installed but not enabled` |
+| D | installs at several scopes | `reads the install scoped to the nearest folder of the walk` |
+| E0→E3 | an enabled plugin with no install folder | `skips an enabled plugin with no install folder, and says so in the trace` |
+| E0→E3 | a harness with no enabled-plugin record | `says in the trace when a harness keeps no record of enabled plugins` |
 | F→G | one name in two plugins, unqualified | `reports a name two plugins hold as ambiguous, naming both` |
 | F→H | `<plugin>/<name>` naming a dependency | `resolves a qualified name at that plugin, with the tiers above still overriding it` |
 | F→H | `<plugin>/<name>` naming no dependency | `answers a qualified name from the tiers above when the plugin is not a dependency` |
@@ -342,3 +393,4 @@ flowchart TD
 - `../governance-overrides/` is the deprecated command this replaces as the read path.
 - `../command-output/` owns the encoder and the verbatim document write.
 - Issue #153 is the source proposal; #152 the epic; #122 and its comment the decisions it revises.
+- `@cyberuni/agent-harness` (cyberuni/agent-harness#1, #38) holds every per-harness fact read here.

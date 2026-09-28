@@ -39,6 +39,35 @@ vi.mock('./resolve-reference.ts', async (importOriginal) => {
 	return { ...actual, resolveReference: failing(actual.resolveReference) }
 })
 
+/**
+ * The harness the command sees, and where it keeps managed policy. The real ones read the process
+ * environment and fixed system folders, which a test can neither choose nor write.
+ */
+const harness = vi.hoisted(() => ({
+	candidates: [] as string[],
+	managed: undefined as { kind: string; location: string; description: string; research: string }[] | undefined,
+	/** Every policy source that can enable a plugin was read — true of no harness on record today. */
+	allPolicyRead: false,
+}))
+
+vi.mock('@cyberuni/agent-harness', async (importOriginal) => {
+	const actual = await importOriginal<typeof import('@cyberuni/agent-harness')>()
+	return {
+		...actual,
+		detectHarness: () => ({
+			harness: harness.candidates.length === 1 ? harness.candidates[0] : 'unknown',
+			evidence: [],
+			candidates: harness.candidates,
+		}),
+		managedPolicyLocations: (...args: Parameters<typeof actual.managedPolicyLocations>) =>
+			harness.managed ?? actual.managedPolicyLocations(...args),
+		enabledPlugins: async (...args: Parameters<typeof actual.enabledPlugins>) => {
+			const result = await actual.enabledPlugins(...args)
+			return harness.allPolicyRead ? { ...result, unread: [] } : result
+		},
+	}
+})
+
 const stdout = vi.spyOn(process.stdout, 'write').mockImplementation(() => true)
 const stderr = vi.spyOn(process.stderr, 'write').mockImplementation(() => true)
 
@@ -46,20 +75,20 @@ type ShowArgs = { root?: string; format?: string; trace?: boolean }
 type ListArgs = { root?: string; format?: string }
 type SearchArgs = { root?: string; format?: string }
 
-function show(names: string[], args: ShowArgs = {}): number {
-	return (referenceShowCommand as unknown as { run(value: ShowArgs & { names: string[] }): number }).run({
+function show(names: string[], args: ShowArgs = {}): Promise<number> {
+	return (referenceShowCommand as unknown as { run(value: ShowArgs & { names: string[] }): Promise<number> }).run({
 		format: 'text',
 		names,
 		...args,
 	})
 }
 
-function list(args: ListArgs = {}): number {
-	return (referenceListCommand as unknown as { run(value: ListArgs): number }).run({ format: 'json', ...args })
+function list(args: ListArgs = {}): Promise<number> {
+	return (referenceListCommand as unknown as { run(value: ListArgs): Promise<number> }).run({ format: 'json', ...args })
 }
 
-function search(query: string, args: SearchArgs = {}): number {
-	return (referenceSearchCommand as unknown as { run(value: SearchArgs & { query: string }): number }).run({
+function search(query: string, args: SearchArgs = {}): Promise<number> {
+	return (referenceSearchCommand as unknown as { run(value: SearchArgs & { query: string }): Promise<number> }).run({
 		format: 'json',
 		query,
 		...args,
@@ -109,13 +138,13 @@ function installDependency(root: string, pkg: string, documents: Record<string, 
 	}
 }
 
-function withPlatform(platform: NodeJS.Platform, programData: string, run: () => void): void {
+async function withPlatform(platform: NodeJS.Platform, programData: string, run: () => Promise<void>): Promise<void> {
 	const originalPlatform = process.platform
 	const originalProgramData = process.env['ProgramData']
 	Object.defineProperty(process, 'platform', { value: platform, configurable: true })
 	process.env['ProgramData'] = programData
 	try {
-		run()
+		await run()
 	} finally {
 		Object.defineProperty(process, 'platform', { value: originalPlatform, configurable: true })
 		if (originalProgramData === undefined) delete process.env['ProgramData']
@@ -126,6 +155,9 @@ function withPlatform(platform: NodeJS.Platform, programData: string, run: () =>
 beforeEach(() => {
 	fakeHome.value = tempDir('reference-home-')
 	failure.value = undefined
+	harness.candidates = []
+	harness.managed = undefined
+	harness.allPolicyRead = false
 	stdout.mockClear()
 	stderr.mockClear()
 	process.exitCode = undefined
@@ -138,9 +170,9 @@ afterEach(() => {
 // ── tiers ──
 
 describe('tiers', () => {
-	it('resolves managed over project over user over plugin', () => {
+	it('resolves managed over project over user over plugin', async () => {
 		const programData = tempDir('reference-programdata-')
-		withPlatform('win32', programData, () => {
+		await withPlatform('win32', programData, async () => {
 			const root = repo()
 			declareDependency(root, 'dep-a')
 			installDependency(root, 'dep-a', { name: 'plugin\n' })
@@ -148,70 +180,209 @@ describe('tiers', () => {
 			write(fakeHome.value, '.agents/references/name.md', 'user\n')
 			const managedPath = write(managedReferencesDir('win32', programData), 'name.md', 'managed\n')
 
-			expect(show(['name'], { root })).toBe(0)
+			expect(await show(['name'], { root })).toBe(0)
 			expect(written()).toBe('managed\n')
 
 			rmSync(managedPath)
 			stdout.mockClear()
-			expect(show(['name'], { root })).toBe(0)
+			expect(await show(['name'], { root })).toBe(0)
 			expect(written()).toBe('project\n')
 
 			rmSync(join(root, '.agents/references/name.md'))
 			stdout.mockClear()
-			expect(show(['name'], { root })).toBe(0)
+			expect(await show(['name'], { root })).toBe(0)
 			expect(written()).toBe('user\n')
 
 			rmSync(join(fakeHome.value, '.agents/references/name.md'))
 			stdout.mockClear()
-			expect(show(['name'], { root })).toBe(0)
+			expect(await show(['name'], { root })).toBe(0)
 			expect(written()).toBe('plugin\n')
 		})
 	})
 
-	it('falls through to the highest tier that holds the name', () => {
+	it("reads references beside each detected harness's managed files, above the project tier", async () => {
+		const claude = tempDir('reference-claude-managed-')
+		const codex = tempDir('reference-codex-managed-')
+		harness.candidates = ['claude-code', 'codex']
+		harness.managed = [
+			{ kind: 'file', location: join(claude, 'managed-settings.json'), description: '', research: '' },
+			{ kind: 'directory', location: join(claude, 'managed-settings.d'), description: '', research: '' },
+			{ kind: 'file', location: join(codex, 'requirements.toml'), description: '', research: '' },
+		]
+		const root = repo()
+		const projectPath = write(root, '.agents/references/name.md', 'project\n')
+		const claudePath = write(claude, 'references/name.md', 'claude\n')
+		const codexPath = write(codex, 'references/name.md', 'codex\n')
+		write(claude, 'managed-settings.d/references/name.md', 'drop-in\n')
+
+		expect(await show(['name'], { root })).toBe(0)
+		expect(written()).toBe('claude\n')
+
+		rmSync(claudePath)
+		stdout.mockClear()
+		expect(await show(['name'], { root })).toBe(0)
+		expect(written()).toBe('codex\n')
+
+		rmSync(codexPath)
+		stdout.mockClear()
+		expect(await show(['name'], { root })).toBe(0)
+		expect(written()).toBe('project\n')
+
+		rmSync(projectPath)
+		stdout.mockClear()
+		expect(await show(['name'], { root })).toBe(1)
+	})
+
+	it('skips managed policy that cannot be read locally, and says so in the trace', async () => {
+		harness.candidates = ['claude-code']
+		harness.managed = [
+			{ kind: 'macos-managed-preferences', location: 'com.anthropic.claudecode', description: '', research: '' },
+			{ kind: 'server', location: 'claude.ai admin console', description: '', research: '' },
+		]
+		const root = repo()
+		write(root, '.agents/references/name.md', 'project\n')
+
+		expect(await show(['name'], { root, format: 'json', trace: true })).toBe(0)
+		const [entry] = JSON.parse(written()) as ReferenceShowEntry[]
+		const skipped = entry?.trace?.filter((step) => step.outcome.startsWith('not read'))
+		expect(skipped?.map((step) => step.path)).toEqual(
+			expect.arrayContaining(['com.anthropic.claudecode', 'claude.ai admin console']),
+		)
+		expect(skipped?.find((step) => step.path === 'com.anthropic.claudecode')?.outcome).toMatch(
+			/claude-code keeps this policy in a macOS managed-preferences domain delivered by MDM, which cannot be read locally/,
+		)
+		expect(skipped?.every((step) => !step.found)).toBe(true)
+	})
+
+	it('says in the trace that no harness was detected', async () => {
+		const root = repo()
+		write(root, '.agents/references/name.md', 'project\n')
+
+		expect(await show(['name'], { root, format: 'json', trace: true })).toBe(0)
+		const [entry] = JSON.parse(written()) as ReferenceShowEntry[]
+		expect(entry?.trace?.find((step) => step.path === '(no harness detected)')?.outcome).toMatch(
+			/^not read — no harness detected/,
+		)
+	})
+
+	it('reads references from each plugin the harness has enabled', async () => {
+		harness.candidates = ['claude-code']
+		const alpha = tempDir('reference-alpha-')
+		const beta = tempDir('reference-beta-')
+		write(alpha, 'references/testing.md', 'alpha\n')
+		write(beta, 'references/style.md', 'beta\n')
+		write(fakeHome.value, '.claude/settings.json', JSON.stringify({ enabledPlugins: { 'alpha@market': true } }))
+		write(
+			fakeHome.value,
+			'.claude/plugins/installed_plugins.json',
+			JSON.stringify({
+				version: 2,
+				plugins: {
+					'alpha@market': [{ scope: 'user', installPath: alpha }],
+					'beta@market': [{ scope: 'user', installPath: beta }],
+				},
+			}),
+		)
+		const root = repo()
+
+		expect(await show(['testing'], { root, format: 'json' })).toBe(0)
+		const [entry] = JSON.parse(written()) as ReferenceShowEntry[]
+		expect(entry).toMatchObject({ tier: 'plugin', plugin: 'alpha', content: 'alpha\n' })
+
+		stdout.mockClear()
+		expect(await show(['alpha/testing'], { root })).toBe(0)
+		expect(written()).toBe('alpha\n')
+	})
+
+	it('never reads a plugin the harness has installed but not enabled', async () => {
+		harness.candidates = ['claude-code']
+		const beta = tempDir('reference-beta-')
+		write(beta, 'references/style.md', 'beta\n')
+		write(fakeHome.value, '.claude/settings.json', JSON.stringify({ enabledPlugins: { 'gamma@market': false } }))
+		write(
+			fakeHome.value,
+			'.claude/plugins/installed_plugins.json',
+			JSON.stringify({ version: 2, plugins: { 'beta@market': [{ scope: 'user', installPath: beta }] } }),
+		)
+		const root = repo()
+
+		expect(await list({ root, format: 'json' })).toBe(0)
+		const report = JSON.parse(written()) as ReferenceListReport
+		expect(report.layers.some((layer) => layer.plugin === 'beta')).toBe(false)
+		expect(JSON.stringify(report.references)).not.toContain('style')
+
+		stdout.mockClear()
+		expect(await show(['style'], { root })).toBe(1)
+	})
+
+	it('adds no policy layer when every source that can enable a plugin was read', async () => {
+		harness.candidates = ['claude-code']
+		harness.allPolicyRead = true
+		const root = repo()
+
+		expect(await list({ root, format: 'json' })).toBe(0)
+		const report = JSON.parse(written()) as ReferenceListReport
+		expect(report.layers.some((layer) => layer.path === '(claude-code plugin policy)')).toBe(false)
+	})
+
+	it('skips an enabled plugin with no install folder, and says so in the trace', async () => {
+		harness.candidates = ['claude-code']
+		write(fakeHome.value, '.claude/settings.json', JSON.stringify({ enabledPlugins: { 'alpha@market': true } }))
+		const root = repo()
+
+		expect(await show(['alpha/testing'], { root, format: 'json', trace: true })).toBe(1)
+		const [entry] = JSON.parse(written()) as ReferenceShowEntry[]
+		expect(entry?.trace?.find((step) => step.plugin === 'alpha')).toMatchObject({
+			path: '(alpha@market)',
+			found: false,
+			outcome: 'not read — enabled in claude-code, but no install folder for this project is recorded',
+		})
+	})
+
+	it('falls through to the highest tier that holds the name', async () => {
 		const root = repo()
 		declareDependency(root, 'dep-a')
 		installDependency(root, 'dep-a', { name: 'plugin\n' })
 		write(fakeHome.value, '.agents/references/name.md', 'user\n')
 
-		expect(show(['name'], { root })).toBe(0)
+		expect(await show(['name'], { root })).toBe(0)
 		expect(written()).toBe('user\n')
 	})
 
-	it('orders the managed layers references, then governances, then the deprecated one', () => {
+	it('orders the managed layers references, then governances, then the deprecated one', async () => {
 		const programData = tempDir('reference-programdata-')
-		withPlatform('win32', programData, () => {
+		await withPlatform('win32', programData, async () => {
 			const root = repo()
 			const referencesPath = write(managedReferencesDir('win32', programData), 'name.md', 'references-tier\n')
 			const governancesPath = write(managedGovernancesDir('win32', programData), 'name.md', 'governances-tier\n')
 			write(deprecatedManagedGovernancesDir('win32', programData), 'name.md', 'deprecated-tier\n')
 
-			expect(show(['name'], { root })).toBe(0)
+			expect(await show(['name'], { root })).toBe(0)
 			expect(written()).toBe('references-tier\n')
 
 			rmSync(referencesPath)
 			stdout.mockClear()
-			expect(show(['name'], { root })).toBe(0)
+			expect(await show(['name'], { root })).toBe(0)
 			expect(written()).toBe('governances-tier\n')
 
 			rmSync(governancesPath)
 			stdout.mockClear()
-			expect(show(['name'], { root })).toBe(0)
+			expect(await show(['name'], { root })).toBe(0)
 			expect(written()).toBe('deprecated-tier\n')
 		})
 	})
 
-	it('passes over a layer that is not a folder and asks the next', () => {
+	it('passes over a layer that is not a folder and asks the next', async () => {
 		const root = repo()
 		mkdirSync(join(root, '.agents'), { recursive: true })
 		writeFileSync(join(root, '.agents', 'references'), 'not a directory')
 		write(fakeHome.value, '.agents/references/name.md', 'user\n')
 
-		expect(show(['name'], { root })).toBe(0)
+		expect(await show(['name'], { root })).toBe(0)
 		expect(written()).toBe('user\n')
 	})
 
-	it('walks the project tier up to the workspace root, the nearest layer first', () => {
+	it('walks the project tier up to the workspace root, the nearest layer first', async () => {
 		const outside = tempDir('reference-outside-')
 		const base = join(outside, 'repo')
 		mkdirSync(base)
@@ -222,16 +393,16 @@ describe('tiers', () => {
 		write(base, '.agents/references/name.md', 'workspace\n')
 		const nearest = write(root, '.agents/references/name.md', 'package\n')
 
-		expect(show(['name'], { root })).toBe(0)
+		expect(await show(['name'], { root })).toBe(0)
 		expect(written()).toBe('package\n')
 
 		rmSync(nearest)
 		stdout.mockClear()
-		expect(show(['name'], { root })).toBe(0)
+		expect(await show(['name'], { root })).toBe(0)
 		expect(written()).toBe('workspace\n')
 
 		stdout.mockClear()
-		expect(list({ root, format: 'json' })).toBe(0)
+		expect(await list({ root, format: 'json' })).toBe(0)
 		const report = JSON.parse(written()) as ReferenceListReport
 		expect(report.layers.filter((layer) => layer.tier === 'project').map((layer) => layer.path)).toEqual([
 			join(root, '.agents', 'references'),
@@ -244,7 +415,7 @@ describe('tiers', () => {
 		expect(JSON.stringify(report.references)).not.toContain('outside-only')
 	})
 
-	it('stops the walk at the git root or a package.json declaring workspaces', () => {
+	it('stops the walk at the git root or a package.json declaring workspaces', async () => {
 		for (const mark of [
 			(dir: string) => mkdirSync(join(dir, '.git')),
 			(dir: string) => write(dir, 'package.json', JSON.stringify({ workspaces: ['packages/*'] })),
@@ -259,29 +430,29 @@ describe('tiers', () => {
 			write(base, '.agents/references/name.md', 'repository\n')
 
 			stdout.mockClear()
-			expect(show(['name'], { root })).toBe(0)
+			expect(await show(['name'], { root })).toBe(0)
 			expect(written()).toBe('repository\n')
 			stdout.mockClear()
-			expect(show(['outside-only'], { root })).toBe(1)
+			expect(await show(['outside-only'], { root })).toBe(1)
 		}
 	})
 
-	it('reads the root alone when no repository root is above it', () => {
+	it('reads the root alone when no repository root is above it', async () => {
 		const outside = tempDir('reference-outside-')
 		const root = join(outside, 'pkg')
 		mkdirSync(root)
 		write(outside, '.agents/references/name.md', 'outside\n')
 
-		expect(show(['name'], { root })).toBe(1)
+		expect(await show(['name'], { root })).toBe(1)
 		expect(written()).toBe('')
 	})
 
-	it("reads a declared dependency's references as a plugin", () => {
+	it("reads a declared dependency's references as a plugin", async () => {
 		const root = repo()
 		declareDependency(root, 'dep-a')
 		installDependency(root, 'dep-a', { testing: '# Testing\n' })
 
-		expect(show(['testing'], { root, format: 'json' })).toBe(0)
+		expect(await show(['testing'], { root, format: 'json' })).toBe(0)
 		const [entry] = JSON.parse(written()) as ReferenceShowEntry[]
 		expect(entry?.status).toBe('found')
 		expect(entry?.tier).toBe('plugin')
@@ -289,50 +460,50 @@ describe('tiers', () => {
 		expect(entry?.content).toBe('# Testing\n')
 	})
 
-	it('never reads a package the repository did not declare', () => {
+	it('never reads a package the repository did not declare', async () => {
 		const root = repo()
 		declareDependency(root, 'dep-a')
 		installDependency(root, 'dep-a', { testing: '# dep-a\n' })
 		installDependency(root, 'dep-b', { testing: '# dep-b\n' })
 
-		expect(list({ root, format: 'json' })).toBe(0)
+		expect(await list({ root, format: 'json' })).toBe(0)
 		const report = JSON.parse(written()) as ReferenceListReport
 		expect(JSON.stringify(report.references)).not.toContain('dep-b')
 	})
 
-	it('reports a name two plugins hold as ambiguous, naming both', () => {
+	it('reports a name two plugins hold as ambiguous, naming both', async () => {
 		const root = repo()
 		declareDependency(root, 'dep-a')
 		write(root, 'package.json', JSON.stringify({ dependencies: { 'dep-a': '1.0.0', 'dep-b': '1.0.0' } }))
 		installDependency(root, 'dep-a', { testing: '# dep-a\n' })
 		installDependency(root, 'dep-b', { testing: '# dep-b\n' })
 
-		expect(show(['testing'], { root, format: 'json' })).toBe(1)
+		expect(await show(['testing'], { root, format: 'json' })).toBe(1)
 		const [entry] = JSON.parse(written()) as ReferenceShowEntry[]
 		expect(entry?.status).toBe('ambiguous')
 		expect(entry?.plugins).toEqual(['dep-a/testing', 'dep-b/testing'])
 	})
 
-	it('resolves a qualified name at that plugin, with the tiers above still overriding it', () => {
+	it('resolves a qualified name at that plugin, with the tiers above still overriding it', async () => {
 		const root = repo()
 		write(root, 'package.json', JSON.stringify({ dependencies: { 'dep-a': '1.0.0', 'dep-b': '1.0.0' } }))
 		installDependency(root, 'dep-a', { testing: '# dep-a\n' })
 		installDependency(root, 'dep-b', { testing: '# dep-b\n' })
 
-		expect(show(['dep-a/testing'], { root })).toBe(0)
+		expect(await show(['dep-a/testing'], { root })).toBe(0)
 		expect(written()).toBe('# dep-a\n')
 
 		write(root, '.agents/references/testing.md', '# project\n')
 		stdout.mockClear()
-		expect(show(['dep-a/testing'], { root })).toBe(0)
+		expect(await show(['dep-a/testing'], { root })).toBe(0)
 		expect(written()).toBe('# project\n')
 	})
 
-	it('answers a qualified name from the tiers above when the plugin is not a dependency', () => {
+	it('answers a qualified name from the tiers above when the plugin is not a dependency', async () => {
 		const root = repo()
 		write(root, '.agents/references/testing.md', '# project\n')
 
-		expect(show(['other/testing'], { root, format: 'json', trace: true })).toBe(0)
+		expect(await show(['other/testing'], { root, format: 'json', trace: true })).toBe(0)
 		const [entry] = JSON.parse(written()) as ReferenceShowEntry[]
 		expect(entry?.status).toBe('found')
 		expect(entry?.content).toBe('# project\n')
@@ -344,7 +515,7 @@ describe('tiers', () => {
 // ── file names ──
 
 describe('file names', () => {
-	it('resolves each file-name candidate', () => {
+	it('resolves each file-name candidate', async () => {
 		const forms: [string, string][] = [
 			['name.md', 'name.md'],
 			['name/README.md', 'name/README.md'],
@@ -355,7 +526,7 @@ describe('file names', () => {
 			const root = repo()
 			write(root, join('.agents', 'references', relPath), '# doc\n')
 
-			expect(show(['name'], { root, format: 'json', trace: true })).toBe(0)
+			expect(await show(['name'], { root, format: 'json', trace: true })).toBe(0)
 			const [entry] = JSON.parse(written()) as ReferenceShowEntry[]
 			expect(entry?.content).toBe('# doc\n')
 			const step = entry?.trace?.find((s) => s.found)
@@ -364,18 +535,18 @@ describe('file names', () => {
 		}
 	})
 
-	it('prefers the earlier candidate in one layer and warns', () => {
+	it('prefers the earlier candidate in one layer and warns', async () => {
 		const root = repo()
 		write(root, '.agents/references/name.md', '# top level\n')
 		write(root, '.agents/references/name/README.md', '# folder form\n')
 
-		expect(show(['name'], { root })).toBe(0)
+		expect(await show(['name'], { root })).toBe(0)
 		expect(written()).toBe('# top level\n')
 		expect(stderrLines().some((line) => line.includes('is ignored'))).toBe(true)
 
 		stdout.mockClear()
 		stderr.mockClear()
-		expect(list({ root, format: 'json' })).toBe(0)
+		expect(await list({ root, format: 'json' })).toBe(0)
 		const report = JSON.parse(written()) as ReferenceListReport
 		expect(report.warnings?.some((warning) => warning.includes('is ignored'))).toBe(true)
 	})
@@ -384,24 +555,24 @@ describe('file names', () => {
 // ── merge modes ──
 
 describe('merge modes', () => {
-	it('returns the highest document whole and shadows the rest', () => {
+	it('returns the highest document whole and shadows the rest', async () => {
 		const root = repo()
 		write(root, '.agents/references/name.md', '# project\n')
 		write(fakeHome.value, '.agents/references/name.md', '# user\n')
 
-		expect(show(['name'], { root, format: 'json', trace: true })).toBe(0)
+		expect(await show(['name'], { root, format: 'json', trace: true })).toBe(0)
 		const [entry] = JSON.parse(written()) as ReferenceShowEntry[]
 		expect(entry?.content).toBe('# project\n')
 		const userStep = entry?.trace?.find((step) => step.tier === 'user' && step.found)
 		expect(userStep?.outcome).toBe('shadowed by project (first-wins)')
 	})
 
-	it('returns every layer whole, labeled, highest first', () => {
+	it('returns every layer whole, labeled, highest first', async () => {
 		const root = repo()
 		write(root, '.agents/references/name.md', '---\nmerge: combine\n---\n# project\n')
 		write(fakeHome.value, '.agents/references/name.md', '# user\n')
 
-		expect(show(['name'], { root })).toBe(0)
+		expect(await show(['name'], { root })).toBe(0)
 		const content = written()
 		expect(content).toContain(
 			'Combined from 2 layers, highest precedence first. Where they conflict, the first layer wins.',
@@ -414,7 +585,7 @@ describe('merge modes', () => {
 		expect(content).toMatch(/<!-- layer: user .*-->/)
 	})
 
-	it('replaces a matched section and its subsections', () => {
+	it('replaces a matched section and its subsections', async () => {
 		const root = repo()
 		write(root, '.agents/references/name.md', '---\nmerge: merge-sections\n---\n## Testing\n\nproject body\n')
 		write(
@@ -423,7 +594,7 @@ describe('merge modes', () => {
 			'## Testing\n\nuser body\n\n### Fixtures\n\nuser fixture\n\n## Other\n\nkept\n',
 		)
 
-		expect(show(['name'], { root })).toBe(0)
+		expect(await show(['name'], { root })).toBe(0)
 		const content = written()
 		expect(content).toContain('project body')
 		expect(content).not.toContain('user body')
@@ -431,7 +602,7 @@ describe('merge modes', () => {
 		expect(content).toContain('## Other')
 	})
 
-	it('keeps both bodies and merges subsections when a section says combine', () => {
+	it('keeps both bodies and merges subsections when a section says combine', async () => {
 		const root = repo()
 		write(
 			root,
@@ -444,24 +615,24 @@ describe('merge modes', () => {
 			'## Testing\n\nuser body\n\n### Fixtures\n\nuser fixtures\n\n### Mocks\n\nuser mocks\n\n### Coverage\n\nuser coverage\n',
 		)
 
-		expect(show(['name'], { root })).toBe(0)
+		expect(await show(['name'], { root })).toBe(0)
 		expect(written()).toBe(
 			'## Testing\n\nuser body\n\nproject body\n\n### Fixtures\n\nproject fixtures\n\n### Coverage\n\nuser coverage\n',
 		)
 	})
 
-	it('drops a section marked remove', () => {
+	it('drops a section marked remove', async () => {
 		const root = repo()
 		write(root, '.agents/references/name.md', '---\nmerge: merge-sections\n---\n## Legacy\n<!-- merge: remove -->\n')
 		write(fakeHome.value, '.agents/references/name.md', '## Legacy\n\nold content\n\n## Keep\n\nstays\n')
 
-		expect(show(['name'], { root })).toBe(0)
+		expect(await show(['name'], { root })).toBe(0)
 		const content = written()
 		expect(content).not.toContain('## Legacy')
 		expect(content).toContain('## Keep')
 	})
 
-	it('appends a new section after its last sibling, keeping base order', () => {
+	it('appends a new section after its last sibling, keeping base order', async () => {
 		const root = repo()
 		write(
 			root,
@@ -474,7 +645,7 @@ describe('merge modes', () => {
 			'## Testing\n\nbase\n\n### Existing\n\nkept\n\n## Later\n\nafter\n',
 		)
 
-		expect(show(['name'], { root })).toBe(0)
+		expect(await show(['name'], { root })).toBe(0)
 		const content = written()
 		const existingIndex = content.indexOf('### Existing')
 		const newIndex = content.indexOf('### New')
@@ -484,7 +655,7 @@ describe('merge modes', () => {
 		expect(laterIndex).toBeGreaterThan(newIndex)
 	})
 
-	it('ignores headings inside code fences', () => {
+	it('ignores headings inside code fences', async () => {
 		const root = repo()
 		write(
 			root,
@@ -493,25 +664,25 @@ describe('merge modes', () => {
 		)
 		write(fakeHome.value, '.agents/references/name.md', '## Testing\n\nbase body\n\n## Not a heading\n\nbase kept\n')
 
-		expect(show(['name'], { root })).toBe(0)
+		expect(await show(['name'], { root })).toBe(0)
 		const content = written()
 		expect(content).toContain('```\n## not a heading\n```\n\nproject body')
 		expect(content).toContain('## Not a heading\n\nbase kept')
 		expect(content).not.toContain('base body')
 	})
 
-	it('matches headings regardless of case and surrounding whitespace', () => {
+	it('matches headings regardless of case and surrounding whitespace', async () => {
 		const root = repo()
 		write(root, '.agents/references/name.md', '---\nmerge: merge-sections\n---\n##   testing  \n\noverlay body\n')
 		write(fakeHome.value, '.agents/references/name.md', '## Testing\n\nbase body\n')
 
-		expect(show(['name'], { root })).toBe(0)
+		expect(await show(['name'], { root })).toBe(0)
 		const content = written()
 		expect(content).toContain('overlay body')
 		expect(content).not.toContain('base body')
 	})
 
-	it('treats text before the first heading as its own section', () => {
+	it('treats text before the first heading as its own section', async () => {
 		const root = repo()
 		write(
 			root,
@@ -520,7 +691,7 @@ describe('merge modes', () => {
 		)
 		write(fakeHome.value, '.agents/references/name.md', 'base preamble\n\n## Testing\n\nbase body\n')
 
-		expect(show(['name'], { root })).toBe(0)
+		expect(await show(['name'], { root })).toBe(0)
 		expect(written()).toContain('overlay preamble')
 		expect(written()).not.toContain('base preamble')
 
@@ -529,11 +700,11 @@ describe('merge modes', () => {
 		write(root2, '.agents/references/name.md', '---\nmerge: merge-sections\n---\n## Testing\n\nbody\n')
 		write(fakeHome.value, '.agents/references/name.md', 'base preamble\n\n## Testing\n\nbase body\n')
 
-		expect(show(['name'], { root: root2 })).toBe(0)
+		expect(await show(['name'], { root: root2 })).toBe(0)
 		expect(written()).toContain('base preamble')
 	})
 
-	it('warns when a merge comment matches nothing or a heading path repeats', () => {
+	it('warns when a merge comment matches nothing or a heading path repeats', async () => {
 		const root = repo()
 		write(
 			root,
@@ -542,7 +713,7 @@ describe('merge modes', () => {
 		)
 		write(fakeHome.value, '.agents/references/name.md', '## Testing\n\nfirst\n\n## Testing\n\nsecond\n')
 
-		expect(show(['name'], { root, format: 'json' })).toBe(0)
+		expect(await show(['name'], { root, format: 'json' })).toBe(0)
 		const [entry] = JSON.parse(written()) as ReferenceShowEntry[]
 		const warnings = (entry?.warnings ?? []).join(' ')
 		expect(warnings).toContain('matches no section below')
@@ -550,37 +721,37 @@ describe('merge modes', () => {
 		expect(entry?.content).toBe('## Testing\n\noverlay body\n\n## Testing\n\nsecond\n')
 	})
 
-	it('applies layers bottom-up', () => {
+	it('applies layers bottom-up', async () => {
 		const root = repo()
 		declareDependency(root, 'dep-a')
 		installDependency(root, 'dep-a', { name: '## Testing\n\nplugin body\n' })
 		write(fakeHome.value, '.agents/references/name.md', '---\nmerge: merge-sections\n---\n## Testing\n\nuser body\n')
 		write(root, '.agents/references/name.md', '---\nmerge: merge-sections\n---\n## Testing\n\nproject body\n')
 
-		expect(show(['name'], { root })).toBe(0)
+		expect(await show(['name'], { root })).toBe(0)
 		const content = written()
 		expect(content).toContain('project body')
 		expect(content).not.toContain('plugin body')
 		expect(content).not.toContain('user body')
 	})
 
-	it('adds a trailing newline when the document has none', () => {
+	it('adds a trailing newline when the document has none', async () => {
 		const root = repo()
 		write(root, '.agents/references/name.md', '# project')
 
-		expect(show(['name'], { root })).toBe(0)
+		expect(await show(['name'], { root })).toBe(0)
 		expect(written()).toBe('# project\n')
 	})
 
-	it('adds no second newline when the document has one', () => {
+	it('adds no second newline when the document has one', async () => {
 		const root = repo()
 		write(root, '.agents/references/name.md', '# project\n')
 
-		expect(show(['name'], { root })).toBe(0)
+		expect(await show(['name'], { root })).toBe(0)
 		expect(written()).toBe('# project\n')
 	})
 
-	it('strips frontmatter and merge comments from text output and returns frontmatter as metadata', () => {
+	it('strips frontmatter and merge comments from text output and returns frontmatter as metadata', async () => {
 		const root = repo()
 		write(
 			root,
@@ -588,23 +759,23 @@ describe('merge modes', () => {
 			'---\ndescription: about testing\n---\n## Testing\n<!-- merge: replace -->\n\nbody\n',
 		)
 
-		expect(show(['name'], { root })).toBe(0)
+		expect(await show(['name'], { root })).toBe(0)
 		const text = written()
 		expect(text).not.toContain('description: about testing')
 		expect(text).not.toContain('merge: replace')
 
 		stdout.mockClear()
-		expect(show(['name'], { root, format: 'json' })).toBe(0)
+		expect(await show(['name'], { root, format: 'json' })).toBe(0)
 		const [entry] = JSON.parse(written()) as ReferenceShowEntry[]
 		expect(entry?.metadata).toEqual({ description: 'about testing' })
 	})
 
-	it('treats an unknown merge mode as first-wins, with a warning', () => {
+	it('treats an unknown merge mode as first-wins, with a warning', async () => {
 		const root = repo()
 		write(root, '.agents/references/name.md', '---\nmerge: overlay\n---\n# project\n')
 		write(fakeHome.value, '.agents/references/name.md', '# user\n')
 
-		expect(show(['name'], { root, format: 'json' })).toBe(0)
+		expect(await show(['name'], { root, format: 'json' })).toBe(0)
 		const [entry] = JSON.parse(written()) as ReferenceShowEntry[]
 		expect(entry?.content).toBe('# project\n')
 		expect((entry?.warnings ?? []).some((warning) => warning.includes('unknown merge mode'))).toBe(true)
@@ -612,7 +783,7 @@ describe('merge modes', () => {
 })
 
 describe('the monorepo walk', () => {
-	it('merges project layers farthest first', () => {
+	it('merges project layers farthest first', async () => {
 		const base = repo()
 		markRoot(base)
 		const root = join(base, 'pkg')
@@ -623,7 +794,7 @@ describe('the monorepo walk', () => {
 			'---\nmerge: merge-sections\n---\n## A\n\npackage A\n\n## B\n\npackage B\n',
 		)
 
-		expect(show(['name'], { root })).toBe(0)
+		expect(await show(['name'], { root })).toBe(0)
 		expect(written()).toBe('## A\n\npackage A\n\n## B\n\npackage B\n\n## C\n\nworkspace C\n')
 	})
 })
@@ -631,32 +802,32 @@ describe('the monorepo walk', () => {
 // ── show output ──
 
 describe('show output', () => {
-	it('writes a single document and nothing else', () => {
+	it('writes a single document and nothing else', async () => {
 		const root = repo()
 		write(root, '.agents/references/name.md', '# doc\n')
 
-		expect(show(['name'], { root })).toBe(0)
+		expect(await show(['name'], { root })).toBe(0)
 		expect(written()).toBe('# doc\n')
 	})
 
-	it('writes several documents between delimiters in the order asked', () => {
+	it('writes several documents between delimiters in the order asked', async () => {
 		const root = repo()
 		write(root, '.agents/references/a.md', '# a\n')
 		write(root, '.agents/references/b.md', '# b\n')
 		write(root, '.agents/references/c.md', '# c\n')
 
-		expect(show(['c', 'a', 'b'], { root })).toBe(0)
+		expect(await show(['c', 'a', 'b'], { root })).toBe(0)
 		const content = written()
 		expect(content.indexOf('name="c"')).toBeLessThan(content.indexOf('name="a"'))
 		expect(content.indexOf('name="a"')).toBeLessThan(content.indexOf('name="b"'))
 	})
 
-	it('reports a missing name in place and exits non-zero', () => {
+	it('reports a missing name in place and exits non-zero', async () => {
 		const root = repo()
 		write(root, '.agents/references/a.md', '# a\n')
 		write(root, '.agents/references/b.md', '# b\n')
 
-		expect(show(['a', 'missing', 'b'], { root })).toBe(1)
+		expect(await show(['a', 'missing', 'b'], { root })).toBe(1)
 		const content = written()
 		expect(content).toContain('name="a"')
 		expect(content).toContain('name="b"')
@@ -666,32 +837,32 @@ describe('show output', () => {
 		expect(stderrLines().some((line) => line.includes('no reference named "missing"'))).toBe(true)
 	})
 
-	it('returns an array in the order asked', () => {
+	it('returns an array in the order asked', async () => {
 		const root = repo()
 		write(root, '.agents/references/a.md', '# a\n')
 
-		expect(show(['a', 'missing'], { root, format: 'json' })).toBe(1)
+		expect(await show(['a', 'missing'], { root, format: 'json' })).toBe(1)
 		const entries = JSON.parse(written()) as ReferenceShowEntry[]
 		expect(entries.map((entry) => entry.status)).toEqual(['found', 'missing'])
 	})
 
-	it('suggests close names on a miss and never answers with one', () => {
+	it('suggests close names on a miss and never answers with one', async () => {
 		const root = repo()
 		write(root, '.agents/references/testing.md', '# testing\n')
 
-		expect(show(['testin'], { root, format: 'json' })).toBe(1)
+		expect(await show(['testin'], { root, format: 'json' })).toBe(1)
 		const [entry] = JSON.parse(written()) as ReferenceShowEntry[]
 		expect(entry?.status).toBe('missing')
 		expect(entry?.content).toBeUndefined()
 		expect(entry?.suggestions).toContain('testing')
 	})
 
-	it('traces every path checked, the candidate, the merge mode, and why a layer was dropped', () => {
+	it('traces every path checked, the candidate, the merge mode, and why a layer was dropped', async () => {
 		const root = repo()
 		write(root, '.agents/references/name.md', '# project\n')
 		write(fakeHome.value, '.agents/references/name.md', '# user\n')
 
-		expect(show(['name'], { root, format: 'json', trace: true })).toBe(0)
+		expect(await show(['name'], { root, format: 'json', trace: true })).toBe(0)
 		const [entry] = JSON.parse(written()) as ReferenceShowEntry[]
 		expect(entry?.trace?.length).toBeGreaterThan(1)
 		const userStep = entry?.trace?.find((step) => step.tier === 'user' && step.found)
@@ -704,45 +875,45 @@ describe('show output', () => {
 		expect(emptyStep).toBeDefined()
 	})
 
-	it('writes the trace to stderr in text so stdout stays the document', () => {
+	it('writes the trace to stderr in text so stdout stays the document', async () => {
 		const root = repo()
 		write(root, '.agents/references/name.md', '# doc\n')
 
-		expect(show(['name'], { root, trace: true })).toBe(0)
+		expect(await show(['name'], { root, trace: true })).toBe(0)
 		expect(written()).toBe('# doc\n')
 		expect(stderrLines().some((line) => line.includes('trace name'))).toBe(true)
 	})
 
-	it('rejects a name that is a path', () => {
+	it('rejects a name that is a path', async () => {
 		const root = repo()
 
-		expect(show(['../escape'], { root })).toBe(1)
+		expect(await show(['../escape'], { root })).toBe(1)
 		expect(stdout).not.toHaveBeenCalled()
 		expect(stderrLines().some((line) => line.includes('is not a reference name'))).toBe(true)
 
 		stderr.mockClear()
-		expect(show(['a\\b'], { root })).toBe(1)
+		expect(await show(['a\\b'], { root })).toBe(1)
 		expect(stderrLines().some((line) => line.includes('is not a reference name'))).toBe(true)
 
 		stderr.mockClear()
-		expect(show(['name.md'], { root })).toBe(1)
+		expect(await show(['name.md'], { root })).toBe(1)
 		expect(stderrLines().some((line) => line.includes('names a file'))).toBe(true)
 	})
 
-	it('rejects an unsupported output format', () => {
+	it('rejects an unsupported output format', async () => {
 		const root = repo()
 
-		expect(show(['name'], { root, format: 'yaml' })).toBe(1)
+		expect(await show(['name'], { root, format: 'yaml' })).toBe(1)
 		expect(stderrLines()).toContain('error: --format must be toon, json, or text.\n')
 		expect(stdout).not.toHaveBeenCalled()
 
 		stderr.mockClear()
-		expect(list({ root, format: 'yaml' })).toBe(1)
+		expect(await list({ root, format: 'yaml' })).toBe(1)
 		expect(stderrLines()).toContain('error: --format must be toon, json, or text.\n')
 		expect(stdout).not.toHaveBeenCalled()
 
 		stderr.mockClear()
-		expect(search('anything', { root, format: 'yaml' })).toBe(1)
+		expect(await search('anything', { root, format: 'yaml' })).toBe(1)
 		expect(stderrLines()).toContain('error: --format must be toon, json, or text.\n')
 		expect(stdout).not.toHaveBeenCalled()
 	})
@@ -751,11 +922,11 @@ describe('show output', () => {
 // ── list ──
 
 describe('list', () => {
-	it('lists every layer in precedence order, with the legacy layers marked', () => {
+	it('lists every layer in precedence order, with the legacy layers marked', async () => {
 		const root = repo()
 		write(root, '.agents/references/name.md', '# project\n')
 
-		expect(list({ root, format: 'json' })).toBe(0)
+		expect(await list({ root, format: 'json' })).toBe(0)
 		const report = JSON.parse(written()) as ReferenceListReport
 		const tiers = report.layers.map((layer) => layer.tier)
 		const firstUser = tiers.indexOf('user')
@@ -769,6 +940,7 @@ describe('list', () => {
 			if (layer.path.endsWith('universal-plugin/governances') || layer.path.endsWith('UniPlugin/governances')) {
 				expect(layer.status).toContain('deprecated')
 			} else if (layer.path.endsWith('governances')) expect(layer.status).toContain('legacy')
+			else if (layer.path === '(no harness detected)') expect(layer.status).toMatch(/^not read/)
 			else expect(layer.status).toBe('')
 		}
 		expect(report.layers.filter((layer) => layer.status.includes('legacy')).map((layer) => layer.tier)).toEqual(
@@ -777,22 +949,22 @@ describe('list', () => {
 		expect(report.layers.filter((layer) => layer.status.includes('deprecated'))).toHaveLength(1)
 	})
 
-	it('marks shadowed layers in the listing', () => {
+	it('marks shadowed layers in the listing', async () => {
 		const root = repo()
 		write(root, '.agents/references/name.md', '# project\n')
 		write(fakeHome.value, '.agents/references/name.md', '# user\n')
 
-		expect(list({ root, format: 'json' })).toBe(0)
+		expect(await list({ root, format: 'json' })).toBe(0)
 		const report = JSON.parse(written()) as ReferenceListReport
 		const rows = report.references as { tier: string; status: string }[]
 		expect(rows.find((row) => row.tier === 'project')?.status).toBe('used')
 		expect(rows.find((row) => row.tier === 'user')?.status).toBe('shadowed by project (first-wins)')
 	})
 
-	it('states the zero when no layer holds a reference', () => {
+	it('states the zero when no layer holds a reference', async () => {
 		const root = repo()
 
-		expect(list({ root, format: 'json' })).toBe(0)
+		expect(await list({ root, format: 'json' })).toBe(0)
 		const report = JSON.parse(written()) as ReferenceListReport
 		expect(report.references).toBe('0 references — no layer holds one')
 	})
@@ -801,7 +973,7 @@ describe('list', () => {
 // ── search ──
 
 describe('search', () => {
-	it('ranks exact name, prefix, close name, description, heading, then body', () => {
+	it('ranks exact name, prefix, close name, description, heading, then body', async () => {
 		const root = repo()
 		write(root, '.agents/references/test.md', '# exact\n')
 		write(root, '.agents/references/testing.md', '# prefix\n')
@@ -810,7 +982,7 @@ describe('search', () => {
 		write(root, '.agents/references/beta.md', '# Testing checklist\n\nnothing else relevant here\n')
 		write(root, '.agents/references/gamma.md', '# gamma\n\nthis paragraph mentions a test in passing\n')
 
-		expect(search('test', { root, format: 'json' })).toBe(0)
+		expect(await search('test', { root, format: 'json' })).toBe(0)
 		const report = JSON.parse(written()) as ReferenceSearchReport
 		const matches = report.references as { name: string; tier: string; match: string; description: string }[]
 		expect(matches.every((match) => match.tier === 'project')).toBe(true)
@@ -826,11 +998,11 @@ describe('search', () => {
 		])
 	})
 
-	it('states the zero when nothing matches', () => {
+	it('states the zero when nothing matches', async () => {
 		const root = repo()
 		write(root, '.agents/references/testing.md', '# testing\n\nabout testing\n')
 
-		expect(search('unrelated-topic', { root, format: 'json' })).toBe(0)
+		expect(await search('unrelated-topic', { root, format: 'json' })).toBe(0)
 		const report = JSON.parse(written()) as ReferenceSearchReport
 		expect(report.references).toBe('0 references match "unrelated-topic"')
 	})
@@ -839,11 +1011,11 @@ describe('search', () => {
 // ── legacy ──
 
 describe('legacy', () => {
-	it('reads legacy governances folders below references in the same tier', () => {
+	it('reads legacy governances folders below references in the same tier', async () => {
 		const alone = repo()
 		write(alone, '.agents/governances/testing.md', '# governances alone\n')
 
-		expect(show(['testing'], { root: alone })).toBe(0)
+		expect(await show(['testing'], { root: alone })).toBe(0)
 		expect(written()).toBe('# governances alone\n')
 
 		stdout.mockClear()
@@ -851,7 +1023,7 @@ describe('legacy', () => {
 		write(both, '.agents/references/testing.md', '# references wins\n')
 		write(both, '.agents/governances/testing.md', '# governances loses\n')
 
-		expect(show(['testing'], { root: both })).toBe(0)
+		expect(await show(['testing'], { root: both })).toBe(0)
 		expect(written()).toBe('# references wins\n')
 	})
 })
@@ -859,57 +1031,57 @@ describe('legacy', () => {
 // Not scenarios of their own: branches the feature's scenarios don't reach, needed for full
 // statement/branch coverage of reference.command.ts.
 describe('coverage: edge cases outside the feature', () => {
-	it('resolves --root against the working directory when none is named', () => {
-		expect(list({ format: 'json' })).toBe(0)
+	it('resolves --root against the working directory when none is named', async () => {
+		expect(await list({ format: 'json' })).toBe(0)
 		const report = JSON.parse(written()) as ReferenceListReport
 		expect(report.layers.length).toBeGreaterThan(0)
 	})
 
-	it('writes nothing to stdout for a single name that resolves to nothing', () => {
+	it('writes nothing to stdout for a single name that resolves to nothing', async () => {
 		const root = repo()
 
-		expect(show(['missing'], { root })).toBe(1)
+		expect(await show(['missing'], { root })).toBe(1)
 		expect(stdout).not.toHaveBeenCalled()
 	})
 
-	it('rejects an empty name list', () => {
+	it('rejects an empty name list', async () => {
 		const root = repo()
 
-		expect(show([], { root })).toBe(1)
+		expect(await show([], { root })).toBe(1)
 		expect(stderrLines().some((line) => line.includes('Name at least one reference'))).toBe(true)
 	})
 
-	it('rejects a blank search query', () => {
+	it('rejects a blank search query', async () => {
 		const root = repo()
 
-		expect(search('   ', { root })).toBe(1)
+		expect(await search('   ', { root })).toBe(1)
 		expect(stderrLines().some((line) => line.includes('Search needs a query'))).toBe(true)
 	})
 
-	it('reports a show failure it cannot read a message from', () => {
+	it('reports a show failure it cannot read a message from', async () => {
 		const root = repo()
 		write(root, '.agents/references/name.md', '# doc\n')
 		failure.value = 'unavailable'
 
-		expect(show(['name'], { root })).toBe(1)
+		expect(await show(['name'], { root })).toBe(1)
 		expect(stderrLines()).toContain('error: Reference lookup failed.\n')
 	})
 
-	it('reports a list failure it cannot read a message from', () => {
+	it('reports a list failure it cannot read a message from', async () => {
 		const root = repo()
 		write(root, '.agents/references/name.md', '# doc\n')
 		failure.value = 'unavailable'
 
-		expect(list({ root })).toBe(1)
+		expect(await list({ root })).toBe(1)
 		expect(stderrLines()).toContain('error: Reference listing failed.\n')
 	})
 
-	it('reports a search failure it cannot read a message from', () => {
+	it('reports a search failure it cannot read a message from', async () => {
 		const root = repo()
 		write(root, '.agents/references/name.md', '# doc\n')
 		failure.value = 'unavailable'
 
-		expect(search('name', { root })).toBe(1)
+		expect(await search('name', { root })).toBe(1)
 		expect(stderrLines()).toContain('error: Reference search failed.\n')
 	})
 })

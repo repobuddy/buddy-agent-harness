@@ -53,12 +53,13 @@ const rootOption = {
 	type: z.optional(z.string()),
 }
 
-function layersFor(args: CommonArgs, home: string): ReferenceLayer[] {
+function layersFor(args: CommonArgs, home: string): Promise<ReferenceLayer[]> {
 	return referenceLayers({
 		root: args.root ?? process.cwd(),
 		home,
 		platform: process.platform,
 		programData: process.env['ProgramData'],
+		env: process.env,
 	})
 }
 
@@ -152,13 +153,13 @@ export const referenceShowCommand: cli.Command = command({
 			default: 'text',
 		},
 	},
-	run(args: CommonArgs & { names: string[]; trace: boolean | undefined }) {
+	async run(args: CommonArgs & { names: string[]; trace: boolean | undefined }) {
 		try {
 			const format = parseFormat(args.format)
 			const names = args.names.map(parseReferenceName)
 			if (!names.length) throw new Error('Name at least one reference.')
 			const home = homedir()
-			const layers = layersFor(args, home)
+			const layers = await layersFor(args, home)
 			const display = (path: string) => collapseHome(home, path)
 			const entries = names.map((name) => {
 				const resolved = resolveReference(name, layers, { display })
@@ -190,11 +191,11 @@ export const referenceListCommand: cli.Command = command({
 	name: 'list',
 	description: 'List every layer, and every reference at every layer that holds it, marked used or shadowed.',
 	options: { root: rootOption, format: listFormatOption },
-	run(args: CommonArgs) {
+	async run(args: CommonArgs) {
 		try {
 			const format = parseFormat(args.format)
 			const home = homedir()
-			const layers = layersFor(args, home)
+			const layers = await layersFor(args, home)
 			const { rows, warnings } = listReferences(layers, { display: (path) => collapseHome(home, path) })
 			const report: ReferenceListReport = {
 				layers: layers.map(({ tier, plugins, dir, status }) => ({
@@ -221,13 +222,13 @@ export const referenceSearchCommand: cli.Command = command({
 	description: 'Find references by name, description, tags, headings, or body, best match first.',
 	arguments: [{ name: 'query', description: 'What the reference is about.', type: z.string() }],
 	options: { root: rootOption, format: listFormatOption },
-	run(args: CommonArgs & { query: string }) {
+	async run(args: CommonArgs & { query: string }) {
 		try {
 			const format = parseFormat(args.format)
 			const query = args.query.trim()
 			if (!query) throw new Error('Search needs a query.')
 			const home = homedir()
-			const matches = searchReferences(query, layersFor(args, home), {
+			const matches = searchReferences(query, await layersFor(args, home), {
 				display: (path) => collapseHome(home, path),
 			})
 			const report: ReferenceSearchReport = {
