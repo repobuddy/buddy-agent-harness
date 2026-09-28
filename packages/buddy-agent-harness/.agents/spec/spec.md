@@ -77,6 +77,9 @@ What is still outstanding:
 > Generated from `concept:` frontmatter by `project-spec/concept-index` — do not edit by hand.
 
 | Concept | Facets |
-| --- | --- |
+|---|---|
+| `command-interface` | `cli/bridge-resolution/` (behavior) · `cli/command-output/` (behavior) · `cli/configuration-diagnosis/` (behavior) · `cli/diagnosis-report/` (behavior) · `cli/entry-point/` (behavior) · `cli/governance-overrides/` (behavior) · `cli/instruction-bridges/` (behavior) · `cli/mcp-diagnosis/` (behavior) · `cli/mcp-projection/` (behavior) · `cli/mcp-reconcile/` (behavior) · `cli/references/` (behavior) · `skills/load-reference/` (behavior) |
+| `harness-compatibility` | `cli/nonstandard-configuration/` (behavior) · `skills/enhance/` (behavior) · `skills/harness-init/` (behavior) · `skills/init-buddy-agent-harness/` (behavior) · `skills/repair/` (behavior) · `workflows/detect-and-repair/` (workflow) |
+| `release-tooling` | `tooling/` (reference) |
 
 <!-- END generated: by-concept -->
