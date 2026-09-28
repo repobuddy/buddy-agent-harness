@@ -381,15 +381,19 @@ const mcpTable: Record<McpProblem, RepairRow> = {
 		detail: 'the harness config carries this server and the golden set does not declare it',
 		repair: ({ file, server }) => ({
 			command: '',
-			instruction: `add the server ${server} to ${goldenSet}, or drop it from ${file}`,
+			instruction: `add the server ${server} to ${goldenSet}, or drop it from ${file} — \`${repairSkillInvocation}\` offers the import`,
 		}),
 		skillRepair: (at) =>
-			`copy the server at ${locatorText(at)} into ${goldenSet}, refusing any literal credential it carries, or drop it from ${at.file}`,
+			`hand ${locatorText(at)} to \`${repairSkillInvocation}\`, which imports it field by field with \`mcp reconcile\`, refusing any literal credential — or drop it from ${at.file}`,
 	},
 	'mcp-diverged-target': {
 		detail: 'only the harness config changed since the two last agreed — the edit was made through the copy',
-		repair: (at) => ({ command: '', instruction: `reconcile the value at ${locatorText(at)} back into ${goldenSet}` }),
-		skillRepair: (at) => `reconcile the value at ${locatorText(at)} back into ${goldenSet}, field by field`,
+		repair: (at) => ({
+			command: '',
+			instruction: `reconcile the value at ${locatorText(at)} back into ${goldenSet} — \`${repairSkillInvocation}\` offers the import`,
+		}),
+		skillRepair: (at) =>
+			`hand ${locatorText(at)} to \`${repairSkillInvocation}\`, which imports the field into ${goldenSet} with \`mcp reconcile\` once approved`,
 	},
 	'mcp-diverged-golden': {
 		detail: 'only the golden set changed since the two last agreed — the harness copy is stale',

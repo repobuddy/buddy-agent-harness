@@ -1,6 +1,6 @@
 ---
 name: repair
-description: Use this skill when a repository's agent configuration is present but wrong or outdated — a retired harness name, a git-ignored bridge, an AGENTS.local.md nothing reads, a skill a harness refuses to load, or a harness missing an MCP server the golden set declares. Runs doctor to find them, then offers each correction with its before and after and writes only what is approved.
+description: Use this skill when a repository's agent configuration is present but wrong or outdated — a retired harness name, a git-ignored bridge, an AGENTS.local.md nothing reads, a skill a harness refuses to load, or an MCP server that differs between the golden set and a harness, on the side that is plainly ahead. Runs doctor to find them, then offers each correction with its before and after and writes only what is approved.
 ---
 
 # Harness Repair

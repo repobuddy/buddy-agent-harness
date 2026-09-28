@@ -1,6 +1,6 @@
 ---
-title: 'CLI: mcp project'
-description: 'CLI reference for buddy-agent-harness mcp project: writing the golden MCP server set into each harness, what it refuses, and the last-projected record.'
+title: 'CLI: mcp'
+description: 'CLI reference for buddy-agent-harness mcp project and mcp reconcile: writing the golden MCP server set into each harness, importing a harness-side change back, what each refuses, and the last-projected record.'
 ---
 
 ```sh
@@ -19,7 +19,7 @@ buddy-agent-harness mcp project [--root <directory>] [--write] [--format toon|js
 
 ## What it writes, and what it will not touch
 
-The command writes only where the golden set is plainly ahead: a server the target does not carry yet, or a field where only the golden side changed since the two last agreed. A harness-side change is never overwritten — pulling it back into the golden set is reconcile's job, which does not exist yet. Removing a server the golden set no longer declares is not this command's either; that is `mcp-undeclared`, and deciding which side is right is a person's call.
+The command writes only where the golden set is plainly ahead: a server the target does not carry yet, or a field where only the golden side changed since the two last agreed. A harness-side change is never overwritten — pulling it back into the golden set is [`mcp reconcile`](#mcp-reconcile)'s job. Removing a server the golden set no longer declares is not this command's either; that is `mcp-undeclared`, and deciding which side is right is a person's call.
 
 Every write is byte-preserving. A new JSON server is spliced into the existing file at the parse tree's offsets; a new Codex table is appended. Every other server and every comment in the file is kept exactly as it was. A write is verified by parsing the new text back through the target's own dialect: the changed server must read back equal to the golden server, and every other server must come back unchanged. If it does not, the change becomes an `edit` instead of being written.
 
@@ -139,10 +139,85 @@ The command has no approval of its own — it writes whatever `--write` tells it
 
 ## Non-goals
 
-- **Reconciling.** Importing a target-side change back into the golden set is per server and per field, needs approval, and never auto-merges a three-way conflict. It does not exist yet.
+- **Reconciling.** Importing a target-side change back into the golden set is [`mcp reconcile`](#mcp-reconcile)'s.
 - **User scope.** The command does not read or write `~/.codex/config.toml`, `~/.claude.json`, or `claude_desktop_config.json`.
 - **Removing a server.** A server present in a target but not in the golden set is `mcp-undeclared`, and deciding which side is right is a person's call.
 
 ## Targets
 
 A target is every MCP file an enabled harness reads, chosen by the same rule `doctor` uses: Claude Code and Cursor are always enabled, Codex and Gemini CLI are enabled when their directory already exists. A file that does not exist yet is created only for an enabled harness.
+
+## mcp reconcile
+
+```sh
+buddy-agent-harness mcp reconcile [--root <directory>] [--accept <path>]... [--format toon|json|text]
+```
+
+`mcp reconcile` is the other direction. It imports a change made in a harness's MCP file back into the golden set, **one approved field at a time**. It covers the two findings where the harness side is plainly ahead: `mcp-diverged-target` and `mcp-undeclared`. It is a dry run unless `--accept` names a field.
+
+| Option | Meaning |
+| --- | --- |
+| `--root <directory>` | Repository or package directory. Defaults to the current directory. |
+| `--accept <path>` | Approve one field by the `path` the dry run lists for it. Repeat it for each field. There is no approve-all. |
+| `--format toon\|json\|text` | Choose token-efficient TOON output (default), JSON, or a human-readable text report. |
+
+A dry run against a golden set whose `linear` server the harness changed, and a `docs` server only `.mcp.json` declares with a literal bearer token:
+
+```
+golden: .agents/buddy-agent-harness/mcp.toml
+mode: dry run — nothing written; re-run with --accept <path> for each approved field
+
+fields:
+  path                                          action  value
+  .mcp.json#servers.linear.command              import  command = "bunx"
+  .mcp.json#servers.docs.url                    import  url = "https://docs"
+  .mcp.json#servers.docs.headers.Authorization  refuse
+
+record: not written — dry run
+```
+
+(`detail` is left out here.) Approve fields one by one:
+
+```sh
+buddy-agent-harness mcp reconcile --accept '.mcp.json#servers.linear.command' --accept '.mcp.json#servers.docs.url'
+```
+
+The golden set is then edited in place. The comment on the changed line stays, and the new server is appended as its own table:
+
+```toml
+# Linear: the tracker.
+[servers.linear]
+command = "bunx" # pinned
+args = ["-y", "linear-mcp"]
+
+[servers.docs]
+url = "https://docs"
+```
+
+### The actions
+
+| Action | Meaning |
+| --- | --- |
+| `import` | offered; approving it writes the field into the golden set |
+| `imported` | approved and written |
+| `edit` | approved, but the golden set writes this field in a shape the command does not take apart, such as a sub-table; `value` is for a person to apply |
+| `skip` | both sides changed, no baseline says which side moved, or the value is the harness's own default |
+| `refuse` | the target does not parse, or the field holds a literal credential |
+
+A field only the golden side changed produces no row: that is `mcp project`'s.
+
+### What it will not import
+
+| Case | Why |
+| --- | --- |
+| A field both sides changed, or one no baseline can place | a three-way conflict is a person's to settle; approving it fails with nothing written |
+| A literal credential | it would move a secret into the file every harness is projected from. `env` and `headers` are refused per name and their other names are still offered; a `url` or `args` holding one is refused whole. The value is never shown. Move it into an environment variable and reference it as `${VAR}` |
+| A value equal to the harness's default | a harness restating its default cannot be told from a user's edit. Codex's tool timeout defaults to 60 seconds (E-MCP-14), Gemini CLI's to 600000 ms (E-MCP-15) |
+| A transport the golden set would infer | an entry with `url` is `http` and one with `command` is `stdio` without saying so |
+| A name only the harness has in `env` or `headers` | the golden set never compared it, so it never pulls it |
+
+Values come back through the harness's [dialect](#dialects), so Cursor's `${env:NAME}` and Codex's `bearer_token_env_var` land as `${NAME}`.
+
+Approval fails whole, writing nothing, when a `path` names no `import` row, when one field is approved from two harnesses with different values, or when a new server is approved without its `command` or `url`.
+
+On a write, each imported field is recorded in the [last-projected record](#the-last-projected-record) for the harness it came from. The other harnesses still carry the old value, and `doctor` then reports them as `mcp-diverged-golden` for `mcp project` to update. The [`repair` skill](/skills/repair/) offers each field on its own and passes `--accept` only for the ones you approve.

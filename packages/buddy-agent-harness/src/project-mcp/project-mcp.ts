@@ -3,6 +3,7 @@ import { dirname, join } from 'node:path'
 import type { GitBridgeState } from '../diagnose-bridges/git-bridge-state.ts'
 import type { Position } from '../diagnose-bridges/locator.ts'
 import {
+	formatProjectionRecord,
 	McpBaseline,
 	type McpDirection,
 	parseProjectionRecord,
@@ -213,8 +214,7 @@ function writeRecord(root: string, record: Map<string, Map<string, McpServer>>, 
 		for (const [name, server] of plan.agreed) servers.set(name, server)
 		if (servers.size) record.set(plan.config.path, servers)
 	}
-	const targets = Object.fromEntries([...record].map(([path, servers]) => [path, Object.fromEntries(servers)]))
 	const absolute = join(root, projectionRecordPath)
 	mkdirSync(dirname(absolute), { recursive: true })
-	writeFileSync(absolute, `${JSON.stringify({ targets }, null, 2)}\n`)
+	writeFileSync(absolute, formatProjectionRecord(record))
 }
