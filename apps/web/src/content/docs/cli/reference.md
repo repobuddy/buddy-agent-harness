@@ -11,7 +11,7 @@ buddy-agent-harness reference search <query> [--root <directory>] [--format toon
 
 A **reference** is a Markdown document an agent reads on demand. [References and Skills](/agent-configuration/references/) covers when to write one instead of a skill. `reference` is read-only: it never writes a document.
 
-`--root` is the directory the local and project tiers are read from, walking up to the repository root. It defaults to the current directory.
+`--root` is the directory the project tier is read from, walking up to the repository root. It defaults to the current directory.
 
 A skill does not run this command itself. It names the [`load-reference` skill](/skills/load-reference/), which runs `show` from a launcher bundled in its own folder.
 
@@ -22,7 +22,6 @@ A name resolves through these tiers, highest precedence first. Each tier holds o
 | Tier | Layers, in order |
 | --- | --- |
 | `managed` | the machine-wide `references/`, then the machine-wide `governances/`, then the folder `universal-plugin` wrote |
-| `local` | `<dir>/.agents/references.local/` for each folder of the walk, nearest first |
 | `project` | `<dir>/.agents/references/`, then `<dir>/.agents/governances/`, for each folder of the walk, nearest first |
 | `user` | `~/.agents/references/`, then `~/.agents/governances/` |
 | `plugin` | this package's `references/` as the plugin `buddy-agent-harness`, and the `references/` folder of each dependency in the nearest `package.json` |
@@ -35,9 +34,7 @@ The machine-wide folders:
 
 The `governances/` folders are the ones [`governance`](/cli/governance/) reads, kept so existing documents keep resolving. `list` marks each of them as legacy.
 
-**The walk.** The local and project tiers are read at `--root` and at each folder above it, up to and including the repository root: the first folder holding `.git`, `pnpm-workspace.yaml`, or a `package.json` with `workspaces`. In a monorepo, a package's own `.agents/references/` answers before the one at the repository root. With no repository root above `--root`, only `--root` is read.
-
-**Local.** `.agents/references.local/` is your own copy of a repository's references, above every project layer and below managed. Add it to `.gitignore`; nothing checks that you did.
+**The walk.** The project tier is read at `--root` and at each folder above it, up to and including the repository root: the first folder holding `.git`, `pnpm-workspace.yaml`, or a `package.json` with `workspaces`. In a monorepo, a package's own `.agents/references/` answers before the one at the repository root. With no repository root above `--root`, only `--root` is read.
 
 **Plugins.** Only packages listed in `dependencies` or `devDependencies` are read, never a transitive dependency. Two plugins holding the same name is an error that names both; ask for one as `<plugin>/<name>`. A qualified name picks that plugin's copy, and a project, user, or managed copy of `<name>` still overrides it.
 
@@ -58,7 +55,6 @@ When two exist in one layer, the earlier answers and a warning names the other.
 | Field | Meaning |
 | --- | --- |
 | `merge` | `first-wins` (default), `combine`, or `merge-sections`: how this document combines with the layers below it |
-| `final` | `true` in a project document blocks every local copy of the name; ignored with a warning in any other tier |
 | `description` | one line, shown by `list` and `search` |
 | `tags` | matched by `search` |
 
@@ -75,17 +71,7 @@ A section is a heading and the headings above it, such as `Testing > Fixtures`. 
 | `<!-- merge: remove -->` directly under the heading | drops the section |
 | a section that matches nothing | added after its last sibling |
 
-A `combine` or `remove` that matches nothing, and a heading path that appears twice, each produce a warning. Layers apply from the bottom up: plugin, user, project farthest first, local, managed.
-
-### `final`
-
-```md
----
-final: true
----
-```
-
-A project document with `final: true` stops a local copy of the name from overriding it. The local copy is not read into the result, and `--trace` and `list` report it as `blocked by final in project`. It blocks local only: a nearer project layer and the managed tier still apply. A plugin cannot set it, so a dependency never stops the repository that uses it from overriding locally.
+A `combine` or `remove` that matches nothing, and a heading path that appears twice, each produce a warning. Layers apply from the bottom up: plugin, user, project farthest first, managed.
 
 ## `reference show`
 
@@ -130,7 +116,7 @@ An ambiguous entry carries `plugins`, the qualified names to ask for instead.
 
 ### `--trace`
 
-Reports, per name, every layer checked, whether it held the name, the file that matched, the merge mode it declared, and its outcome: `used`, `missing`, `shadowed by <tier> (first-wins)`, `blocked by final in project`, or `ambiguous`. With `--format json` or `toon` it is the entry's `trace` field. With `text` it is written to stderr, so stdout is still only the documents.
+Reports, per name, every layer checked, whether it held the name, the file that matched, the merge mode it declared, and its outcome: `used`, `missing`, `shadowed by <tier> (first-wins)`, or `ambiguous`. With `--format json` or `toon` it is the entry's `trace` field. With `text` it is written to stderr, so stdout is still only the documents.
 
 ## `reference list`
 

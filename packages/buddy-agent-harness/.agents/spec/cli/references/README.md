@@ -26,8 +26,8 @@ replaces `governance-overrides` as the read path; that command stays, unchanged,
 
 - **reference** — a Markdown document addressed by a name that is a file stem, optionally qualified by
   a plugin: `<name>` or `<plugin>/<name>`.
-- **tier** — one kind of place a reference comes from: `managed`, `local`, `project`, `user`, `plugin`,
-  in that order of precedence.
+- **tier** — one kind of place a reference comes from: `managed`, `project`, `user`, `plugin`, in that
+  order of precedence.
 - **layer** — one folder inside a tier. A tier can hold several: a legacy `governances/` beside
   a `references/`, one per folder of the monorepo walk, a plugin each.
 - **monorepo walk** — `--root` and each folder above it up to the repository root: the first folder
@@ -57,10 +57,10 @@ replaces `governance-overrides` as the read path; that command stays, unchanged,
 - **a skill** — the future `load-reference` skill runs `show` on behalf of every skill that needs a
   reference; it reads the exit code first and the documents second.
 - **an agent that cannot name what it needs** — knows the subject, not the file; runs `search`.
-- **person at a shell** — writes a local, project, or user override and wants to see that it took
-  effect, or why it did not: `list` and `show --trace`.
+- **person at a shell** — writes a project or user override and wants to see that it took effect,
+  or why it did not: `list` and `show --trace`.
 - **repository owner** — ships project references for every contributor, at the repository root or
-  in one package of a monorepo, and marks one `final` when no contributor may override it locally.
+  in one package of a monorepo.
 - **machine owner** — installs references every repository on the machine should see.
 - **package author** — ships `references/` in a package so every repository depending on it can read
   them.
@@ -75,10 +75,8 @@ replaces `governance-overrides` as the read path; that command stays, unchanged,
 | an agent | find a reference by subject | `search <query>` |
 | person at a shell | override one section of a reference, not the whole of it | `merge: merge-sections` |
 | person at a shell | see which layer answered and what it shadowed | `show --trace`, `list` |
-| person at a shell | override a repository's reference for themselves alone | the local tier |
 | repository owner | give every contributor the same references | the project tier |
 | repository owner | give one package of a monorepo its own references | the monorepo walk |
-| repository owner | a reference no contributor overrides locally | `final: true` |
 | machine owner | a reference no repository can override | the managed tier |
 | package author | ship references a dependent repository can read and override | the plugin tier |
 | machine owner, repository owner | keep documents written for `governance` working | the legacy `governances/` layers |
@@ -93,7 +91,7 @@ replaces `governance-overrides` as the read path; that command stays, unchanged,
 
 **Surface.** Names (`show`), a query (`search`), `--root` and `--format` (all three), and `--trace`
 (`show` only — `list` already reports every layer's status, and `search` ranks rather than resolves).
-`--root` names the directory the local and project tiers walk up from; `--format` serves the agent that parses (`toon`, `json`) and the
+`--root` names the directory the project tier walks up from; `--format` serves the agent that parses (`toon`, `json`) and the
 person who reads (`text`); `--trace` serves the person asking why a layer did not answer.
 
 ### Tiers, highest precedence first
@@ -101,7 +99,6 @@ person who reads (`text`); `--trace` serves the person asking why a layer did no
 | Tier | Layers, in order |
 | --- | --- |
 | `managed` | this package's machine-wide `references/`, then its `governances/`, then the one `universal-plugin` wrote (deprecated) |
-| `local` | `<dir>/.agents/references.local/` for each `<dir>` of the monorepo walk, nearest first |
 | `project` | `<dir>/.agents/references/`, then `<dir>/.agents/governances/`, for each `<dir>` of the monorepo walk, nearest first |
 | `user` | `~/.agents/references/`, then `~/.agents/governances/` |
 | `plugin` | this package's own `references/` and `governances/` as the plugin `buddy-agent-harness`, and each declared dependency that ships `references/` |
@@ -110,14 +107,10 @@ The machine-wide root per platform is `/etc/buddy-agent-harness`, `/Library/Appl
 Support/BuddyAgentHarness`, or `%ProgramData%\BuddyAgentHarness`; the deprecated one is the
 `universal-plugin` root `governance` already reads.
 
-**The monorepo walk.** The local and project tiers are read at `--root` (default: the working
+**The monorepo walk.** The project tier is read at `--root` (default: the working
 directory) and at each folder above it, up to and including the repository root. The nearest folder's
-layer ranks first. With no repository root above `--root`, the tiers are read at `--root` alone, so a
+layer ranks first. With no repository root above `--root`, the tier is read at `--root` alone, so a
 folder outside any repository never reads its ancestors.
-
-**The local tier.** `.agents/references.local/` is one person's copy. It is meant to be gitignored,
-and nothing here checks that it is. It ranks above every project layer and below managed, so a
-person can override a repository's reference for themselves and a machine owner still overrides both.
 
 **The plugin tier.** The dependencies and devDependencies of the nearest `package.json` from `--root`,
 resolved the way Node resolves a package. Only declared dependencies: a transitive package is never a
@@ -138,7 +131,7 @@ Two candidates in one layer resolve in that order; `list` and `show` warn that t
 
 ### Frontmatter
 
-Read as YAML. `merge`, `final`, `description`, and `tags` mean something here; the rest is passed
+Read as YAML. `merge`, `description`, and `tags` mean something here; the rest is passed
 through. Frontmatter is never part of the text output. `json` and `toon` return it as `metadata`.
 
 ### Merge modes
@@ -163,16 +156,7 @@ at the first `first-wins` document; every layer below it is **shadowed**.
   - Merge comments never reach the output.
 - Over a `combine` stack, `merge-sections` merges into the stack's bodies joined in order.
 - An unknown `merge` value warns and counts as `first-wins`.
-- Layers apply bottom-up: plugin, user, project farthest first, local, managed.
-
-### `final`
-
-`final: true` in a project document blocks every local layer holding the name. The blocked layers are
-not read into the result, and their trace step and `list` row read `blocked by final in project`. Any
-project layer of the walk can set it; it blocks local only, so a nearer project layer and the managed
-tier still override it. Outside the project tier `final` is ignored with a warning — a plugin cannot
-stop the repository that depends on it from overriding locally. A value that is not `true` or `false`
-warns and counts as `false`.
+- Layers apply bottom-up: plugin, user, project farthest first, managed.
 
 ### Output contract of `show`
 
@@ -188,14 +172,14 @@ warns and counts as `false`.
   `content`, and the `layers` used; `warnings`; `suggestions` for a miss; `plugins` for an ambiguity;
   `trace` with `--trace`.
 - **`--trace`**: every path checked, per name, with the candidate file that matched, the merge mode
-  applied, and why a layer was not used — `shadowed by project (first-wins)`, `blocked by final in project`. Carried as `trace` in `json`/`toon`, and written to stderr in `text` so stdout stays the
+  applied, and why a layer was not used — `shadowed by project (first-wins)`. Carried as `trace` in `json`/`toon`, and written to stderr in `text` so stdout stays the
   document.
 - **Warnings** go to stderr in `text`, and into `warnings` otherwise.
 
 ### `list` and `search`
 
 `list` reports every layer in precedence order, then one row per name per layer that holds it:
-`name`, `tier`, `plugin`, `path`, `status` (`used`, `shadowed by <tier> (first-wins)`, `blocked by final in project`, `ambiguous`), `description`. A healthy empty run states its zero. The legacy and
+`name`, `tier`, `plugin`, `path`, `status` (`used`, `shadowed by <tier> (first-wins)`, `ambiguous`), `description`. A healthy empty run states its zero. The legacy and
 deprecated layers carry a status saying where their documents belong.
 
 `search` ranks: exact name, name prefix, a name close to the query, `description` or `tags`, a
@@ -217,15 +201,14 @@ by name. No match states its zero and exits 0.
 flowchart TD
   A[Parse format and names] --> B{Valid?}
   B -->|no| C[Reason on stderr, exit 1]
-  B -->|yes| D[Build layers: managed, local and project along the walk, user, plugins]
+  B -->|yes| D[Build layers: managed, project along the walk, user, plugins]
   D --> E[Per name: read the first file candidate in every layer]
   E --> E1{Layer readable as a folder?}
   E1 -->|no| E2[Empty: ask the next layer]
   E1 -->|yes| F{Plugin tier: one holder?}
   E2 --> F
   F -->|two or more, unqualified| G[Ambiguous]
-  F -->|one or none| F2[A final project document blocks every local layer]
-  F2 --> K[Read down to the first first-wins document; the rest are shadowed]
+  F -->|one or none| K[Read down to the first first-wins document; the rest are shadowed]
   K --> L{Anything found?}
   L -->|no| M[Missing, with suggestions]
   L -->|yes| N[Fold bottom-up: combine labels, merge-sections by heading path]
@@ -274,11 +257,9 @@ flowchart TD
 | E→K | a name only in lower tiers | `falls through to the highest tier that holds the name` |
 | E→K | a name in all three managed layers | `orders the managed layers references, then governances, then the deprecated one` |
 | E1→E2 | a layer path that is a file | `passes over a layer that is not a folder and asks the next` |
-| E→K | a name in the managed, local, and project tiers | `resolves local above project and below managed` |
 | D | a root below a `pnpm-workspace.yaml` | `walks the project tier up to the workspace root, the nearest layer first` |
 | D | a root below `.git` or a `package.json` with `workspaces` | `stops the walk at the git root or a package.json declaring workspaces` |
 | D | no repository root above the root | `reads the root alone when no repository root is above it` |
-| D | a local layer at the workspace root | `reads a local layer at every level of the walk, above every project layer` |
 | D | a declared dependency shipping `references/` | `reads a declared dependency's references as a plugin` |
 | D | an installed package nobody declared | `never reads a package the repository did not declare` |
 | F→G | one name in two plugins, unqualified | `reports a name two plugins hold as ambiguous, naming both` |
@@ -312,16 +293,11 @@ flowchart TD
 | O1→O3 | a document ending on a newline | `adds no second newline when the document has one` |
 | O | frontmatter and a merge comment | `strips frontmatter and merge comments from text output and returns frontmatter as metadata` |
 
-### `reference show` — the monorepo walk and `final`
+### `reference show` — the monorepo walk
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
-| N | `merge-sections` along the walk and in local | `merges project layers farthest first, then local` |
-| F2 | a `final` project document and a local one | `blocks a local override of a final project reference, and says so in the trace and the listing` |
-| F2 | a `final` project document farther up the walk | `blocks a local override when any project layer of the walk is final` |
-| F2 | a `final` project document and a managed one | `leaves the managed tier above a final project reference` |
-| E | `final` in a plugin document | `ignores final outside the project tier, with a warning` |
-| E | a `final` that is not a boolean | `reads a final that is not true or false as false, with a warning` |
+| N | `merge-sections` along the walk | `merges project layers farthest first` |
 
 ### `reference show` — output
 

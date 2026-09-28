@@ -9,6 +9,3 @@ coverage
 # through the npm package's `files`, not through git; a git-sourced install falls back to the pinned
 # `npx` invocation each skill's SKILL.md documents.
 packages/buddy-agent-harness/skills/*/scripts/*.mjs
-
-# Personal reference overrides (the local tier of `reference show`).
-.agents/references.local/
