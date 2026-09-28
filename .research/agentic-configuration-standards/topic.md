@@ -67,7 +67,7 @@ Only `.agents/skills/` is attested. No source shows adoption of `.agents/rules/`
 
 - **Global canonical path**: `npx skills` documents `~/.agents/skills/` *or* `~/.config/agents/skills/` on XDG systems; every vendor doc names only `~/.agents/skills`. Unresolved (E-AGT-03).
 - **`name` semantics**: the spec requires `name` to match the parent directory; Claude Code treats `name` as a display label and resolves commands from the directory name. Complying with the spec hides the conflict (E-FM-02).
-- **Cursor and AGENTS.md**: secondary sources say Agent mode reads it and Chat/Composer do not. Not confirmed from primary Cursor docs (E-CUR-02).
+- **Cursor and AGENTS.md**: ~~secondary sources say Agent mode reads it and Chat/Composer do not~~ — **resolved 2026-09-28 against primary docs, and the secondary sources were wrong.** Rules apply in Agent, Ask, Plan, and Debug (E-CUR-05); Chat and Composer were merged into the Agent panel in v0.46 (E-CUR-06). E-CUR-02 superseded.
 - **Windsurf**: one source says `.windsurf/skills/`, another says skill content must be pasted into Windsurf rules. No primary doc (E-WS-01).
 
 ## Open questions

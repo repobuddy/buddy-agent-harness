@@ -35,7 +35,7 @@ Each migrated file needs frontmatter that satisfies the Agent Skills specificati
 
 The most common migration mistake is generating `.cursor/rules/*.mdc` from `AGENTS.md`, or deleting `.cursorrules` on the assumption that `AGENTS.md` now covers it.
 
-It does not. `.mdc` and `.md` are not interchangeable, path-scoped rules have no `AGENTS.md` equivalent, and [Cursor reads `AGENTS.md` in Agent mode only](/agent-configuration/harnesses/cursor/), so Chat and Composer still read the rules files. A repository that consolidates into `AGENTS.md` and deletes its rules loses instructions in two of three Cursor surfaces.
+It does not. `.mdc` and `.md` are not interchangeable, and path-scoped rules have no `AGENTS.md` equivalent — a rule carrying `globs` or a `description` loads only when those match, while `AGENTS.md` loads on every turn. Generating a rule from `AGENTS.md` invents scope the source never carried; deleting one trades conditional activation for always-on context. [Cursor reads `AGENTS.md` in every mode](/agent-configuration/harnesses/cursor/), so nothing stops reading the words — what changes is when they load, and that is a cost every session pays.
 
 The same reasoning covers subagents, hooks, and MCP servers. They are reported and left exactly where they are.
 

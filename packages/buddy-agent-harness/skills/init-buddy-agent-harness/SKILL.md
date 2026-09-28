@@ -21,7 +21,7 @@ Skills and instructions are separate questions, and the two harnesses that need 
 | Claude Code | `.claude/skills` | none — reads `AGENTS.md`; a `CLAUDE.md` suppresses it | `references/harnesses/claude-code.md` |
 | Gemini CLI | none | `.gemini/settings.json` edit | `references/harnesses/gemini-cli.md` |
 | Codex | none | none | `references/harnesses/codex.md` |
-| Cursor | none | none written; one gap to report | `references/harnesses/cursor.md` |
+| Cursor | none | none | `references/harnesses/cursor.md` |
 | GitHub Copilot CLI | none | none | `references/harnesses/copilot-cli.md` |
 | Devin Desktop | none | none | `references/harnesses/devin-desktop.md` |
 
@@ -70,7 +70,9 @@ Get explicit approval before any step that deletes, replaces, or rewrites a user
 
 **List every artifact only one harness can read, and ask about each one separately.** Give its path, what reads it today, and the canonical form it is a candidate for. Ask per artifact rather than for the set: they convert for different reasons and a single yes would carry files the owner never looked at. Say plainly which ones have no candidate at all — a subagent has none — so the list is not read as a queue of pending work.
 
-**A conversion that would narrow what reads the content is not offered without the bridge that prevents it.** Cursor reads `AGENTS.md` in Agent mode only, so moving `.cursorrules` there and deleting it takes that guidance out of Chat and Composer. The offer is therefore always *consolidate into `AGENTS.md` and leave a generated copy behind*, never *consolidate and delete* — `references/harnesses/cursor.md` has the detail. Where no such bridge exists, say so and leave the artifact alone.
+**A conversion that would narrow what reads the content is not offered without the bridge that prevents it.** Gemini CLI is the live case: it reads `AGENTS.md` only once it is named in `context.fileName`, so moving `GEMINI.md` there and deleting it takes that guidance out of the harness until the bridge in Phase 4 lands. The offer is therefore always *consolidate and keep the content reachable*, never *consolidate and delete* — and where no such bridge exists, say so and leave the artifact alone.
+
+**Cursor is not one of these cases.** It reads `AGENTS.md` in every mode, so consolidating a `.cursor/rules/*.mdc` costs no coverage and needs no copy left behind. What it can cost is conditional activation: a rule carrying `globs` or a `description` loads only when those match, and the same words in `AGENTS.md` load on every turn. Offer that trade on its own terms — `references/harnesses/cursor.md` has the detail.
 
 `CLAUDE.md` is the one artifact where the generated copy is the harm rather than the safeguard: a copy left behind is read *instead of* `AGENTS.md`, so the consolidation would reach every harness but the one the file was written for. Offer to consolidate and **remove** it, or — where something in it is genuinely Claude-only — to consolidate the shared part and leave the file holding an `@AGENTS.md` import above whatever stays.
 

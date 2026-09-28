@@ -39,12 +39,6 @@ The harness claims across this site are not equally well-sourced, and the differ
 | The `.agents/mcp.json` proposal being unaffiliated and unadopted | Medium | the draft's own site; nothing establishes that anyone reads it |
 | Only Claude Code addresses a plugin's skill as `plugin:skill` and lets one plugin depend on another; Codex, Cursor, and Copilot CLI name skills bare | High | primary vendor documentation for each; the absence claims are checks of each vendor's plugin manifest and skills reference |
 
-## Cursor's mode split is not confirmed
-
-The claim that Cursor's Agent mode reads `AGENTS.md` while Chat and Composer do not comes from third-party comparisons rather than Cursor's own documentation.
-
-It is consequential: a repository standardizing on `AGENTS.md` alone would lose instructions in two of three Cursor surfaces. Verify it against Cursor's documentation before relying on it. See [Cursor](/agent-configuration/harnesses/cursor/).
-
 ## Not established
 
 Two claims about instruction files are left unstated rather than guessed:
@@ -69,6 +63,16 @@ What is documented is what has been verified and what initialization depends on.
 ## Corrections
 
 A claim that turns out to be wrong is corrected in place and recorded here. The entry stays after the page is fixed, so you can tell whether something you read earlier has since changed.
+
+### 2026-09-28 — Cursor was said to read AGENTS.md in Agent mode only
+
+[Cursor](/agent-configuration/harnesses/cursor/) stated that Cursor reads `AGENTS.md` in Agent mode alone, that Chat and Composer read `.cursorrules` and `.cursor/rules/*.mdc` instead, and that a repository consolidating into `AGENTS.md` would lose its instructions in two of three surfaces. The claim was sourced to third-party comparisons and marked contested. Cursor's own documentation contradicts it. Under "Do rules apply in all modes?": "Yes. Project rules, user rules, and team rules apply in Agent, Ask, Plan, and Debug modes. The rules are included in every conversation regardless of which mode you're using."
+
+The claim's premise was outdated as well. Chat, Composer, and Agent were merged into one interface in v0.46 — "No more confusion between Chat, Composer, and Agent" — and "Composer" now names a model, so the two surfaces said to lose their instructions had not been separate readers for roughly a year and a half. The likely origin is Cursor's own phrase "Rules only apply to Agent (Chat)", which names the agent chat surface as against Tab completion, Inline Edit, and Bugbot PR reviews, not Agent mode as against Ask mode.
+
+Corrected at [Cursor](/agent-configuration/harnesses/cursor/), and the "Cursor's mode split is not confirmed" section above was removed rather than rewritten, because the claim is now settled and false rather than unconfirmed. Evidence: E-CUR-05, E-CUR-06, E-CUR-07, superseding E-CUR-02.
+
+Project behavior changed with it. Cursor is no longer described as having an instruction gap, and `init` no longer offers to leave a generated copy of a consolidated `.cursorrules` or `.cursor/rules/*.mdc` behind to keep other modes working — no mode needed keeping. What it offers instead is the trade that is real: a rule carrying `globs` or a `description` loads conditionally, and the same content in `AGENTS.md` loads on every turn. One further finding came out of the same research (E-CUR-07): Cursor reads `CLAUDE.md` the same way it reads `AGENTS.md` and applies it to every conversation regardless of `alwaysApply`, which gives the existing never-write-a-`CLAUDE.md` rule a second and independent reason.
 
 ### 2026-09-27 — Gemini CLI was said to expand a variable only inside `env`
 

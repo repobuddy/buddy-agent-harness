@@ -448,7 +448,7 @@ const nonstandardTable: Record<NonstandardProblem, RepairRow> = {
 		detail: 'instruction content only one harness reads — AGENTS.md carries the same prose to all of them',
 		repair: ({ file }) => ({
 			command: '',
-			instruction: `consolidate ${file} into AGENTS.md and leave a generated bridge in its place — \`${initSkillInvocation}\` offers the consolidation`,
+			instruction: `consolidate ${file} into AGENTS.md — \`${initSkillInvocation}\` offers the consolidation, and keeps the content reachable where this harness needs it`,
 		}),
 		skillRepair: ({ file }) => `hand ${file} to \`${initSkillInvocation}\`, which consolidates it into AGENTS.md`,
 	},
@@ -613,7 +613,7 @@ Every \`problem\` name routes to exactly one page. Load the page for the finding
 function conversionOf(kind: NonstandardKind): string {
 	switch (kind) {
 		case 'instructions':
-			return '`AGENTS.md`, with a generated bridge left behind'
+			return '`AGENTS.md`, keeping the content reachable for this harness'
 		case 'rule':
 			return 'a skill, where the path scoping is incidental'
 		case 'command':

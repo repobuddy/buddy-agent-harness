@@ -30,7 +30,7 @@ Reported by `doctor` so it can be converted; see `../nonstandard.md` for what ea
 
 | Path | Kind | Converts to |
 | --- | --- | --- |
-| `GEMINI.md` | instructions | `AGENTS.md`, with a generated bridge left behind |
+| `GEMINI.md` | instructions | `AGENTS.md`, keeping the content reachable for this harness |
 | `.gemini/skills/` | skill | `.agents/skills`, projected back if needed |
 
 ## Judgment about this harness

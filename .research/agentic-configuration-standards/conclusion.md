@@ -53,7 +53,7 @@ Claude Code's gap is confirmed by an open `vercel-labs/skills` bug: *"Claude Cod
 | --- | --- | --- |
 | Codex | ✅ | layers root → cwd |
 | Copilot | ✅ | `.github/copilot-instructions.md`, `.github/instructions/**`, also reads CLAUDE.md and GEMINI.md |
-| Cursor | ✅ **Agent mode only** | Chat/Composer read `.cursorrules` (deprecated) + `.cursor/rules/*.mdc` and do *not* read AGENTS.md |
+| Cursor | ✅ all modes | `.cursorrules` (deprecated) + `.cursor/rules/*.mdc` coexist; also reads `CLAUDE.md`, always-on *[corrected 2026-09-28: E-CUR-05/06/07. Read "Agent mode only" as superseded — rules apply in Agent, Ask, Plan, and Debug, and Chat/Composer stopped being separate surfaces in v0.46.]* |
 | Gemini CLI | configurable | default `GEMINI.md`; `settings.json` → `context.fileName: ["AGENTS.md", ...]` |
 | Claude Code | ❌ | `CLAUDE.md` only. Docs: *"Claude Code reads `CLAUDE.md`, not `AGENTS.md`."* Sanctioned bridges: `@AGENTS.md` import, or `ln -s AGENTS.md CLAUDE.md` |
 
@@ -107,7 +107,7 @@ It also warns about the most common real-world break: an unquoted colon in `desc
 
 ## Strongest counterevidence / caveats
 
-- Cursor reads AGENTS.md **only in Agent mode** — a repo that standardizes on AGENTS.md silently loses instructions in Cursor Chat/Composer
+- ~~Cursor reads AGENTS.md **only in Agent mode**~~ — *disproved 2026-09-28 (E-CUR-05). The vendor's FAQ answers "Do rules apply in all modes?" with "Yes." This was the strongest counterevidence in the original snapshot and it did not survive primary sourcing.*
 - `npx skills` global canonical is `~/.agents/skills/` *or* `~/.config/agents/skills/`; vendor docs only ever name `~/.agents/skills`. Contradiction unresolved
 - The Agent Skills spec's `name`-must-match-directory rule is contradicted in practice by Claude Code's directory-name-wins command resolution
 - `.claude/commands/` is being merged into skills upstream in Claude Code, so command-vs-skill is a moving boundary
@@ -131,7 +131,7 @@ It also warns about the most common real-world break: an unquoted colon in `desc
 - If Claude Code adds `.agents/skills` discovery or native AGENTS.md reading — this would collapse most of the projection work in this project
 - If agentskills.io promotes the `.agents/` convention from the client-implementation guide into the specification proper
 - If `vercel-labs/skills` issue #896 (configurable canonical skills directory) or #693 (Claude Code global read) lands
-- If Cursor unifies AGENTS.md reading across Chat/Composer and Agent modes
+- ~~If Cursor unifies AGENTS.md reading across Chat/Composer and Agent modes~~ — *resolved 2026-09-28: it was never split. Chat and Composer were unified into the Agent panel in v0.46 (E-CUR-06).*
 - If AAIF publishes a location standard covering more than skills
 
 ## Implications for buddy-agent-harness

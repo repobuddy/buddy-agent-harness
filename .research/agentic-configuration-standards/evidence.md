@@ -103,6 +103,8 @@ Status values: `confirmed`, `contested`, `thin`. Confidence: high / medium / low
 
 ## E-CUR-02 — Cursor reads AGENTS.md only in Agent mode
 
+**Superseded by E-CUR-05 (2026-09-28) on the mode claim, and by E-CUR-06 on the surfaces it names.** The primary source contradicts it: rules apply in every mode, and Chat and Composer stopped being separate surfaces in v0.46. Retained for provenance; do not cite. The `.cursorrules` findings below still hold.
+
 - **Date**: 2026-08
 - **Status**: thin
 - **Confidence**: medium
@@ -659,3 +661,30 @@ Status values: `confirmed`, `contested`, `thin`. Confidence: high / medium / low
 - **Confidence**: medium
 - **Source**: direct run of the shipped Cursor CLI while building `dep-plugins` (#103, c9fd249). The CLI version was not recorded.
 - **Notes**: No terminal command installs, updates, or lists Cursor plugins, so `dep-plugins` has nothing to drive for it.
+
+## E-CUR-05 — Cursor rules apply in every mode, not Agent mode alone
+
+- **Date**: 2026-09-28
+- **Status**: confirmed
+- **Confidence**: high
+- **Source**: Cursor help — https://cursor.com/help/ai-features/agent.md — primary vendor documentation
+- **Notes**: Under the heading "Do rules apply in all modes?", verbatim: "Yes. Project rules, user rules, and team rules apply in Agent, Ask, Plan, and Debug modes. The rules are included in every conversation regardless of which mode you're using." The documented modes are Agent, Ask, Plan, and Debug; each "uses its own context", and switching is Shift+Tab or the mode picker. **Supersedes E-CUR-02.** One gap to keep visible: that sentence enumerates project, user, and team rules and does not name `AGENTS.md`, so mode-independence is documented for three of the four rule types by name and inferred for `AGENTS.md` — `https://cursor.com/docs/rules` frames it as one of the four types and as an alternative to project rules, and no page carves out a mode exception for it.
+- **The boundaries that do exist are per feature, not per mode.** Same page set, verbatim: "Rules only apply to Agent (Chat). They do not apply to Tab completion, Inline Edit, or Bugbot PR reviews." (https://cursor.com/help/customization/rules.md). "Agent (Chat)" names the agent chat surface as against Tab, Inline Edit, and Bugbot — not Agent mode as against Ask mode. Misreading that phrase is the likely origin of E-CUR-02, and the "all modes" FAQ exists to disambiguate it.
+
+## E-CUR-06 — Chat and Composer are not instruction-reading surfaces
+
+- **Date**: 2026-09-28
+- **Status**: confirmed
+- **Confidence**: high
+- **Source**: Cursor changelog 0.46 — https://cursor.com/changelog/0-46-x — primary vendor changelog
+- **Notes**: Verbatim: "Agent is ready: Agent is now the default mode … **No more confusion between Chat, Composer, and Agent — just one smart interface** that adapts to your needs." The three were unified into one panel. The current taxonomy is the four modes in E-CUR-05, and "Composer" is now a model name — "Composer 2.5 is Cursor's own agentic model" (https://cursor.com/docs/models/cursor-composer-2-5.md). "Chat" survives only as a parenthetical synonym for the agent panel, as in "Agent (Chat)". **Any claim about losing instructions "in Chat and Composer" describes surfaces that were merged in v0.46 and cannot be the consequence of a consolidation.**
+
+## E-CUR-07 — AGENTS.md is a first-class Cursor rule type, and CLAUDE.md is read the same way
+
+- **Date**: 2026-09-28
+- **Status**: confirmed
+- **Confidence**: high
+- **Source**: Cursor rules docs and help — https://cursor.com/docs/rules, https://cursor.com/help/customization/rules.md — primary vendor documentation
+- **Notes**: "Cursor supports four types of rules"; `AGENTS.md` is one, described as "Agent instructions in markdown format. Simple alternative to `.cursor/rules`." Verbatim: "Create an `AGENTS.md` file in your project root. Write instructions in plain markdown. Cursor picks it up automatically." Supported in the project root and in subdirectories, where nested instructions "are combined with parent directories, with more specific instructions taking precedence." It carries no conditional attachment — no globs, no description-gating, no `@`-mention-only — and the docs name that as the tradeoff: "For more control over when rules apply, use project rules in `.cursor/rules/` instead."
+- **Precedence against `.mdc` is undocumented.** The documented order is "Team Rules → Project Rules → User Rules", and `AGENTS.md` is not placed in it. The two coexist; Cursor loads both.
+- **`CLAUDE.md` is a Cursor instruction file too.** Verbatim: "Cursor reads `CLAUDE.md` files the same way it reads `AGENTS.md`", and "`CLAUDE.md` files are always applied to every conversation, regardless of any `alwaysApply` frontmatter setting." **This cuts against writing one for any repository that Cursor also reads**: the file Claude Code reads *instead of* `AGENTS.md` is one Cursor loads unconditionally *in addition to* it. Also relevant to `.cursor/rules/`: "A plain `.md` file in `.cursor/rules` is ignored by the rules system because it has no frontmatter."

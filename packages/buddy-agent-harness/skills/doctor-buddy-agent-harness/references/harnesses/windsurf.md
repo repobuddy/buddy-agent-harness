@@ -23,5 +23,5 @@ Reported by `doctor` so it can be converted; see `../nonstandard.md` for what ea
 
 | Path | Kind | Converts to |
 | --- | --- | --- |
-| `.windsurfrules` | instructions | `AGENTS.md`, with a generated bridge left behind |
+| `.windsurfrules` | instructions | `AGENTS.md`, keeping the content reachable for this harness |
 | `.windsurf/rules/` | rule | a skill, where the path scoping is incidental |
