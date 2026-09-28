@@ -26,5 +26,5 @@ minimumReleaseAgeStrict: true
 minimumReleaseAgeExclude:
   # min-release-age: lift clibuilder@11.3.0 until 2026-09-29T10:00:00Z
   - 'clibuilder@11.3.0'
-  # min-release-age: lift @cyberuni/agent-harness@0.2.0 until 2026-09-29T11:00:00Z
-  - '@cyberuni/agent-harness@0.2.0'
+  # min-release-age: lift @cyberuni/agent-harness@0.3.0 until 2026-09-29T17:00:00Z
+  - '@cyberuni/agent-harness@0.3.0'
