@@ -11,6 +11,7 @@
 			"!**/dist",
 			"!**/.astro",
 			"!**/.turbo",
+			"!.github/scripts/min-release-age.mjs",
 			"!packages/buddy-agent-harness/skills/*/scripts/*.mjs"
 		]
 	}
