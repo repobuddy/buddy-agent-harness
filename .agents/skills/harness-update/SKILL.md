@@ -9,11 +9,13 @@ metadata:
 
 This repository documents a moving target: other vendors' configuration formats. Its characteristic failure is a stale or unsourced vendor claim surviving in a table long after the vendor changed it. This skill is the loop that catches that.
 
-Two inputs feed it. `scripts/harness-drift.mjs` watches the one machine-readable source and files an issue weekly. Everything else — instruction files, rules, MCP, hooks — has no such source and only changes when someone looks.
+Two inputs feed it. The drift watcher in [cyberuni/agent-harness](https://github.com/cyberuni/agent-harness) (`scripts/harness-drift.mjs` there) watches the one machine-readable source and files an issue weekly in that repository. Everything else — instruction files, rules, MCP, hooks — has no such source and only changes when someone looks.
+
+**Skills directories live in `@cyberuni/agent-harness`.** `skillsDirectories()` there records which directories each harness reads skills from, and `harnessRegistry` derives every projection target from it — except for `devin-desktop` and `windsurf`, which that package does not know. A skills-path change for any other harness is made in that repository, with its evidence in `.research/harness-detection/`, and reaches this one by upgrading the dependency.
 
 ## 1. Establish what changed
 
-If a `harness-drift` issue triggered this, start from its findings. Otherwise run the check yourself:
+If a `harness-drift` issue in cyberuni/agent-harness triggered this, start from its findings. Otherwise run the check from a checkout of that repository:
 
 ```sh
 node scripts/harness-drift.mjs
@@ -63,7 +65,8 @@ A harness fact has many plausible homes, so a partial update is the normal failu
 
 | Surface | What lives there |
 | --- | --- |
-| `packages/buddy-agent-harness/src/harness-registry/harness-registry.ts` | `harnessRegistry` — names, and per scope (`project`, `user`) the detection directory and projection target |
+| `@cyberuni/agent-harness` `skillsDirectories()` (cyberuni/agent-harness) | which directories each harness reads skills from; the projection targets derive from it |
+| `packages/buddy-agent-harness/src/harness-registry/harness-registry.ts` | `harnessRegistry` — names, and per scope (`project`, `user`) the detection directory; projection targets only for `devin-desktop` and `windsurf` |
 | `packages/buddy-agent-harness/skills/init-buddy-agent-harness/references/harnesses/<harness>.md` | agent instructions for that harness — **instructions only, no rationale** |
 | `packages/buddy-agent-harness/skills/init-buddy-agent-harness/SKILL.md` | the routing table |
 | `apps/web/.../agent-configuration/harness-differences.md` | the support matrix, evidence confidence |
@@ -78,11 +81,10 @@ Grep for the harness name across the repository before declaring the change comp
 Once the research is recorded and propagated:
 
 ```sh
-node scripts/harness-drift.mjs --update-baseline
 pnpm verify
 ```
 
-Then close the drift issue with a link to the evidence ID. Do not update the baseline before the research is recorded — the baseline is a statement that a human reviewed the change, and updating it early silently discards the finding.
+Accept the new upstream state in cyberuni/agent-harness with `node scripts/harness-drift.mjs --update-baseline`, then close the drift issue with a link to the evidence ID. Do not update the baseline before the research is recorded — the baseline is a statement that a human reviewed the change, and updating it early silently discards the finding.
 
 ## Boundaries
 

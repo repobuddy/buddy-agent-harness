@@ -57,6 +57,7 @@
 		"node": ">=22"
 	},
 	"dependencies": {
+		"@cyberuni/agent-harness": "^0.2.0",
 		"@toon-format/toon": "^4.1.1",
 		"clibuilder": "^11.3.0",
 		"jsonc-parser": "^3.3.1",
