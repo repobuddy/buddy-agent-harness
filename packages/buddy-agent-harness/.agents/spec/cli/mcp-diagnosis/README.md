@@ -31,8 +31,9 @@ now wrong, and nothing says so.
 
 **Non-goals**
 
-- **Projecting.** Nothing here writes a harness's MCP config. Forward projection needs an
-  approval-gated, write-capable home, and `doctor` is read-only and hook-safe.
+- **Projecting.** Nothing here writes a harness's MCP config. `doctor` is read-only and
+  hook-safe; forward projection is `../mcp-projection/`, which the `repair` skill drives on
+  approval.
 - **Reconciling.** Pulling a target-side change back into the golden set is per server and per
   field, approval-gated, and refuses to auto-merge a three-way conflict. That is the same
   write-capable home's work. This capability is what it reads its work from.
@@ -51,11 +52,13 @@ now wrong, and nothing says so.
 - **MCP target** — a harness's project-scope MCP configuration file, its config key, and its
   format, as its own vendor documents them.
 - **canonical model** — the parsed, normalized shape both sides are compared in. Comparison is
-  semantic: no two of these files are ever byte-equal, so bytes cannot be the test.
+  semantic: no two of these files are ever byte-equal, so bytes cannot be the test. Each target is
+  read through its harness's **dialect** (`../mcp-projection/`), and compared only over the fields
+  that dialect has a place for — a golden field the target cannot hold is not drift.
 - **last-projected record** — `.agents/buddy-agent-harness/mcp.projected.json`, the per-target
-  record of what was last written, and the baseline for a target git cannot speak for. Nothing
-  writes it here, because nothing projects here; it is read where it is found, and a repository
-  that has never been projected into simply has none.
+  record of what was last written, and the baseline for a target git cannot speak for. `mcp
+  project --write` writes it; here it is only read, where it is found, and a repository that has
+  never been projected into simply has none.
 - **credential-bearing field** — a field whose name marks it as carrying a secret, plus the
   userinfo component of a URL and a credential-named query parameter in one. A name qualifies two
   ways: a word that never appears inside an innocent word (`token`, `secret`, `password`, `passwd`,

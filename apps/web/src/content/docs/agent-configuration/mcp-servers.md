@@ -5,6 +5,8 @@ description: 'The user-authored golden set of MCP servers: where it lives, how d
 
 A repository may keep one canonical list of its MCP servers in a **golden set** the user authors at `.agents/buddy-agent-harness/mcp.toml`. Where that file exists, [`doctor`](/cli/doctor/) compares it against each harness's own project-scope MCP configuration and reports drift in both directions, plus any literal credential sitting in either file. `doctor` stays what it is everywhere else: read-only. It detects and never writes.
 
+[`mcp project`](/cli/mcp/) is the writer: it projects the golden set into each enabled harness's own MCP file, a dry run unless `--write` is passed. It writes only where the golden set is plainly ahead — a server the target does not carry, or a field only the golden side changed — and never overwrites a harness-side edit.
+
 This page is the home for the golden set. The [CLI reference](/cli/doctor/) and the [`doctor-buddy-agent-harness` skill](/skills/doctor-buddy-agent-harness/) link here rather than restating it.
 
 ## What a golden set changes
@@ -86,7 +88,7 @@ One rule keeps the comparison honest: **a field the golden set leaves unset is n
 1. **The last-projected record**, `.agents/buddy-agent-harness/mcp.projected.json`: a per-target record of what was last written. It is asked first because it records exactly what was projected, and it exists because git can only answer for a file it can see — harnesses write these configs themselves, often untracked or ignored.
 2. **Git history**, for a tracked target the record does not cover: the newest commit where the golden set and the target agreed on that field, then which side still matches it.
 
-Nothing writes that record yet, because nothing projects yet — `doctor` reads it where it finds one, and today it will not find one. Until projection lands, every direction comes from git or is reported as unknown. You may write the file by hand, and `doctor` will honor it.
+[`mcp project --write`](/cli/mcp/) is what writes that record, once per run, for every server it left in agreement. Where a run has never written it yet — before the first `--write`, or for a target `mcp project` has never touched — the direction falls through to git, or is reported as unknown. You may also write the file by hand, and `doctor` will honor it.
 
 Where neither answers, the finding says `mcp-diverged-unknown` rather than guessing. Naming a side on a guess would send a repair at the wrong file. A record that does not parse is ignored the same way: it is a cache of an answer, not the answer, and the baseline falls through to git or to `unknown`.
 
@@ -104,6 +106,8 @@ The drift findings, then:
 | `mcp-target-unreadable` | a harness config does not parse, so the harness starts none of its servers |
 
 Each finding's `path` carries a locator, not only a file: `.cursor/mcp.json#servers.linear` names the server and `.cursor/mcp.json#servers.linear.command` names the field. In a file holding twenty servers, the file alone would be useless.
+
+`mcp-unprojected` and `mcp-diverged-golden` are the two the golden set is plainly ahead on, and [`mcp project`](/cli/mcp/) works out the change: the [`repair` skill](/skills/repair/) shows the dry run and applies it with `--write` on approval. The rest have no automatic repair — `mcp-undeclared` and the other `mcp-diverged-*` findings are a person's call, and the two `-unreadable` findings need the file fixed by hand first.
 
 ## Credentials, and why the report never shows one
 
@@ -128,7 +132,7 @@ The golden set gets the same checks as every harness copy. A user pastes a token
 
 ## What is deliberately not done yet
 
-Nothing writes. `doctor` detects drift; it does not create a harness's MCP file, update a stale copy, or pull a target-side edit back into the golden set. Forward projection and reconcile are writes, they need an approval-gated home, and they are a later change. Until then, each finding names its repair and a person (or the [`doctor-buddy-agent-harness` skill](/skills/doctor-buddy-agent-harness/), as a separate approved step) carries it out.
+`doctor` itself still only detects drift; it does not write anything. Writing is [`mcp project`](/cli/mcp/)'s job, and it covers one direction: creating a harness's MCP file or updating a stale copy from the golden set. Pulling a target-side edit back into the golden set — reconcile — is the other direction, and it does not exist yet. A server the harness side changed (`mcp-diverged-target`, `-both`, `-unknown`) is held back rather than written, and a server the harness declares that the golden set does not (`mcp-undeclared`) is left alone either way. Each of those findings names its repair and a person (or the [`repair` skill](/skills/repair/), as a separate approved step) carries it out.
 
 Project scope only. User-scope MCP configuration — `~/.codex/config.toml`, `~/.claude.json`, `claude_desktop_config.json` — holds much of the world's servers and stays described, never read and never written. Reading a user's home directory into output that lands in every session's transcript is a wider blast radius than diagnosis needs.
 

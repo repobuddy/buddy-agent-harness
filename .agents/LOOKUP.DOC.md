@@ -21,6 +21,7 @@ Where to look when writing or checking documentation in this repository. Pointer
 | whether a harness's JSON config accepts comments | `apps/web/src/content/docs/agent-configuration/harness-differences.md` |
 | where a harness keeps its MCP servers, and what the golden set is | `apps/web/src/content/docs/agent-configuration/mcp-servers.md` |
 | whether an MCP configuration location is standardizing | `.research/mcp-canonical-location/evidence.md` |
+| how each harness spells an MCP server entry — transport, references, timeout | `.research/mcp-canonical-location/evidence.md` (E-MCP-12 to E-MCP-16); the code is `packages/buddy-agent-harness/src/mcp-dialects/mcp-dialects.ts` |
 | the marketplace and plugin install commands | `apps/web/src/content/docs/getting-started/introduction.md`, repeated in both `README.md` files and in `docs/index.mdx` and `docs/skills/index.md` |
 
 ## Generated tables

@@ -4,12 +4,12 @@ import { type McpProblem, repairFor } from '../diagnose-bridges/doctor-guidance.
 import type { GitBridgeState } from '../diagnose-bridges/git-bridge-state.ts'
 import { type Locator, locatorText } from '../diagnose-bridges/locator.ts'
 import type { ConfigurationFinding } from '../diagnose-configuration/diagnose-configuration.ts'
-import { selectHarnesses } from '../harness-registry/harness-registry.ts'
 import type { McpConfig } from '../harness-registry/mcp-config.ts'
+import { mcpDialects } from '../mcp-dialects/mcp-dialects.ts'
 import { McpBaseline, type McpDirection, parseProjectionRecord, projectionRecordPath } from './mcp-baseline.ts'
 import { divergingFields, type McpServer } from './mcp-model.ts'
 import { credentialFields } from './mcp-secrets.ts'
-import { goldenSetPath, parseGoldenSet, parseTarget } from './mcp-sources.ts'
+import { goldenSetPath, mcpTargets, parseGoldenSet, parseTarget } from './mcp-sources.ts'
 
 export type DiagnoseMcpOptions = {
 	root: string
@@ -21,19 +21,6 @@ export type DiagnoseMcpOptions = {
 function read(root: string, path: string): string | undefined {
 	const absolute = join(root, path)
 	return existsSync(absolute) ? readFileSync(absolute, 'utf8') : undefined
-}
-
-/**
- * The distinct MCP files the enabled harnesses read. No `--harness` preference is accepted: every
- * harness documenting an MCP file is already selected without one, so a preference could never add
- * a finding.
- */
-function targetsOf(root: string): McpConfig[] {
-	const seen = new Set<string>()
-	return selectHarnesses(root, [])
-		.map((harness) => harness.project.mcpConfig)
-		.filter((config): config is McpConfig => config !== undefined)
-		.filter((config) => !seen.has(config.path) && seen.add(config.path))
 }
 
 const divergence: Record<McpDirection, McpProblem> = {
@@ -63,7 +50,7 @@ export function diagnoseMcp({ root, git, cli }: DiagnoseMcpOptions): Configurati
 	// read the file either.
 	const targets = new Map<string, Map<string, McpServer>>()
 	const configs: McpConfig[] = []
-	for (const config of targetsOf(root)) {
+	for (const config of mcpTargets(root)) {
 		const parsed = parseTarget(config, read(root, config.path))
 		if (parsed.kind === 'unreadable') {
 			add({ file: config.path }, 'mcp-target-unreadable')
@@ -95,7 +82,7 @@ export function diagnoseMcp({ root, git, cli }: DiagnoseMcpOptions): Configurati
 				add({ file: config.path, server: name }, 'mcp-unprojected')
 				continue
 			}
-			for (const field of divergingFields(declared, carried))
+			for (const field of divergingFields(declared, carried, mcpDialects[config.dialect].fields))
 				add(
 					{ file: config.path, server: name, field },
 					divergence[baseline.directionOf(config, name, field, declared, carried)],

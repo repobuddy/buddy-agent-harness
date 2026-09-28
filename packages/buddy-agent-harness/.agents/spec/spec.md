@@ -48,6 +48,7 @@ This project mirrors its source surfaces so a contributor can find a spec beside
 | [`cli/instruction-bridges/`](./cli/instruction-bridges/README.md) | Report whether every enabled harness can still read `AGENTS.md` |
 | [`cli/configuration-diagnosis/`](./cli/configuration-diagnosis/README.md) | Report agent configuration that is present and wrong |
 | [`cli/mcp-diagnosis/`](./cli/mcp-diagnosis/README.md) | Report drift between a golden MCP server set and the harness copies of it |
+| [`cli/mcp-projection/`](./cli/mcp-projection/README.md) | Project a golden MCP server set into each harness's own MCP file |
 | [`cli/nonstandard-configuration/`](./cli/nonstandard-configuration/README.md) | Report agent configuration that only one harness can read |
 | [`cli/diagnosis-report/`](./cli/diagnosis-report/README.md) | The one output shape every finding family is reported through |
 | [`cli/governance-overrides/`](./cli/governance-overrides/README.md) | Where a governance comes from when someone has overridden it, and how a caller reads it |

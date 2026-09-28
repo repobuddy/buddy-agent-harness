@@ -160,7 +160,7 @@ describe('diagnoseMcp', () => {
 
 			expect(finding?.path).toBe(`${cursor}#servers.io.github.foo`)
 			expect(finding?.repair.instruction).toBe(
-				`add the server io.github.foo to ${cursor}, or drop it from the golden set`,
+				`add the server io.github.foo to ${cursor}, or drop it from the golden set — \`/buddy-agent-harness:repair\` offers the correction`,
 			)
 		})
 
@@ -640,6 +640,44 @@ describe('diagnoseMcp', () => {
 			write(root, '.codex/config.toml', 'broken = = toml\n')
 
 			expect(find(root, 'mcp-target-unreadable')?.path).toBe('.codex/config.toml')
+		})
+	})
+
+	describe('reading through the dialects', () => {
+		it('reads a Gemini CLI url as SSE', () => {
+			const root = repository()
+			write(root, golden, '[servers.linear]\ntransport = "http"\nurl = "https://mcp.example.com"\n')
+			write(
+				root,
+				'.gemini/settings.json',
+				JSON.stringify({ mcpServers: { linear: { url: 'https://mcp.example.com' } } }),
+			)
+
+			expect(find(root, 'mcp-diverged-unknown')?.path).toBe('.gemini/settings.json#servers.linear.transport')
+		})
+
+		it('reads Codex headers and variables back as references', () => {
+			const root = repository()
+			write(
+				root,
+				golden,
+				`[servers.linear]\ncommand = "npx"\n\n[servers.linear.headers]\nAuthorization = "Bearer ${ref('TOKEN')}"\n\n[servers.linear.env]\nKEY = "${ref('KEY')}"\n`,
+			)
+			write(
+				root,
+				'.codex/config.toml',
+				'[mcp_servers.linear]\ncommand = "npx"\nbearer_token_env_var = "TOKEN"\nenv_vars = ["KEY"]\n',
+			)
+
+			expect(diagnose(root)).toEqual([])
+		})
+
+		it('reports no drift on a field the target cannot hold', () => {
+			const root = repository()
+			write(root, golden, '[servers.linear]\ncommand = "npx"\ndescription = "the Linear MCP server"\n')
+			write(root, cursor, JSON.stringify({ mcpServers: { linear: { command: 'npx' } } }))
+
+			expect(diagnose(root)).toEqual([])
 		})
 	})
 

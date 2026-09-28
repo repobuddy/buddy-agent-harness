@@ -63,7 +63,7 @@ export const harnessRegistry: readonly Harness[] = [
 			detect: '.claude',
 			skillsDirectory: '.claude/skills',
 			shadowedBy: ['CLAUDE.md', '.claude/CLAUDE.md', 'CLAUDE.local.md'],
-			mcpConfig: { path: '.mcp.json', key: 'mcpServers', format: 'json' },
+			mcpConfig: { path: '.mcp.json', key: 'mcpServers', format: 'json', dialect: 'claude-code' },
 			nonstandard: [
 				{ path: '.claude/commands', shape: 'directory', kind: 'command' },
 				{ path: '.claude/rules', shape: 'directory', kind: 'rule' },
@@ -76,7 +76,7 @@ export const harnessRegistry: readonly Harness[] = [
 		name: 'cursor',
 		project: {
 			detect: '.cursor',
-			mcpConfig: { path: '.cursor/mcp.json', key: 'mcpServers', format: 'json' },
+			mcpConfig: { path: '.cursor/mcp.json', key: 'mcpServers', format: 'json', dialect: 'cursor' },
 			nonstandard: [
 				{ path: '.cursorrules', shape: 'file', kind: 'instructions' },
 				{ path: '.cursor/rules', shape: 'directory', kind: 'rule' },
@@ -90,7 +90,7 @@ export const harnessRegistry: readonly Harness[] = [
 		name: 'codex',
 		project: {
 			detect: '.codex',
-			mcpConfig: { path: '.codex/config.toml', key: 'mcp_servers', format: 'toml' },
+			mcpConfig: { path: '.codex/config.toml', key: 'mcp_servers', format: 'toml', dialect: 'codex', shared: true },
 			nonstandard: [{ path: '.codex/skills', shape: 'directory', kind: 'skill' }],
 		},
 		user: { detect: '.codex' },
@@ -112,7 +112,13 @@ export const harnessRegistry: readonly Harness[] = [
 		project: {
 			detect: '.gemini',
 			instructionBridge: { kind: 'settings-entry', path: '.gemini/settings.json', key: 'context.fileName' },
-			mcpConfig: { path: '.gemini/settings.json', key: 'mcpServers', format: 'json', shared: true },
+			mcpConfig: {
+				path: '.gemini/settings.json',
+				key: 'mcpServers',
+				format: 'json',
+				dialect: 'gemini-cli',
+				shared: true,
+			},
 			nonstandard: [
 				{ path: 'GEMINI.md', shape: 'file', kind: 'instructions' },
 				{ path: '.gemini/skills', shape: 'directory', kind: 'skill' },

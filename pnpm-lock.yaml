@@ -212,6 +212,9 @@ importers:
       clibuilder:
         specifier: ^10.0.0
         version: 10.1.0
+      jsonc-parser:
+        specifier: ^3.3.1
+        version: 3.3.1
       smol-toml:
         specifier: ^1.8.0
         version: 1.8.0

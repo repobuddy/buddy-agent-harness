@@ -2,9 +2,9 @@ import { existsSync, readFileSync } from 'node:fs'
 import { homedir, platform } from 'node:os'
 import { basename, join, resolve } from 'node:path'
 import { parseJsonWithComments } from '../diagnose-bridges/json-with-comments.ts'
-import type { McpServer, McpTransport } from '../diagnose-mcp/mcp-model.ts'
+import { type McpServer, type McpTransport, serverFrom } from '../diagnose-mcp/mcp-model.ts'
 import { nonSecretArgs } from '../diagnose-mcp/mcp-secrets.ts'
-import { parseTarget, serverFrom } from '../diagnose-mcp/mcp-sources.ts'
+import { parseTarget } from '../diagnose-mcp/mcp-sources.ts'
 import { type HarnessName, type HarnessScopeName, harnessRegistry } from '../harness-registry/harness-registry.ts'
 import type { McpConfig } from '../harness-registry/mcp-config.ts'
 import { isRecord } from '../is-record/is-record.ts'
@@ -23,26 +23,35 @@ function userScopeConfig(
 ): { file: string; config: McpConfig } | undefined {
 	switch (harness) {
 		case 'claude-code':
-			return { file: join(home, '.claude.json'), config: { path: '.claude.json', key: 'mcpServers', format: 'json' } }
+			return {
+				file: join(home, '.claude.json'),
+				config: { path: '.claude.json', key: 'mcpServers', format: 'json', dialect: 'claude-code' },
+			}
 		case 'cursor':
 			return {
 				file: join(home, '.cursor', 'mcp.json'),
-				config: { path: '.cursor/mcp.json', key: 'mcpServers', format: 'json' },
+				config: { path: '.cursor/mcp.json', key: 'mcpServers', format: 'json', dialect: 'cursor' },
 			}
 		case 'codex':
 			return {
 				file: join(env['CODEX_HOME'] || join(home, '.codex'), 'config.toml'),
-				config: { path: 'config.toml', key: 'mcp_servers', format: 'toml' },
+				config: { path: 'config.toml', key: 'mcp_servers', format: 'toml', dialect: 'codex' },
 			}
 		case 'copilot-cli':
 			return {
 				file: join(env['COPILOT_HOME'] || join(home, '.copilot'), 'mcp-config.json'),
-				config: { path: 'mcp-config.json', key: 'mcpServers', format: 'json' },
+				config: { path: 'mcp-config.json', key: 'mcpServers', format: 'json', dialect: 'claude-code' },
 			}
 		case 'gemini-cli':
 			return {
 				file: join(home, '.gemini', 'settings.json'),
-				config: { path: '.gemini/settings.json', key: 'mcpServers', format: 'json', shared: true },
+				config: {
+					path: '.gemini/settings.json',
+					key: 'mcpServers',
+					format: 'json',
+					dialect: 'gemini-cli',
+					shared: true,
+				},
 			}
 		default:
 			return undefined

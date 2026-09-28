@@ -1,14 +1,29 @@
 import { parse as parseToml } from 'smol-toml'
 import { parseJsonWithComments } from '../diagnose-bridges/json-with-comments.ts'
 import type { Position } from '../diagnose-bridges/locator.ts'
+import { selectHarnesses } from '../harness-registry/harness-registry.ts'
 import type { McpConfig } from '../harness-registry/mcp-config.ts'
 import { isRecord } from '../is-record/is-record.ts'
-import type { McpServer, McpTransport } from './mcp-model.ts'
+import { mcpDialects } from '../mcp-dialects/mcp-dialects.ts'
+import { type McpServer, serverFrom } from './mcp-model.ts'
 
 /** Where the golden set lives, and why it is namespaced rather than sitting at `.agents/mcp.json`. */
 export const goldenSetPath = '.agents/buddy-agent-harness/mcp.toml'
 
 const goldenKey = 'servers'
+
+/**
+ * The distinct MCP files the enabled harnesses read. No `--harness` preference is accepted: every
+ * harness documenting an MCP file is already selected without one, so a preference could never add
+ * a target.
+ */
+export function mcpTargets(root: string): McpConfig[] {
+	const seen = new Set<string>()
+	return selectHarnesses(root, [])
+		.map((harness) => harness.project.mcpConfig)
+		.filter((config): config is McpConfig => config !== undefined)
+		.filter((config) => !seen.has(config.path) && seen.add(config.path))
+}
 
 export type ParsedServers =
 	/** The file is absent. Nothing to compare, and not a fault. */
@@ -16,58 +31,17 @@ export type ParsedServers =
 	| { kind: 'servers'; servers: Map<string, McpServer> }
 	| { kind: 'unreadable'; position?: Position | undefined }
 
-function stringMap(value: unknown): Record<string, string> | undefined {
-	if (!isRecord(value)) return undefined
-	const entries = Object.entries(value).filter(([, item]) => typeof item === 'string') as [string, string][]
-	return entries.length ? Object.fromEntries(entries) : undefined
-}
-
-const transports = new Set<string>(['stdio', 'http', 'sse'])
-
-/**
- * Infers transport when unstated (`url` → `http`, `command` → `stdio`), so a `url` entry in one
- * file compares equal to a `type: http` entry in another.
- */
-function transportOf(entry: Record<string, unknown>): McpTransport | undefined {
-	const declared = entry['type'] ?? entry['transport']
-	if (typeof declared === 'string' && transports.has(declared)) return declared as McpTransport
-	if (typeof entry['url'] === 'string') return 'http'
-	if (typeof entry['command'] === 'string') return 'stdio'
-	return undefined
-}
-
-/**
- * One host or golden entry, converted into the shared model; a field of the wrong type is dropped
- * rather than carried through, so a `timeout` that is a string does not report as a divergence.
- * Also used by `mcp-inventory.ts`, which normalizes its own raw shapes into these same fields
- * first.
- */
-export function serverFrom(entry: Record<string, unknown>): McpServer {
-	const args = Array.isArray(entry['args']) && entry['args'].every((item) => typeof item === 'string')
-	const transport = transportOf(entry)
-	const env = stringMap(entry['env'])
-	const headers = stringMap(entry['headers'])
-	return {
-		...(transport ? { transport } : {}),
-		...(typeof entry['command'] === 'string' ? { command: entry['command'] } : {}),
-		...(args ? { args: entry['args'] as string[] } : {}),
-		...(env ? { env } : {}),
-		...(typeof entry['url'] === 'string' ? { url: entry['url'] } : {}),
-		...(headers ? { headers } : {}),
-		...(typeof entry['description'] === 'string' ? { description: entry['description'] } : {}),
-		...(typeof entry['enabled'] === 'boolean' ? { enabled: entry['enabled'] } : {}),
-		...(typeof entry['timeout'] === 'number' ? { timeout: entry['timeout'] } : {}),
-		...(typeof entry['source'] === 'string' ? { source: entry['source'] } : {}),
-	}
-}
-
-function serversUnder(document: unknown, key: string): Map<string, McpServer> {
+function serversUnder(
+	document: unknown,
+	key: string,
+	read: (entry: Record<string, unknown>) => McpServer = serverFrom,
+): Map<string, McpServer> {
 	const table = isRecord(document) ? document[key] : undefined
 	if (!isRecord(table)) return new Map()
 	return new Map(
 		Object.entries(table)
 			.filter(([, entry]) => isRecord(entry))
-			.map(([name, entry]) => [name, serverFrom(entry as Record<string, unknown>)]),
+			.map(([name, entry]) => [name, read(entry as Record<string, unknown>)]),
 	)
 }
 
@@ -99,7 +73,7 @@ export function parseTarget(config: McpConfig, source: string | undefined): Pars
 	if (source === undefined) return { kind: 'absent' }
 	if (config.format === 'toml') {
 		try {
-			return { kind: 'servers', servers: serversUnder(parseToml(source), config.key) }
+			return { kind: 'servers', servers: serversUnder(parseToml(source), config.key, mcpDialects[config.dialect].read) }
 		} catch {
 			return { kind: 'unreadable' }
 		}
@@ -108,5 +82,5 @@ export function parseTarget(config: McpConfig, source: string | undefined): Pars
 	// A literal `null` parses successfully and holds no servers — reported the same as `{}`, not as
 	// unreadable.
 	if (document === undefined) return { kind: 'unreadable' }
-	return { kind: 'servers', servers: serversUnder(document, config.key) }
+	return { kind: 'servers', servers: serversUnder(document, config.key, mcpDialects[config.dialect].read) }
 }
