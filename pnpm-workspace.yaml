@@ -22,3 +22,7 @@ allowBuilds:
 # should carry its reason and the date it becomes removable.
 minimumReleaseAge: 1440 # 1 day
 minimumReleaseAgeStrict: true
+
+minimumReleaseAgeExclude:
+  # min-release-age: lift clibuilder@11.3.0 until 2026-09-29T10:00:00Z
+  - 'clibuilder@11.3.0'

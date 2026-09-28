@@ -8,6 +8,4 @@ const dir = dirname(fileURLToPath(import.meta.url))
 const { run } = await import(pathToFileURL(join(dir, '..', 'dist', 'cli.mjs')).href)
 
 // The process boundary — the only place that reads `process.argv` or writes `process.exitCode`.
-// Applied only when non-zero: clibuilder already sets it itself on an unknown option/command.
-const code = await run(process.argv)
-if (code !== 0) process.exitCode = code
+process.exitCode = await run(process.argv)

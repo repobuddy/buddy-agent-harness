@@ -56,11 +56,10 @@ Feature: Reach a command without going through the process
     Then a failure naming an invalid command is written to `stderr`
 
   @behavior
-  Scenario: returns 0 when clibuilder rejected the invocation and recorded the code itself
+  Scenario: returns the usage code when clibuilder rejected the invocation
     Given an argv carrying an option no command declares
     When the entry point is called with it
-    Then it returns 0
-    And clibuilder has written the usage code to `process.exitCode` itself
+    Then it returns the usage code
 
   @behavior
   Scenario: returns the usage code when the invocation could not be parsed
@@ -90,11 +89,10 @@ Feature: Reach a command without going through the process
     Then `process.exitCode` holds that code
 
   @behavior
-  Scenario: leaves a usage code clibuilder recorded on the process alone
+  Scenario: applies a rejected invocation's usage code to the process
     Given an argv carrying an option no command declares
     When the executable has run
     Then `process.exitCode` holds the usage code
-    And the zero the entry point returned did not overwrite it
 
   # ── the skill launchers ──
 
