@@ -272,7 +272,7 @@ flowchart TD
 | GC→HC | an `AGENTS.md` carrying the addition's current text | `offers nothing where the file already carries the current text` |
 | GC→HC | the same file, judged for what the report calls it | `reports an already-current section as current rather than as the owner's` |
 | GC→HC | the current text contained whole, with an owner paragraph added under the heading | `treats the current text with the owner's own paragraphs added as already current` |
-| GC→HC | the current text split by an owner paragraph between its two paragraphs | `treats the current text split by an owner's paragraph as already current` |
+| GC→HC | the current text split by an owner paragraph between two of its paragraphs | `treats the current text split by an owner's paragraph as already current` |
 | GC→G | the current text plus a sentence found only in a retired wording | `does not call a section current while it still asserts a retired sentence` |
 | G→H | a section under the addition's heading matching no retired wording in sentences or in order | `leaves alone a section written from scratch on the same subject` |
 | G→H | a section quoting one sentence of a retired wording inside quotation marks, in a sentence disputing it | `does not count a sentence the section quotes in order to reject it` |
@@ -289,6 +289,8 @@ flowchart TD
 | G1→I | a root `AGENTS.md` carrying a retired wording verbatim | `offers the current wording where the file carries a retired one verbatim` |
 | GC→G1 | a retired wording verbatim, every sentence of which the current text still carries, because the revision only added a sentence | `does not call a retired wording current because the current text still carries all its sentences` |
 | G1→I | that retired wording with an owner's sentence at the place the revision added one | `offers the current wording where an owner filled the gap a revision added` |
+| GC→G1 | the current text, still asserting the sentence the revision dropped from the retired wording, at that wording's place for it | `offers the current wording where a section keeps the sentence a revision dropped` |
+| GC→HC | the current text with an owner's sentence at the place the revision dropped one | `treats the current text as current where an owner's sentence sits where a revision dropped one` |
 | G1→G2 | a `CLAUDE.md` carrying a retired wording and a root `AGENTS.md` that does not | `reports a retired wording outside the root file rather than replacing it` |
 | F | an addition about to be presented | `shows the addition verbatim rather than a summary of it` |
 | I | a replacement about to be presented | `shows the current text beside the section it would replace` |
