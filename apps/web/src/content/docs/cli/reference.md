@@ -21,10 +21,10 @@ A name resolves through these tiers, highest precedence first. Each tier holds o
 
 | Tier | Layers, in order |
 | --- | --- |
-| `managed` | the machine-wide `references/`, then the machine-wide `governances/`, then the folder `universal-plugin` wrote |
+| `managed` | the machine-wide `references/`, then a `references/` beside each detected harness's managed files, then the machine-wide `governances/`, then the folder `universal-plugin` wrote |
 | `project` | `<dir>/.agents/references/`, then `<dir>/.agents/governances/`, for each folder of the walk, nearest first |
 | `user` | `~/.agents/references/`, then `~/.agents/governances/` |
-| `plugin` | this package's `references/` as the plugin `buddy-agent-harness`, and the `references/` folder of each dependency in the nearest `package.json` |
+| `plugin` | this package's `references/` as the plugin `buddy-agent-harness`, the `references/` folder of each plugin the detected harness has enabled, and the `references/` folder of each dependency in the nearest `package.json` |
 
 The machine-wide folders:
 
@@ -32,13 +32,15 @@ The machine-wide folders:
 | --- | --- | --- | --- |
 | `references/` | `/etc/buddy-agent-harness/references` | `/Library/Application Support/BuddyAgentHarness/references` | `%ProgramData%\BuddyAgentHarness\references` |
 
+**Harness-managed folders.** The command detects the harness it runs under from its environment, and reads a `references/` folder beside the managed policy files that harness keeps on disk: `/etc/claude-code/references` for Claude Code on Linux, `/etc/codex/references` for Codex. A drop-in folder such as `managed-settings.d` is part of the folder above it, not a folder of its own. No harness documents a managed references folder; the name is this package's own. Policy a harness keeps in MDM, the Windows registry, or its vendor's servers cannot be read locally. It is listed as a layer marked `not read`, with the reason, so `--trace` and `list` show what was skipped. With no harness detected, one `not read` layer says so. Nested harnesses, where one was started from the other's shell, are each read.
+
 The `governances/` folders are the ones [`governance`](/cli/governance/) reads, kept so existing documents keep resolving. `list` marks each of them as legacy.
 
 **The walk.** The project tier is read at `--root` and at each folder above it, up to and including the repository root: the first folder holding `.git`, `pnpm-workspace.yaml`, or a `package.json` with `workspaces`. In a monorepo, a package's own `.agents/references/` answers before the one at the repository root. With no repository root above `--root`, only `--root` is read.
 
 **Plugins.** Only packages listed in `dependencies` or `devDependencies` are read, never a transitive dependency. Two plugins holding the same name is an error that names both; ask for one as `<plugin>/<name>`. A qualified name picks that plugin's copy, and a project, user, or managed copy of `<name>` still overrides it.
 
-Harness-managed folders and plugins enabled in a harness are not read yet.
+**Enabled plugins.** A plugin the detected harness has enabled, in its settings files, is read from the folder the harness installed it in. A plugin that is installed but not enabled is never read: installing a plugin does not activate it. A Claude Code plugin installed for one project is read only inside that project. An enabled plugin with no recorded install folder, a harness that keeps no readable record of enabled plugins (Cursor), and policy that can enable plugins but cannot be read locally each appear as a `not read` layer with the reason. `node_modules` is never searched for plugins.
 
 ## File names
 
@@ -116,7 +118,7 @@ An ambiguous entry carries `plugins`, the qualified names to ask for instead.
 
 ### `--trace`
 
-Reports, per name, every layer checked, whether it held the name, the file that matched, the merge mode it declared, and its outcome: `used`, `missing`, `shadowed by <tier> (first-wins)`, or `ambiguous`. With `--format json` or `toon` it is the entry's `trace` field. With `text` it is written to stderr, so stdout is still only the documents.
+Reports, per name, every layer checked, whether it held the name, the file that matched, the merge mode it declared, and its outcome: `used`, `missing`, `shadowed by <tier> (first-wins)`, `ambiguous`, or `not read — <reason>` for a layer that is never read. With `--format json` or `toon` it is the entry's `trace` field. With `text` it is written to stderr, so stdout is still only the documents.
 
 ## `reference list`
 

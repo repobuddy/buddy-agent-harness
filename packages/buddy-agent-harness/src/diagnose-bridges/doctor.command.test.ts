@@ -13,8 +13,8 @@ const mockedDiagnoseBridges = vi.mocked(diagnoseBridges)
 const stderr = vi.spyOn(process.stderr, 'write').mockImplementation(() => true)
 const stdout = vi.spyOn(process.stdout, 'write').mockImplementation(() => true)
 
-function run(args: { format?: string; harness?: string; root?: string }): number {
-	return (doctorCommand as { run(value: typeof args): number }).run(args)
+function run(args: { format?: string; harness?: string; root?: string }): Promise<number> {
+	return (doctorCommand as { run(value: typeof args): Promise<number> }).run(args)
 }
 
 const healthy: DiagnoseResult = {
@@ -37,16 +37,16 @@ afterEach(() => {
 })
 
 describe('doctor command', () => {
-	it('diagnoses the working directory in TOON by default', () => {
-		run({ format: 'toon' })
+	it('diagnoses the working directory in TOON by default', async () => {
+		await run({ format: 'toon' })
 
 		expect(mockedDiagnoseBridges).toHaveBeenCalledWith({ root: process.cwd(), cli: 'buddy-agent-harness' })
 		expect(stdout).toHaveBeenCalledWith(expect.stringContaining('bridges[1]{harness,path,kind,status}'))
 		expect(stdout).toHaveBeenCalledWith(expect.stringContaining('instructions[1]{harness,path,kind,status}'))
 	})
 
-	it('passes an explicit root and the requested harnesses through', () => {
-		run({ format: 'json', harness: 'gemini-cli, codex', root: '/workspace' })
+	it('passes an explicit root and the requested harnesses through', async () => {
+		await run({ format: 'json', harness: 'gemini-cli, codex', root: '/workspace' })
 
 		expect(mockedDiagnoseBridges).toHaveBeenCalledWith({
 			root: '/workspace',
@@ -56,8 +56,8 @@ describe('doctor command', () => {
 	})
 
 	// The diagnosis succeeded either way; a non-zero code reads to an agent as a broken command.
-	it('exits 0 whether or not it found something', () => {
-		expect(run({ format: 'json' })).toBe(0)
+	it('exits 0 whether or not it found something', async () => {
+		expect(await run({ format: 'json' })).toBe(0)
 
 		mockedDiagnoseBridges.mockReturnValue({
 			bridges: [{ harness: 'claude-code', path: '.claude/skills', kind: 'file', status: 'degraded' }],
@@ -72,24 +72,24 @@ describe('doctor command', () => {
 				},
 			],
 		})
-		expect(run({ format: 'json' })).toBe(0)
+		expect(await run({ format: 'json' })).toBe(0)
 	})
 
 	// The default is TOON, so nothing else confirms the command honors what it was asked for.
-	it('encodes the report in the requested format and nothing else', () => {
-		run({ format: 'json' })
+	it('encodes the report in the requested format and nothing else', async () => {
+		await run({ format: 'json' })
 		expect(stdout).toHaveBeenCalledWith(expect.stringContaining('"bridges":['))
 
 		stdout.mockClear()
-		run({ format: 'text' })
+		await run({ format: 'text' })
 		expect(stdout).toHaveBeenCalledWith(expect.stringContaining('bridges:'))
 		expect(stdout).not.toHaveBeenCalledWith(expect.stringContaining('"bridges":['))
 	})
 
 	// A report a caller cannot trace back to the binary that wrote it cannot be reproduced, and the
 	// home directory is collapsed so the path is publishable.
-	it('names the executable that produced the report, with the home directory collapsed', () => {
-		run({ format: 'json' })
+	it('names the executable that produced the report, with the home directory collapsed', async () => {
+		await run({ format: 'json' })
 
 		const bin = displayBinPath(homedir(), process.argv[1])
 		expect(bin).not.toContain(homedir())
@@ -97,18 +97,18 @@ describe('doctor command', () => {
 	})
 
 	// Returned rather than written: a caller that is not the process learns of the failure too.
-	it('reports an invalid format, an unsupported harness, and a failed diagnosis', () => {
-		expect(run({ format: 'yaml' })).toBe(1)
+	it('reports an invalid format, an unsupported harness, and a failed diagnosis', async () => {
+		expect(await run({ format: 'yaml' })).toBe(1)
 		expect(stderr).toHaveBeenCalledWith('error: --format must be toon, json, or text.\n')
 
-		expect(run({ format: 'json', harness: 'aider' })).toBe(1)
+		expect(await run({ format: 'json', harness: 'aider' })).toBe(1)
 		expect(stderr).toHaveBeenCalledWith(expect.stringContaining('Unsupported harness: aider'))
 
 		stderr.mockClear()
 		mockedDiagnoseBridges.mockImplementationOnce(() => {
 			throw 'unavailable'
 		})
-		expect(run({ format: 'json' })).toBe(1)
+		expect(await run({ format: 'json' })).toBe(1)
 		expect(stderr).toHaveBeenCalledWith('error: Harness diagnosis failed.\n')
 		expect(process.exitCode).toBeUndefined()
 	})
@@ -121,12 +121,12 @@ describe('the references section', () => {
 
 	// Reported, never diagnosed: a reference is a choice someone made, so it is a section of its own
 	// and the finding families are left exactly as they were.
-	it('reports the references the tiers hold without turning any of them into a finding', () => {
+	it('reports the references the tiers hold without turning any of them into a finding', async () => {
 		const root = mkdtempSync(join(tmpdir(), 'doctor-references-'))
 		mkdirSync(join(root, '.agents', 'references'), { recursive: true })
 		writeFileSync(join(root, '.agents', 'references', 'testing.md'), '# Testing')
 
-		expect(run({ format: 'json', root })).toBe(0)
+		expect(await run({ format: 'json', root })).toBe(0)
 
 		expect(report().references).toContainEqual({
 			name: 'testing',
@@ -137,7 +137,7 @@ describe('the references section', () => {
 		expect(typeof report().findings).toBe('string')
 	})
 
-	it('gives each row the status reference list gives, legacy governances folders included', () => {
+	it('gives each row the status reference list gives, legacy governances folders included', async () => {
 		const root = mkdtempSync(join(tmpdir(), 'doctor-references-'))
 		mkdirSync(join(root, '.agents', 'references'), { recursive: true })
 		mkdirSync(join(root, '.agents', 'governances'), { recursive: true })
@@ -145,7 +145,7 @@ describe('the references section', () => {
 		writeFileSync(join(root, '.agents', 'governances', 'testing.md'), '# Old testing')
 		writeFileSync(join(root, '.agents', 'governances', 'agent-tool-output.md'), '# Rules')
 
-		run({ format: 'json', root })
+		await run({ format: 'json', root })
 
 		const rows = report().references as { name: string; path: string; status: string }[]
 		const project = rows.filter(({ path }) => path.startsWith(collapseHome(homedir(), root)))
@@ -156,19 +156,19 @@ describe('the references section', () => {
 		])
 	})
 
-	it('leaves out what a plugin ships', () => {
+	it('leaves out what a plugin ships', async () => {
 		const root = mkdtempSync(join(tmpdir(), 'doctor-references-'))
 		writeFileSync(join(root, 'package.json'), JSON.stringify({ dependencies: { shipped: '1.0.0' } }))
 		mkdirSync(join(root, 'node_modules', 'shipped', 'references'), { recursive: true })
 		writeFileSync(join(root, 'node_modules', 'shipped', 'package.json'), JSON.stringify({ name: 'shipped' }))
 		writeFileSync(join(root, 'node_modules', 'shipped', 'references', 'shipped-only.md'), '# Shipped')
 
-		run({ format: 'json', root })
+		await run({ format: 'json', root })
 
 		expect(JSON.stringify(report().references)).not.toContain('shipped-only')
 	})
 
-	it('states the zero outright when no layer holds a reference', () => {
+	it('states the zero outright when no layer holds a reference', async () => {
 		expect(buildDoctorReport('~/bin/bah', healthy).references).toBe(
 			'0 references — no layer outside the plugin tier holds one',
 		)
@@ -176,7 +176,7 @@ describe('the references section', () => {
 })
 
 describe('buildDoctorReport', () => {
-	it('states the healthy answer outright rather than leaving findings empty', () => {
+	it('states the healthy answer outright rather than leaving findings empty', async () => {
 		expect(buildDoctorReport('~/bin/bah', { ...healthy, instructions: [] })).toEqual({
 			bin: '~/bin/bah',
 			bridges: healthy.bridges,
@@ -187,7 +187,7 @@ describe('buildDoctorReport', () => {
 	})
 
 	// Both sections are bridges, so a reader is not left adding two counts together.
-	it('counts the instruction bridges alongside the skills bridges', () => {
+	it('counts the instruction bridges alongside the skills bridges', async () => {
 		const bridges: DiagnoseResult['bridges'] = [
 			...healthy.bridges,
 			{ harness: 'windsurf', path: '.windsurf/skills', kind: 'symlink', status: 'ok' },
@@ -198,7 +198,7 @@ describe('buildDoctorReport', () => {
 		})
 	})
 
-	it('moves each repair into help and keeps findings to the diagnosis and its name', () => {
+	it('moves each repair into help and keeps findings to the diagnosis and its name', async () => {
 		const report = buildDoctorReport('~/bin/bah', {
 			bridges: [
 				{ harness: 'claude-code', path: '.claude/skills', kind: 'none', status: 'missing' },
@@ -235,7 +235,7 @@ describe('buildDoctorReport', () => {
 
 	// The wrapper this replaced read `Run ` + the repair, so a repair that was an instruction to a
 	// person came out as an invitation to paste prose into a shell.
-	it('wraps no repair, and keeps a judgment repair apart from a runnable one', () => {
+	it('wraps no repair, and keeps a judgment repair apart from a runnable one', async () => {
 		const report = buildDoctorReport('~/bin/bah', {
 			bridges: [{ harness: 'claude-code', path: '.claude/skills', kind: 'copy', status: 'diverged' }],
 			instructions: [],
@@ -268,7 +268,7 @@ describe('buildDoctorReport', () => {
 
 	// Two findings can only collapse when both templates ignore the path, which is what makes the
 	// pair — rather than either field alone — the right dedupe key.
-	it('dedupes on the whole repair, not on either field', () => {
+	it('dedupes on the whole repair, not on either field', async () => {
 		const report = buildDoctorReport('~/bin/bah', {
 			bridges: [],
 			instructions: [],
@@ -305,7 +305,7 @@ describe('buildDoctorReport', () => {
 
 	// The person's view of the same two-field repair: an aligned table, and a judgment repair simply
 	// leaves the command column blank rather than saying anything untrue in it.
-	it('renders help as a two-column table for a person, blank where there is no command', () => {
+	it('renders help as a two-column table for a person, blank where there is no command', async () => {
 		const text = renderText(
 			buildDoctorReport('~/bin/bah', {
 				bridges: [],
@@ -335,7 +335,7 @@ describe('buildDoctorReport', () => {
 
 	// Both keys on every row: with an optional key the TOON encoder drops the whole array out of
 	// its tabular form into a nested list, which is worse for the consumer the default exists for.
-	it('emits both columns always, so the tabular encoding does not degrade', () => {
+	it('emits both columns always, so the tabular encoding does not degrade', async () => {
 		const report = buildDoctorReport('~/bin/bah', {
 			bridges: [],
 			instructions: [],
@@ -354,7 +354,7 @@ describe('buildDoctorReport', () => {
 		expect(encode(report)).toContain('help[1]{command,instruction}:')
 	})
 
-	it('adds a divergence section only when a bridge has diverged', () => {
+	it('adds a divergence section only when a bridge has diverged', async () => {
 		const report = buildDoctorReport('~/bin/bah', {
 			bridges: [{ harness: 'claude-code', path: '.claude/skills', kind: 'copy', status: 'diverged' }],
 			instructions: [],

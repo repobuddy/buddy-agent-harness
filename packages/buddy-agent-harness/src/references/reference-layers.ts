@@ -8,6 +8,7 @@ import {
 	packageGovernancesDir,
 } from '../governance-overrides/governance-overrides.ts'
 import { isRecord } from '../is-record/is-record.ts'
+import { detectedHarnesses, enabledPluginLayers, harnessManagedLayers } from './harness-layers.ts'
 
 /** Order here is precedence order, highest first. */
 export type ReferenceTier = 'managed' | 'project' | 'user' | 'plugin'
@@ -17,8 +18,10 @@ export type ReferenceLayer = {
 	dir: string
 	/** Every name a qualified `<plugin>/<name>` may use for this layer; empty outside the plugin tier. */
 	plugins: string[]
-	/** Empty unless the layer is legacy or deprecated; then it says where its documents belong. */
+	/** Empty unless the layer is legacy, deprecated, or skipped; then it says why. */
 	status: string
+	/** Set when the layer is never read, and why: policy held in MDM, or a plugin with no install folder. */
+	skipped?: string
 }
 
 export type ReferenceLayerOptions = {
@@ -28,6 +31,8 @@ export type ReferenceLayerOptions = {
 	programData?: string | undefined
 	/** This package's own root, the `buddy-agent-harness` plugin. */
 	packageRoot?: string | undefined
+	/** Detects the harness and reads its settings. Defaults to `process.env`. */
+	env?: Readonly<Record<string, string | undefined>>
 }
 
 export const PACKAGE_PLUGIN = 'buddy-agent-harness'
@@ -128,13 +133,14 @@ function dependencyLayers(root: string, skip: ReadonlySet<string>): ReferenceLay
 	return layers
 }
 
-export function referenceLayers({
+export async function referenceLayers({
 	root,
 	home,
 	platform,
 	programData,
 	packageRoot = dirname(packageGovernancesDir()),
-}: ReferenceLayerOptions): ReferenceLayer[] {
+	env = process.env,
+}: ReferenceLayerOptions): Promise<ReferenceLayer[]> {
 	const layer = (tier: ReferenceTier, dir: string, status = ''): ReferenceLayer => ({
 		tier,
 		dir,
@@ -142,16 +148,22 @@ export function referenceLayers({
 		status,
 	})
 	const self = [PACKAGE_PLUGIN]
+	const harnesses = detectedHarnesses(env)
+	const chain = projectChain(root)
+	const ownRoot = canonical(packageRoot)
+	const enabled = await enabledPluginLayers(harnesses, chain, { env, homedir: home, cwd: resolve(root), platform })
 	const layers: ReferenceLayer[] = [
 		layer('managed', managedReferencesDir(platform, programData)),
+		...harnessManagedLayers(harnesses, platform, env),
 		layer('managed', managedGovernancesDir(platform, programData), LEGACY_STATUS),
 		layer('managed', deprecatedManagedGovernancesDir(platform, programData), DEPRECATED_STATUS),
-		...projectChain(root).flatMap(projectReferenceLayers),
+		...chain.flatMap(projectReferenceLayers),
 		layer('user', join(home, '.agents', 'references')),
 		layer('user', join(home, '.agents', 'governances'), LEGACY_STATUS),
 		{ tier: 'plugin', dir: join(packageRoot, 'references'), plugins: self, status: '' },
 		{ tier: 'plugin', dir: join(packageRoot, 'governances'), plugins: self, status: LEGACY_STATUS },
-		...dependencyLayers(root, new Set([canonical(packageRoot)])),
+		...enabled.filter(({ dir, skipped }) => skipped || (isDirectory(dir) && canonical(dirname(dir)) !== ownRoot)),
+		...dependencyLayers(root, new Set([ownRoot])),
 	]
 	// A repository checked out at the home directory would read the same folder as project and user.
 	const seen = new Set<string>()

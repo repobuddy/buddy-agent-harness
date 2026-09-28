@@ -62,6 +62,74 @@ Feature: Read references by name through layered tiers
     Then none of its documents are reported
 
   @behavior
+  Scenario: reads references beside each detected harness's managed files, above the project tier
+    Given Claude Code and Codex detected, each keeping a managed file whose folder holds `references/name.md`, and a project `name` document
+    When the command shows `name`
+    Then the Claude Code document answers
+    And removing it hands the answer to the Codex document, then to the project document
+
+  @behavior
+  Scenario: reads the managed folder of every nested harness
+    Given two harnesses detected at once, one started from the other's shell
+    When the layers are built
+    Then the managed tier holds a `references/` for each of them
+
+  @behavior
+  Scenario: treats a drop-in folder as part of the harness folder above it
+    Given a harness keeping `managed-settings.json` and a `managed-settings.d` folder beside it
+    When the layers are built
+    Then the managed tier reads the `references/` beside `managed-settings.json`
+    And no `references/` inside `managed-settings.d` is read
+
+  @behavior
+  Scenario: ranks a harness folder below this package's own references and above its governances
+    Given a detected harness
+    When the layers are built
+    Then the managed tier reads this package's `references/`, then the harness's `references/`, then this package's `governances/`, then the deprecated folder
+
+  @behavior
+  Scenario: skips managed policy that cannot be read locally, and says so in the trace
+    Given a detected harness keeping policy in a macOS managed-preferences domain and on its vendor's server
+    When the command shows a name with `--trace`
+    Then each of those locations is in the trace, not found, with an outcome starting `not read` that names the harness and where the policy is kept
+
+  @behavior
+  Scenario: says in the trace that no harness was detected
+    Given no harness detected
+    When the command shows a name with `--trace`
+    Then the trace holds a `(no harness detected)` step whose outcome starts `not read`
+
+  @behavior
+  Scenario: reads references from each plugin the harness has enabled
+    Given Claude Code detected, with `alpha@market` enabled in its settings and installed in a folder shipping `references/testing.md`
+    When the command shows `testing`, then `alpha/testing`
+    Then that document answers from the plugin tier, named `alpha`, both times
+
+  @behavior
+  Scenario: never reads a plugin the harness has installed but not enabled
+    Given Claude Code detected, with `beta@market` installed in a folder shipping `references/style.md` and not enabled
+    When the command lists the references and shows `style`
+    Then no layer names `beta`, `style` is not listed, and `show` exits non-zero
+
+  @behavior
+  Scenario: reads the install scoped to the nearest folder of the walk
+    Given an enabled plugin installed for the user, for a farther folder of the walk, and for the nearest one
+    When the layers are built
+    Then the plugin's layer is the install for the nearest folder
+
+  @behavior
+  Scenario: skips an enabled plugin with no install folder, and says so in the trace
+    Given Claude Code detected, with `alpha@market` enabled and no install recorded
+    When the command shows `alpha/testing` with `--trace`
+    Then the trace step for `alpha` is `(alpha@market)`, not found, with an outcome saying it is enabled but has no install folder for this project
+
+  @behavior
+  Scenario: says in the trace when a harness keeps no record of enabled plugins
+    Given Cursor detected
+    When the layers are built
+    Then the plugin tier holds one layer marked `not read` saying Cursor keeps no readable record of enabled plugins
+
+  @behavior
   Scenario: reports a name two plugins hold as ambiguous, naming both
     Given two plugins each shipping `testing` and no higher tier holding it
     When the command shows `testing`

@@ -134,6 +134,10 @@ export function resolveReference(
 			description: '',
 		}
 		trace.push(entry)
+		if (layer.skipped) {
+			entry.outcome = layer.skipped
+			continue
+		}
 		const hits = candidateFiles(ref.name).flatMap((candidate) => {
 			const raw = tryRead(join(layer.dir, candidate))
 			return raw === undefined ? [] : [{ candidate, raw }]
@@ -247,5 +251,7 @@ export function layerNames(dir: string): string[] {
 }
 
 export function referenceNames(layers: readonly ReferenceLayer[]): string[] {
-	return [...new Set(layers.flatMap(({ dir }) => layerNames(dir)))].sort((a, b) => a.localeCompare(b))
+	return [...new Set(layers.flatMap(({ dir, skipped }) => (skipped ? [] : layerNames(dir))))].sort((a, b) =>
+		a.localeCompare(b),
+	)
 }

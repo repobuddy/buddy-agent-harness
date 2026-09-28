@@ -35,10 +35,10 @@ References resolve through tiers, highest precedence first:
 
 | Tier | Where |
 | --- | --- |
-| `managed` | the machine-wide folder, for a machine owner |
+| `managed` | the machine-wide folder, and a folder beside the managed settings of the harness you run, for a machine owner |
 | `project` | `.agents/references/`, committed with the repository |
 | `user` | `~/.agents/references/` |
-| `plugin` | a `references/` folder shipped by this package or by a declared dependency |
+| `plugin` | a `references/` folder shipped by this package, by a plugin your harness has enabled, or by a declared dependency |
 
 In a monorepo, the project tier is read in the folder you work in and each folder above it up to the repository root, nearest first, so a package can override a reference the whole repository shares. The [CLI page](/cli/reference/#tiers) has the details.
 
