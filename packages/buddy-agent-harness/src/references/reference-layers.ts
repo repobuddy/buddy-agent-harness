@@ -1,5 +1,5 @@
 import { existsSync, readFileSync, realpathSync, statSync } from 'node:fs'
-import { dirname, join } from 'node:path'
+import { dirname, join, resolve } from 'node:path'
 import { declaredDependencies } from '../dep-plugins/dep-plugins.ts'
 import { packageDir } from '../dep-plugins/resolve.ts'
 import {
@@ -10,7 +10,7 @@ import {
 import { isRecord } from '../is-record/is-record.ts'
 
 /** Order here is precedence order, highest first. */
-export type ReferenceTier = 'managed' | 'project' | 'user' | 'plugin'
+export type ReferenceTier = 'managed' | 'local' | 'project' | 'user' | 'plugin'
 
 export type ReferenceLayer = {
 	tier: ReferenceTier
@@ -42,6 +42,10 @@ export function projectReferencesDir(root: string): string {
 	return join(root, '.agents', 'references')
 }
 
+export function localReferencesDir(dir: string): string {
+	return join(dir, '.agents', 'references.local')
+}
+
 export function projectReferenceLayers(root: string): ReferenceLayer[] {
 	return [
 		{ tier: 'project', dir: projectReferencesDir(root), plugins: [], status: '' },
@@ -54,6 +58,29 @@ function readJson(path: string): unknown {
 		return JSON.parse(readFileSync(path, 'utf8'))
 	} catch {
 		return undefined
+	}
+}
+
+function isRepositoryRoot(dir: string): boolean {
+	if (existsSync(join(dir, '.git')) || existsSync(join(dir, 'pnpm-workspace.yaml'))) return true
+	const manifest = readJson(join(dir, 'package.json'))
+	return isRecord(manifest) && manifest['workspaces'] !== undefined
+}
+
+/**
+ * `root` and each folder above it up to the repository root, nearest first. With no repository root
+ * above, `root` alone: a walk that never finds one would read every ancestor up to the filesystem root.
+ */
+export function projectChain(root: string): string[] {
+	const start = resolve(root)
+	const chain: string[] = []
+	let dir = start
+	for (;;) {
+		chain.push(dir)
+		if (isRepositoryRoot(dir)) return chain
+		const parent = dirname(dir)
+		if (parent === dir) return [start]
+		dir = parent
 	}
 }
 
@@ -119,11 +146,13 @@ export function referenceLayers({
 		status,
 	})
 	const self = [PACKAGE_PLUGIN]
+	const chain = projectChain(root)
 	const layers: ReferenceLayer[] = [
 		layer('managed', managedReferencesDir(platform, programData)),
 		layer('managed', managedGovernancesDir(platform, programData), LEGACY_STATUS),
 		layer('managed', deprecatedManagedGovernancesDir(platform, programData), DEPRECATED_STATUS),
-		...projectReferenceLayers(root),
+		...chain.map((dir) => layer('local', localReferencesDir(dir))),
+		...chain.flatMap(projectReferenceLayers),
 		layer('user', join(home, '.agents', 'references')),
 		layer('user', join(home, '.agents', 'governances'), LEGACY_STATUS),
 		{ tier: 'plugin', dir: join(packageRoot, 'references'), plugins: self, status: '' },
