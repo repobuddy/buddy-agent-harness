@@ -10,7 +10,7 @@ import {
 import { isRecord } from '../is-record/is-record.ts'
 
 /** Order here is precedence order, highest first. */
-export type ReferenceTier = 'managed' | 'local' | 'project' | 'user' | 'plugin'
+export type ReferenceTier = 'managed' | 'project' | 'user' | 'plugin'
 
 export type ReferenceLayer = {
 	tier: ReferenceTier
@@ -40,10 +40,6 @@ export function managedReferencesDir(platform: NodeJS.Platform, programData?: st
 
 export function projectReferencesDir(root: string): string {
 	return join(root, '.agents', 'references')
-}
-
-export function localReferencesDir(dir: string): string {
-	return join(dir, '.agents', 'references.local')
 }
 
 export function projectReferenceLayers(root: string): ReferenceLayer[] {
@@ -146,13 +142,11 @@ export function referenceLayers({
 		status,
 	})
 	const self = [PACKAGE_PLUGIN]
-	const chain = projectChain(root)
 	const layers: ReferenceLayer[] = [
 		layer('managed', managedReferencesDir(platform, programData)),
 		layer('managed', managedGovernancesDir(platform, programData), LEGACY_STATUS),
 		layer('managed', deprecatedManagedGovernancesDir(platform, programData), DEPRECATED_STATUS),
-		...chain.map((dir) => layer('local', localReferencesDir(dir))),
-		...chain.flatMap(projectReferenceLayers),
+		...projectChain(root).flatMap(projectReferenceLayers),
 		layer('user', join(home, '.agents', 'references')),
 		layer('user', join(home, '.agents', 'governances'), LEGACY_STATUS),
 		{ tier: 'plugin', dir: join(packageRoot, 'references'), plugins: self, status: '' },

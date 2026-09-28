@@ -36,12 +36,11 @@ References resolve through tiers, highest precedence first:
 | Tier | Where |
 | --- | --- |
 | `managed` | the machine-wide folder, for a machine owner |
-| `local` | `.agents/references.local/`, your own copy, gitignored |
 | `project` | `.agents/references/`, committed with the repository |
 | `user` | `~/.agents/references/` |
 | `plugin` | a `references/` folder shipped by this package or by a declared dependency |
 
-In a monorepo, the local and project tiers are read in the folder you work in and each folder above it up to the repository root, nearest first, so a package can override a reference the whole repository shares. A project document with `final: true` cannot be overridden locally. The [CLI page](/cli/reference/#tiers) has the details.
+In a monorepo, the project tier is read in the folder you work in and each folder above it up to the repository root, nearest first, so a package can override a reference the whole repository shares. The [CLI page](/cli/reference/#tiers) has the details.
 
 Documents written for the older [`governance`](/cli/governance/) command, in `governances/` folders, are still read, one layer below `references/` in the same tier.
 

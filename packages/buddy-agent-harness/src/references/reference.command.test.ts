@@ -211,29 +211,6 @@ describe('tiers', () => {
 		expect(written()).toBe('user\n')
 	})
 
-	it('resolves local above project and below managed', () => {
-		const programData = tempDir('reference-programdata-')
-		withPlatform('win32', programData, () => {
-			const root = repo()
-			write(root, '.agents/references/name.md', 'project\n')
-			const localPath = write(root, '.agents/references.local/name.md', 'local\n')
-			const managedPath = write(managedReferencesDir('win32', programData), 'name.md', 'managed\n')
-
-			expect(show(['name'], { root })).toBe(0)
-			expect(written()).toBe('managed\n')
-
-			rmSync(managedPath)
-			stdout.mockClear()
-			expect(show(['name'], { root })).toBe(0)
-			expect(written()).toBe('local\n')
-
-			rmSync(localPath)
-			stdout.mockClear()
-			expect(show(['name'], { root })).toBe(0)
-			expect(written()).toBe('project\n')
-		})
-	})
-
 	it('walks the project tier up to the workspace root, the nearest layer first', () => {
 		const outside = tempDir('reference-outside-')
 		const base = join(outside, 'repo')
@@ -297,17 +274,6 @@ describe('tiers', () => {
 
 		expect(show(['name'], { root })).toBe(1)
 		expect(written()).toBe('')
-	})
-
-	it('reads a local layer at every level of the walk, above every project layer', () => {
-		const base = repo()
-		markRoot(base)
-		const root = join(base, 'pkg')
-		write(root, '.agents/references/name.md', 'package\n')
-		write(base, '.agents/references.local/name.md', 'workspace local\n')
-
-		expect(show(['name'], { root })).toBe(0)
-		expect(written()).toBe('workspace local\n')
 	})
 
 	it("reads a declared dependency's references as a plugin", () => {
@@ -645,8 +611,8 @@ describe('merge modes', () => {
 	})
 })
 
-describe('the monorepo walk and final', () => {
-	it('merges project layers farthest first, then local', () => {
+describe('the monorepo walk', () => {
+	it('merges project layers farthest first', () => {
 		const base = repo()
 		markRoot(base)
 		const root = join(base, 'pkg')
@@ -656,77 +622,9 @@ describe('the monorepo walk and final', () => {
 			'.agents/references/name.md',
 			'---\nmerge: merge-sections\n---\n## A\n\npackage A\n\n## B\n\npackage B\n',
 		)
-		write(root, '.agents/references.local/name.md', '---\nmerge: merge-sections\n---\n## A\n\nlocal A\n')
 
 		expect(show(['name'], { root })).toBe(0)
-		expect(written()).toBe('## A\n\nlocal A\n\n## B\n\npackage B\n\n## C\n\nworkspace C\n')
-	})
-
-	it('blocks a local override of a final project reference, and says so in the trace and the listing', () => {
-		const root = repo()
-		write(root, '.agents/references/name.md', '---\nfinal: true\n---\nproject\n')
-		write(root, '.agents/references.local/name.md', 'local\n')
-
-		expect(show(['name'], { root, format: 'json', trace: true })).toBe(0)
-		const [entry] = JSON.parse(written()) as ReferenceShowEntry[]
-		expect(entry?.content).toBe('project\n')
-		expect(entry?.trace?.find((step) => step.tier === 'local' && step.found)?.outcome).toBe(
-			'blocked by final in project',
-		)
-
-		stdout.mockClear()
-		expect(list({ root, format: 'json' })).toBe(0)
-		const rows = (JSON.parse(written()) as ReferenceListReport).references as { tier: string; status: string }[]
-		expect(rows.find((row) => row.tier === 'local')?.status).toBe('blocked by final in project')
-		expect(rows.find((row) => row.tier === 'project')?.status).toBe('used')
-	})
-
-	it('blocks a local override when any project layer of the walk is final', () => {
-		const base = repo()
-		markRoot(base)
-		const root = join(base, 'pkg')
-		write(base, '.agents/references/name.md', '---\nfinal: true\n---\nworkspace\n')
-		write(root, '.agents/references/name.md', 'package\n')
-		write(root, '.agents/references.local/name.md', 'local\n')
-
-		expect(show(['name'], { root })).toBe(0)
-		expect(written()).toBe('package\n')
-	})
-
-	it('leaves the managed tier above a final project reference', () => {
-		const programData = tempDir('reference-programdata-')
-		withPlatform('win32', programData, () => {
-			const root = repo()
-			write(root, '.agents/references/name.md', '---\nfinal: true\n---\nproject\n')
-			write(managedReferencesDir('win32', programData), 'name.md', 'managed\n')
-
-			expect(show(['name'], { root })).toBe(0)
-			expect(written()).toBe('managed\n')
-		})
-	})
-
-	it('ignores final outside the project tier, with a warning', () => {
-		const root = repo()
-		declareDependency(root, 'dep-a')
-		installDependency(root, 'dep-a', { name: '---\nfinal: true\n---\nplugin\n' })
-		write(root, '.agents/references.local/name.md', 'local\n')
-
-		expect(show(['name'], { root, format: 'json', trace: true })).toBe(0)
-		const [entry] = JSON.parse(written()) as ReferenceShowEntry[]
-		expect(entry?.content).toBe('local\n')
-		expect(entry?.warnings.some((warning) => warning.includes('ignored in the plugin tier'))).toBe(true)
-		expect(entry?.trace?.find((step) => step.tier === 'local')?.outcome).toBe('used')
-	})
-
-	it('reads a final that is not true or false as false, with a warning', () => {
-		const root = repo()
-		write(root, '.agents/references/name.md', '---\nfinal: yes please\n---\nproject\n')
-		write(root, '.agents/references.local/name.md', 'local\n')
-
-		expect(show(['name'], { root, format: 'json' })).toBe(0)
-		const [entry] = JSON.parse(written()) as ReferenceShowEntry[]
-		expect(entry?.content).toBe('local\n')
-		expect(entry?.warnings.some((warning) => warning.includes('read as false'))).toBe(true)
+		expect(written()).toBe('## A\n\npackage A\n\n## B\n\npackage B\n\n## C\n\nworkspace C\n')
 	})
 })
 
@@ -863,8 +761,7 @@ describe('list', () => {
 		const firstUser = tiers.indexOf('user')
 		const firstPlugin = tiers.indexOf('plugin')
 		expect(tiers[0]).toBe('managed')
-		expect(tiers.indexOf('local')).toBeGreaterThan(tiers.lastIndexOf('managed'))
-		expect(tiers.indexOf('project')).toBeGreaterThan(tiers.lastIndexOf('local'))
+		expect(tiers.indexOf('project')).toBeGreaterThan(tiers.lastIndexOf('managed'))
 		expect(firstUser).toBeGreaterThan(tiers.lastIndexOf('project'))
 		expect(firstPlugin).toBeGreaterThan(tiers.lastIndexOf('user'))
 
@@ -874,9 +771,6 @@ describe('list', () => {
 			} else if (layer.path.endsWith('governances')) expect(layer.status).toContain('legacy')
 			else expect(layer.status).toBe('')
 		}
-		expect(report.layers.filter((layer) => layer.tier === 'local').map((layer) => layer.path)).toEqual([
-			join(root, '.agents', 'references.local'),
-		])
 		expect(report.layers.filter((layer) => layer.status.includes('legacy')).map((layer) => layer.tier)).toEqual(
 			expect.arrayContaining(['managed', 'project', 'user', 'plugin']),
 		)
