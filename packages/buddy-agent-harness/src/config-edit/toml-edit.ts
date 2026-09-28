@@ -79,3 +79,77 @@ export function replaceTomlTable(source: string, path: string[], value: Record<s
 	const rendered = renderTomlTable(path, value).trimEnd()
 	return { kind: 'edited', text: `${text.slice(0, first[0])}${rendered}${text.slice(first[1])}` }
 }
+
+const bareKey = /^[A-Za-z0-9_-]+$/
+
+function tomlKey(name: string): string {
+	return bareKey.test(name) ? name : JSON.stringify(name)
+}
+
+/** One value in TOML inline syntax: a map stays on its line as an inline table, not a sub-table. */
+export function renderTomlInline(value: unknown): string {
+	if (typeof value === 'object' && value !== null && !Array.isArray(value))
+		return `{ ${Object.entries(value)
+			.map(([name, item]) => `${tomlKey(name)} = ${renderTomlInline(item)}`)
+			.join(', ')} }`
+	return stringifyToml({ v: value }).slice('v = '.length).trimEnd()
+}
+
+/**
+ * Appends the table at `path` with every value inline, so a later field edit finds each value on
+ * one line of that table rather than in a sub-table.
+ */
+export function appendInlineTomlTable(source: string, path: string[], value: Record<string, unknown>): string {
+	const separator = source === '' || source.endsWith('\n') ? '' : '\n'
+	const lines = Object.entries(value).map(([name, item]) => `${tomlKey(name)} = ${renderTomlInline(item)}\n`)
+	return `${source}${separator}\n[${path.map(tomlKey).join('.')}]\n${lines.join('')}`
+}
+
+function lineEndAt(source: string, offset: number): number {
+	const end = source.indexOf('\n', offset)
+	return end === -1 ? source.length : end
+}
+
+/**
+ * Sets, adds, or (with `undefined`) removes the one key `name` of the `[path]` table, keeping every
+ * byte outside that key-value line. Only a key written directly in the table's own `[header]` form
+ * is taken apart: a table written inline or as dotted keys is `absent`, and a key spread over dotted
+ * keys or a sub-table is `shape`.
+ */
+export function setTomlKey(source: string, path: string[], name: string, value: unknown): ConfigEdit {
+	let program: AST.TOMLProgram
+	try {
+		program = parseTOML(source)
+	} catch {
+		return { kind: 'refused', reason: 'unreadable' }
+	}
+	const tables = program.body[0].body.filter((node): node is AST.TOMLTable => node.type === 'TOMLTable')
+	const table = tables.find(
+		(node) => node.kind === 'standard' && node.resolvedKey.length === path.length && startsWith(node.resolvedKey, path),
+	)
+	if (!table) return { kind: 'refused', reason: 'absent' }
+	const pairs = table.body
+	const spread =
+		tables.some((node) => startsWith(node.resolvedKey, [...path, name])) ||
+		pairs.some((pair) => keyNames(pair.key)[0] === name && pair.key.keys.length > 1)
+	if (spread) return { kind: 'refused', reason: 'shape' }
+
+	const pair = pairs.find((item) => item.key.keys.length === 1 && keyNames(item.key)[0] === name)
+	if (pair && value !== undefined)
+		return {
+			kind: 'edited',
+			text: `${source.slice(0, pair.value.range[0])}${renderTomlInline(value)}${source.slice(pair.value.range[1])}`,
+		}
+	if (pair) {
+		// TOML holds one key-value per line, so the whole line and its trailing comment go with it.
+		const start = source.lastIndexOf('\n', pair.range[0] - 1) + 1
+		const end = lineEndAt(source, pair.range[1])
+		return { kind: 'edited', text: `${source.slice(0, start)}${source.slice(Math.min(end + 1, source.length))}` }
+	}
+	if (value === undefined) return { kind: 'edited', text: source }
+	const after = lineEndAt(source, pairs.at(-1)?.range[1] ?? table.range[0])
+	return {
+		kind: 'edited',
+		text: `${source.slice(0, after)}\n${tomlKey(name)} = ${renderTomlInline(value)}${source.slice(after)}`,
+	}
+}

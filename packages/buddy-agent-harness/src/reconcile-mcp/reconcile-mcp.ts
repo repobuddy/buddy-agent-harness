@@ -1,5 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
+import { appendInlineTomlTable, renderTomlInline, setTomlKey } from '../config-edit/toml-edit.ts'
 import type { GitBridgeState } from '../diagnose-bridges/git-bridge-state.ts'
 import { locatorText, type Position } from '../diagnose-bridges/locator.ts'
 import {
@@ -14,7 +15,6 @@ import { goldenSetPath, mcpTargets, parseGoldenSet, parseTarget } from '../diagn
 import type { McpConfig } from '../harness-registry/mcp-config.ts'
 import { isRecord } from '../is-record/is-record.ts'
 import { mcpDialects } from '../mcp-dialects/mcp-dialects.ts'
-import { appendGoldenServer, setGoldenField, tomlValue } from './golden-edit.ts'
 
 /**
  * `import` is offered and waits for approval; `imported` was approved and written; `edit` was
@@ -129,7 +129,7 @@ export function reconcileMcp({ root, git, accept }: ReconcileMcpOptions): Reconc
 					detail: declared
 						? 'only the harness changed it — approve to take it into the golden set'
 						: 'the golden set does not declare this server — approve each field to add it',
-					value: value === undefined ? '(unset)' : `${field} = ${tomlValue(value)}`,
+					value: value === undefined ? '(unset)' : `${field} = ${renderTomlInline(value)}`,
 				}
 				rows.push(row)
 				offers.push({ row, config, server, field, value, carried, adds: !declared })
@@ -171,21 +171,15 @@ export function reconcileMcp({ root, git, accept }: ReconcileMcpOptions): Reconc
 					return offer ? [[field, offer.value]] : []
 				}),
 			)
-			source = land(source, appendGoldenServer(source, server, added), server, added, group, imported)
+			source = land(source, appendInlineTomlTable(source, ['servers', server], added), server, added, group, imported)
 			continue
 		}
 		for (const offer of group) {
 			const current = parseGoldenSet(source) as { kind: 'servers'; servers: Map<string, McpServer> }
 			const expected = { ...current.servers.get(server), [offer.field]: offer.value }
 			if (offer.value === undefined) delete expected[offer.field]
-			source = land(
-				source,
-				setGoldenField(source, server, offer.field, offer.value),
-				server,
-				expected,
-				[offer],
-				imported,
-			)
+			const edit = setTomlKey(source, ['servers', server], offer.field, offer.value)
+			source = land(source, edit.kind === 'edited' ? edit.text : undefined, server, expected, [offer], imported)
 		}
 	}
 
