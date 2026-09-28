@@ -104,7 +104,7 @@ export default defineConfig({
 						{ label: 'Overview', slug: 'cli' },
 						{ label: 'init', slug: 'cli/init' },
 						{ label: 'doctor', slug: 'cli/doctor' },
-						{ label: 'mcp project', slug: 'cli/mcp' },
+						{ label: 'mcp', slug: 'cli/mcp' },
 						{ label: 'dep-plugins', slug: 'cli/dep-plugins' },
 						{ label: 'reference', slug: 'cli/reference' },
 						{ label: 'governance (deprecated)', slug: 'cli/governance' },

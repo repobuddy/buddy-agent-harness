@@ -22,10 +22,9 @@ user's edit, and pulling it back into the golden set is reconcile's job, not thi
 
 **Non-goals**
 
-- **Reconciling.** Importing a target-side change into the golden set is per server and per field,
-  and needs approval. It never auto-merges a three-way conflict, and it refuses a literal
-  credential. This command reads the same baseline to know when to stay out of the way. It never
-  writes the golden set.
+- **Reconciling.** Importing a target-side change into the golden set is
+  `../mcp-reconcile/README.md`. This command reads the same baseline to know when to stay out of
+  the way. It never writes the golden set.
 - **User scope.** It does not read or write `~/.codex/config.toml`, `~/.claude.json`, or
   `claude_desktop_config.json`.
 - **Removing a server.** If a server is in a target but not in the golden set, that is

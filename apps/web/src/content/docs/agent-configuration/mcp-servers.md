@@ -107,7 +107,7 @@ The drift findings, then:
 
 Each finding's `path` carries a locator, not only a file: `.cursor/mcp.json#servers.linear` names the server and `.cursor/mcp.json#servers.linear.command` names the field. In a file holding twenty servers, the file alone would be useless.
 
-`mcp-unprojected` and `mcp-diverged-golden` are the two the golden set is plainly ahead on, and [`mcp project`](/cli/mcp/) works out the change: the [`repair` skill](/skills/repair/) shows the dry run and applies it with `--write` on approval. The rest have no automatic repair — `mcp-undeclared` and the other `mcp-diverged-*` findings are a person's call, and the two `-unreadable` findings need the file fixed by hand first.
+`mcp-unprojected` and `mcp-diverged-golden` are the two the golden set is plainly ahead on, and [`mcp project`](/cli/mcp/) works out the change: the [`repair` skill](/skills/repair/) shows the dry run and applies it with `--write` on approval. `mcp-undeclared` and `mcp-diverged-target` are the two the harness side is plainly ahead on, and [`mcp reconcile`](/cli/mcp/#mcp-reconcile) imports them field by field: the `repair` skill offers each field on its own and passes only the approved ones. The rest have no automatic repair — `mcp-diverged-both` and `-unknown` are a person's call, and the two `-unreadable` findings need the file fixed by hand first.
 
 ## Credentials, and why the report never shows one
 
@@ -132,7 +132,7 @@ The golden set gets the same checks as every harness copy. A user pastes a token
 
 ## What is deliberately not done yet
 
-`doctor` itself still only detects drift; it does not write anything. Writing is [`mcp project`](/cli/mcp/)'s job, and it covers one direction: creating a harness's MCP file or updating a stale copy from the golden set. Pulling a target-side edit back into the golden set — reconcile — is the other direction, and it does not exist yet. A server the harness side changed (`mcp-diverged-target`, `-both`, `-unknown`) is held back rather than written, and a server the harness declares that the golden set does not (`mcp-undeclared`) is left alone either way. Each of those findings names its repair and a person (or the [`repair` skill](/skills/repair/), as a separate approved step) carries it out.
+`doctor` itself still only detects drift; it does not write anything. Writing is the two [`mcp` commands](/cli/mcp/)'. `mcp project` creates a harness's MCP file or updates a stale copy from the golden set. [`mcp reconcile`](/cli/mcp/#mcp-reconcile) goes the other way: it imports a field only the harness changed (`mcp-diverged-target`), or a server only a harness declares (`mcp-undeclared`), one approved field at a time. A field both sides changed, or one no baseline can place (`mcp-diverged-both`, `-unknown`), is never written by either; each names its repair and a person carries it out.
 
 Project scope only. User-scope MCP configuration — `~/.codex/config.toml`, `~/.claude.json`, `claude_desktop_config.json` — holds much of the world's servers and stays described, never read and never written. Reading a user's home directory into output that lands in every session's transcript is a wider blast radius than diagnosis needs.
 
