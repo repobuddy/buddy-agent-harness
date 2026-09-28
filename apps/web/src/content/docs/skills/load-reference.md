@@ -15,7 +15,16 @@ Load `skill-design` and `agent-tool-output` with the `load-reference` skill in t
 
 Naming the plugin is what lets an agent that does not have the skill tell the user what to install. Claude Code can declare one plugin's dependency on another; Codex, Cursor, and GitHub Copilot CLI cannot, so on those harnesses the sentence is the only thing that says so.
 
-The line names the skill in words rather than as a slash command. Only Claude Code addresses a plugin's skill as `plugin:skill`. The other three know a skill by its bare name, so a qualified name would fail there, and a bare one says nothing about where the skill comes from.
+The line names the skill in words rather than as a slash command, because each harness types a plugin's skill differently:
+
+| Harness | What a user types |
+| --- | --- |
+| Claude Code, GitHub Copilot in VS Code | `/buddy-agent-harness:load-reference` |
+| Cursor, GitHub Copilot CLI, Cline | `/load-reference` |
+| Codex | `$load-reference` |
+| OpenCode, Kilo Code, Gemini CLI, Qwen Code, Crush, OpenHands | no typed form; the model loads a skill when the task names it |
+
+A form that leaves out the plugin says nothing about where the skill comes from, and two plugins' skills of the same name collide under it. A skill written for one harness only can add that harness's form after the skill's name. The skill's `README.md` carries this table, generated from [`@cyberuni/agent-harness`](https://github.com/cyberuni/agent-harness), so a calling skill's author copies the form from the installed package.
 
 ## What it does
 

@@ -125,6 +125,14 @@ Feature: Load references for a skill through the bundled reference command
     And the line names neither as a slash command
 
   @behavior
+  Scenario: lists how each harness names the skill, generated from agent-harness
+    Given the shipped `skills/load-reference/README.md`
+    When its harness table is read
+    Then it has one row per harness `@cyberuni/agent-harness` knows, each giving `skillInvocation`'s text for the `load-reference` skill of the `buddy-agent-harness` plugin, or none where it records no typed form
+    And the row says whether that form names the plugin
+    And regenerating the table from `@cyberuni/agent-harness` changes nothing
+
+  @behavior
   Scenario: tells the user which plugin to install when the skill is missing
     Given a skill whose instructions carry the caller line shipped in `skills/load-reference/README.md`, and no `load-reference` skill installed
     When the agent follows those instructions
