@@ -30,8 +30,8 @@ Reported by `doctor` so it can be converted; see `../nonstandard.md` for what ea
 
 | Path | Kind | Converts to |
 | --- | --- | --- |
-| `.github/copilot-instructions.md` | instructions | `AGENTS.md`, with a generated bridge left behind |
-| `.github/instructions/` | instructions | `AGENTS.md`, with a generated bridge left behind |
+| `.github/copilot-instructions.md` | instructions | `AGENTS.md`, keeping the content reachable for this harness |
+| `.github/instructions/` | instructions | `AGENTS.md`, keeping the content reachable for this harness |
 | `.github/skills/` | skill | `.agents/skills`, projected back if needed |
 
 ## Judgment about this harness

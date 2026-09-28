@@ -52,10 +52,17 @@ Feature: Consolidate a repository's agent configuration and bridge the harnesses
 
   @behavior
   Scenario: offers no consolidation that would leave fewer readers than before
-    Given a `.cursorrules` a person wrote, for a harness that reads `AGENTS.md` in one mode only
+    Given a `GEMINI.md` a person wrote, for a harness that reads `AGENTS.md` only once it is named in a settings file
     When the agent runs the `init-buddy-agent-harness` skill
-    Then the offer is to consolidate into `AGENTS.md` and leave a generated copy behind
+    Then the offer is to consolidate into `AGENTS.md` and keep the content reachable
     And no offer is made to consolidate the file and delete it
+
+  @behavior
+  Scenario: consolidating a Cursor rule is offered on activation, not on readership
+    Given a `.cursor/rules/scoped.mdc` a person wrote, carrying `globs` and no `alwaysApply`
+    When the agent runs the `init-buddy-agent-harness` skill
+    Then the trade described is that conditional activation becomes always-on
+    And no claim is made that any Cursor mode would stop reading the content
 
   @behavior
   Scenario: asks about each artifact separately rather than about the set

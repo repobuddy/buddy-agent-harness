@@ -1,5 +1,38 @@
 # Changes — Agentic Configuration Standards
 
+## 2026-09-28 — Cursor reads AGENTS.md in every mode; the mode claim was wrong
+
+**What changed**: E-CUR-05, E-CUR-06, and E-CUR-07 added. E-CUR-02 superseded. Cursor's own help
+documentation answers "Do rules apply in all modes?" with "Yes … in Agent, Ask, Plan, and Debug
+modes … regardless of which mode you're using." Chat and Composer were merged into the single Agent
+panel in v0.46, and "Composer" is now a model name, so the two surfaces the old claim said would lose
+their instructions have not existed as separate readers for roughly a year and a half.
+
+**Why**: E-CUR-02 was recorded `thin`, sourced to three secondary comparisons, and marked "Needs
+primary-source confirmation." It was confirmed against the vendor and did not survive. The trigger
+was a real `init` run: the skill reported the contested claim to a repository owner as a reason not
+to delete a `.cursor/rules/*.mdc`, the owner asked for the research, and the primary source
+contradicted it.
+
+**Material conclusions**:
+
+- **A published claim about another vendor was wrong, not merely thin.** The correction is disclosed
+  in `apps/web/src/content/docs/sources.md` per CONTRIBUTING.md. Nothing the package *writes*
+  changes — Cursor was already native on skills and received no projection — but what the skill
+  *tells the user* changes, and it was steering a real decision.
+- **The false claim had ten homes.** One evidence entry, the `init` skill body, its Cursor harness
+  reference, the `doctor` skill's copy of the same reference, the internal `harness-update` skill's
+  trap list, the research conclusion, and four documentation pages. This is the partial-update
+  failure `harness-update` warns about, at full scale.
+- **"Agent (Chat)" is a trap phrase in Cursor's own docs.** It names the agent chat surface as
+  against Tab, Inline Edit, and Bugbot — not Agent mode as against Ask mode. The real loading
+  boundaries are per feature, not per mode. Reading it as a mode restriction is the most likely
+  origin of E-CUR-02, and future harness research should treat vendor phrasing of this shape as a
+  question.
+- **`CLAUDE.md` is now known to be a Cursor instruction file as well** (E-CUR-07), always applied
+  regardless of `alwaysApply`. The never-write-a-`CLAUDE.md` rule was argued from Claude Code alone;
+  it now has a second, independent reason.
+
 ## 2026-09-20 — Plugin CLI behaviors move out of the source
 
 **What changed**: E-CC-15, E-CC-16, E-CC-17, E-CODEX-03, E-CODEX-04, E-COPILOT-03, and E-CUR-04

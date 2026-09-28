@@ -30,7 +30,7 @@ Reported by `doctor` so it can be converted; see `../nonstandard.md` for what ea
 
 | Path | Kind | Converts to |
 | --- | --- | --- |
-| `.cursorrules` | instructions | `AGENTS.md`, with a generated bridge left behind |
+| `.cursorrules` | instructions | `AGENTS.md`, keeping the content reachable for this harness |
 | `.cursor/rules/` | rule | a skill, where the path scoping is incidental |
 | `.cursor/commands/` | command | `.agents/skills/<name>/SKILL.md` |
 | `.cursor/skills/` | skill | `.agents/skills`, projected back if needed |
