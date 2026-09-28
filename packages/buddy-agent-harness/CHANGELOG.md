@@ -1,5 +1,106 @@
 # buddy-agent-harness
 
+## 0.13.0
+
+### Minor Changes
+
+- e8491dd: The `enhance` skill no longer offers a section that your agent already reads from your global instructions. When the repository's `AGENTS.md` lacks an addition but instructions loaded from outside the repository carry its current text, the verdict is *already global*. Nothing is offered, and the report says a repository copy would reach your team but give you the text twice. The skill writes that copy only if you ask for it. When both places carry the text, the report names the duplicate.
+  
+  The global destination it recommends is now `~/.agents/AGENTS.md`. The skill also says that a harness reads that file only through its own user-scope file, such as `~/.claude/CLAUDE.md` on Claude Code.
+- 1c7ecac: The `enhance` skill now checks the copy of an addition in your global instructions, and says what it found when that copy and the repository's differ:
+  
+  - **Global instructions hold a retired wording, or your own words, and the repository has none.** The skill no longer offers the addition. It hands you the current text to put in place of a retired global wording, and leaves your own words alone.
+  - **Global instructions hold a retired wording, whatever the repository holds.** You get the current text for the global copy, even where the repository's section is already current.
+  - **The repository holds a retired wording, and your global instructions hold the current text.** The replacement is still offered. It now says you would read the text twice, and offers removing the section as the other answer.
+  - **The repository holds your own words, and your global instructions hold the current text.** Nothing is offered, and the report says you read the subject twice.
+- cf26cf9: The `enhance` skill now offers a second addition, `## List identifiers`. It tells the agent to label every list it presents: letters or numbers for a plain list, and a kind prefix for a typed one, such as P1 for proposals, Q1 for questions, or S1 for scenarios. Labels stay stable when the list is revised, and new items continue the sequence.
+  
+  The skill offers it the same way as `## Delegation`. It is offered only where the merged instructions do not already cover the subject, it recommends the owner's global instruction file, and it is written only on approval. Each addition is offered and reported on its own.
+- e538ecc: `init` and `doctor` now work with references instead of governances.
+  
+  - **`init`** creates `.agents/references/` instead of `.agents/governances/`. Its result reports `references`, the number of references the project tier holds, in place of `governances`. Documents in an existing `.agents/governances/` are counted too.
+  - **`doctor`** reports a `references` section in place of `governances`. There is one row per name per layer, `{ name, tier, path, status }`, for the managed, project, and user tiers. `status` is the one `reference list` gives, such as `used` or `shadowed by project (first-wins)`. When no layer holds a reference, the section reads `0 references — no layer outside the plugin tier holds one`.
+  
+  The legacy `governances/` folders are still read by `reference`, so nothing already written stops resolving.
+- f5855ab: New `load-reference` skill: the one way a skill loads a reference. A calling skill writes one line, such as "Load `skill-design` and `agent-tool-output` with the `load-reference` skill in the `buddy-agent-harness` plugin." The skill runs `reference show` for every name at once, from a launcher bundled in its own folder, with no `npx` and no network access. When a name is missing everywhere, or the launcher is absent because the plugin was installed from git, it reads the calling skill's own copy under `references/` and tells you so.
+  
+  The skill's `README.md` lists how each harness names it: `/buddy-agent-harness:load-reference` in Claude Code, `/load-reference` in Cursor and GitHub Copilot CLI, `$load-reference` in Codex. The table is generated from `@cyberuni/agent-harness`.
+  
+  The launchers bundled into the shipped skills no longer break a command that takes several values. Minifying renamed the class the CLI parser uses to recognize them, so `reference show` rejected every name when run from a bundle.
+- 3f850f5: `buddy-agent-harness mcp project` writes your golden MCP server set (`.agents/buddy-agent-harness/mcp.toml`) into each enabled harness's own MCP file: `.mcp.json`, `.cursor/mcp.json`, `.codex/config.toml`, and `.gemini/settings.json`. It is a dry run unless you pass `--write`.
+  
+  ```
+  actions:
+    target                 server  action  detail
+    .mcp.json              fs      add     creates the file
+    .codex/config.toml     old     refuse  transport: Codex supports no SSE transport
+    .gemini/settings.json  linear  add     appends the server
+  ```
+  
+  - **Each harness gets its own spelling.** You write a reference once as `${NAME}`. Cursor gets `${env:NAME}`. Claude Code and Gemini CLI take it as written. Codex gets `env_vars`, `env_http_headers`, or `bearer_token_env_var`. A timeout in milliseconds becomes Codex's `tool_timeout_sec`.
+  - **It refuses rather than guesses.** A server a harness cannot hold as written is refused, and the refusal names the field. So is a golden entry holding a literal credential.
+  - **It never overwrites your edits.** A server changed on the harness side is skipped.
+  - **It keeps the rest of the file.** Every byte outside the entry it writes stays as it was, comments included. That holds when it updates a server already there, in `.gemini/settings.json` and `.codex/config.toml` too. It will not rewrite an entry that holds a comment, or a Codex server written as an inline table. It lists those changes for you to apply instead.
+  - **It records what it wrote.** `--write` writes `.agents/buddy-agent-harness/mcp.projected.json`, which `doctor` already reads to tell which side moved.
+  
+  The `repair` skill now handles `mcp-unprojected` and `mcp-diverged-golden`: it shows the plan and runs the command once you approve.
+  
+  `doctor` now reads each harness's MCP file in that harness's own format:
+  
+  - A Gemini CLI `url` reads as SSE, and `httpUrl` as streamable HTTP.
+  - A Codex server's headers, passed-through variables, and timeout are compared instead of ignored.
+  - A golden field a harness has no place for, such as Cursor and `description`, is no longer reported as drift.
+- bf1dd95: `buddy-agent-harness mcp reconcile` pulls a change made in a harness's MCP file back into your golden set (`.agents/buddy-agent-harness/mcp.toml`), one approved field at a time. It is a dry run unless you name a field with `--accept`.
+  
+  ```
+  fields:
+    path                                          action  value
+    .mcp.json#servers.linear.command              import  command = "bunx"
+    .mcp.json#servers.docs.url                    import  url = "https://docs"
+    .mcp.json#servers.docs.headers.Authorization  refuse
+  ```
+  
+  ```sh
+  buddy-agent-harness mcp reconcile --accept '.mcp.json#servers.linear.command'
+  ```
+  
+  - **One field per approval.** There is no approve-all. A server the golden set lacks is added from the fields you approve, and one of them must be its `command` or `url`.
+  - **Conflicts stay yours.** A field both sides changed, or one no baseline can place, is reported and never imported.
+  - **No credentials.** A literal credential is refused and never shown. The server's other fields are still offered, so you can reference the secret as `${VAR}`.
+  - **Harness defaults are not your edits.** A Codex or Gemini CLI timeout equal to that harness's default is not imported.
+  - **Each harness's spelling comes back as `${NAME}`.** That covers Cursor's `${env:NAME}` and Codex's `bearer_token_env_var`.
+  - **Your comments stay.** The golden set is edited in place, not rewritten. A field it spreads over a sub-table is listed for you to apply by hand.
+  
+  The `repair` skill now handles `mcp-diverged-target` and `mcp-undeclared`. It offers each field on its own and passes only the ones you approve.
+- ba6d264: Add `reference show|list|search`, which reads on-demand reference documents by name. A reference costs no context until it is fetched, unlike a skill, whose description loads in every session.
+  
+  - **Tiers.** A name resolves through the managed, project (`.agents/references/`), user (`~/.agents/references/`), and plugin tiers, highest first. The plugin tier is this package, the plugins your harness has enabled, and the dependencies declared in the nearest `package.json`; ask for `<plugin>/<name>` when two plugins hold a name.
+  - **Your harness.** The command detects the harness it runs under. It reads a `references/` folder beside that harness's managed settings (for example `/etc/claude-code/references`), and the `references/` of each plugin the harness has enabled, from the folder it installed the plugin in. A plugin that is installed but not enabled is never read. Policy kept in MDM, the Windows registry, or the vendor's servers cannot be read locally; `--trace` and `list` show it as `not read`, with the reason.
+  - **Monorepos.** The project tier is read at `--root` and each folder above it up to the repository root (`.git`, `pnpm-workspace.yaml`, or a `package.json` with `workspaces`), nearest first, so a package can override a reference the repository shares.
+  - **Merge modes.** The higher document chooses in its frontmatter: `first-wins` (default), `combine`, or `merge-sections`, which merges by heading and honors `<!-- merge: combine -->` and `<!-- merge: remove -->` under a heading.
+  - **File names.** `<name>.md`, `<name>/README.md`, `<name>/index.md`, or `<name>/SKILL.md`.
+  - **Several names per call.** `show a b c` returns each document between `<reference>` delimiters, in order; `--format json` returns an array. A missing name is reported in place, suggests close names, and makes the exit code 1.
+  - **`--trace`** shows every layer checked and why each was used or shadowed; `list` marks the same.
+  
+  `governance list|show` is deprecated. It works as before and writes one line on stderr pointing to `reference`. `reference` still reads the `governances/` folders, below `references/` in each tier.
+
+### Patch Changes
+
+- e688aef: Read each harness's skills directories from `@cyberuni/agent-harness` instead of keeping a copy. The projection targets `init` and `doctor` use are unchanged: Claude Code is still the only harness projected into.
+- 9176f62: The `enhance` skill's `## Delegation` section now sizes the job rather than the step: a job made of many routine steps, or of waiting on something outside the agent, goes to a subagent as one job. It also splits a job by what each part needs, sending a hard part to whichever model does it best, and has the brief name what the user authorized and what the subagent must not do.
+  
+  A repository holding the previous wording is offered the new one as a replacement.
+- cbeda67: The `enhance` skill no longer assumes that no harness scores the `## List identifiers` wording. When it cannot tell whether an existing List identifiers section is yours, it offers to settle the question by measurement wherever the repository has a harness for that wording. It still offers two answers where there is none.
+- a0d0b0e: The `enhance` skill now states its stale check once, in the skill itself, instead of inside the `## Delegation` reference. Each addition's reference names only its own history file and what is specific to it, so revising one addition's reference no longer changes how the other is judged. The already-current and already-global checks now share one stated containment test. How a section is classified is unchanged.
+- b876ce5: The `init-buddy-agent-harness` skill now states three rules it relied on the reader to infer. Declining one step drops only that write, and the other approved steps go ahead without being asked again. Creating a `.gemini/settings.json` that does not exist yet needs no approval. The report gives the reason each canonical-only artifact was left alone.
+- f2a29ee: `run(argv)` now returns the usage code `2` on an unknown option or command, where it returned `0` and left the code on `process.exitCode`. A caller can assign the result directly:
+  
+  ```js
+  process.exitCode = await run(argv)
+  ```
+  
+  The executable and the skill launchers already exited `2` there and still do. This comes from `clibuilder` 11.3.0, whose `parse()` now returns the code it records.
+
 ## 0.12.0
 
 ### Minor Changes
