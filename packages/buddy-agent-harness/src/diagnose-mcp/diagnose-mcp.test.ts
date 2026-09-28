@@ -172,7 +172,9 @@ describe('diagnoseMcp', () => {
 			const finding = find(root, 'mcp-undeclared')
 
 			expect(finding?.path).toBe(`${cursor}#servers.io.github.foo`)
-			expect(finding?.repair.instruction).toBe(`add the server io.github.foo to ${golden}, or drop it from ${cursor}`)
+			expect(finding?.repair.instruction).toBe(
+				`add the server io.github.foo to ${golden}, or drop it from ${cursor} — \`/buddy-agent-harness:repair\` offers the import`,
+			)
 		})
 	})
 

@@ -64,11 +64,30 @@ Show each target file as it stands beside its `entries`. That pair is the before
 
 **Stops at.** Everything the command did not list:
 
-- A server only a harness carries (`mcp-undeclared`).
-- A field the harness changed (`mcp-diverged-target`, `-both`, `-unknown`).
+- A server only a harness carries, or a field the harness changed. Those are the next section's.
+- A field both sides changed, or one no baseline can place (`mcp-diverged-both`, `-unknown`).
 - The golden set itself.
 
-Pulling a change back into the golden set is not this correction.
+## `mcp-diverged-target` and `mcp-undeclared`
+
+These are the two MCP findings where the harness side is plainly ahead: only the harness copy changed a field, or a harness carries a server the golden set does not declare. The correction is to import the change into the golden set, **one field at a time**, and `mcp reconcile` works out each field. Do not edit the golden set yourself.
+
+**Plan.** Run `node scripts/mcp.mjs reconcile`, or the `npx` fallback with `mcp reconcile`. It is a dry run and writes nothing. `fields` has one row per field, each with a `path`, an `action`, a `detail`, and for an `import` row the `value` as it would read in the golden set.
+
+**Offer each `import` row on its own.** Show the golden server's table as it stands beside the row's `value`. Ask about each field separately. **Never offer to import every field at once**, and never approve one on the user's behalf. For a server the golden set does not declare yet, approving its `command` or its `url` is required, or there is nothing to run.
+
+**Report without offering a write** for these rows:
+
+- **`refuse`**: a literal credential. The server's other fields are still offered. Tell the user to move the value into an environment variable and reference it as `${VAR}` in the harness file; never read the value out or repeat it.
+- **`skip`**: both sides changed, no baseline can say which side moved, or the value is the harness's own default. The first two are a person's to settle by hand. For a default, say the golden set can state it by hand if it was meant.
+
+**Apply.** Run the same command once, with `--accept <path>` for each approved row and nothing else. The command writes those fields into the golden set in place, keeping every comment, and records the agreement. If it fails naming a path, nothing was written: report the reason.
+
+**Apply `edit` rows by hand.** The golden set writes that field in a shape the command will not take apart, such as a sub-table. Write the row's `value` into the server's table yourself, replacing that field and nothing else.
+
+**Re-run `doctor`** as always. A field or server that now agrees produces no finding. The other harnesses still carry the old value, so each reports `mcp-diverged-golden` or `mcp-unprojected`: offer the previous section's correction for them.
+
+**Stops at.** Everything the command did not list: `-both`, `-unknown`, a server removed from a harness, and the harness files themselves.
 
 ## Not yours: every `problem` with no section above
 

@@ -4,6 +4,7 @@ import { parseFormat, writeResult } from '../command-output/command-output.ts'
 import { GitBridgeState } from '../diagnose-bridges/git-bridge-state.ts'
 import { projectionRecordPath } from '../diagnose-mcp/mcp-baseline.ts'
 import { goldenSetPath } from '../diagnose-mcp/mcp-sources.ts'
+import { mcpReconcileCommand } from '../reconcile-mcp/reconcile.command.ts'
 import { type ProjectionEntry, type ProjectionRow, projectMcp } from './project-mcp.ts'
 
 export type ProjectionReport = {
@@ -78,5 +79,5 @@ export const mcpProjectCommand: cli.Command = command({
 export const mcpCommand: cli.Command = command({
 	name: 'mcp',
 	description: 'Work with the golden MCP server set at .agents/buddy-agent-harness/mcp.toml.',
-	commands: [mcpProjectCommand],
+	commands: [mcpProjectCommand, mcpReconcileCommand],
 })

@@ -351,13 +351,12 @@ describe('the detect-and-repair seam', () => {
 			expect(entry.skillRepair({ file: '<path>' })).toContain(repairSkillInvocation)
 	})
 
-	// `mcp project` can only ever write where the golden set is plainly ahead — an absent server or a
-	// field only the golden side moved — so those two findings alone hand off to the repair skill.
-	// Correcting a drifted server set anywhere else is the user's judgment about which side is right,
-	// so no skill is named in either rendering.
-	const mcpProjectable = ['mcp-unprojected', 'mcp-diverged-golden']
+	// A side that is plainly ahead has a writer: `mcp project` for the golden side, `mcp reconcile`
+	// for the harness side. A three-way conflict, an unknown direction, or a file that does not parse
+	// is the user's judgment, so no skill is named in either rendering.
+	const mcpProjectable = ['mcp-unprojected', 'mcp-diverged-golden', 'mcp-undeclared', 'mcp-diverged-target']
 
-	it('sends the two findings `mcp project` can fix to the repair skill', () => {
+	it('sends the four findings `mcp project` or `mcp reconcile` can fix to the repair skill', () => {
 		for (const entry of mcpRepairs.filter((repair) => mcpProjectable.includes(repair.problem))) {
 			const { instruction } = entry.repair({ file: '<path>', server: 'linear' }, commandInvocation)
 			expect(entry.skillRepair({ file: '<path>', server: 'linear' })).toContain(repairSkillInvocation)

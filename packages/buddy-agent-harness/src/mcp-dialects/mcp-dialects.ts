@@ -15,6 +15,8 @@ export type McpRendering =
 export type McpDialect = {
 	/** The golden fields this harness has a place for; the rest are dropped on write and never compared. */
 	fields: ReadonlySet<McpField>
+	/** Values the harness documents as its own default: present in its file, they may be the harness's, not the user's. */
+	defaults?: Partial<McpServer>
 	read(entry: Record<string, unknown>): McpServer
 	write(server: McpServer): McpRendering
 }
@@ -219,6 +221,7 @@ function fromCodex(entry: Record<string, unknown>): Record<string, unknown> {
 
 const codex: McpDialect = {
 	fields: new Set(['transport', 'command', 'args', 'env', 'url', 'headers', 'enabled', 'timeout']),
+	defaults: { timeout: 60_000 },
 	read: (entry) => serverFrom(fromCodex(entry)),
 	write: (server) =>
 		rendering(() => {
@@ -249,6 +252,7 @@ function fromGemini(entry: Record<string, unknown>): Record<string, unknown> {
 
 const geminiCli: McpDialect = {
 	fields: new Set(['transport', 'command', 'args', 'env', 'url', 'headers', 'timeout']),
+	defaults: { timeout: 600_000 },
 	read: (entry) => serverFrom(fromGemini(entry)),
 	write: (server) =>
 		rendering(() => {

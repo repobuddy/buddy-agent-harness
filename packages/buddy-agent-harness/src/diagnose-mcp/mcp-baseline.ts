@@ -32,6 +32,12 @@ export function parseProjectionRecord(source: string | undefined): Map<string, M
 	)
 }
 
+/** The record as written back: one object per target, one golden model per server. */
+export function formatProjectionRecord(record: Map<string, Map<string, McpServer>>): string {
+	const targets = Object.fromEntries([...record].map(([path, servers]) => [path, Object.fromEntries(servers)]))
+	return `${JSON.stringify({ targets }, null, 2)}\n`
+}
+
 export type BaselineOptions = {
 	git: GitBridgeState
 	record: Map<string, Map<string, McpServer>>
@@ -57,7 +63,8 @@ export class McpBaseline {
 		return targetMoved ? 'target' : 'golden'
 	}
 
-	private baseFor(config: McpConfig, name: string, field: McpField): McpServer | undefined {
+	/** The server as the two sides last agreed on `field`, or `undefined` when no baseline can say. */
+	baseFor(config: McpConfig, name: string, field: McpField): McpServer | undefined {
 		const recorded = this.options.record.get(config.path)?.get(name)
 		if (recorded) return recorded
 		return this.lastAgreed(config, name, field)
