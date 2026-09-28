@@ -206,6 +206,9 @@ importers:
 
   packages/buddy-agent-harness:
     dependencies:
+      '@cyberuni/agent-harness':
+        specifier: ^0.2.0
+        version: 0.2.0
       '@toon-format/toon':
         specifier: ^4.1.1
         version: 4.1.1
@@ -566,6 +569,10 @@ packages:
 
   '@cucumber/messages@33.0.4':
     resolution: {integrity: sha512-i6P1a0bnmhecOHfvIW0rhMxv/gMKfBKwDMxmD9/Uo1HSqpQ17ocHms1JwWW6uTMLAopqqWlcz7l6Pax+qUOTzg==}
+
+  '@cyberuni/agent-harness@0.2.0':
+    resolution: {integrity: sha512-JEiI86oEx/6cl+ll136F/SDU7WY0x/qQXy+kDp1kVgyTTQOzURXVl7IWJ9PyHFUF7RAZZ61LEmimpg3Y4PJt4w==}
+    engines: {node: '>=22'}
 
   '@emnapi/core@1.11.1':
     resolution: {integrity: sha512-RSvbQmHzdKzNsLYa/wHrbc3KN4sYLKAdPZxqiM2HATqv/SBk2/ENSHpvXGaLOMcsAyz0poEGqkmmKYG3OWiJEQ==}
@@ -3446,6 +3453,8 @@ snapshots:
       '@cucumber/messages': 33.0.4
 
   '@cucumber/messages@33.0.4': {}
+
+  '@cyberuni/agent-harness@0.2.0': {}
 
   '@emnapi/core@1.11.1':
     dependencies:
