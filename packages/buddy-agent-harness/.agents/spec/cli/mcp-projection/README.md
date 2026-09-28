@@ -102,12 +102,18 @@ their directory exists. A file that does not exist yet is created only for an en
 **Writes are byte-preserving.** Every byte of the file outside the entry being written is kept,
 comments included:
 
-- **JSON:** a new server is spliced in at the parse tree's offsets.
-- **TOML:** a new table is appended.
-- **Shared files:** code only ever adds to them. An in-place change to an existing entry there is
-  an `edit`.
-- **Files that are not shared:** an in-place change is an `update`, unless the entry holds a
-  comment the replacement would drop. Then it is an `edit`.
+- **JSON:** a new server is spliced in at the parse tree's offsets. An existing server's value is
+  replaced at its offsets.
+- **TOML:** a new table is appended. An existing server's `[mcp_servers.<name>]` table and every
+  `[mcp_servers.<name>.*]` sub-table are replaced, wherever they sit. `smol-toml` keeps no source
+  offsets, so `toml-eslint-parser` locates the tables.
+- **Shared files** are written the same way. Every byte outside the entry is kept, so another
+  tool's settings are never touched.
+- An in-place change is an `update`, unless it cannot be made that way. Then it is an `edit`:
+  - The entry holds a comment, a trailing comment on its last line included. The replacement
+    would drop it, and where it belongs in the new entry is a person's call.
+  - A TOML server is not a `[mcp_servers.<name>]` table: an inline table, dotted keys, a header
+    only implied by a sub-table, or an array of tables inside it.
 
 **A write must read back.** Every new text is parsed again through the target's dialect before it
 is accepted. The server must come back equal to the golden server over the representable fields,
@@ -166,7 +172,7 @@ flowchart TD
   M -->|no| N[agreed: record it, no row]
   M -->|yes| O{Did only the golden side move?}
   O -->|no: target, both, or unknown| P[skip]
-  O -->|yes| Q{Shared file, or a comment in the entry?}
+  O -->|yes| Q{A comment in the entry, or a form not replaced in place?}
   Q -->|yes| R[edit, with the entry]
   Q -->|no| S[Replace the entry in place]
   L --> T{Reads back as the golden server, others unchanged?}
@@ -206,8 +212,11 @@ flowchart TD
 | O→P | both moved | `holds back a three-way conflict` |
 | O→P | no baseline | `holds back a server when no baseline can say which side moved` |
 | Q→S | the golden side moved, a file that is not shared | `updates in place a field only the golden set changed` |
-| Q→R | the golden side moved, a shared file | `hands over an in-place change to a shared file as an edit` |
+| Q→S | the golden side moved, a shared settings file | `updates a server in place in a shared settings file and keeps its comments` |
+| Q→S | the golden side moved, a Codex file | `updates a server table in place in a Codex file, byte-preserving outside it` |
 | Q→R | the golden side moved, a comment in the entry | `hands over a change that would drop a comment as an edit` |
+| Q→R | the golden side moved, a comment in a Codex table | `hands over a change to a Codex table holding a comment as an edit` |
+| Q→R | the golden side moved, a Codex inline table | `hands over a change to a Codex server written as an inline table as an edit` |
 | T→R | a JSON root that is not an object | `hands over an add it cannot place safely as an edit` |
 | M | a golden field the target has no place for | `drops a field the target cannot hold rather than refusing` |
 | F | the Claude Code dialect | `writes a Claude Code entry with its transport and timeout` |

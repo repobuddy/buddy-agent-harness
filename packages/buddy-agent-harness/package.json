@@ -61,6 +61,7 @@
 		"clibuilder": "^10.0.0",
 		"jsonc-parser": "^3.3.1",
 		"smol-toml": "^1.8.0",
+		"toml-eslint-parser": "^1.0.3",
 		"yaml": "^2.9.0"
 	},
 	"devDependencies": {
