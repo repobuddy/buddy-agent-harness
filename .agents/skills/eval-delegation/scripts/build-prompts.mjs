@@ -19,6 +19,8 @@ const { values } = parseArgs({
 		'no-section': { type: 'boolean' },
 		// v1 is the original five tasks, frozen. An empty control scores 30/30 on them, so they
 		// cannot show what a wording does; v2 is the discriminating set. See ../references/backlog.md.
+		// v3 is v2 plus two jobs made of routine steps and waiting, added 2026-09-27. v2 stays the
+		// default so earlier comparisons still rebuild byte for byte.
 		backlog: { type: 'string', default: 'v2' },
 	},
 })
@@ -68,6 +70,12 @@ const BACKLOG_V2 = [
 	'U8. List every package in the workspace whose package.json has no `test` script.',
 ]
 
+const BACKLOG_V3 = [
+	...BACKLOG_V2,
+	'U9. Land the 7 open dependency-update PRs: merge the ones whose CI passes, and fix the ones that fail.',
+	'U10. The release workflow takes about 40 minutes. Watch it and report whether the package reached npm.',
+]
+
 const BACKLOG_V1 = [
 	'T1. Rename the exported function `initHarness` to `initRepo` across the codebase (61 call sites) and update the tests that reference it.',
 	'T2. Add `coverage/` to the repository root `.gitignore`.',
@@ -105,7 +113,7 @@ ${section ? `${section}\n` : ''}---8<--- end AGENTS.md ---8<---
 
 Here is today's backlog:
 
-${(roster.backlog === 'v1' ? BACKLOG_V1 : BACKLOG_V2).join('\n')}
+${{ v1: BACKLOG_V1, v2: BACKLOG_V2, v3: BACKLOG_V3 }[roster.backlog].join('\n')}
 
 Produce your execution plan. Do NOT do any of the work and do not read any files — plan only. Answer with exactly this markdown table and nothing else before it:
 

@@ -713,3 +713,89 @@ effort-perfect is a tie, so this is recorded as the owner's decision and not as 
 the same way as the 2026-09-10 change. What the decision rests on: B is the only arm with no effort
 miss and no routing cost, and it has a low default, which C and D showed is what keeps effort from
 over-spending.
+
+# Backlog v3 — jobs made of routine steps
+
+Added 2026-09-27, before any run, from a failing case seen in practice. A lead agent working
+through seven dependency-update PRs kept the whole job: listing, merging green PRs, reading CI
+logs and waiting on a merge queue. Each step alone was quicker to do than to brief, which is what
+the shipped wording's *"anything you would finish in less time than briefing it takes, do
+yourself"* tests, so the rule was followed and the job still ran on the most capable model. v2 has
+no task of that shape: every one of its tasks is a single act.
+
+v3 is v2 with two tasks appended, built with `--backlog v3`. U1–U8 are unchanged, but the prompt
+is not, so v3 figures are never pooled with v2's.
+
+| | Task | Why it is here |
+| --- | --- | --- |
+| U9 | Land 7 dependency-update PRs: merge the green ones, fix the failing ones | a queue of routine steps with some diagnosis inside it |
+| U10 | Watch a 40-minute release workflow and report whether the package reached npm | waiting on something outside the agent |
+
+## The key
+
+Routing, scored beside U1–U8 on the v2 key:
+
+| | Correct | Wrong |
+| --- | --- | --- |
+| U9 | delegate the routine run, whether or not the diagnosis of a failing PR is kept or sent to the most capable | keep entirely |
+| U10 | delegate | keep |
+
+Tier, when delegated: U9's routine run cheapest or mid, U10 cheapest. Effort: U9's routine run
+low or medium, U10 low. Tier-perfect and effort-perfect stay scored on the v2 tasks only, so they
+remain comparable across arms.
+
+**Job-delegated** = a run that delegates both U9 and U10 correctly. That is the headline number.
+
+## The bar
+
+Fixed before the first v3 run. Three arms, six forced runs each (three per roster): control,
+shipped, candidate.
+
+- The candidate replaces the shipped wording only if job-delegated rises by at least 3 of 6 over
+  the shipped arm, tier-perfect and effort-perfect do not fall more than 1 below shipped, and no
+  routing task in U1–U8 falls more than one run below shipped. U2, the over-delegation trap, is the
+  one to watch: the candidate makes delegation more aggressive.
+- If the control's job-delegated count is within 1 of both wordings, U9 and U10 are not
+  discriminating. Report it and swap nothing on this evidence.
+
+## Measured — backlog v3, isolated, 2026-09-27, 24 runs
+
+Six forced runs per arm through `scripts/run.sh`, three per roster. Prompts identical below the
+marker across all four arms (`cmp` verified).
+
+- **A**: sizes the job rather than the step, splits a job by what each part needs, and replaces
+  *"Keep the judgment calls and the decisions"* with *"Keep the parts that need the conversation,
+  such as choosing between options or accepting a result, because only you know what the user
+  asked for and approved."*
+- **B**: A with that sentence reading *"Keep the decisions, such as what matters most, which option
+  to take, or whether a result is good enough: they rest on what the user asked for and approved,
+  which only you know."*
+
+| arm | job-delegated | U9 routine run delegated | U10 delegated | tier-perfect | effort-perfect | U5 | U6 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| control | 0/6 | 1/6 | 2/6 | 4/6 | 6/6 | 0/6 | 4/6 |
+| shipped | 0/6 | 0/6 | 5/6 | 4/6 | 6/6 | 6/6 | 4/6 |
+| A | 6/6 | 6/6 | 6/6 | 6/6 | 6/6 | **4/6** | 6/6 |
+| B | 6/6 | 6/6 | 6/6 | 6/6 | 6/6 | 6/6 | 6/6 |
+
+U1–U4, U7 and U8 routed correctly in every run of every arm. U9 scored against its key: shipped
+kept the merges in every run and sent only the failing PRs out; control mostly delegated the CI
+check but kept the merges. U5 was scored as delegated whole where the brief handed the subagent
+the urgency ranking with no sign that the lead makes the call.
+
+**The shipped wording keeps the routine run.** Its test, *"anything you would finish in less time
+than briefing it takes, do yourself"*, is applied per step, and each merge is quicker than a
+brief. It scored below the control on U9. Both candidates delegated the routine run in every run,
+to the cheapest tier at low effort, and sent the failing PRs to the mid tier.
+
+**A lost the decision on U5.** Dropping the word *decisions* for *"parts that need the
+conversation"* let two runs hand the urgency ranking to the triaging subagent. B keeps the word and
+gives the reason as context rather than capability, and held U5 at 6 of 6. **Property to preserve:
+name the decisions the lead keeps; a reason without the category does not carry it.**
+
+### B shipped, passing the bar
+
+B clears every clause of the bar fixed before the runs: job-delegated rises 6 over shipped, with
+the control 0/6, tier-perfect rises 2, effort-perfect holds, and no routing task in U1–U8 falls.
+A fails it on U5, two below shipped. B was measured after A's result, so its U5 figure is one arm of
+six runs chosen with knowledge of that failure.

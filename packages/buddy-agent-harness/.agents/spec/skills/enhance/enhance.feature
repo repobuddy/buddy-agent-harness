@@ -263,7 +263,7 @@ Feature: Offer the current wording of a vetted section to a repository that alre
   @behavior
   Scenario: treats the current text split by an owner's paragraph as already current
     Given a root `AGENTS.md` holding a `## Delegation` section carrying every sentence of the text `references/delegation.md` offers, in order
-    And a paragraph appearing in no wording the addition has offered sits between that text's two paragraphs
+    And a paragraph appearing in no wording the addition has offered sits between two of that text's paragraphs
     When the agent runs the `enhance` skill
     Then the report says the section is already the text the addition offers
     And the report does not describe that section as the owner's own words
@@ -416,6 +416,24 @@ Feature: Offer the current wording of a vetted section to a repository that alre
     When the agent runs the `enhance` skill
     Then the report does not say the section is already current
     And the current `## Delegation` text is offered as a replacement for that section
+
+  @behavior
+  Scenario: offers the current wording where a section keeps the sentence a revision dropped
+    Given a root `AGENTS.md` holding a `## Delegation` section carrying every sentence of the text `references/delegation.md` offers, in order
+    And the same section also asserts a sentence of a wording in `references/delegation.history.md` that the text `references/delegation.md` offers dropped, at the place that wording had it
+    When the agent runs the `enhance` skill
+    Then the report does not say the section is already current
+    And the current `## Delegation` text is offered as a replacement for that section
+
+  @behavior
+  Scenario: treats the current text as current where an owner's sentence sits where a revision dropped one
+    Given a root `AGENTS.md` holding a `## Delegation` section carrying every sentence of the text `references/delegation.md` offers, in order
+    And one sentence of the owner's own sits at the place where a wording in `references/delegation.history.md` had a sentence the text `references/delegation.md` offers dropped
+    And that sentence appears in no wording the addition has offered
+    When the agent runs the `enhance` skill
+    Then the report says the section is already the text the addition offers
+    And no replacement is offered
+    And `AGENTS.md` is unchanged
 
   @behavior
   Scenario: reports a retired wording outside the root file rather than replacing it
