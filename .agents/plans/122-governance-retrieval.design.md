@@ -3,6 +3,14 @@
 Design material, not a spec node. Tracked in #122; the owner decided the open questions on
 2026-09-17 (see Decisions).
 
+> **Superseded in part by #152 (references), decided 2026-09-26.** The runtime model below no longer
+> holds: the three-step lookup is replaced by the `load-reference` skill (#154), the resolver is
+> authoritative and a skill's copy is only a fallback, `governance list|show` is deprecated in favor
+> of `reference show|list|search` (#153), and the project layer is `.agents/references/` (#170). The
+> build copy step, pointer rewriting, and the SKILL.md listing check are dropped
+> (cyberuni/universal-plugin#95). Moving each document to its owner, retiring `cyberplace governance`
+> and `cyber-skills`, and migrating callers still apply; callers migrate to `load-reference`.
+
 ## Terms
 
 - **Governance**: a version-pinned Markdown rule set that a skill or an author loads, for example
