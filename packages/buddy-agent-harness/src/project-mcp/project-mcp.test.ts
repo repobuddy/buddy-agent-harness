@@ -206,7 +206,7 @@ describe('projectMcp', () => {
 	it('reports nothing for a server already in agreement', () => {
 		const root = repository()
 		write(root, golden, goldenLinear)
-		write(root, claudeCode, cursorLinear.replace('mcpServers', 'mcpServers'))
+		write(root, claudeCode, cursorLinear)
 
 		const plan = planned(root)
 
