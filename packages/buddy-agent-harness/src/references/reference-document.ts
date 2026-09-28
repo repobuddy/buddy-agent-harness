@@ -140,6 +140,20 @@ function warnDuplicates(sections: readonly Section[], path: string, where: strin
 	}
 }
 
+function warnUnmatched(section: Section, path: string, where: string, warn: (message: string) => void) {
+	warn(`"<!-- merge: ${section.op} -->" on "${path}${displayHeading(section)}" in ${where} matches no section below`)
+}
+
+/** A section placed without merging has nothing below its subsections, so their merge comments match nothing. */
+function place(section: Section, path: string, where: string, warn: (message: string) => void): Section {
+	const childPath = `${path}${displayHeading(section)} > `
+	const children = section.children.flatMap((child) => {
+		if (child.op !== 'replace') warnUnmatched(child, childPath, where, warn)
+		return child.op === 'remove' ? [] : [place(child, childPath, where, warn)]
+	})
+	return { ...section, children }
+}
+
 function mergeChildren(
 	base: readonly Section[],
 	overlay: readonly Section[],
@@ -156,12 +170,8 @@ function mergeChildren(
 		const key = sectionKey(section.title)
 		const index = base.findIndex((candidate, i) => !matched.has(i) && sectionKey(candidate.title) === key)
 		if (index === -1) {
-			if (section.op !== 'replace') {
-				warn(
-					`"<!-- merge: ${section.op} -->" on "${path}${displayHeading(section)}" in ${where} matches no section below`,
-				)
-			}
-			if (section.op !== 'remove') appended.push(section)
+			if (section.op !== 'replace') warnUnmatched(section, path, where, warn)
+			if (section.op !== 'remove') appended.push(place(section, path, where, warn))
 			continue
 		}
 		// Only the first occurrence of a duplicated path is matched; a second overlay section with the
@@ -177,7 +187,7 @@ function mergeChildren(
 				body: baseBody.length && overlayBody.length ? [...baseBody, '', ...overlayBody] : [...baseBody, ...overlayBody],
 				children: mergeChildren(target.children, section.children, `${path}${displayHeading(target)} > `, where, warn),
 			}
-		} else slots[index] = section
+		} else slots[index] = place(section, path, where, warn)
 	}
 	return [...slots.filter((slot): slot is Section => slot !== undefined), ...appended]
 }

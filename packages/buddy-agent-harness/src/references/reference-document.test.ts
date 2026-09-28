@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { parseDocument, parseSections, renderSections } from './reference-document.ts'
+import { mergeSections, parseDocument, parseSections, renderSections } from './reference-document.ts'
 
 function noWarn() {
 	return vi.fn()
@@ -66,5 +66,37 @@ describe('renderSections', () => {
 		const tree = parseSections('## Empty\n', noWarn())
 
 		expect(renderSections(tree)).toBe('## Empty\n')
+	})
+})
+
+describe('mergeSections', () => {
+	function merge(base: string, overlay: string, warn = noWarn()) {
+		return renderSections(mergeSections(parseSections(base, warn), parseSections(overlay, warn), 'overlay', warn))
+	}
+
+	it('drops a section marked remove inside a section that replaces, with a warning', () => {
+		const warn = noWarn()
+
+		const output = merge(
+			'# Testing\n\n## Mocks\n\nbase mocks\n',
+			'# Testing\n\n## Fixtures\n\nfixtures\n\n## Mocks\n<!-- merge: remove -->\n',
+			warn,
+		)
+
+		expect(output).toBe('# Testing\n\n## Fixtures\n\nfixtures\n')
+		expect(warn).toHaveBeenCalledWith(
+			'"<!-- merge: remove -->" on "# Testing > ## Mocks" in overlay matches no section below',
+		)
+	})
+
+	it('keeps a section marked combine inside an appended section, with a warning', () => {
+		const warn = noWarn()
+
+		const output = merge('# Base\n', '# New\n\n## Part\n<!-- merge: combine -->\n\npart\n', warn)
+
+		expect(output).toBe('# Base\n\n# New\n\n## Part\n\npart\n')
+		expect(warn).toHaveBeenCalledWith(
+			'"<!-- merge: combine -->" on "# New > ## Part" in overlay matches no section below',
+		)
 	})
 })
