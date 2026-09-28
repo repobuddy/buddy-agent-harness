@@ -140,8 +140,7 @@ export function projectMcp({ root, git, write }: ProjectMcpOptions): ProjectionP
 				row('skip', moved[direction])
 				continue
 			}
-			// A shared file holds another tool's settings too; changing an entry in place there is the skill's.
-			const next = config.shared ? undefined : replaceServer(config, plan.source as string, name, rendering.entry)
+			const next = replaceServer(config, plan.source as string, name, rendering.entry)
 			apply(plan, name, declared, rendering.entry, next, `replaces ${diverged.join(', ')}`, row, entries)
 		}
 	}

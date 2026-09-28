@@ -155,12 +155,40 @@ Feature: Project a golden MCP server set into each harness's own MCP file
     And every byte outside that server's entry is unchanged
 
   @behavior
-  Scenario: hands over an in-place change to a shared file as an edit
+  Scenario: updates a server in place in a shared settings file and keeps its comments
     Given a last-projected record of a server in `.gemini/settings.json`
+    And a `.gemini/settings.json` with comments and other settings outside that server's entry
     And a golden set that has since changed its `command`
     When the command projects MCP configuration with `--write`
-    Then it reports an `edit` whose entry reads as Gemini CLI would read it
-    And `.gemini/settings.json` is unchanged
+    Then it reports an `update` for that server
+    And every byte of `.gemini/settings.json` outside the entry is unchanged
+
+  @behavior
+  Scenario: updates a server table in place in a Codex file, byte-preserving outside it
+    Given a last-projected record of a server in `.codex/config.toml`
+    And a `.codex/config.toml` with comments, other settings, and another server table
+    And a golden set that has since changed its `command`
+    When the command projects MCP configuration with `--write`
+    Then it reports an `update` for that server
+    And every byte of `.codex/config.toml` outside the server's table is unchanged
+
+  @behavior
+  Scenario: hands over a change to a Codex table holding a comment as an edit
+    Given a last-projected record of a server in `.codex/config.toml`
+    And a `.codex/config.toml` whose table for it holds a comment
+    And a golden set that has since changed its `command`
+    When the command projects MCP configuration with `--write`
+    Then it reports an `edit` whose entry reads as Codex would read it
+    And `.codex/config.toml` is unchanged
+
+  @behavior
+  Scenario: hands over a change to a Codex server written as an inline table as an edit
+    Given a last-projected record of a server in `.codex/config.toml`
+    And a `.codex/config.toml` that writes it as an inline table
+    And a golden set that has since changed its `command`
+    When the command projects MCP configuration with `--write`
+    Then it reports an `edit` for that server
+    And `.codex/config.toml` is unchanged
 
   @behavior
   Scenario: hands over a change that would drop a comment as an edit

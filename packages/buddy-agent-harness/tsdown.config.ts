@@ -27,6 +27,8 @@ const inlineDeps = {
 			/^clibuilder(\/|$)/,
 			/^jsonc-parser(\/|$)/,
 			/^smol-toml(\/|$)/,
+			/^toml-eslint-parser(\/|$)/,
+			/^eslint-visitor-keys(\/|$)/,
 			/^yaml(\/|$)/,
 		],
 		onlyBundle: false,

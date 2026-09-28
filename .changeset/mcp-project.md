@@ -15,7 +15,7 @@ actions:
 - **Each harness gets its own spelling.** You write a reference once as `${NAME}`. Cursor gets `${env:NAME}`. Claude Code and Gemini CLI take it as written. Codex gets `env_vars`, `env_http_headers`, or `bearer_token_env_var`. A timeout in milliseconds becomes Codex's `tool_timeout_sec`.
 - **It refuses rather than guesses.** A server a harness cannot hold as written is refused, and the refusal names the field. So is a golden entry holding a literal credential.
 - **It never overwrites your edits.** A server changed on the harness side is skipped.
-- **It keeps the rest of the file.** Every byte outside the entry it writes stays as it was, comments included. It will not rewrite an entry in place in a shared file, or an entry that holds a comment. It lists those changes for you to apply instead.
+- **It keeps the rest of the file.** Every byte outside the entry it writes stays as it was, comments included. That holds when it updates a server already there, in `.gemini/settings.json` and `.codex/config.toml` too. It will not rewrite an entry that holds a comment, or a Codex server written as an inline table. It lists those changes for you to apply instead.
 - **It records what it wrote.** `--write` writes `.agents/buddy-agent-harness/mcp.projected.json`, which `doctor` already reads to tell which side moved.
 
 The `repair` skill now handles `mcp-unprojected` and `mcp-diverged-golden`: it shows the plan and runs the command once you approve.

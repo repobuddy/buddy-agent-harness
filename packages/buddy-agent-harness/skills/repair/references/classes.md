@@ -58,7 +58,7 @@ Show each target file as it stands beside its `entries`. That pair is the before
 
 **Apply.** On approval, run the same command with `--write`. It writes every `add` and `update`, and it records what it projected.
 
-**Apply `edit` rows by hand.** For each `edit` row, write that entry into the file yourself, replacing the server's current entry and nothing else. These are an in-place change to a shared file, or to an entry holding a comment, and the command will not make those. Keep every comment outside the entry.
+**Apply `edit` rows by hand.** For each `edit` row, write that entry into the file yourself, replacing the server's current entry and nothing else. These are an in-place change to an entry holding a comment, or to a Codex server not written as a `[mcp_servers.<name>]` table, and the command will not make those. Keep every comment outside the entry.
 
 **Re-run `doctor`** as always. A server the command refused stays `mcp-unprojected`, and that is the correct outcome: report it still open, with the refusal's reason.
 

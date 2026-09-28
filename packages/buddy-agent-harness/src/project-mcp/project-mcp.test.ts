@@ -336,20 +336,70 @@ describe('projectMcp', () => {
 		expect(parsed.mcpServers.other).toEqual({ command: 'kept' })
 	})
 
-	it('hands over an in-place change to a shared file as an edit', () => {
+	it('updates a server in place in a shared settings file and keeps its comments', () => {
 		const root = repository()
 		write(root, golden, '[servers.linear]\ncommand = "bunx"\n')
 		write(root, record, JSON.stringify({ targets: { [gemini]: { linear: { command: 'npx' } } } }))
-		const source = JSON.stringify({ mcpServers: { linear: { command: 'npx' } } })
-		write(root, gemini, source)
+		const head =
+			'{\n  // the instruction bridge\n  "context": { "fileName": ["AGENTS.md"] },\n  "mcpServers": {\n    "linear": '
+		const tail = ', // linear\n    "other": { "command": "kept" }\n  }\n}\n'
+		write(root, gemini, `${head}{ "command": "npx" }${tail}`)
 
 		const plan = planned(root, { write: true })
 
-		expect(row(plan, gemini, 'linear')?.action).toBe('edit')
-		const entry = plan.entries.find((entry) => entry.target === gemini && entry.server === 'linear')
-		expect(entry?.action).toBe('edit')
-		expect(JSON.parse(entry?.entry as string)).toEqual({ linear: { command: 'bunx' } })
-		expect(read(root, gemini)).toBe(source)
+		expect(row(plan, gemini, 'linear')).toMatchObject({ action: 'update', detail: 'replaces command' })
+		const next = read(root, gemini) as string
+		expect(next.startsWith(head)).toBe(true)
+		expect(next.endsWith(tail)).toBe(true)
+		expect(parseJsonWithComments(next)).toMatchObject({ mcpServers: { linear: { command: 'bunx' } } })
+	})
+
+	it('updates a server table in place in a Codex file, byte-preserving outside it', () => {
+		const root = repository()
+		write(root, golden, '[servers.linear]\ncommand = "bunx"\nargs = ["-y", "linear-mcp"]\n')
+		write(
+			root,
+			record,
+			JSON.stringify({ targets: { [codex]: { linear: { command: 'npx', args: ['-y', 'linear-mcp'] } } } }),
+		)
+		const head = '# project settings\nmodel = "gpt" # pinned\n\n'
+		const tail = '\n\n# the other one\n[mcp_servers.other]\ncommand = "kept"\n'
+		write(root, codex, `${head}[mcp_servers.linear]\ncommand = "npx"\nargs = ["-y", "linear-mcp"]${tail}`)
+
+		const plan = planned(root, { write: true })
+
+		expect(row(plan, codex, 'linear')).toMatchObject({ action: 'update', detail: 'replaces command' })
+		expect(read(root, codex)).toBe(
+			`${head}[mcp_servers.linear]\ncommand = "bunx"\nargs = [ "-y", "linear-mcp" ]${tail}`,
+		)
+	})
+
+	it('hands over a change to a Codex table holding a comment as an edit', () => {
+		const root = repository()
+		write(root, golden, '[servers.linear]\ncommand = "bunx"\n')
+		write(root, record, JSON.stringify({ targets: { [codex]: { linear: { command: 'npx' } } } }))
+		const source = '[mcp_servers.linear]\ncommand = "npx" # pinned for now\n'
+		write(root, codex, source)
+
+		const plan = planned(root, { write: true })
+
+		expect(row(plan, codex, 'linear')?.action).toBe('edit')
+		const entry = plan.entries.find((entry) => entry.target === codex && entry.server === 'linear')
+		expect(parseToml(entry?.entry as string)).toEqual({ mcp_servers: { linear: { command: 'bunx' } } })
+		expect(read(root, codex)).toBe(source)
+	})
+
+	it('hands over a change to a Codex server written as an inline table as an edit', () => {
+		const root = repository()
+		write(root, golden, '[servers.linear]\ncommand = "bunx"\n')
+		write(root, record, JSON.stringify({ targets: { [codex]: { linear: { command: 'npx' } } } }))
+		const source = '[mcp_servers]\nlinear = { command = "npx" }\n'
+		write(root, codex, source)
+
+		const plan = planned(root, { write: true })
+
+		expect(row(plan, codex, 'linear')?.action).toBe('edit')
+		expect(read(root, codex)).toBe(source)
 	})
 
 	it('hands over a change that would drop a comment as an edit', () => {
