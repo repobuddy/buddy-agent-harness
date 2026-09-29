@@ -48,7 +48,9 @@ describe('the reference skill', () => {
 	it('tells a plugin to prefix the names it ships', () => {
 		const create = readFileSync(join(skillDir, 'references', 'create.md'), 'utf8')
 
-		expect(create).toContain("| every user of a plugin | the plugin's `references/` folder, next to its `skills/` | `<plugin name>.<reference>.md` |")
+		expect(create).toContain(
+			"| every user of a plugin | the plugin's `references/` folder, next to its `skills/` | `<plugin name>.<reference>.md` |",
+		)
 		expect(create).toMatch(/\*\*A plugin prefixes every name it ships\*\* with its own name and a dot/)
 	})
 })
