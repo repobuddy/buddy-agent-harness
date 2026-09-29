@@ -1,9 +1,4 @@
----
-name: load-reference
-description: By name only
----
-
-# Load Reference
+# Load references for a caller
 
 Load the references a calling skill names, and hand them back as part of its instructions. The **caller** is the skill whose instructions sent you here; its **folder** is the directory its `SKILL.md` is in.
 
@@ -15,7 +10,7 @@ Collect every name the caller listed, in its order. Run one command for all of t
 node <this skill's folder>/scripts/reference.mjs show <name>... --root <repository root>
 ```
 
-- `<this skill's folder>` is the directory this `SKILL.md` is in. `scripts/reference.mjs` is the package's `reference` command bundled into one file; it needs no `node_modules`.
+- `<this skill's folder>` is the directory the `reference` skill's `SKILL.md` is in.
 - `<repository root>` is the root of the repository you are working in, so its `.agents/references/` overrides apply. Pass it even when it is the working directory.
 - Never use `npx`, `pnpm dlx`, `upx`, or any other package runner, and never download anything — not even when this command cannot run. Then go to step 3.
 

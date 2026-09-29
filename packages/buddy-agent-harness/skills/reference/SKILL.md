@@ -1,11 +1,24 @@
 ---
 name: reference
-description: Use this skill to write, update, find, or inspect a reference — a Markdown document an agent reads on demand by name, from `.agents/references/`, `~/.agents/references/`, or a plugin's `references/` folder. Covers shipping a reference in a plugin, updating a reference or overriding a plugin's in a project, finding which references exist, and why a name resolved to the copy it did. Triggers on 'write a reference', 'add a style guide as a reference', 'update the testing reference', 'override this plugin's reference', 'ship a reference in my plugin', 'what references are there', or 'why is this reference not my version'.
+description: Use this skill when loading, writing, updating, or finding a reference — a Markdown document agents read by name.
 ---
 
 # Reference
 
 Route the request to one mode, then follow that mode. A **reference** is a Markdown document fetched by name; a **tier** is where a copy of it lives. Which copy answers a name is the `reference` command's decision. Never decide it by reading tier folders yourself.
+
+## Route
+
+| The request | Mode |
+| --- | --- |
+| a skill's instructions name references to load with this skill | [Load](#load) |
+| write a new reference, for a project, for the user, or for a plugin to ship | [Create](#create) |
+| change what an existing reference says, the user's own or a plugin's | [Update](#update) |
+| find a reference for a topic, or see which ones exist | [Find](#find) |
+| see a reference, or learn why a name resolved to the copy it did | [Inspect](#inspect) |
+| make a skill load a reference | [Wire a skill](#wire-a-skill) |
+
+Ask only when the request fits two modes. Otherwise pick one; outside Load, say which.
 
 ## Run the command
 
@@ -13,19 +26,13 @@ Route the request to one mode, then follow that mode. A **reference** is a Markd
 node <this skill's folder>/scripts/reference.mjs <subcommand> ... --root <repository root>
 ```
 
-`scripts/reference.mjs` is the package's `reference` command bundled into one file; it needs no `node_modules`. When it is missing or cannot run, use `npx -y buddy-agent-harness@^0.13.1 reference` instead, with the same arguments. Pass `--root` every time, so the repository's own `.agents/references/` is read.
+`scripts/reference.mjs` is the package's `reference` command bundled into one file; it needs no `node_modules`. Pass `--root` every time, so the repository's own `.agents/references/` is read.
 
-## Route
+Outside Load, when it is missing or cannot run, use `npx -y buddy-agent-harness@^0.13.1 reference` with the same arguments. Load never falls back to a package runner.
 
-| The user wants to… | Mode |
-| --- | --- |
-| write a new reference, for a project, for themselves, or for a plugin to ship | [Create](#create) |
-| change what an existing reference says, their own or a plugin's | [Update](#update) |
-| find a reference for a topic, or see which ones exist | [Find](#find) |
-| see a reference, or learn why a name resolved to the copy it did | [Inspect](#inspect) |
-| have a skill load a reference | [Load from a skill](#load-from-a-skill) |
+## Load
 
-Ask only when the request fits two modes. Otherwise pick one and say which.
+Load `references/load.md` from this skill's folder and follow it, then return to the caller's work.
 
 ## Create
 
@@ -50,12 +57,21 @@ Load `references/create.md` from this skill's folder and follow it.
 - To read a reference, run `show <name>`.
 - To learn why a name resolved to one copy, run `show <name> --trace`. Report the layer that was `used`, and each layer that was `shadowed` or `not read`, with its reason.
 
-## Load from a skill
+## Wire a skill
 
-A skill never runs this command. It names the `load-reference` skill in one line. Copy that line from the `README.md` in the `load-reference` skill's folder, and replace the example names.
+A skill never runs the command itself. It names this skill in one line; copy that line from the `README.md` in this skill's folder, and replace the example names. The skill may also ship its own copy of a reference at `references/<name>.md` in its folder, which Load reads when no tier holds the name or the command cannot run.
 
 ## Rules
 
-- **Read-only, except Create and Update.** Find and Inspect write nothing.
+- **Only Create and Update write.** Load, Find, Inspect, and Wire a skill change no reference file.
 - **Never edit, move, rename, or delete a reference a plugin ships.** Update overrides it instead. Its callers load it by name.
 - **Write only what the user approves.** Show the file and its path before you write it.
+
+## Validate
+
+Before reporting a Create or Update done:
+
+- The written file is under `.agents/references/`, `~/.agents/references/`, or, for Create only, the plugin's own `references/` folder.
+- No file in an installed plugin's `references/` folder changed.
+- The file and its path were shown to the user before the write.
+- `show <name> --trace` reports the written file as `used`.

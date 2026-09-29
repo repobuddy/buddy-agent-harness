@@ -1,9 +1,9 @@
 ---
 title: Skills
-description: The skills the plugin ships, init, doctor, enhance, repair, reference and load-reference, and when to run the CLI instead.
+description: The skills the plugin ships, init, doctor, enhance, repair and reference, and when to run the CLI instead.
 ---
 
-The plugin ships six skills. [`init`](/skills/init-buddy-agent-harness/) gives a repository one canonical agent configuration and bridges the harnesses that cannot read it. [`doctor`](/skills/doctor-buddy-agent-harness/) reports whether those bridges still resolve. [`enhance`](/skills/enhance/) offers guidance the repository does not have yet. [`repair`](/skills/repair/) corrects configuration that is present and wrong. [`reference`](/skills/reference/) writes, overrides, and finds references. [`load-reference`](/skills/load-reference/) is the one you do not run: other skills load their references through it.
+The plugin ships five skills. [`init`](/skills/init-buddy-agent-harness/) gives a repository one canonical agent configuration and bridges the harnesses that cannot read it. [`doctor`](/skills/doctor-buddy-agent-harness/) reports whether those bridges still resolve. [`enhance`](/skills/enhance/) offers guidance the repository does not have yet. [`repair`](/skills/repair/) corrects configuration that is present and wrong. [`reference`](/skills/reference/) writes, updates, and finds references, and other skills load their references through it.
 
 `init` and `doctor` each have a CLI command behind them. The skill is the half that needs judgment about files you wrote; the command is the mechanical half. `enhance` has no command, because there is no mechanical half to hand off.
 
@@ -13,8 +13,7 @@ The plugin ships six skills. [`init`](/skills/init-buddy-agent-harness/) gives a
 | the [`doctor-buddy-agent-harness` skill](/skills/doctor-buddy-agent-harness/) | a harness loads no project skills, most often after a clone on Windows |
 | the [`enhance` skill](/skills/enhance/) | the repository has an `AGENTS.md` and you want the sections it is missing offered to you |
 | the [`repair` skill](/skills/repair/) | the configuration is there but wrong — a retired harness name, a git-ignored bridge, an `AGENTS.local.md` nothing reads |
-| the [`reference` skill](/skills/reference/) | writing a reference, updating one, or finding out which copy of one answers |
-| the [`load-reference` skill](/skills/load-reference/) | never by hand — a skill names it to load its references |
+| the [`reference` skill](/skills/reference/) | writing a reference, updating one, or finding out which copy of one answers; a skill also names it to load its references |
 | the [CLI](/cli/) | the repository is already consolidated, or you want the report in a script |
 
 `init` consolidates what you already have; `enhance` proposes what you do not; `repair` corrects what is there and wrong. Keeping them apart is what lets `init` stay safe to run on any repository and carry no opinions.
@@ -28,7 +27,7 @@ In Claude Code, add the [cyberplace](https://github.com/cyberuni/cyberplace) mar
 /plugin install buddy-agent-harness@cyberplace
 ```
 
-Five of them you run yourself:
+All five you can run yourself:
 
 ```text
 /buddy-agent-harness:init-buddy-agent-harness
@@ -37,8 +36,6 @@ Five of them you run yourself:
 /buddy-agent-harness:repair
 /buddy-agent-harness:reference
 ```
-
-`load-reference` comes with it too. You never run it: other skills load it.
 
 ## The commands behind them
 

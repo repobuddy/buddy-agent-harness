@@ -7,21 +7,23 @@ concept: command-interface
 
 ## What
 
-`reference` is the skill a **person** reaches for when working with references: writing one, updating one
-(its own in place, or a plugin's by an override), finding one, or learning why a name resolved to the copy it did. It is a routing skill. It
-picks one mode from the request, runs the matching `reference` subcommand (`../../cli/references/`), and
-adds one thing the command cannot do: it writes a document, which the read-only command never does.
+`reference` is the one skill for everything done with a reference: a **skill** loading one, and a
+**person** writing one, updating one (their own in place, or a plugin's by an override), finding one,
+or learning why a name resolved to the copy it did. It is a routing skill. It picks one mode from the
+request, runs the matching `reference` subcommand (`../../cli/references/`), and adds what the command
+cannot do: it writes a document, which the read-only command never does, and it falls back to a
+caller's own copy when loading. Load is specified in `load/`.
 
 It exists because the naming rule a plugin must follow is written on the docs site and nowhere an agent
 reads while working. A plugin that ships an unprefixed name lets a project override of that name replace
 every plugin's copy silently. The skill carries the rule into the moment a reference is created.
 
-`load-reference` stays the one way a **skill** loads a reference (`../load-reference/`). This skill
-routes a skill author there and never loads a reference on a caller's behalf.
+One skill carries every mode, so the plugin costs one description at session start for references,
+and a calling skill and a person name the same skill.
 
 **Key terms**
 
-- **mode** — one of Create, Update, Find, Inspect, and Load from a skill.
+- **mode** — one of Load, Create, Update, Find, Inspect, and Wire a skill.
 - **prefixed name** — `<plugin name>.<reference>`, the form a plugin ships every reference under, in the
   file `<plugin name>.<reference>.md`.
 
@@ -29,7 +31,6 @@ routes a skill author there and never loads a reference on a caller's behalf.
 
 - **Resolution.** Tiers, file names, merge modes and ambiguity are `../../cli/references/`'s. This skill
   never reads a tier folder to decide which copy answers.
-- **Loading for a skill.** That is `../load-reference/`.
 - **Renaming shipped references.** A rename breaks every caller; the skill refuses it.
 - **A write subcommand.** The command stays read-only; the skill writes the file itself.
 
@@ -54,13 +55,13 @@ routes a skill author there and never loads a reference on a caller's behalf.
 | repository owner | change one plugin's reference for this repository | Update, by an override |
 | user | find a reference for a topic | Find |
 | user | learn why a name resolved to the copy it did | Inspect |
-| plugin author | have a skill load a reference | Load from a skill, which routes to `load-reference` |
+| plugin author | have a skill load a reference | Wire a skill, then Load when the skill runs |
 
 **Entry point**
 
 | Entry point | Trigger | Outcome |
 | --- | --- | --- |
-| the `reference` skill | a request to write, update, find, or inspect a reference | one mode followed; the command's output reported; a file written only on approval |
+| the `reference` skill | a caller line naming it, or a request to write, update, find, or inspect a reference | one mode followed; the command's output reported; a file written only on approval |
 
 **The command line.**
 
@@ -68,9 +69,9 @@ routes a skill author there and never loads a reference on a caller's behalf.
 node <this skill's folder>/scripts/reference.mjs <subcommand> ... --root <repository root>
 ```
 
-The launcher is the same bundle `load-reference` ships. Unlike `load-reference`, this skill follows
-the launcher rule in `../../cli/entry-point/`: a missing launcher falls back to the pinned `npx`
-invocation, because a person asked for the work and no caller's copy exists to fall back to.
+Outside Load, the skill follows the launcher rule in `../../cli/entry-point/`: a missing launcher
+falls back to the pinned `npx` invocation, because a person asked for the work and no caller's copy
+exists to fall back to. Load never does (`load/`).
 
 **Extensions**
 
@@ -110,7 +111,8 @@ flowchart TD
   L --> I
   B -->|Find| M[search or list]
   B -->|Inspect| N[show, or show --trace]
-  B -->|Load from a skill| O[Point to the load-reference caller line]
+  B -->|Wire a skill| O[Give the caller line from the skill's README]
+  B -->|Load| P[Follow load/]
 ```
 
 ## Scenario map
@@ -126,7 +128,8 @@ flowchart TD
 | J→J1→K→K1 | an override of a name two plugins hold | `warns that an override replaces every plugin's copy` |
 | B→M | a topic with no match | `says nothing matched rather than guessing a name` |
 | B→N | a question about which copy answered | `explains a resolution from show --trace` |
-| B→O | a skill author wanting to load a reference | `routes a skill author to load-reference` |
+| B→O | a skill author wanting to load a reference | `gives a skill author the caller line` |
+| B→P | a caller line naming the skill | the scenarios in `load/load.feature` |
 | H | any write | `writes nothing without approval` |
 
 ## Verification
@@ -139,6 +142,6 @@ rule — is checked by `src/skill-scripts/reference-skill.test.ts`, and the laun
 ## References
 
 - `../../cli/references/` owns the command this skill routes to.
-- `../load-reference/` owns loading a reference from a skill.
+- `load/` specifies Load mode.
 - `../../cli/entry-point/` owns the launcher rule.
 - PR #193 adds the naming rule to the docs site.

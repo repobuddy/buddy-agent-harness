@@ -58,8 +58,8 @@ try {
 		fail(`the standalone run of ${scriptPath} did not print parseable JSON:\n${stdout}`)
 	}
 
-	const referenceSkillDir = join(runDir, 'load-reference')
-	cpSync(join(pkgDir, 'skills', 'load-reference'), referenceSkillDir, { recursive: true })
+	const referenceSkillDir = join(runDir, 'reference')
+	cpSync(join(pkgDir, 'skills', 'reference'), referenceSkillDir, { recursive: true })
 	const referenceScript = join(referenceSkillDir, ...launcherFor('reference').split('/'))
 	const probe = '# Probe\n\nread from the project tier\n'
 	mkdirSync(join(runDir, '.agents', 'references'), { recursive: true })
