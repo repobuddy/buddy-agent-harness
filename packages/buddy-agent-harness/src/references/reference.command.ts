@@ -19,7 +19,7 @@ import {
 	type UsedLayer,
 } from './resolve-reference.ts'
 
-/** One per name asked, in the order asked — the contract the `load-reference` skill builds on. */
+/** One per name asked, in the order asked — the contract the `reference` skill's Load mode builds on. */
 export type ReferenceShowEntry = {
 	name: string
 	status: ResolvedReference['status']

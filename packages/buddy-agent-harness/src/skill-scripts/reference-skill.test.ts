@@ -17,7 +17,8 @@ describe('the reference skill', () => {
 		const frontmatter = parse(skill.split('---\n')[1] as string)
 
 		expect(frontmatter.name).toBe('reference')
-		expect(frontmatter.description).toMatch(/^Use this skill /)
+		expect(frontmatter.description).toMatch(/^Use this skill when /)
+		expect(frontmatter.description.length).toBeLessThanOrEqual(120)
 	})
 
 	it('runs the bundled launcher, with a pinned npx fallback', () => {
@@ -36,13 +37,22 @@ describe('the reference skill', () => {
 	it('has a section for every mode in its routing table', () => {
 		const modes = [...section('Route').matchAll(/\[([\w ]+)\]\(#[\w-]+\)/g)].map((match) => match[1] as string)
 
-		expect(modes).toEqual(['Create', 'Update', 'Find', 'Inspect', 'Load from a skill'])
+		expect(modes).toEqual(['Load', 'Create', 'Update', 'Find', 'Inspect', 'Wire a skill'])
 		for (const mode of modes) expect(skill).toContain(`\n## ${mode}\n`)
 	})
 
-	it('ships the create procedure it loads', () => {
-		expect(section('Create')).toContain('`references/create.md`')
-		expect(existsSync(join(skillDir, 'references', 'create.md'))).toBe(true)
+	it('ships the procedures it loads', () => {
+		for (const [mode, file] of [
+			['Load', 'load.md'],
+			['Create', 'create.md'],
+		] as const) {
+			expect(section(mode)).toContain(`\`references/${file}\``)
+			expect(existsSync(join(skillDir, 'references', file))).toBe(true)
+		}
+	})
+
+	it('never falls back to a package runner when loading', () => {
+		expect(section('Run the command')).toContain('Load never falls back to a package runner.')
 	})
 
 	it('tells a plugin to prefix the names it ships', () => {

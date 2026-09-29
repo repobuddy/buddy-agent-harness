@@ -12,6 +12,7 @@ Feature: Route reference work, and create references under the naming rule
       | My plugin should ship a work-hierarchy reference                 | activated     |
       | Override the testing reference from the acme plugin for this repo | activated     |
       | Which references are there about releases?                       | activated     |
+      | Load `testing` with the `reference` skill in the `buddy-agent-harness` plugin | activated |
       | Add a section on testing to AGENTS.md                            | not activated |
       | Create a new skill that lints commit messages                    | not activated |
 
@@ -71,10 +72,10 @@ Feature: Route reference work, and create references under the naming rule
     And the report names the layer used and why the user's copy was shadowed or not read
 
   @behavior
-  Scenario: routes a skill author to load-reference
+  Scenario: gives a skill author the caller line
     Given a request to make a skill load the `testing` reference
     When the agent runs the `reference` skill
-    Then the agent proposes the caller line from the `load-reference` skill's `README.md`
+    Then the agent proposes the caller line from the `reference` skill's `README.md`, naming `testing`
     And the skill is not told to run the `reference` command itself
 
   @behavior

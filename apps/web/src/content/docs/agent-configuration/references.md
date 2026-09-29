@@ -25,7 +25,7 @@ A reference pays nothing up front. The price is that nothing loads it by itself:
 - **The agent should decide, from the task, that it needs this.** Make it a skill. Its description is the trigger.
 - **Something else already knows it is needed.** Make it a reference, and name it there: `Read the testing reference before writing tests`, or a skill step that loads `release-checklist`.
 
-A skill loads a reference through the [`load-reference` skill](/skills/load-reference/), with one line naming it and the plugin it comes from. To write, update, or find one yourself, run the [`reference` skill](/skills/reference/).
+A skill loads a reference through the [`reference` skill](/skills/reference/#loading-from-a-skill), with one line naming it and the plugin it comes from. To write, update, or find one yourself, run the same skill.
 
 A governance, the bar a skill holds its own output to, is the second case. The skill knows which bar it needs, so the bar does not need a description in every session.
 

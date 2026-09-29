@@ -49,7 +49,7 @@ Instructions only.
 Nothing loads a reference by itself. Tell the user where to name it:
 
 - For a repository, add a line to `AGENTS.md`, or to the skill that needs it, such as: "Read the `testing` reference before writing tests."
-- For a plugin, add the `load-reference` caller line to each skill that needs the reference. Copy the line from the `README.md` in the `load-reference` skill's folder. The skill can also ship its own copy at `references/<name>.md`. It reads that copy when the command cannot run.
+- For a plugin, add the caller line to each skill that needs the reference, as Wire a skill says.
 
 ## 6. Verify
 

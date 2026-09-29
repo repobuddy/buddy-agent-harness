@@ -4,22 +4,14 @@ import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
-import { parse } from 'yaml'
 
 const packageRoot = dirname(dirname(dirname(fileURLToPath(import.meta.url))))
-const skillDir = join(packageRoot, 'skills', 'load-reference')
+const skillDir = join(packageRoot, 'skills', 'reference')
+const load = readFileSync(join(skillDir, 'references', 'load.md'), 'utf8')
 
-describe('the load-reference skill', () => {
-	it('costs one name-only description at session start', () => {
-		const skill = readFileSync(join(skillDir, 'SKILL.md'), 'utf8')
-		const frontmatter = parse(skill.split('---\n')[1] as string)
-
-		expect(frontmatter).toEqual({ name: 'load-reference', description: 'By name only' })
-	})
-
+describe("the reference skill's Load mode", () => {
 	it('runs the bundled launcher and no package runner', () => {
-		const skill = readFileSync(join(skillDir, 'SKILL.md'), 'utf8')
-		const commands = [...skill.matchAll(/```sh\n([\s\S]*?)```/g)].map((match) => match[1])
+		const commands = [...load.matchAll(/```sh\n([\s\S]*?)```/g)].map((match) => match[1])
 
 		expect(commands).toEqual([
 			"node <this skill's folder>/scripts/reference.mjs show <name>... --root <repository root>\n",
@@ -27,8 +19,7 @@ describe('the load-reference skill', () => {
 	})
 
 	it('carries a Validate section checking the four report-and-read rules', () => {
-		const skill = readFileSync(join(skillDir, 'SKILL.md'), 'utf8')
-		const checks = (skill.split('## Validate\n')[1] ?? '').split('\n').filter((line) => line.startsWith('- '))
+		const checks = (load.split('## Validate\n')[1] ?? '').split('\n').filter((line) => line.startsWith('- '))
 
 		expect(checks).toHaveLength(4)
 		expect(checks[0]).toMatch(/Every name .* loaded, .* or named in the report/)
@@ -39,18 +30,18 @@ describe('the load-reference skill', () => {
 
 	it('ships a caller line naming the skill and the plugin in words', () => {
 		const readme = readFileSync(join(skillDir, 'README.md'), 'utf8')
-		const line = readme.match(/```text\n(.*)\n```/)?.[1]
+		const line = readme.match(/```text\n(Load .*)\n```/)?.[1]
 
 		expect(line).toBe(
-			'Load `skill-design` and `agent-tool-output` with the `load-reference` skill in the `buddy-agent-harness` plugin.',
+			'Load `skill-design` and `agent-tool-output` with the `reference` skill in the `buddy-agent-harness` plugin.',
 		)
-		expect(line).not.toMatch(/\/[\w-]+:|\/load-reference/)
+		expect(line).not.toMatch(/\/[\w-]+:|\/reference/)
 	})
 })
 
 // Requires `pnpm build`, which copies the bundle into the skill folder; `scripts/pack-check.ts`
 // covers the packed copy with no `node_modules` above it.
-describe('the load-reference launcher', () => {
+describe('the reference launcher', () => {
 	let root: string | undefined
 
 	afterEach(() => {
@@ -58,7 +49,7 @@ describe('the load-reference launcher', () => {
 	})
 
 	function repository(documents: Record<string, string>): string {
-		root = mkdtempSync(join(tmpdir(), 'load-reference-'))
+		root = mkdtempSync(join(tmpdir(), 'reference-launcher-'))
 		mkdirSync(join(root, '.agents', 'references'), { recursive: true })
 		for (const [name, content] of Object.entries(documents)) {
 			writeFileSync(join(root, '.agents', 'references', `${name}.md`), content)

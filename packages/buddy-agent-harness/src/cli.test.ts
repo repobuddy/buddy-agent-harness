@@ -181,7 +181,6 @@ describe('the process boundary', () => {
 			'skills/doctor-buddy-agent-harness/scripts/doctor.mjs',
 			'skills/init-buddy-agent-harness/scripts/doctor.mjs',
 			'skills/init-buddy-agent-harness/scripts/init.mjs',
-			'skills/load-reference/scripts/reference.mjs',
 			'skills/reference/scripts/reference.mjs',
 			'skills/repair/scripts/doctor.mjs',
 			'skills/repair/scripts/mcp.mjs',

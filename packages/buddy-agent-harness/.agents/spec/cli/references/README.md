@@ -44,8 +44,8 @@ replaces `governance-overrides` as the read path; that command stays, unchanged,
   to read from them.
 - **Scanning for plugins.** Nothing under `node_modules` is globbed, and a plugin a harness has
   installed but not enabled is never read: installing a plugin does not activate it.
-- **Loading a reference from inside a skill.** That is the `load-reference` skill, a separate change
-  that builds on the `show` contract below.
+- **Loading a reference from inside a skill.** That is the `reference` skill's Load mode, which builds on the
+  `show` contract below.
 - **Recording each fetch.** `show` is the single read path so a record can be added there later.
 - **Reconciling contradictory prose.** Semantic work, not the resolver's.
 - **The encoder.** `../command-output/`.
@@ -56,7 +56,7 @@ replaces `governance-overrides` as the read path; that command stays, unchanged,
 
 - **an agent following instructions** — told to read `testing` and `release-checklist` before it
   starts; wants the documents on stdout, in the order asked, and a clear signal when one is missing.
-- **a skill** — the future `load-reference` skill runs `show` on behalf of every skill that needs a
+- **a skill** — the `reference` skill's Load mode runs `show` on behalf of every skill that needs a
   reference; it reads the exit code first and the documents second.
 - **an agent that cannot name what it needs** — knows the subject, not the file; runs `search`.
 - **person at a shell** — writes a project or user override and wants to see that it took effect,
