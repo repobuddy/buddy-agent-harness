@@ -44,6 +44,19 @@ In a monorepo, the project tier is read in the folder you work in and each folde
 
 Documents written for the older [`governance`](/cli/governance/) command, in `governances/` folders, are still read, one layer below `references/` in the same tier.
 
+## Naming a reference a plugin ships
+
+Names are flat, and the tiers treat a shared name in two different ways:
+
+- **Between plugins, a clash is loud.** Two plugins holding the same name is an error that names both, and the caller settles it by asking for `<plugin>/<name>`.
+- **Above the plugins, a clash is silent.** A project, user, or managed copy of `<name>` [overrides every plugin's copy of it](/cli/reference/#tiers), whether or not the caller qualified the name. A project's `.agents/references/work-hierarchy.md`, written to override one plugin's `work-hierarchy`, replaces every other plugin's `work-hierarchy` as well. Nothing warns: the project copy even stops the plugin clash from being reported.
+
+So a plugin should prefix each name it ships with its own name and a dot, as in `cyber-asana.work-hierarchy`. A name may already contain dots, so the resolver needs no change. An override then targets one plugin's document by its file name, `.agents/references/cyber-asana.work-hierarchy.md`, and the owner of any file in a tier folder can be read from its name.
+
+A reference a project writes for its own use, and not to override a plugin's, needs no prefix. Nothing ships that name, so nothing else can hold it.
+
+Renaming a reference that has already shipped breaks every caller that names it. So apply the prefix to new names, and rename an existing one only in a release that also updates its callers.
+
 ## How layers combine
 
 When more than one layer holds a name, the higher document decides how it combines with the ones below, in its frontmatter:
