@@ -95,6 +95,7 @@ export default defineConfig({
 						{ label: 'doctor-buddy-agent-harness', slug: 'skills/doctor-buddy-agent-harness' },
 						{ label: 'enhance', slug: 'skills/enhance' },
 						{ label: 'repair', slug: 'skills/repair' },
+						{ label: 'reference', slug: 'skills/reference' },
 						{ label: 'load-reference', slug: 'skills/load-reference' },
 					],
 				},
