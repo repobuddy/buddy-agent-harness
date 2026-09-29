@@ -1,5 +1,20 @@
 # buddy-agent-harness
 
+## 0.14.0
+
+### Minor Changes
+
+- 0ba0099: The `load-reference` skill is now the `reference` skill's Load mode, and the `load-reference` skill is removed. A calling skill's line changes from "with the `load-reference` skill" to "with the `reference` skill":
+  
+  ```text
+  Load `skill-design` and `agent-tool-output` with the `reference` skill in the `buddy-agent-harness` plugin.
+  ```
+  
+  Loading works as before: one `reference show` run from the launcher bundled in the skill folder, no `npx` and no network, and the calling skill's own `references/<name>.md` when the command cannot run or no tier holds the name. The plugin now puts one skill description in every session for references, instead of two.
+- 1071180: New `reference` skill for working with references yourself. It routes what you ask to `reference show`, `list`, or `search`, and it writes a new reference, or updates one, after you approve it, since the command is read-only.
+  
+  When a plugin ships a reference, the skill names the file `<plugin name>.<reference>.md`, so a project's override of one plugin's document does not also replace another plugin's. Updating your own reference edits it in place. Updating a plugin's writes an override, and when more than one plugin holds that name, it warns you first. For a skill that needs a reference, it gives you the line that loads it with the same skill.
+
 ## 0.13.1
 
 ### Patch Changes
