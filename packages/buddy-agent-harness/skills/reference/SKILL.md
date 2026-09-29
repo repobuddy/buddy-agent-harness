@@ -28,7 +28,7 @@ node <this skill's folder>/scripts/reference.mjs <subcommand> ... --root <reposi
 
 `scripts/reference.mjs` is the package's `reference` command bundled into one file; it needs no `node_modules`. Pass `--root` every time, so the repository's own `.agents/references/` is read.
 
-Outside Load, when it is missing or cannot run, use `npx -y buddy-agent-harness@^0.13.1 reference` with the same arguments. Load never falls back to a package runner.
+Outside Load, when it is missing or cannot run, use `npx -y buddy-agent-harness@^0.14.0 reference` with the same arguments. Load never falls back to a package runner.
 
 ## Load
 
