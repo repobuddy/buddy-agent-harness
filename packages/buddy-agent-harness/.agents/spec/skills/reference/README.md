@@ -23,7 +23,7 @@ and a calling skill and a person name the same skill.
 
 **Key terms**
 
-- **mode** — one of Load, Create, Update, Find, Inspect, Where to override, and Wire a skill.
+- **mode** — one of Load, Create, Update, Find, Inspect, and Wire a skill.
 - **prefixed name** — `<plugin name>.<reference>`, the form a plugin ships every reference under, in the
   file `<plugin name>.<reference>.md`.
 
@@ -55,7 +55,7 @@ and a calling skill and a person name the same skill.
 | repository owner | change one plugin's reference for this repository | Update, by an override |
 | user | find a reference for a topic | Find |
 | user | learn why a name resolved to the copy it did | Inspect |
-| user | learn where the agent looks for a reference and where to put an override | Where to override |
+| user | learn where the agent looks for a reference and where to put an override | Inspect, with `where` |
 | plugin author | have a skill load a reference | Wire a skill, then Load when the skill runs |
 
 **Entry point**
@@ -85,7 +85,7 @@ exists to fall back to. Load never does (`load/`).
   is told before anything is written.
 - **Update, an ambiguous name.** Ask which `<plugin>/<name>` is meant.
 - **Find, nothing matches.** Say so; never guess a name.
-- **Where to override, a name nothing holds.** Report the slots anyway; the user may be about to create it.
+- **Inspect with `where`, a name nothing holds.** Report the slots anyway; the user may be about to create it.
 
 ## Control Flow
 
@@ -112,8 +112,7 @@ flowchart TD
   K1 --> L
   L --> I
   B -->|Find| M[search or list]
-  B -->|Inspect| N[show, or show --trace]
-  B -->|Where to override| N2[where, then report slots and write nothing]
+  B -->|Inspect| N[show, show --trace, or where; write nothing]
   B -->|Wire a skill| O[Give the caller line from the skill's README]
   B -->|Load| P[Follow load/]
 ```
@@ -131,7 +130,7 @@ flowchart TD
 | J→J1→K→K1 | an override of a name two plugins hold | `warns that an override replaces every plugin's copy` |
 | B→M | a topic with no match | `says nothing matched rather than guessing a name` |
 | B→N | a question about which copy answered | `explains a resolution from show --trace` |
-| B→N2 | a question about where to put an override | `reports where a copy can live without writing one` |
+| B→N | a question about where to put an override | `reports where a copy can live without writing one` |
 | B→O | a skill author wanting to load a reference | `gives a skill author the caller line` |
 | B→P | a caller line naming the skill | the scenarios in `load/load.feature` |
 | H | any write | `writes nothing without approval` |

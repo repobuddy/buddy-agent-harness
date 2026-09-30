@@ -17,7 +17,7 @@ Route the request to one mode, then follow that mode. A **reference** is a Markd
 | change what an existing reference says, the user's own or a plugin's | [Update](#update) |
 | find a reference for a topic, or see which ones exist | [Find](#find) |
 | see a reference, or learn why a name resolved to the copy it did | [Inspect](#inspect) |
-| learn where the agent looks for a reference, or where to put a copy that overrides it | [Where to override](#where-to-override) |
+| learn where the agent looks for a reference, or where to put a copy that overrides it | [Inspect](#inspect) |
 | make a skill load a reference | [Wire a skill](#wire-a-skill) |
 
 Ask only when the request fits two modes. Otherwise pick one; outside Load, say which.
@@ -58,13 +58,7 @@ Load `references/create.md` from this skill's folder and follow it.
 
 - To read a reference, run `show <name>`.
 - To learn why a name resolved to one copy, run `show <name> --trace`. Report the layer that was `used`, and each layer that was `shadowed` or `not read`, with its reason.
-
-## Where to override
-
-1. Run `where <name>`. When a skill loads the name, add `--caller <that skill's folder>`.
-2. Report the slots in order, and which are `used`. A plugin or `caller` slot is a copy an override covers; never offer it as a place to write.
-3. Give the project and user files the user can write, each with its scope, and the merge note: the default replaces the whole document, `merge: merge-sections` keeps the sections the override does not redefine.
-4. Write nothing. If the user then wants the override written, go to [Update](#update).
+- To learn where to put a copy that overrides it, run `where <name>`; when a skill loads the name, add `--caller <that skill's folder>`. Report the slots in order and which are `used`, then the project and user files the user can write, each with its scope, and the merge note. A plugin or `caller` slot is a copy an override covers; never offer it as a place to write. If the user then wants the override written, go to [Update](#update).
 
 ## Wire a skill
 
@@ -72,7 +66,7 @@ A skill never runs the command itself. It names this skill in one line; copy tha
 
 ## Rules
 
-- **Only Create and Update write.** Load, Find, Inspect, Where to override, and Wire a skill change no reference file.
+- **Only Create and Update write.** Load, Find, Inspect, and Wire a skill change no reference file.
 - **Never edit, move, rename, or delete a reference a plugin ships.** Update overrides it instead. Its callers load it by name.
 - **Write only what the user approves.** Show the file and its path before you write it.
 

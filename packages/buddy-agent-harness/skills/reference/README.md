@@ -8,8 +8,7 @@ Loads, writes, updates, and finds [references](https://repobuddy.github.io/buddy
 | Create | writing a new reference; a plugin's is named `<plugin name>.<reference>.md` |
 | Update | changing a reference: the user's own in place, a plugin's by an override |
 | Find | `search` for a topic, or `list` every reference |
-| Inspect | `show`, or `show --trace` for why a name resolved to one copy |
-| Where to override | `where`: the project and user files to write, highest first, and the plugin copy they override |
+| Inspect | `show`; `show --trace` for why a name resolved to one copy; `where` for the project and user files an override can be written to |
 | Wire a skill | giving a skill the line below |
 
 It ships in the `buddy-agent-harness` plugin:
