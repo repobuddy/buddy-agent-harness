@@ -8,7 +8,7 @@ Loads, writes, updates, and finds [references](https://repobuddy.github.io/buddy
 | Create | writing a new reference; a plugin's is named `<plugin name>.<reference>.md` |
 | Update | changing a reference: the user's own in place, a plugin's by an override |
 | Find | `search` for a topic, or `list` every reference |
-| Inspect | `show`, or `show --trace` for why a name resolved to one copy |
+| Inspect | `show`; `show --trace` for why a name resolved to one copy; `where` for the project and user files an override can be written to |
 | Wire a skill | giving a skill the line below |
 
 It ships in the `buddy-agent-harness` plugin:
@@ -31,7 +31,7 @@ Name the plugin as well as the skill: an agent that does not have the skill can 
 A skill written for one harness only may add that harness's typed form after the skill's name, for example "with the `reference` skill (`/buddy-agent-harness:reference`) in the `buddy-agent-harness` plugin" in Claude Code. Each harness names it this way:
 
 <!-- generated: harness invocations -->
-| Harness | What a user types | Names the plugin |
+| Harness | Typed form | Names the plugin |
 | --- | --- | --- |
 | `claude-code` | `/buddy-agent-harness:reference` | yes |
 | `cursor` | `/reference` | no |

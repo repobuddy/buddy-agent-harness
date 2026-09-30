@@ -37,6 +37,7 @@
 		"!**/*.{test,spec}.ts",
 		"skills",
 		"plugin.json",
+		"llms.txt",
 		".claude-plugin",
 		".cursor-plugin",
 		".codex-plugin"
@@ -45,6 +46,8 @@
 		"build": "tsdown && pnpm skill:gen",
 		"coverage": "vitest run --coverage",
 		"dev": "node bin/buddy-agent-harness.mjs",
+		"llms:gen": "tsx scripts/generate-llms-txt.ts",
+		"llms:gen:check": "tsx scripts/generate-llms-txt.ts --check",
 		"pack:check": "tsx scripts/pack-check.ts",
 		"prepack": "pnpm build",
 		"skill:gen": "tsx scripts/generate-skills.ts",

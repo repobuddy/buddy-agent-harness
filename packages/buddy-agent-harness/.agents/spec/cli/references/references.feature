@@ -369,6 +369,55 @@ Feature: Read references by name through layered tiers
     When the command searches for it
     Then the result states that zero matched, and the command exits 0
 
+  # ── where ──
+
+  @behavior
+  Scenario: lists the project and user slots, in precedence order, marking used and shadowed
+    Given one name held by a project and a user layer
+    When the command reports where `name` can live
+    Then the slots are the project slot, then the user slot
+    And the project slot is used with its path relative to the root, and the user slot is shadowed
+    And the report states the merge rule
+
+  @behavior
+  Scenario: shows a plugin only while it ships the name, and leaves out the managed tier
+    Given a plugin that ships `name` and a plugin that does not
+    When the command reports where `name` can live
+    Then the slots are the project slot, the user slot, and the shipping plugin's slot marked used
+    And no managed slot is listed
+
+  @behavior
+  Scenario: names the file in an empty slot and leaves out superseded layers
+    Given a repository whose reference folders are all empty
+    When the command reports where `name` can live
+    Then each empty slot's path is the layer folder with `name.md`, and the command exits 0
+    And no superseded layer that holds no copy is listed
+
+  @behavior
+  Scenario: follows each copy's merge metadata: a merging override leaves the copy below it used
+    Given a project copy with `merge: merge-sections`, a user copy, and a plugin copy of `name`
+    When the command reports where `name` can live
+    Then the project and user slots are used and the plugin slot is shadowed
+
+  @behavior
+  Scenario: reports the caller's copy as Load reads it: used only when no layer holds the name
+    Given a caller skill folder with its own copy of a name, under `references/` or `references/governances/`
+    When the command reports where the name can live with `--caller`
+    Then a caller slot is listed with that copy's path
+    And it is used when no layer holds the name, and shadowed when one does
+
+  @behavior
+  Scenario: names the choices and fails for an ambiguous name
+    Given one name held by two plugins
+    When the command reports where the unqualified name can live
+    Then the report lists both `<plugin>/<name>` choices and the command exits 1
+
+  @behavior
+  Scenario: does not read the caller's copy of an ambiguous name
+    Given one name held by two plugins and by the caller's own copy
+    When the command reports where it can live with `--caller`
+    Then the caller slot is not read, because the name is ambiguous
+
   # ── legacy ──
 
   @behavior
