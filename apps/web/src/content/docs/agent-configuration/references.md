@@ -77,4 +77,4 @@ Use the fixtures in `test/fixtures`.
 
 The resolver never compares prose. If two layers contradict each other, the merge mode decides which text survives; deciding which is *right* is left to whoever reads the result.
 
-[`reference show --trace`](/cli/reference/#--trace) shows which layer answered and why the others did not, and [`reference list`](/cli/reference/#reference-list) marks every shadowed layer.
+[`reference show --trace`](/cli/reference/#--trace) shows which layer answered and why the others did not, and [`reference list`](/cli/reference/#reference-list) marks every shadowed layer. To see where to put an override, run [`reference where <name>`](/cli/reference/#reference-where).

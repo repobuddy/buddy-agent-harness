@@ -1,15 +1,17 @@
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { dirname, join } from 'node:path'
+import { dirname, join, relative } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { deprecatedManagedGovernancesDir, managedGovernancesDir } from '../governance-overrides/governance-overrides.ts'
 import {
 	type ReferenceListReport,
 	type ReferenceSearchReport,
 	type ReferenceShowEntry,
+	type ReferenceWhereReport,
 	referenceListCommand,
 	referenceSearchCommand,
 	referenceShowCommand,
+	referenceWhereCommand,
 } from './reference.command.ts'
 import { managedReferencesDir } from './reference-layers.ts'
 
@@ -74,6 +76,7 @@ const stderr = vi.spyOn(process.stderr, 'write').mockImplementation(() => true)
 type ShowArgs = { root?: string; format?: string; trace?: boolean }
 type ListArgs = { root?: string; format?: string }
 type SearchArgs = { root?: string; format?: string }
+type WhereArgs = { root?: string; caller?: string; format?: string }
 
 function show(names: string[], args: ShowArgs = {}): Promise<number> {
 	return (referenceShowCommand as unknown as { run(value: ShowArgs & { names: string[] }): Promise<number> }).run({
@@ -91,6 +94,14 @@ function search(query: string, args: SearchArgs = {}): Promise<number> {
 	return (referenceSearchCommand as unknown as { run(value: SearchArgs & { query: string }): Promise<number> }).run({
 		format: 'json',
 		query,
+		...args,
+	})
+}
+
+function where(name: string, args: WhereArgs = {}): Promise<number> {
+	return (referenceWhereCommand as unknown as { run(value: WhereArgs & { name: string }): Promise<number> }).run({
+		format: 'json',
+		name,
 		...args,
 	})
 }
@@ -1083,5 +1094,154 @@ describe('coverage: edge cases outside the feature', () => {
 
 		expect(await search('name', { root })).toBe(1)
 		expect(stderrLines()).toContain('error: Reference search failed.\n')
+	})
+})
+
+// ── where ──
+
+describe('where', () => {
+	it('lists the project and user slots, in precedence order, marking used and shadowed', async () => {
+		const root = repo()
+		write(root, '.agents/references/name.md', '# project\n')
+		write(fakeHome.value, '.agents/references/name.md', '# user\n')
+
+		expect(await where('name', { root })).toBe(0)
+		const report = JSON.parse(written()) as ReferenceWhereReport
+		expect(report.root).toBe(root)
+		expect(report.slots).toEqual([
+			{
+				layer: 'project',
+				path: '.agents/references/name.md',
+				status: 'used',
+				scope: 'everyone working in this repository',
+			},
+			{
+				layer: 'user',
+				path: '~/.agents/references/name.md',
+				status: 'shadowed',
+				scope: 'only you, in every repository',
+			},
+		])
+		expect(report.merge).toContain('merge-sections')
+	})
+
+	it('names the file in an empty slot and leaves out superseded layers', async () => {
+		const root = repo()
+
+		expect(await where('name', { root })).toBe(0)
+		const report = JSON.parse(written()) as ReferenceWhereReport
+		const empty = report.slots.find((slot) => slot.layer === 'project')
+		expect(empty).toMatchObject({ status: 'empty', path: '.agents/references/name.md' })
+		expect(report.slots.some((slot) => slot.path.includes('governances'))).toBe(false)
+		expect(report.warnings).toBeUndefined()
+	})
+
+	it('shows a legacy folder while a copy there is still read', async () => {
+		const root = repo()
+		const legacy = write(root, '.agents/governances/name.md', '# legacy\n')
+
+		expect(await where('name', { root })).toBe(0)
+		const report = JSON.parse(written()) as ReferenceWhereReport
+		expect(report.slots.find((slot) => slot.path === relative(root, legacy))?.status).toBe('used')
+	})
+
+	it('shows a plugin only while it ships the name, and leaves out the managed tier', async () => {
+		const root = repo()
+		harness.allPolicyRead = false
+		write(root, 'package.json', JSON.stringify({ dependencies: { 'dep-a': '1.0.0', 'dep-b': '1.0.0' } }))
+		installDependency(root, 'dep-a', { name: '# dep-a\n' })
+		installDependency(root, 'dep-b', { other: '# dep-b\n' })
+
+		expect(await where('name', { root })).toBe(0)
+		const report = JSON.parse(written()) as ReferenceWhereReport
+		expect(report.slots.map((slot) => [slot.layer, slot.status])).toEqual([
+			['project', 'empty'],
+			['user', 'empty'],
+			['plugin dep-a', 'used'],
+		])
+	})
+
+	it('reports a name nothing holds as success, and a warning the resolution raised', async () => {
+		const root = repo()
+		write(root, '.agents/references/name.md', '---\nmerge: bogus\n---\n# doc\n')
+
+		expect(await where('name', { root })).toBe(0)
+		expect((JSON.parse(written()) as ReferenceWhereReport).warnings?.length).toBeGreaterThan(0)
+	})
+
+	it('names the choices and fails for an ambiguous name', async () => {
+		const root = repo()
+		write(root, 'package.json', JSON.stringify({ dependencies: { 'dep-a': '1.0.0', 'dep-b': '1.0.0' } }))
+		installDependency(root, 'dep-a', { testing: '# dep-a\n' })
+		installDependency(root, 'dep-b', { testing: '# dep-b\n' })
+
+		expect(await where('testing', { root })).toBe(1)
+		expect((JSON.parse(written()) as ReferenceWhereReport).plugins).toEqual(['dep-a/testing', 'dep-b/testing'])
+		expect(stderrLines().some((line) => line.includes('dep-a/testing'))).toBe(true)
+	})
+
+	it('accepts a qualified name and rejects a path', async () => {
+		const root = repo()
+		expect(await where('dep-a/testing', { root })).toBe(0)
+		expect((JSON.parse(written()) as ReferenceWhereReport).name).toBe('testing')
+
+		expect(await where('../name', { root })).toBe(1)
+	})
+
+	it("follows each copy's merge metadata: a merging override leaves the copy below it used", async () => {
+		const root = repo()
+		write(root, '.agents/references/name.md', '---\nmerge: merge-sections\n---\n## A\nproject\n')
+		write(fakeHome.value, '.agents/references/name.md', '# user\n')
+		write(root, 'package.json', JSON.stringify({ dependencies: { 'dep-a': '1.0.0' } }))
+		installDependency(root, 'dep-a', { name: '# dep-a\n' })
+
+		expect(await where('name', { root })).toBe(0)
+		const report = JSON.parse(written()) as ReferenceWhereReport
+		expect(report.slots.map((slot) => [slot.layer, slot.status])).toEqual([
+			['project', 'used'],
+			['user', 'used'],
+			['plugin dep-a', 'shadowed'],
+		])
+	})
+
+	it("reports the caller's copy as Load reads it: used only when no layer holds the name", async () => {
+		const root = repo()
+		const caller = join(root, 'skills', 'caller')
+		const own = write(caller, 'references/own.md', '# own\n')
+		const legacy = write(caller, 'references/governances/old.md', '# old\n')
+		write(caller, 'references/held.md', '# held\n')
+		write(root, '.agents/references/held.md', '# project\n')
+		const callerSlot = async (name: string) => {
+			stdout.mockClear()
+			expect(await where(name, { root, caller })).toBe(0)
+			return (JSON.parse(written()) as ReferenceWhereReport).slots.find((slot) => slot.layer === 'caller')
+		}
+
+		expect(await callerSlot('own')).toMatchObject({ path: own, status: 'used' })
+		expect(await callerSlot('old')).toMatchObject({ path: legacy, status: 'used' })
+		expect(await callerSlot('held')).toMatchObject({ path: join(caller, 'references/held.md'), status: 'shadowed' })
+		expect(await callerSlot('none')).toBeUndefined()
+	})
+
+	it("does not read the caller's copy of an ambiguous name", async () => {
+		const root = repo()
+		const caller = join(root, 'skills', 'caller')
+		write(caller, 'references/testing.md', '# own\n')
+		write(root, 'package.json', JSON.stringify({ dependencies: { 'dep-a': '1.0.0', 'dep-b': '1.0.0' } }))
+		installDependency(root, 'dep-a', { testing: '# dep-a\n' })
+		installDependency(root, 'dep-b', { testing: '# dep-b\n' })
+
+		expect(await where('testing', { root, caller })).toBe(1)
+		const report = JSON.parse(written()) as ReferenceWhereReport
+		expect(report.slots.find((slot) => slot.layer === 'caller')?.status).toBe('not read — the name is ambiguous')
+	})
+
+	it('reports a failure it cannot read a message from, and resolves --root against the working directory', async () => {
+		expect(await where('name')).toBe(0)
+		stdout.mockClear()
+		failure.value = 'unavailable'
+
+		expect(await where('name')).toBe(1)
+		expect(stderrLines()).toContain('error: Reference placement lookup failed.\n')
 	})
 })

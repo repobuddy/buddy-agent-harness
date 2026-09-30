@@ -37,7 +37,7 @@ describe('the reference skill', () => {
 	it('has a section for every mode in its routing table', () => {
 		const modes = [...section('Route').matchAll(/\[([\w ]+)\]\(#[\w-]+\)/g)].map((match) => match[1] as string)
 
-		expect(modes).toEqual(['Load', 'Create', 'Update', 'Find', 'Inspect', 'Wire a skill'])
+		expect(modes).toEqual(['Load', 'Create', 'Update', 'Find', 'Inspect', 'Where to override', 'Wire a skill'])
 		for (const mode of modes) expect(skill).toContain(`\n## ${mode}\n`)
 	})
 

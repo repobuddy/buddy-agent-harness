@@ -1,12 +1,13 @@
 ---
 title: 'CLI: reference'
-description: 'CLI reference for buddy-agent-harness reference: show, list, and search on-demand reference documents across layered tiers.'
+description: 'CLI reference for buddy-agent-harness reference: show, list, search, and where on-demand reference documents across layered tiers.'
 ---
 
 ```sh
 buddy-agent-harness reference show <name>... [--root <directory>] [--trace] [--format text|toon|json]
 buddy-agent-harness reference list [--root <directory>] [--format toon|json|text]
 buddy-agent-harness reference search <query> [--root <directory>] [--format toon|json|text]
+buddy-agent-harness reference where <name> [--root <directory>] [--caller <skill folder>] [--format toon|json|text]
 ```
 
 A **reference** is a Markdown document an agent reads on demand. [References and Skills](/agent-configuration/references/) covers when to write one instead of a skill. `reference` is read-only: it never writes a document.
@@ -144,3 +145,24 @@ Finds a reference an agent cannot name. Matches are ranked: exact name, name pre
 ```sh
 buddy-agent-harness reference search fixtures
 ```
+
+## `reference where`
+
+Answers where a copy of a name can live, so you know the file to write to override it. `show --trace` answers the other way: why a name resolved to the copy it did.
+
+```sh
+buddy-agent-harness reference where testing --format text
+```
+
+It resolves the name exactly as `show` does, and reports the slots you can act on, highest precedence first: the project file, the user file, the plugin copy it overrides when a plugin ships the name, and with `--caller <skill folder>`, the loading skill's own copy. `root` states the folder a project path is relative to.
+
+| Field | Meaning |
+| --- | --- |
+| `layer` | `project`, `user`, `plugin <name>` for the plugin that ships the copy, or `caller` for the loading skill's own copy |
+| `path` | the file to write, or the file that holds the name. A project path is relative to `root` |
+| `status` | `used`, `shadowed`, or `empty`. It follows each copy's `merge` metadata, so a copy under a merging override stays `used`. The caller's copy is `used` only when no layer holds the name |
+| `scope` | who the slot applies to: everyone working in this repository (project), only you (user), or read-only for a plugin's or the caller's copy, which you override with the project or user file |
+
+`merge` explains how an override combines with what it covers: by default it replaces the whole document; set `merge: merge-sections` in its frontmatter to keep the sections it does not redefine.
+
+A name no layer holds is not an error; the slots are still the answer. An ambiguous name lists the `<plugin>/<name>` choices and exits `1`.

@@ -18,6 +18,7 @@ The `reference` skill is the one skill for [references](/agent-configuration/ref
 | update a reference | finds the exact name and the copy that answers with `show --trace`. It edits your own copy in place; for a plugin's copy it checks with `list` which other plugins hold that name, and writes an override |
 | find a reference | runs `search`, or `list` for all of them |
 | see why a name resolved to one copy | runs `show --trace` and reports the layer used and the ones it replaced |
+| learn where the agent looks for a reference, or where to put a copy that overrides it | runs `where` and reports the slots in order, which one is used, and the project and user files you can write. It writes nothing; to write the override, ask for an update |
 | have a skill load a reference | gives you [the line a skill writes](#the-line-a-skill-writes) |
 
 ## Where it writes
