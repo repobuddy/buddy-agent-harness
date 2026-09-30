@@ -1,0 +1,39 @@
+packages/buddy-agent-harness/src/skill-scripts/reference-skill.test.ts
+  s_34481b069b9248::t_4de85d15450f40 10,33-34,67-82,84
+  s_34481b069b9248::t_a380b2777771cd 83
+packages/buddy-agent-harness/skills/reference/references/create.md
+  s_34481b069b9248::t_c8479ef8f8507e 30,38,44-45,47-56,67
+packages/buddy-agent-harness/.agents/spec/skills/reference/README.md
+  s_50dda24ec542b6::t_d0bfcd51e9eae5 197-198
+  s_50dda24ec542b6::t_339605b6dbfe5d 14-17,23-27,36-38,44-46,58-59,61-62,69-72,74-75,97-111,114-116,120-125,127-128,142-144,148-157,164,166,180,183-187,190,195-196,204-205,209
+packages/buddy-agent-harness/skills/reference/SKILL.md
+  s_34481b069b9248::t_c8479ef8f8507e 49,81-82
+  s_34481b069b9248::t_db3b56fd07c167 50
+packages/buddy-agent-harness/.agents/spec/skills/reference/reference.feature
+  s_50dda24ec542b6::t_5027ab3807ccdd 3-4,21-22,29,38-44,59-88,90,93-95,109-117,140-141,149-150,156-163
+  s_50dda24ec542b6::t_6a721e5de8659d 89,91-92
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "801fda01ae88f26d8a0f9ab501767411ea0d0118",
+  "prompts": {},
+  "sessions": {
+    "s_34481b069b9248": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7b4df139-cfc3-4a5f-a621-8e01f0bd72aa",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "unional <homawong@gmail.com>"
+    },
+    "s_50dda24ec542b6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "46e40a2e-6fca-47c9-a99f-55825722a920",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "unional <homawong@gmail.com>"
+    }
+  }
+}
