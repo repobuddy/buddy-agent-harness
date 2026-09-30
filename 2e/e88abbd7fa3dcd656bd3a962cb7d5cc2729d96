@@ -1,0 +1,24 @@
+apps/web/src/content/docs/skills/index.md
+  s_132c5bf826d98a::t_4d4ae89b409c8f 30,39
+  s_132c5bf826d98a::t_0cf3a695a8dc8e 40
+apps/web/src/content/docs/skills/reference.md
+  s_132c5bf826d98a::t_dc510115826f21 106
+  s_132c5bf826d98a::t_c8819a4e1e95b4 3,69
+  s_132c5bf826d98a::t_e081b06b4e33d8 6,8,18,22-68,70-105
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "2ee88abbd7fa3dcd656bd3a962cb7d5cc2729d96",
+  "prompts": {},
+  "sessions": {
+    "s_132c5bf826d98a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c282f94b-35eb-4ef9-b006-f0ecc90fb850",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "unional <homawong@gmail.com>"
+    }
+  }
+}
