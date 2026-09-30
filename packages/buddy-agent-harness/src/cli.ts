@@ -19,20 +19,21 @@ const version =
 		? __PACKAGE_VERSION__
 		: (JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')).version as string)
 
+/** Exported for `scripts/generate-llms-txt.ts`, which lists the CLI from it; `app()` must stay built from it. */
+export const rootCommand: { name: string; description: string; commands: readonly [cli.Command, ...cli.Command[]] } = {
+	name: 'buddy-agent-harness',
+	description: 'Initialize agent harness skill compatibility in consumer repositories.',
+	commands: [initCommand, doctorCommand, mcpCommand, depPluginsCommand, referenceCommand, governanceCommand],
+}
+
 // A factory, not a module-level constant: `cli()` builds state, and state built at import time
 // would be shared by every later call in the process.
 function app() {
-	return cli({
-		name: 'buddy-agent-harness',
-		version,
-		description: 'Initialize agent harness skill compatibility in consumer repositories.',
-	})
-		.command(initCommand)
-		.command(doctorCommand)
-		.command(mcpCommand)
-		.command(depPluginsCommand)
-		.command(referenceCommand)
-		.command(governanceCommand)
+	const [first, ...rest] = rootCommand.commands
+	return rest.reduce(
+		(builder, command) => builder.command(command),
+		cli({ name: rootCommand.name, version, description: rootCommand.description }).command(first),
+	)
 }
 
 /**
