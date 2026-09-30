@@ -1,0 +1,30 @@
+packages/buddy-agent-harness/skills/reference/README.md
+  s_132c5bf826d98a::t_5d765914e673de 34
+packages/buddy-agent-harness/src/references/reference-invocation.ts
+  s_132c5bf826d98a::t_5d765914e673de 16
+apps/web/src/content/docs/skills/reference.md
+  s_132c5bf826d98a::t_5d765914e673de 57,64
+  s_132c5bf826d98a::t_8a8c6a554ab079 65
+packages/buddy-agent-harness/.agents/spec/skills/reference/load/README.md
+  s_132c5bf826d98a::t_5d765914e673de 34
+.changeset/reference-not-user-invocable.md
+  s_132c5bf826d98a::t_df69960eb4e8fa 1-5
+packages/buddy-agent-harness/skills/reference/SKILL.md
+  s_132c5bf826d98a::t_48ce3395ccaa5d 4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "4d3c72d786c88cb7a7b7cc110e3cf236a48ba683",
+  "prompts": {},
+  "sessions": {
+    "s_132c5bf826d98a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c282f94b-35eb-4ef9-b006-f0ecc90fb850",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "unional <homawong@gmail.com>"
+    }
+  }
+}
