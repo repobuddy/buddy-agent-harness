@@ -1,0 +1,30 @@
+apps/web/src/content/docs/cli/reference.md
+  s_34481b069b9248::t_3f48cb2acfb164 3,11,14,170-197
+apps/web/src/content/docs/agent-configuration/references.md
+  s_34481b069b9248::t_3f48cb2acfb164 78-79
+apps/web/src/content/docs/skills/reference.md
+  s_34481b069b9248::t_3f48cb2acfb164 6,15-16,77,85,105
+  s_34481b069b9248::t_ad5cb6db43dad5 69
+packages/buddy-agent-harness/llms.txt
+  s_34481b069b9248::t_709690a5f9aaad 9,11,24,29
+apps/web/public/llms.txt
+  s_34481b069b9248::t_709690a5f9aaad 9,11,24,29
+packages/buddy-agent-harness/scripts/generate-llms-txt.ts
+  s_34481b069b9248::t_709690a5f9aaad 41
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "d7bdc97dd6547166025bef98fc7c4db235b570ad",
+  "prompts": {},
+  "sessions": {
+    "s_34481b069b9248": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7b4df139-cfc3-4a5f-a621-8e01f0bd72aa",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "unional <homawong@gmail.com>"
+    }
+  }
+}
