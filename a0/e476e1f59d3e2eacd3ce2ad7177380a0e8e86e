@@ -1,0 +1,60 @@
+packages/buddy-agent-harness/src/references/reference-document.ts
+  s_34481b069b9248::t_2908b92d870207 10
+  s_34481b069b9248::t_2782a6d2a68253 67-70
+  s_34481b069b9248::t_dea62d7ab77c12 71-72
+packages/buddy-agent-harness/src/references/reference.command.ts
+  s_34481b069b9248::t_8ff08d2dbb00d5 382,403,454,458
+  s_34481b069b9248::t_e6e4136c502e79 1,14,69-79,105-108,130,371-381,383-397,400-402,404-407,410-426,430-453,455-457,459-475,479-486
+  s_34481b069b9248::t_35533706fc5242 16,398-399,408-409,427-429
+packages/buddy-agent-harness/src/references/create-reference.ts
+  s_34481b069b9248::t_2782a6d2a68253 1-4,6-41,45-57
+  s_34481b069b9248::t_2908b92d870207 5
+  s_34481b069b9248::t_e6e4136c502e79 42-44
+packages/buddy-agent-harness/.agents/spec/cli/references/README.md
+  s_50dda24ec542b6::t_e8747e07f56f90 394-429
+  s_50dda24ec542b6::t_63b561a5a0da5d 90-96
+  s_50dda24ec542b6::t_f33327b3830f92 10-11
+  s_50dda24ec542b6::t_baeca79253b939 65-70
+  s_50dda24ec542b6::t_3f80cc15e6c34e 132-135,137-139
+  s_50dda24ec542b6::t_205b3e304a331d 325-334
+  s_50dda24ec542b6::t_dd2afebab7a631 534-561
+  s_50dda24ec542b6::t_fd0cae27de829a 273-314
+  s_50dda24ec542b6::t_1aa6525ff4d817 335-336
+  s_50dda24ec542b6::t_e86ea24208302c 116-121
+  s_50dda24ec542b6::t_ab382eed67c4d3 48-51
+  s_50dda24ec542b6::t_538d81844fbaed 22-32
+packages/buddy-agent-harness/.agents/spec/cli/references/references.feature
+  s_50dda24ec542b6::t_c91d9d053756b0 421-586
+packages/buddy-agent-harness/src/references/reference.command.test.ts
+  s_34481b069b9248::t_8ade094b8815c3 1,7,12,112-120,1260-1297,1300-1323,1327-1392,1394-1431,1434-1454,1456-1554,1556-1558,1560-1561
+  s_34481b069b9248::t_8ff08d2dbb00d5 82,1393,1432,1455,1555,1559
+  s_34481b069b9248::t_35533706fc5242 1298-1299,1324-1326
+  s_34481b069b9248::t_424b39c169ab73 1433
+  s_34481b069b9248::t_c94d8a7aa20d8e 1562
+.changeset/reference-create.md
+  s_34481b069b9248::t_3c2d6ca104e090 1-5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "a0e476e1f59d3e2eacd3ce2ad7177380a0e8e86e",
+  "prompts": {},
+  "sessions": {
+    "s_34481b069b9248": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7b4df139-cfc3-4a5f-a621-8e01f0bd72aa",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "unional <homawong@gmail.com>"
+    },
+    "s_50dda24ec542b6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "46e40a2e-6fca-47c9-a99f-55825722a920",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "unional <homawong@gmail.com>"
+    }
+  }
+}
