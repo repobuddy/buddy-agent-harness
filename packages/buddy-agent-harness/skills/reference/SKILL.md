@@ -46,8 +46,8 @@ Load `references/create.md` from this skill's folder and follow it.
 2. Choose the folder to write: `.agents/references/` for the project, or `~/.agents/references/` for the user alone.
 3. If the `used` layer is in that folder, it is the user's own copy. Edit that file in place, then go to step 6.
 4. Otherwise, write an override above it. Run `list` and find every plugin that holds the same name. An override applies to all of them, not only the one the user meant. If a second plugin holds it, tell the user before you write anything.
-5. Write `<name>.md` in the chosen folder. Use `merge: merge-sections` in the frontmatter when the user changes some sections and keeps the rest. With the default, `first-wins`, the override replaces the whole document.
-6. Run `show <name> --trace` again. The written file must be `used`, and every layer it replaces must be `shadowed`.
+5. Start the override with `create <name> --dry-run`, adding `--scope user` for the user's folder. Pass `--template <path>` with a file that holds only the sections the user changes, each under the heading path it has in the copy below, or the calling skill's template. `create` marks it `merge: merge-sections`, so the sections it does not redefine are kept. Show the user the path and content, then run it without `--dry-run` on approval.
+6. Run `show <name> --trace` again. The written file must be `used`. A layer below a `merge-sections` override stays `used`; a layer below a `first-wins` one is `shadowed`.
 
 ## Find
 
@@ -78,3 +78,5 @@ Before reporting a Create or Update done:
 - No file in an installed plugin's `references/` folder changed.
 - The file and its path were shown to the user before the write.
 - `show <name> --trace` reports the written file as `used`.
+- A created reference holds no heading with a single `#`.
+- Every `##` heading of a `merge-sections` override matches a heading path in the copy below it. `show <name> --trace` warns when one does not.

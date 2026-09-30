@@ -7,6 +7,7 @@ import { parse } from 'yaml'
 const packageRoot = dirname(dirname(dirname(fileURLToPath(import.meta.url))))
 const skillDir = join(packageRoot, 'skills', 'reference')
 const skill = readFileSync(join(skillDir, 'SKILL.md'), 'utf8')
+const create = readFileSync(join(skillDir, 'references', 'create.md'), 'utf8')
 
 function section(heading: string): string {
 	return skill.split(`## ${heading}\n`)[1]?.split('\n## ')[0] ?? ''
@@ -29,8 +30,8 @@ describe('the reference skill', () => {
 	})
 
 	it('routes to every subcommand of the reference command', () => {
-		for (const subcommand of ['show', 'list', 'search', 'where']) {
-			expect(skill).toMatch(new RegExp(`run \`${subcommand}\\b`, 'i'))
+		for (const subcommand of ['show', 'list', 'search', 'where', 'create']) {
+			expect(`${skill}\n${create}`).toMatch(new RegExp(`run \`${subcommand}\\b`, 'i'))
 		}
 	})
 
@@ -58,11 +59,27 @@ describe('the reference skill', () => {
 	})
 
 	it('tells a plugin to prefix the names it ships', () => {
-		const create = readFileSync(join(skillDir, 'references', 'create.md'), 'utf8')
-
 		expect(create).toContain(
 			"| every user of a plugin | the plugin's `references/` folder, next to its `skills/` | `<plugin name>.<reference>.md` |",
 		)
 		expect(create).toMatch(/\*\*A plugin prefixes every name it ships\*\* with its own name and a dot/)
+	})
+
+	it('writes a project or user reference through create, dry run first', () => {
+		expect(create).toContain('`create <name> --dry-run`')
+		expect(create).toContain('--template')
+		expect(create).toContain('--scope user')
+		expect(section('Update')).toContain('`create <name> --dry-run`')
+	})
+
+	it('states the shape rule and where extra frontmatter keys come back', () => {
+		expect(create).toMatch(/no `#` title/)
+		expect(create).toMatch(/top-level `##` sections/)
+		expect(create).toMatch(/`metadata`/)
+	})
+
+	it('validates the headings of a created reference and an override', () => {
+		expect(section('Validate')).toMatch(/no heading with a single `#`/)
+		expect(section('Validate')).toMatch(/every `##` heading of a `merge-sections` override matches a heading path/i)
 	})
 })
