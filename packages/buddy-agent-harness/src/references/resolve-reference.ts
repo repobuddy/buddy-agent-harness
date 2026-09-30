@@ -104,7 +104,8 @@ function layerName(layer: ReferenceLayer): string {
 	return layer.tier === 'plugin' ? `plugin ${pluginLabel(layer)}` : layer.tier
 }
 
-function layersFor(ref: ReferenceName, layers: readonly ReferenceLayer[]): ReferenceLayer[] {
+/** The layers a name is resolved through, in the order `resolveReference` traces them. */
+export function layersFor(ref: ReferenceName, layers: readonly ReferenceLayer[]): ReferenceLayer[] {
 	const plugin = ref.plugin
 	if (plugin === undefined) return [...layers]
 	const named = layers.filter((layer) => layer.tier !== 'plugin' || layer.plugins.includes(plugin))

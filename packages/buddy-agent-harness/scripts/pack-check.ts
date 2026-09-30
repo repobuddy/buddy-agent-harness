@@ -44,6 +44,8 @@ try {
 		)
 	}
 
+	if (!existsSync(join(pkgDir, 'llms.txt'))) fail('the packed tarball is missing llms.txt')
+
 	const doctorSkillDir = join(runDir, doctorSkill.name)
 	cpSync(join(pkgDir, 'skills', doctorSkill.name), doctorSkillDir, { recursive: true })
 	const scriptPath = join(doctorSkillDir, ...launcherFor('doctor').split('/'))
@@ -72,7 +74,7 @@ try {
 	if (document !== probe)
 		fail(`the standalone run of ${referenceScript} did not print the probe reference:\n${document}`)
 
-	process.stdout.write('pack-check: every shipped script is packed\n')
+	process.stdout.write('pack-check: every shipped script and llms.txt is packed\n')
 	process.stdout.write('pack-check: doctor.mjs ran standalone from a copied-out skill folder\n')
 	process.stdout.write('pack-check: reference.mjs ran standalone from a copied-out skill folder\n')
 } finally {

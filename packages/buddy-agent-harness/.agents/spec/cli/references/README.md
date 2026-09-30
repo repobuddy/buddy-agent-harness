@@ -95,8 +95,9 @@ replaces `governance-overrides` as the read path; that command stays, unchanged,
 | `reference show <name>...` | a caller needs one or more references | names, `--root`, `--format`, `--trace` | each document, in order; exit 0 when all were found, 1 otherwise |
 | `reference list` | a caller asks what is in play and what is shadowed | `--root`, `--format` | every layer, every name at every layer that holds it with its status, exit 0 |
 | `reference search <query>` | a caller cannot name the reference | the query, `--root`, `--format` | matches ranked, one compact row each, exit 0 |
+| `reference where <name>` | a person asks where a copy of a name can live, and where to write an override | the name, `--root`, `--caller`, `--format` | the name and root, then the project, user, shipping-plugin, and caller slots in precedence order with file path, status, and scope, and the merge rule; exit 0, or 1 for an ambiguous name |
 
-**Surface.** Names (`show`), a query (`search`), `--root` and `--format` (all three), and `--trace`
+**Surface.** Names (`show`), a name (`where`), a query (`search`), `--root` and `--format` (all four), `--caller` (`where` only), and `--trace`
 (`show` only — `list` already reports every layer's status, and `search` ranks rather than resolves).
 `--root` names the directory the project tier walks up from; `--format` serves the agent that parses (`toon`, `json`) and the
 person who reads (`text`); `--trace` serves the person asking why a layer did not answer.
@@ -215,6 +216,19 @@ at the first `first-wins` document; every layer below it is **shadowed**.
 `list` reports every layer in precedence order, then one row per name per layer that holds it:
 `name`, `tier`, `plugin`, `path`, `status` (`used`, `shadowed by <tier> (first-wins)`, `ambiguous`), `description`. A healthy empty run states its zero. The legacy and
 deprecated layers carry a status saying where their documents belong.
+
+`where` answers forward where `show --trace` answers backward. It resolves the name exactly as `show`
+does, with the same `--root` the `reference` skill's Load mode passes, then reports the slots a person can act on, in precedence order: each project and user layer, each plugin
+layer that holds the name, and, with `--caller <skill folder>`, the calling skill's own copy. A slot is
+`layer` (the tier, `plugin <name>`, or `caller`), `path`, `status`, `scope`. `path` is the file that matched, or `<layer folder>/<name>.md` where the layer holds no copy; a
+project path is relative to `root`, which the report states. `status` is `used`, `shadowed`, or
+`empty`, and follows each copy's `merge` metadata: a copy under a `merge-sections` or `combine` override
+stays `used`. The caller's copy is `used` only when no layer holds the name, as Load reads it, and
+`not read` for an ambiguous name. The managed tier is left out, since writing there needs an
+admin, and so is a superseded layer that holds no copy. `merge` states the merge rule: `first-wins`
+replaces the whole document; `merge-sections` keeps the sections the override does not redefine. A missing name is
+not an error, since the slots are what the caller asked for; an ambiguous one lists the
+`<plugin>/<name>` choices and exits 1.
 
 `search` ranks: exact name, name prefix, a name close to the query, `description` or `tags`, a
 heading, the body. Each match is one row — `name`, `tier`, `match`, `description` — best first, then
@@ -371,6 +385,18 @@ flowchart TD
 | V | any run | `lists every layer in precedence order, with the legacy layers marked` |
 | W | a name in a project and a user layer | `marks shadowed layers in the listing` |
 | X | no layer holds a reference | `states the zero when no layer holds a reference` |
+
+### `reference where`
+
+| Edge | Path (Given) | Scenario |
+| --- | --- | --- |
+| AC | a name in a project and a user layer | `lists the project and user slots, in precedence order, marking used and shadowed` |
+| AC | a name a plugin ships | `shows a plugin only while it ships the name, and leaves out the managed tier` |
+| AC | a name no layer holds | `names the file in an empty slot and leaves out superseded layers` |
+| AC | an override with `merge: merge-sections` | `follows each copy's merge metadata: a merging override leaves the copy below it used` |
+| AC | `--caller` with the caller's own copies | `reports the caller's copy as Load reads it: used only when no layer holds the name` |
+| AD | an ambiguous name | `names the choices and fails for an ambiguous name` |
+| AD | an ambiguous name with `--caller` | `does not read the caller's copy of an ambiguous name` |
 
 ### `reference search`
 

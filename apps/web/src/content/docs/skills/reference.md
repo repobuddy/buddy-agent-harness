@@ -1,13 +1,11 @@
 ---
 title: 'Skill: reference'
-description: The one skill for references, loading them for a skill, and writing, updating, finding, and inspecting them yourself, with the naming rule for a plugin's.
+description: The one skill for references, loading them for a skill, and writing, updating, finding, and inspecting them yourself, with example prompts, how to override a reference a skill loads, and the naming rule for a plugin's.
 ---
 
-The `reference` skill is the one skill for [references](/agent-configuration/references/). Other skills load their references through it, and you run it to work with references yourself. It picks a mode from the request, runs the matching [`reference`](/cli/reference/) subcommand, and writes a document only after you approve it. The command is read-only, so the skill writes the file itself.
+The `reference` skill is the one skill for [references](/agent-configuration/references/). Other skills load their references through it, and you use it to work with references yourself. It picks a mode from the request, runs the matching [`reference`](/cli/reference/) subcommand, and writes a document only after you approve it. The command is read-only, so the skill writes the file itself.
 
-```text
-/buddy-agent-harness:reference
-```
+It is not in the slash-command menu. Ask in words, as in the [examples](#examples) below, and the agent loads it.
 
 ## Modes
 
@@ -17,8 +15,94 @@ The `reference` skill is the one skill for [references](/agent-configuration/ref
 | write a new reference | checks that it should not be a skill instead, picks the folder and the name, checks that the name is free with `show`, and writes it |
 | update a reference | finds the exact name and the copy that answers with `show --trace`. It edits your own copy in place; for a plugin's copy it checks with `list` which other plugins hold that name, and writes an override |
 | find a reference | runs `search`, or `list` for all of them |
-| see why a name resolved to one copy | runs `show --trace` and reports the layer used and the ones it replaced |
+| read a reference, or see why a name resolved to one copy | runs `show`, or `show --trace` and reports the layer used and the ones it replaced |
+| learn where the agent looks for a reference, or where to put a copy that overrides it | runs `where` and reports the slots in order, which one is used, and the project and user files you can write. It writes nothing; to write the override, ask for an update |
 | have a skill load a reference | gives you [the line a skill writes](#the-line-a-skill-writes) |
+
+Reading, tracing, and `where` are all the Inspect mode; only creating and updating write a file.
+
+## Examples
+
+Each prompt below is one you might type. The skill picks the mode, so you never name it.
+
+### Find and read
+
+| You ask | The skill runs |
+| --- | --- |
+| "Is there a reference about commit messages?" | `search "commit messages"` |
+| "List every reference this repo can load." | `list` |
+| "Show me the `plugin-design` reference." | `show plugin-design` |
+| "Why is the agent using universal-plugin's `plugin-design` and not ours?" | `show plugin-design --trace` |
+
+### Customize a reference a skill loads
+
+This is the most common case. A skill you installed loads a reference, and you want it to follow your rules instead: your team's commit style, your review checklist, your naming. You don't edit the plugin. You write a copy above it, and every skill that loads the name reads yours.
+
+**1. Ask where.**
+
+```text
+Where does the agent look for plugin-design, and where do I put my own copy?
+```
+
+The skill runs `where` and reports:
+
+```text
+name: plugin-design
+root: ~/code/my-repo
+
+slots:
+  layer                    path                                                                              status  scope
+  project                  .agents/references/plugin-design.md                                               empty   everyone working in this repository
+  user                     ~/.agents/references/plugin-design.md                                             empty   only you, in every repository
+  plugin universal-plugin  ~/.claude/plugins/cache/palo/universal-plugin/0.11.1/references/plugin-design.md  used    read-only; override it with the project or user file
+
+merge: The default, first-wins, makes the override replace the whole document. Set `merge: merge-sections` in its frontmatter to keep the sections it does not redefine.
+```
+
+Read it top to bottom: the first `used` row is what the agent reads today, here the plugin's copy. A file in either `empty` row above it wins.
+
+**2. Pick the scope.**
+
+- `.agents/references/plugin-design.md`: committed with the repository, so every teammate's agent reads it.
+- `~/.agents/references/plugin-design.md`: yours alone, in every repository you work in.
+
+**3. Pick how it combines.** By default your file replaces the whole document. Add `merge: merge-sections` to its frontmatter to replace only the sections you write, heading by heading, and keep the plugin's other sections. [How layers combine](/agent-configuration/references/#how-layers-combine) covers `combine` and the per-section markers.
+
+**4. Write it, or have the skill write it.**
+
+```text
+Override plugin-design for this repo: keep everything, but replace the "Naming" section with ours.
+```
+
+That is the Update mode. It shows you the file and its path, writes it on your approval, and runs `show --trace` to confirm your copy is `used`.
+
+When you ask about a reference a particular skill loads, the skill passes that skill's folder as `--caller`. A `caller` row then shows the skill's own fallback copy, which is read only when no layer holds the name.
+
+### Write and wire
+
+| You ask | The skill |
+| --- | --- |
+| "Write a reference for our API error format, for this repo." | Create: writes `.agents/references/api-errors.md` on approval |
+| "Make my `release-notes` skill load `api-errors`." | Wire a skill: gives you the line to add to the skill |
+
+### Pointing your users here
+
+A skill that loads references can tell its users how to change them with one line in its README, without explaining the tiers:
+
+```text
+To change what this skill's `review-checklist` reference says, ask the agent where to override `review-checklist`.
+```
+
+## Run the command yourself
+
+The same answers come from the [CLI](/cli/reference/), without an agent:
+
+```sh
+npx buddy-agent-harness reference search "commit messages"
+npx buddy-agent-harness reference show plugin-design --trace
+npx buddy-agent-harness reference where plugin-design --format text
+npx buddy-agent-harness reference where review-checklist --caller ./skills/code-review --format text
+```
 
 ## Where it writes
 
@@ -54,12 +138,14 @@ Naming the plugin is what lets an agent that does not have the skill tell the us
 
 The line names the skill in words rather than as a slash command, because each harness types a plugin's skill differently:
 
-| Harness | What a user types |
+| Harness | Typed form |
 | --- | --- |
 | Claude Code, GitHub Copilot in VS Code | `/buddy-agent-harness:reference` |
 | Cursor, GitHub Copilot CLI, Cline | `/reference` |
 | Codex | `$reference` |
 | OpenCode, Kilo Code, Gemini CLI, Qwen Code, Crush, OpenHands | no typed form; the model loads a skill when the task names it |
+
+The skill sets `user-invocable: false`, so harnesses that honor it leave it out of the slash-command menu; the typed form is how a skill names it, not a command a user runs.
 
 A form that leaves out the plugin says nothing about where the skill comes from, and two plugins' skills of the same name collide under it. A skill written for one harness only can add that harness's form after the skill's name. The skill's `README.md` carries this table, generated from [`@cyberuni/agent-harness`](https://github.com/cyberuni/agent-harness), so a calling skill's author copies the form from the installed package.
 

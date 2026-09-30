@@ -29,13 +29,15 @@ describe('the reference skill', () => {
 	})
 
 	it('routes to every subcommand of the reference command', () => {
-		for (const subcommand of ['show', 'list', 'search']) {
+		for (const subcommand of ['show', 'list', 'search', 'where']) {
 			expect(skill).toMatch(new RegExp(`run \`${subcommand}\\b`, 'i'))
 		}
 	})
 
 	it('has a section for every mode in its routing table', () => {
-		const modes = [...section('Route').matchAll(/\[([\w ]+)\]\(#[\w-]+\)/g)].map((match) => match[1] as string)
+		const modes = [
+			...new Set([...section('Route').matchAll(/\[([\w ]+)\]\(#[\w-]+\)/g)].map((match) => match[1] as string)),
+		]
 
 		expect(modes).toEqual(['Load', 'Create', 'Update', 'Find', 'Inspect', 'Wire a skill'])
 		for (const mode of modes) expect(skill).toContain(`\n## ${mode}\n`)

@@ -1,4 +1,6 @@
+import { existsSync } from 'node:fs'
 import { homedir } from 'node:os'
+import { join, relative, resolve } from 'node:path'
 import type { cli } from 'clibuilder'
 import { command, exitCodes, z } from 'clibuilder'
 import {
@@ -12,6 +14,7 @@ import {
 import { listReferences, type ReferenceRow, type SearchMatch, searchReferences } from './reference-catalog.ts'
 import { type ReferenceLayer, type ReferenceTier, referenceLayers } from './reference-layers.ts'
 import {
+	layersFor as layersTraced,
 	parseReferenceName,
 	type ResolvedReference,
 	resolveReference,
@@ -40,6 +43,25 @@ export type ReferenceListReport = {
 	layers: { tier: ReferenceTier; plugin: string; path: string; status: string }[]
 	/** Emitted even when empty, so a healthy run states its zero explicitly. */
 	references: ReferenceRow[] | string
+	warnings?: string[]
+}
+
+export type ReferenceWhereSlot = {
+	/** The tier, `plugin <name>` for a plugin's copy, or `caller` for the calling skill's own copy. */
+	layer: string
+	path: string
+	status: string
+	scope: string
+}
+
+export type ReferenceWhereReport = {
+	name: string
+	/** What a project path is relative to. */
+	root: string
+	slots: ReferenceWhereSlot[]
+	merge: string
+	/** The `<plugin>/<name>` choices when two plugins hold the name. */
+	plugins?: string[]
 	warnings?: string[]
 }
 
@@ -243,9 +265,101 @@ export const referenceSearchCommand: cli.Command = command({
 	},
 })
 
+/** Managed is left out: writing there needs an admin, and most of it cannot be read locally. */
+const slotScopes: Partial<Record<ReferenceTier, string>> = {
+	project: 'everyone working in this repository',
+	user: 'only you, in every repository',
+	plugin: 'read-only; override it with the project or user file',
+}
+
+const callerScope = "read-only; the calling skill's own copy, read only when no layer holds the name"
+
+const mergeNote =
+	'The default, first-wins, makes the override replace the whole document. Set `merge: merge-sections` in its frontmatter to keep the sections it does not redefine.'
+
+function slotStatus(outcome: string): string {
+	if (outcome === 'missing') return 'empty'
+	return outcome.startsWith('shadowed') ? 'shadowed' : outcome
+}
+
+/** Where Load reads the caller's copy when no layer holds the name, in the order it tries them. */
+function callerCopy(caller: string, name: string): string | undefined {
+	return [join(caller, 'references', `${name}.md`), join(caller, 'references', 'governances', `${name}.md`)].find(
+		(path) => existsSync(path),
+	)
+}
+
+function callerStatus(resolved: ResolvedReference): string {
+	if (resolved.status === 'missing') return 'used'
+	return resolved.status === 'ambiguous' ? 'not read — the name is ambiguous' : 'shadowed'
+}
+
+export const referenceWhereCommand: cli.Command = command({
+	name: 'where',
+	description:
+		'List the project and user files an override of a reference can be written to, highest precedence first, with the copy each overrides and who it applies to.',
+	arguments: [
+		{
+			name: 'name',
+			description: 'Reference name, without the `.md` extension; `<plugin>/<name>` picks one plugin.',
+			type: z.string(),
+		},
+	],
+	options: {
+		root: rootOption,
+		caller: {
+			description:
+				"Folder of the skill that loads the reference, so its own copy is reported as the reference skill's Load mode reads it.",
+			type: z.optional(z.string()),
+		},
+		format: listFormatOption,
+	},
+	async run(args: CommonArgs & { name: string; caller: string | undefined }) {
+		try {
+			const format = parseFormat(args.format)
+			const name = parseReferenceName(args.name)
+			const home = homedir()
+			const layers = await layersFor(args, home)
+			const root = resolve(args.root ?? process.cwd())
+			const display = (path: string) => collapseHome(home, path)
+			const resolved = resolveReference(name, layers, { display })
+			const traced = layersTraced(name, layers)
+			const slots: ReferenceWhereSlot[] = []
+			for (const [index, step] of resolved.trace.entries()) {
+				const layer = traced[index] as ReferenceLayer
+				const scope = slotScopes[step.tier]
+				// A legacy folder or a plugin is never a place to write, so it shows only while it holds a copy.
+				if (!scope || ((layer.status || step.tier === 'plugin') && !step.found)) continue
+				const path = step.found ? step.path : join(layer.dir, `${name.name}.md`)
+				slots.push({
+					layer: step.tier === 'plugin' ? `plugin ${step.plugin}` : step.tier,
+					path: step.tier === 'project' ? relative(root, path) : display(path),
+					status: slotStatus(step.outcome),
+					scope,
+				})
+			}
+			const copy = args.caller === undefined ? undefined : callerCopy(resolve(args.caller), name.name)
+			if (copy) {
+				slots.push({ layer: 'caller', path: display(copy), status: callerStatus(resolved), scope: callerScope })
+			}
+			const report: ReferenceWhereReport = { name: name.name, root: display(root), slots, merge: mergeNote }
+			if (resolved.status === 'ambiguous') report.plugins = resolved.plugins
+			if (resolved.warnings.length) report.warnings = resolved.warnings
+			writeResult(report, format)
+			if (resolved.status !== 'ambiguous') return exitCodes.success
+			process.stderr.write(
+				`error: ${missReason({ name: name.raw, status: 'ambiguous', plugins: resolved.plugins, warnings: [] })}\n`,
+			)
+			return exitCodes.error
+		} catch (error) {
+			return fail(error, 'Reference placement lookup failed.')
+		}
+	},
+})
+
 export const referenceCommand: cli.Command = command({
 	name: 'reference',
 	description:
 		'Read on-demand reference documents by name, layered across the managed, project, user, and plugin tiers. Read-only.',
-	commands: [referenceShowCommand, referenceListCommand, referenceSearchCommand],
+	commands: [referenceShowCommand, referenceListCommand, referenceSearchCommand, referenceWhereCommand],
 })

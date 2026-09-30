@@ -72,6 +72,14 @@ Feature: Route reference work, and create references under the naming rule
     And the report names the layer used and why the user's copy was shadowed or not read
 
   @behavior
+  Scenario: reports where a copy can live without writing one
+    Given a question about where the agent looks for `testing` and where to put a copy that overrides it
+    When the agent runs the `reference` skill
+    Then the agent runs `where testing`
+    And the report gives the slots in order, which one is used, and the project and user files the user can write, with who each applies to and the merge note
+    And no file is written
+
+  @behavior
   Scenario: gives a skill author the caller line
     Given a request to make a skill load the `testing` reference
     When the agent runs the `reference` skill

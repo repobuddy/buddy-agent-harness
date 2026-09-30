@@ -13,7 +13,7 @@ export function renderInvocationTable(): string {
 		if (!invocation) return `| \`${harness}\` | no typed form recorded | — |`
 		return `| \`${harness}\` | \`${invocation.text}\` | ${invocation.namespaced ? 'yes' : 'no'} |`
 	})
-	return [begin, '| Harness | What a user types | Names the plugin |', '| --- | --- | --- |', ...rows, end].join('\n')
+	return [begin, '| Harness | Typed form | Names the plugin |', '| --- | --- | --- |', ...rows, end].join('\n')
 }
 
 /** Replaces only the generated region, so the prose around it stays hand-written. */
