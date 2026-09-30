@@ -1,6 +1,7 @@
 ---
 name: reference
 description: Use this skill when loading, writing, updating, or finding a reference — a Markdown document agents read by name.
+user-invocable: false
 ---
 
 # Reference

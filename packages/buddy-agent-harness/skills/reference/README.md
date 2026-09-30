@@ -31,7 +31,7 @@ Name the plugin as well as the skill: an agent that does not have the skill can 
 A skill written for one harness only may add that harness's typed form after the skill's name, for example "with the `reference` skill (`/buddy-agent-harness:reference`) in the `buddy-agent-harness` plugin" in Claude Code. Each harness names it this way:
 
 <!-- generated: harness invocations -->
-| Harness | What a user types | Names the plugin |
+| Harness | Typed form | Names the plugin |
 | --- | --- | --- |
 | `claude-code` | `/buddy-agent-harness:reference` | yes |
 | `cursor` | `/reference` | no |

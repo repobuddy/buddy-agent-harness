@@ -54,12 +54,14 @@ Naming the plugin is what lets an agent that does not have the skill tell the us
 
 The line names the skill in words rather than as a slash command, because each harness types a plugin's skill differently:
 
-| Harness | What a user types |
+| Harness | Typed form |
 | --- | --- |
 | Claude Code, GitHub Copilot in VS Code | `/buddy-agent-harness:reference` |
 | Cursor, GitHub Copilot CLI, Cline | `/reference` |
 | Codex | `$reference` |
 | OpenCode, Kilo Code, Gemini CLI, Qwen Code, Crush, OpenHands | no typed form; the model loads a skill when the task names it |
+
+The skill sets `user-invocable: false`, so harnesses that honor it leave it out of the slash-command menu; the typed form is how a skill names it, not a command a user runs.
 
 A form that leaves out the plugin says nothing about where the skill comes from, and two plugins' skills of the same name collide under it. A skill written for one harness only can add that harness's form after the skill's name. The skill's `README.md` carries this table, generated from [`@cyberuni/agent-harness`](https://github.com/cyberuni/agent-harness), so a calling skill's author copies the form from the installed package.
 
