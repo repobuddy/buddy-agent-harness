@@ -1,0 +1,29 @@
+packages/buddy-agent-harness/skills/reference/SKILL.md
+  s_132c5bf826d98a::t_c50433806dea11 20,61,69
+packages/buddy-agent-harness/skills/reference/README.md
+  s_132c5bf826d98a::t_c50433806dea11 11
+packages/buddy-agent-harness/.agents/spec/skills/reference/README.md
+  s_132c5bf826d98a::t_c50433806dea11 26,58,88,115
+  s_132c5bf826d98a::t_1babfd546e1706 133
+.changeset/reference-where.md
+  s_132c5bf826d98a::t_c50433806dea11 5
+packages/buddy-agent-harness/src/skill-scripts/reference-skill.test.ts
+  s_132c5bf826d98a::t_c50433806dea11 42
+  s_132c5bf826d98a::t_c83784056aa776 32,38-40
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "22999b61bcca980c56f4d85aa82d36d99c2059ae",
+  "prompts": {},
+  "sessions": {
+    "s_132c5bf826d98a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c282f94b-35eb-4ef9-b006-f0ecc90fb850",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "unional <homawong@gmail.com>"
+    }
+  }
+}
