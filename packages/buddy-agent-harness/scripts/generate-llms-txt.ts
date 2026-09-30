@@ -38,6 +38,7 @@ const commandPages: Record<string, string | null> = {
 	'reference list': 'cli/reference',
 	'reference search': 'cli/reference',
 	'reference where': 'cli/reference',
+	'reference create': 'cli/reference',
 	governance: 'cli/governance',
 	'governance list': 'cli/governance',
 	'governance show': 'cli/governance',

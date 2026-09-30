@@ -3,7 +3,7 @@ title: 'Skill: reference'
 description: The one skill for references, loading them for a skill, and writing, updating, finding, and inspecting them yourself, with example prompts, how to override a reference a skill loads, and the naming rule for a plugin's.
 ---
 
-The `reference` skill is the one skill for [references](/agent-configuration/references/). Other skills load their references through it, and you use it to work with references yourself. It picks a mode from the request, runs the matching [`reference`](/cli/reference/) subcommand, and writes a document only after you approve it. The command is read-only, so the skill writes the file itself.
+The `reference` skill is the one skill for [references](/agent-configuration/references/). Other skills load their references through it, and you use it to work with references yourself. It picks a mode from the request, runs the matching [`reference`](/cli/reference/) subcommand, and writes a document only after you approve it. A project or user file is written by [`reference create`](/cli/reference/#reference-create): the skill runs it with `--dry-run` first, shows you the path and the content, and runs it again on your approval. Only a plugin's own reference is written by hand, since `create` never writes into a plugin.
 
 It is not in the slash-command menu. Ask in words, as in the [examples](#examples) below, and the agent loads it.
 
@@ -12,8 +12,8 @@ It is not in the slash-command menu. Ask in words, as in the [examples](#example
 | The request | The skill |
 | --- | --- |
 | a skill names references to load | loads them, as [Loading from a skill](#loading-from-a-skill) describes |
-| write a new reference | checks that it should not be a skill instead, picks the folder and the name, checks that the name is free with `show`, and writes it |
-| update a reference | finds the exact name and the copy that answers with `show --trace`. It edits your own copy in place; for a plugin's copy it checks with `list` which other plugins hold that name, and writes an override |
+| write a new reference | checks that it should not be a skill instead, picks the folder and the name, checks that the name is free with `show`, and writes it with `create`, as top-level `##` sections with no `#` title |
+| update a reference | finds the exact name and the copy that answers with `show --trace`. It edits your own copy in place; for a plugin's copy it checks with `list` which other plugins hold that name, and starts an override with `create`, which marks it `merge-sections` |
 | find a reference | runs `search`, or `list` for all of them |
 | read a reference, or see why a name resolved to one copy | runs `show`, or `show --trace` and reports the layer used and the ones it replaced |
 | learn where the agent looks for a reference, or where to put a copy that overrides it | runs `where` and reports the slots in order, which one is used, and the project and user files you can write. It writes nothing; to write the override, ask for an update |
@@ -66,7 +66,7 @@ Read it top to bottom: the first `used` row is what the agent reads today, here 
 - `.agents/references/plugin-design.md`: committed with the repository, so every teammate's agent reads it.
 - `~/.agents/references/plugin-design.md`: yours alone, in every repository you work in.
 
-**3. Pick how it combines.** By default your file replaces the whole document. Add `merge: merge-sections` to its frontmatter to replace only the sections you write, heading by heading, and keep the plugin's other sections. [How layers combine](/agent-configuration/references/#how-layers-combine) covers `combine` and the per-section markers.
+**3. Pick how it combines.** By default your file replaces the whole document. With `merge: merge-sections` in its frontmatter it replaces only the sections you write, heading by heading, and keeps the plugin's other sections; `reference create` adds that line for you when a copy sits below. [How layers combine](/agent-configuration/references/#how-layers-combine) covers `combine` and the per-section markers.
 
 **4. Write it, or have the skill write it.**
 
@@ -74,7 +74,7 @@ Read it top to bottom: the first `used` row is what the agent reads today, here 
 Override plugin-design for this repo: keep everything, but replace the "Naming" section with ours.
 ```
 
-That is the Update mode. It shows you the file and its path, writes it on your approval, and runs `show --trace` to confirm your copy is `used`.
+That is the Update mode. It runs `reference create plugin-design --dry-run` with a template holding only your "Naming" section, shows you the file and its path, and writes it on your approval. Because the plugin's copy sits below, `create` adds `merge: merge-sections`, and its trace confirms your copy is `used`.
 
 When you ask about a reference a particular skill loads, the skill passes that skill's folder as `--caller`. A `caller` row then shows the skill's own fallback copy, which is read only when no layer holds the name.
 
@@ -82,7 +82,7 @@ When you ask about a reference a particular skill loads, the skill passes that s
 
 | You ask | The skill |
 | --- | --- |
-| "Write a reference for our API error format, for this repo." | Create: writes `.agents/references/api-errors.md` on approval |
+| "Write a reference for our API error format, for this repo." | Create: shows `reference create api-errors --dry-run`, then writes `.agents/references/api-errors.md` on approval |
 | "Make my `release-notes` skill load `api-errors`." | Wire a skill: gives you the line to add to the skill |
 
 ### Pointing your users here
@@ -102,6 +102,7 @@ npx buddy-agent-harness reference search "commit messages"
 npx buddy-agent-harness reference show plugin-design --trace
 npx buddy-agent-harness reference where plugin-design --format text
 npx buddy-agent-harness reference where review-checklist --caller ./skills/code-review --format text
+npx buddy-agent-harness reference create plugin-design --dry-run
 ```
 
 ## Where it writes

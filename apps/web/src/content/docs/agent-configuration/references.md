@@ -75,6 +75,8 @@ Use the fixtures in `test/fixtures`.
 - **`combine`**: every layer is returned whole, highest first, each labeled.
 - **`merge-sections`**: the higher document replaces the lower one heading by heading, so a project can override one section of a shared reference and keep the rest. A `<!-- merge: combine -->` line under a heading keeps both versions of that section, and `<!-- merge: remove -->` drops it.
 
+Write a reference as top-level `##` sections with no `#` title. `merge-sections` matches a section by its full heading path, so under a `#` title every section's path starts with that title: an override that repeats it replaces the whole document, and one that leaves it out has its sections added as duplicates. [`reference create`](/cli/reference/#reference-create) writes this shape, marks an override `merge-sections`, and warns on a `#` heading.
+
 The resolver never compares prose. If two layers contradict each other, the merge mode decides which text survives; deciding which is *right* is left to whoever reads the result.
 
 [`reference show --trace`](/cli/reference/#--trace) shows which layer answered and why the others did not, and [`reference list`](/cli/reference/#reference-list) marks every shadowed layer. To see where to put an override, run [`reference where <name>`](/cli/reference/#reference-where).
