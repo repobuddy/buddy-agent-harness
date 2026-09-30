@@ -1,5 +1,16 @@
 # buddy-agent-harness
 
+## 0.15.0
+
+### Minor Changes
+
+- 37bdd5a: Add `reference where <name>`, which shows where to write an override of a reference: the project file (relative to the reported `root`) and the user file, highest precedence first, with the plugin copy they would override. `--caller <skill folder>` reports that skill's own copy as the Load mode reads it. The `reference` skill's Inspect mode runs it when asked where to put an override.
+
+### Patch Changes
+
+- 42cee2c: Ship a generated `llms.txt` in the package, also served from the docs site at `/llms.txt`: an orientation map of the CLI commands, the skills, the library exports, and the documentation pages, with absolute links to each.
+- 4d3c72d: Hide the `reference` skill from the slash-command menu with `user-invocable: false`. Agents still load it by name.
+
 ## 0.14.0
 
 ### Minor Changes
