@@ -1,0 +1,45 @@
+turbo.json
+  s_132c5bf826d98a::t_ac8e8e7be312c8 23
+  s_132c5bf826d98a::t_e46fec979dd0b0 12
+packages/buddy-agent-harness/package.json
+  s_132c5bf826d98a::t_ac8e8e7be312c8 40,49-50
+.agents/LOOKUP.DOC.md
+  s_132c5bf826d98a::t_ac8e8e7be312c8 36
+packages/buddy-agent-harness/src/command-output/command-output.ts
+  s_132c5bf826d98a::t_995852b7b07e78 7
+packages/buddy-agent-harness/llms.txt
+  s_132c5bf826d98a::t_d6284c06f9cb59 9,11,13,42-46
+  s_132c5bf826d98a::t_dfa037811415a4 1-8,10,12,14-41,47-101
+packages/buddy-agent-harness/scripts/pack-check.ts
+  s_132c5bf826d98a::t_ac8e8e7be312c8 47-48,77
+.changeset/llms-txt.md
+  s_132c5bf826d98a::t_ac8e8e7be312c8 1-5
+packages/buddy-agent-harness/scripts/generate-llms-txt.ts
+  s_132c5bf826d98a::t_69e96b7f7ff2bd 81-85,93,274-275,301-302,305-306,313,322,346-347
+  s_132c5bf826d98a::t_d6284c06f9cb59 300,303-304,325
+  s_132c5bf826d98a::t_8c26029b18dc3a 1-80,86-92,94-119,126-168,170-273,276-299,307-312,314-317,319-321,323-324,326-333,337-345,348-388,390,392-414
+  s_132c5bf826d98a::t_dfa037811415a4 120-125,169,318,389
+  s_132c5bf826d98a::t_ac8e8e7be312c8 334-336,391
+apps/web/public/llms.txt
+  s_132c5bf826d98a::t_dfa037811415a4 1-8,10,12,14-41,47-101
+  s_132c5bf826d98a::t_d6284c06f9cb59 9,11,13,42-46
+packages/buddy-agent-harness/src/cli.ts
+  s_132c5bf826d98a::t_4c5b56e92ccda6 22
+  s_132c5bf826d98a::t_995852b7b07e78 23-28,32-36
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "42cee2c7b29b9433e63e82f29543fdb980ec4af0",
+  "prompts": {},
+  "sessions": {
+    "s_132c5bf826d98a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c282f94b-35eb-4ef9-b006-f0ecc90fb850",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "unional <homawong@gmail.com>"
+    }
+  }
+}
