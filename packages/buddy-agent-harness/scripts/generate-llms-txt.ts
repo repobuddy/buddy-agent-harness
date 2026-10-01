@@ -54,7 +54,7 @@ const skillPages: Record<string, string | null> = {
 
 /** Module `src/index.ts` re-exports from, to the docs page covering it. */
 const libraryPages: Record<string, string | null> = {
-	'./cli.ts': null,
+	'./cli.ts': 'library/init',
 	'./diagnose-bridges/diagnose-bridges.ts': null,
 	'./diagnose-bridges/diagnose-instructions.ts': null,
 	'./diagnose-bridges/doctor.command.ts': null,
@@ -69,8 +69,8 @@ const libraryPages: Record<string, string | null> = {
 	'./harness-registry/harness-registry.ts': null,
 	'./harness-registry/instruction-bridge.ts': null,
 	'./harness-registry/mcp-config.ts': null,
-	'./initialize-harnesses/init.command.ts': null,
-	'./initialize-harnesses/initialize-harnesses.ts': null,
+	'./initialize-harnesses/init.command.ts': 'library/init',
+	'./initialize-harnesses/initialize-harnesses.ts': 'library/init',
 	'./mcp-inventory/mcp-inventory.ts': null,
 	'./references/reference.command.ts': null,
 	'./references/reference-catalog.ts': null,
@@ -81,8 +81,8 @@ const libraryPages: Record<string, string | null> = {
 
 /**
  * Top-level folder or page of the docs content, to its section heading here, in the order the sections
- * appear; `null` for one linked elsewhere — `cli` and `skills` have their own sections, the home page
- * is the site link.
+ * appear; `null` for one linked elsewhere — `cli` and `skills` have their own sections, `library` is
+ * linked from the library rows, the home page is the site link.
  */
 const docAreas: Record<string, string | null> = {
 	'getting-started': 'Getting started',
@@ -91,6 +91,7 @@ const docAreas: Record<string, string | null> = {
 	'sources.md': 'Reference',
 	cli: null,
 	skills: null,
+	library: null,
 	'index.mdx': null,
 }
 

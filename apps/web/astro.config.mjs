@@ -112,6 +112,13 @@ export default defineConfig({
 					],
 				},
 				{
+					label: 'Library',
+					items: [
+						{ label: 'Overview', slug: 'library' },
+						{ label: 'init and run', slug: 'library/init' },
+					],
+				},
+				{
 					label: 'Agent Configuration',
 					items: [
 						{ label: 'Open Standards', slug: 'agent-configuration/open-standards' },
