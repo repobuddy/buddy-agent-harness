@@ -55,11 +55,11 @@ const skillPages: Record<string, string | null> = {
 /** Module `src/index.ts` re-exports from, to the docs page covering it. */
 const libraryPages: Record<string, string | null> = {
 	'./cli.ts': 'library/init',
-	'./diagnose-bridges/diagnose-bridges.ts': null,
-	'./diagnose-bridges/diagnose-instructions.ts': null,
-	'./diagnose-bridges/doctor.command.ts': null,
-	'./diagnose-bridges/doctor-guidance.ts': null,
-	'./diagnose-bridges/git-bridge-state.ts': null,
+	'./diagnose-bridges/diagnose-bridges.ts': 'library/doctor',
+	'./diagnose-bridges/diagnose-instructions.ts': 'library/doctor',
+	'./diagnose-bridges/doctor.command.ts': 'library/doctor',
+	'./diagnose-bridges/doctor-guidance.ts': 'library/doctor',
+	'./diagnose-bridges/git-bridge-state.ts': 'library/doctor',
 	'./diagnose-mcp/diagnose-mcp.ts': 'library/mcp',
 	'./diagnose-mcp/mcp-baseline.ts': 'library/mcp',
 	'./diagnose-mcp/mcp-model.ts': 'library/mcp',
