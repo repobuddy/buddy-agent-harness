@@ -1,4 +1,4 @@
-import { existsSync } from 'node:fs'
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { join, relative, resolve } from 'node:path'
 import type { cli } from 'clibuilder'
@@ -11,8 +11,9 @@ import {
 	writeDocument,
 	writeResult,
 } from '../command-output/command-output.ts'
+import { readTemplate, templateWarnings, withMergeSections } from './create-reference.ts'
 import { listReferences, type ReferenceRow, type SearchMatch, searchReferences } from './reference-catalog.ts'
-import { type ReferenceLayer, type ReferenceTier, referenceLayers } from './reference-layers.ts'
+import { projectReferencesDir, type ReferenceLayer, type ReferenceTier, referenceLayers } from './reference-layers.ts'
 import {
 	layersFor as layersTraced,
 	parseReferenceName,
@@ -65,6 +66,17 @@ export type ReferenceWhereReport = {
 	warnings?: string[]
 }
 
+export type ReferenceCreateReport = {
+	name: string
+	scope: CreateScope
+	path: string
+	dryRun: boolean
+	content: string
+	warnings: string[]
+	/** Only after a write: the name resolved again, the new file's step `used`. */
+	trace?: Omit<TraceEntry, 'description'>[]
+}
+
 export type ReferenceSearchReport = { query: string; references: SearchMatch[] | string }
 
 type CommonArgs = { root: string | undefined; format: string | undefined }
@@ -90,6 +102,10 @@ function fail(error: unknown, fallback: string): number {
 	return exitCodes.error
 }
 
+function traceOf(resolved: ResolvedReference, home: string): Omit<TraceEntry, 'description'>[] {
+	return resolved.trace.map(({ description: _, ...step }) => ({ ...step, path: collapseHome(home, step.path) }))
+}
+
 function showEntry(
 	resolved: ResolvedReference,
 	home: string,
@@ -111,12 +127,7 @@ function showEntry(
 	if (resolved.status === 'missing') entry.suggestions = suggestions
 	if (resolved.status === 'ambiguous') entry.plugins = resolved.plugins
 	entry.warnings = resolved.warnings
-	if (trace) {
-		entry.trace = resolved.trace.map(({ description: _, ...step }) => ({
-			...step,
-			path: collapseHome(home, step.path),
-		}))
-	}
+	if (trace) entry.trace = traceOf(resolved, home)
 	return entry
 }
 
@@ -357,9 +368,120 @@ export const referenceWhereCommand: cli.Command = command({
 	},
 })
 
+type CreateScope = 'project' | 'user'
+
+function parseScope(value: string | undefined): CreateScope {
+	if (value !== 'project' && value !== 'user') throw new Error('--scope must be project or user.')
+	return value
+}
+
+type CreateArgs = CommonArgs & {
+	name: string
+	template: string | undefined
+	scope: string | undefined
+	'dry-run': boolean | undefined
+}
+
+export const referenceCreateCommand: cli.Command = command({
+	name: 'create',
+	description:
+		'Start a new reference in the project or user tier from a template, marked merge-sections when it overrides a copy below. Never overwrites.',
+	arguments: [{ name: 'name', description: 'Reference name, without the `.md` extension.', type: z.string() }],
+	options: {
+		root: rootOption,
+		template: {
+			description:
+				'File whose text is written as it is, frontmatter included. Defaults to a built-in template of top-level `##` sections with no `#` title.',
+			type: z.optional(z.string()),
+		},
+		scope: {
+			description:
+				'Tier to write: project (default), `.agents/references/` at the root, or user, `~/.agents/references/`.',
+			type: z.optional(z.string()),
+			default: 'project',
+		},
+		'dry-run': {
+			description: 'Print the target path and the exact content, and write nothing.',
+			type: z.optional(z.boolean()),
+		},
+		format: {
+			description:
+				'Output format: text (default) writes the path, then the content or the trace; toon and json return an object.',
+			type: z.optional(z.string()),
+			default: 'text',
+		},
+	},
+	async run(args: CreateArgs) {
+		try {
+			const format = parseFormat(args.format)
+			const name = parseReferenceName(args.name)
+			if (name.plugin !== undefined) {
+				throw new Error(
+					`an override is written under the bare name, which every tier resolves; ask for "${name.name}".`,
+				)
+			}
+			const scope = parseScope(args.scope)
+			const template = readTemplate(args.template === undefined ? undefined : resolve(args.template))
+			const home = homedir()
+			const dir =
+				scope === 'project'
+					? projectReferencesDir(resolve(args.root ?? process.cwd()))
+					: join(home, '.agents', 'references')
+			const target = join(dir, `${name.name}.md`)
+			const display = (path: string) => collapseHome(home, path)
+			const layers = await layersFor(args, home)
+			const { trace } = resolveReference(name, layers, { display })
+			const at = layers.findIndex((layer) => layer.dir === dir)
+			if (trace[at]?.found) {
+				throw new Error(
+					`${display(trace[at].path)} already holds "${name.name}"; change it with the reference skill's Update mode.`,
+				)
+			}
+			const shadow = trace.slice(0, at).find((step) => step.found && step.merge === 'first-wins')
+			if (shadow) {
+				throw new Error(
+					`the ${shadow.tier} copy ${display(shadow.path)} is first-wins, so nothing would read a new ${scope} file; change that copy instead.`,
+				)
+			}
+			const overrides = trace.slice(at + 1).some((step) => step.found)
+			const content =
+				overrides && template.metadata['merge'] === undefined ? withMergeSections(template.content) : template.content
+			const warnings = templateWarnings(template)
+			const report: ReferenceCreateReport = {
+				name: name.name,
+				scope,
+				path: display(target),
+				dryRun: Boolean(args['dry-run']),
+				content,
+				warnings,
+			}
+			if (!report.dryRun) {
+				mkdirSync(dir, { recursive: true })
+				writeFileSync(target, content, { flag: 'wx' })
+				report.trace = traceOf(resolveReference(name, layers, { display }), home)
+			}
+			if (format !== 'text') writeResult(report, format)
+			else {
+				for (const warning of warnings) process.stderr.write(`warning: ${warning}\n`)
+				if (report.trace) process.stdout.write(`${report.path}\n\n${renderText({ trace: report.trace })}\n`)
+				else writeDocument(`${report.path}\n\n${content}`)
+			}
+			return exitCodes.success
+		} catch (error) {
+			return fail(error, 'Reference creation failed.')
+		}
+	},
+})
+
 export const referenceCommand: cli.Command = command({
 	name: 'reference',
 	description:
-		'Read on-demand reference documents by name, layered across the managed, project, user, and plugin tiers. Read-only.',
-	commands: [referenceShowCommand, referenceListCommand, referenceSearchCommand, referenceWhereCommand],
+		'Read on-demand reference documents by name, layered across the managed, project, user, and plugin tiers, and start a new one in the project or user tier.',
+	commands: [
+		referenceShowCommand,
+		referenceListCommand,
+		referenceSearchCommand,
+		referenceWhereCommand,
+		referenceCreateCommand,
+	],
 })

@@ -7,7 +7,7 @@ const mergeModes: readonly MergeMode[] = ['first-wins', 'combine', 'merge-sectio
 
 export type ParsedDocument = { metadata: Record<string, unknown>; body: string }
 
-const frontmatterPattern = /^---[ \t]*\r?\n([\s\S]*?)\r?\n(?:---|\.\.\.)[ \t]*(?:\r?\n|$)/
+export const frontmatterPattern: RegExp = /^---[ \t]*\r?\n([\s\S]*?)\r?\n(?:---|\.\.\.)[ \t]*(?:\r?\n|$)/
 
 /** Frontmatter that is not a YAML mapping is dropped with a warning, never passed off as body text. */
 export function parseDocument(raw: string, warn: (message: string) => void): ParsedDocument {
@@ -62,6 +62,12 @@ export function stripMergeComments(body: string): string {
 		.split('\n')
 		.filter((line) => inFence(line) || !mergeCommentPattern.test(line))
 		.join('\n')
+}
+
+/** Each heading with a single `#` outside a code fence, as written. */
+export function titleHeadings(body: string): string[] {
+	const inFence = fenceTracker()
+	return body.split('\n').filter((line) => !inFence(line) && headingPattern.exec(line)?.[1] === '#')
 }
 
 export type SectionOp = 'replace' | 'combine' | 'remove'

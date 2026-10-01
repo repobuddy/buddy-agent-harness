@@ -1,13 +1,15 @@
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join, relative } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { deprecatedManagedGovernancesDir, managedGovernancesDir } from '../governance-overrides/governance-overrides.ts'
 import {
+	type ReferenceCreateReport,
 	type ReferenceListReport,
 	type ReferenceSearchReport,
 	type ReferenceShowEntry,
 	type ReferenceWhereReport,
+	referenceCreateCommand,
 	referenceListCommand,
 	referenceSearchCommand,
 	referenceShowCommand,
@@ -77,6 +79,7 @@ type ShowArgs = { root?: string; format?: string; trace?: boolean }
 type ListArgs = { root?: string; format?: string }
 type SearchArgs = { root?: string; format?: string }
 type WhereArgs = { root?: string; caller?: string; format?: string }
+type CreateArgs = { root?: string; template?: string; scope?: string; 'dry-run'?: boolean; format?: string }
 
 function show(names: string[], args: ShowArgs = {}): Promise<number> {
 	return (referenceShowCommand as unknown as { run(value: ShowArgs & { names: string[] }): Promise<number> }).run({
@@ -101,6 +104,15 @@ function search(query: string, args: SearchArgs = {}): Promise<number> {
 function where(name: string, args: WhereArgs = {}): Promise<number> {
 	return (referenceWhereCommand as unknown as { run(value: WhereArgs & { name: string }): Promise<number> }).run({
 		format: 'json',
+		name,
+		...args,
+	})
+}
+
+function create(name: string, args: CreateArgs = {}): Promise<number> {
+	return (referenceCreateCommand as unknown as { run(value: CreateArgs & { name: string }): Promise<number> }).run({
+		format: 'text',
+		scope: 'project',
 		name,
 		...args,
 	})
@@ -1243,5 +1255,308 @@ describe('where', () => {
 
 		expect(await where('name')).toBe(1)
 		expect(stderrLines()).toContain('error: Reference placement lookup failed.\n')
+	})
+})
+
+// ── create ──
+
+describe('create', () => {
+	/** A template file outside every layer, so reading it never changes what resolves. */
+	function template(content: string): string {
+		return write(tempDir('reference-template-'), 'template.md', content)
+	}
+
+	function report(): ReferenceCreateReport {
+		return JSON.parse(written()) as ReferenceCreateReport
+	}
+
+	it('writes a project reference from the default template, with no title and top-level sections', async () => {
+		const root = repo()
+
+		expect(await create('onboarding', { root })).toBe(0)
+		const target = join(root, '.agents/references/onboarding.md')
+		const content = readFileSync(target, 'utf8')
+		const [, frontmatter = '', body = ''] = /^---\n([\s\S]*?)\n---\n([\s\S]*)$/.exec(content) ?? []
+		expect(frontmatter).toMatch(/^description: /m)
+		expect(frontmatter).toMatch(/^tags: /m)
+		expect(frontmatter).not.toMatch(/^merge:/m)
+		expect(body).toMatch(/^## /m)
+		expect(body).not.toMatch(/^# /m)
+		expect(stderrLines()).toEqual([])
+	})
+
+	it('writes the user tier file with --scope user', async () => {
+		const root = repo()
+
+		expect(await create('onboarding', { root, scope: 'user' })).toBe(0)
+		expect(existsSync(join(fakeHome.value, '.agents/references/onboarding.md'))).toBe(true)
+		expect(existsSync(join(root, '.agents'))).toBe(false)
+	})
+
+	it('copies a template verbatim, frontmatter included', async () => {
+		const root = repo()
+		const source =
+			'---\ndescription: Payments terms.\ntags: [payments]\nowner: finance\n---\n\n## Terms\n\nA\n\n## Rules\n\nB\n'
+
+		expect(await create('payments.glossary', { root, template: template(source) })).toBe(0)
+		expect(readFileSync(join(root, '.agents/references/payments.glossary.md'), 'utf8')).toBe(source)
+	})
+
+	it('marks the new file merge-sections when a lower layer holds the name', async () => {
+		const root = repo()
+		declareDependency(root, 'ledgerkit')
+		installDependency(root, 'ledgerkit', { 'ledgerkit.glossary': '## Terms\n\nplugin\n' })
+		const source = '---\ndescription: Our terms.\n---\n\n## Terms\n\nours\n'
+
+		expect(await create('ledgerkit.glossary', { root, template: template(source) })).toBe(0)
+		const content = readFileSync(join(root, '.agents/references/ledgerkit.glossary.md'), 'utf8')
+		expect(content).toMatch(/^merge: merge-sections$/m)
+		expect(content.replace('merge: merge-sections\n', '')).toBe(source)
+	})
+
+	it('counts a farther folder of the walk as a layer below', async () => {
+		const workspace = repo()
+		markRoot(workspace)
+		const root = join(workspace, 'packages', 'app')
+		mkdirSync(root, { recursive: true })
+		write(workspace, '.agents/references/release-notes.md', '## Format\n\nworkspace\n')
+
+		expect(
+			await create('release-notes', { root, template: template('---\ndescription: Notes.\n---\n## Format\n') }),
+		).toBe(0)
+		expect(readFileSync(join(root, '.agents/references/release-notes.md'), 'utf8')).toMatch(/^merge: merge-sections$/m)
+	})
+
+	it('puts merge-sections in a frontmatter block of its own when the template has none', async () => {
+		const root = repo()
+		write(fakeHome.value, '.agents/references/release-notes.md', '## Format\n\nuser\n')
+		const source = '## Format\n\nproject\n'
+
+		expect(await create('release-notes', { root, template: template(source) })).toBe(0)
+		expect(readFileSync(join(root, '.agents/references/release-notes.md'), 'utf8')).toBe(
+			`---\nmerge: merge-sections\n---\n\n${source}`,
+		)
+	})
+
+	it('adds merge-sections to empty frontmatter, and keeps its line endings', async () => {
+		const root = repo()
+		write(fakeHome.value, '.agents/references/release-notes.md', '## Format\n\nuser\n')
+		const source = '---\r\n\r\n---\r\n## Format\r\n'
+
+		expect(await create('release-notes', { root, template: template(source) })).toBe(0)
+		expect(readFileSync(join(root, '.agents/references/release-notes.md'), 'utf8')).toBe(
+			'---\r\n\r\nmerge: merge-sections\r\n---\r\n## Format\r\n',
+		)
+	})
+
+	it("keeps the template's own merge value", async () => {
+		const root = repo()
+		write(fakeHome.value, '.agents/references/release-notes.md', '## Format\n\nuser\n')
+		const source = '---\ndescription: Notes.\nmerge: first-wins\n---\n## Format\n'
+
+		expect(await create('release-notes', { root, template: template(source) })).toBe(0)
+		expect(readFileSync(join(root, '.agents/references/release-notes.md'), 'utf8')).toBe(source)
+	})
+
+	it('warns on a heading with one hash and still writes', async () => {
+		const root = repo()
+		const source = '---\ndescription: Payments.\n---\n# Payments\n\n## Terms\n'
+
+		expect(await create('payments', { root, template: template(source) })).toBe(0)
+		expect(stderrLines().some((line) => line.startsWith('warning: ') && line.includes('# Payments'))).toBe(true)
+		expect(existsSync(join(root, '.agents/references/payments.md'))).toBe(true)
+	})
+
+	it('does not warn on a one-hash line inside a code fence', async () => {
+		const root = repo()
+		const source = '---\ndescription: Shell.\n---\n## Usage\n\n```sh\n# a comment\n```\n'
+
+		expect(await create('shell', { root, template: template(source) })).toBe(0)
+		expect(stderrLines()).toEqual([])
+		expect(existsSync(join(root, '.agents/references/shell.md'))).toBe(true)
+	})
+
+	it('warns on a missing description and still writes', async () => {
+		const root = repo()
+
+		expect(await create('bare', { root, template: template('## Only\n') })).toBe(0)
+		expect(stderrLines().some((line) => line.startsWith('warning: ') && line.includes('description'))).toBe(true)
+		expect(existsSync(join(root, '.agents/references/bare.md'))).toBe(true)
+	})
+
+	it('prints the target path and the exact content on --dry-run and writes nothing', async () => {
+		const root = repo()
+		write(fakeHome.value, '.agents/references/release-notes.md', '## Format\n\nuser\n')
+		const path = template('---\ndescription: Notes.\n---\n## Format\n')
+		const target = join(root, '.agents/references/release-notes.md')
+
+		expect(await create('release-notes', { root, template: path, 'dry-run': true })).toBe(0)
+		const [first, blank, ...rest] = written().split('\n')
+		expect(first).toBe(target)
+		expect(blank).toBe('')
+		expect(existsSync(target)).toBe(false)
+		const shown = rest.join('\n')
+
+		stdout.mockClear()
+		expect(await create('release-notes', { root, template: path })).toBe(0)
+		expect(shown).toBe(readFileSync(target, 'utf8'))
+		expect(shown).toContain('merge: merge-sections')
+	})
+
+	it('reports the path, content, warnings, and a trace with the new file used', async () => {
+		const root = repo()
+		const user = write(fakeHome.value, '.agents/references/release-notes.md', '## Format\n\nuser\n')
+		const source = '---\ndescription: Notes.\n---\n# Notes\n\n## Format\n'
+		const target = join(root, '.agents/references/release-notes.md')
+
+		expect(await create('release-notes', { root, template: template(source), format: 'json' })).toBe(0)
+		const created = report()
+		expect(created).toMatchObject({
+			name: 'release-notes',
+			scope: 'project',
+			path: target,
+			dryRun: false,
+			content: readFileSync(target, 'utf8'),
+		})
+		expect(created.warnings).toEqual([expect.stringContaining('# Notes')])
+		expect(created.trace?.find((step) => step.path === target)).toMatchObject({ found: true, outcome: 'used' })
+		expect(created.trace?.find((step) => step.path === `~${user.slice(fakeHome.value.length)}`)).toMatchObject({
+			outcome: 'used',
+		})
+		expect(stderrLines()).toEqual([])
+	})
+
+	it('reports a dry run as JSON without a trace', async () => {
+		const root = repo()
+
+		expect(await create('onboarding', { root, 'dry-run': true, format: 'json' })).toBe(0)
+		expect(report()).toMatchObject({ dryRun: true, warnings: [] })
+		expect(report().trace).toBeUndefined()
+	})
+
+	it('writes the path and then the trace in text, with home collapsed', async () => {
+		const root = repo()
+
+		expect(await create('onboarding', { root, scope: 'user' })).toBe(0)
+		const [first, ...rest] = written().split('\n')
+		expect(first).toBe('~/.agents/references/onboarding.md')
+		const traceLine = rest.find((line) => line.includes('~/.agents/references/onboarding.md'))
+		expect(rest.some((line) => line.startsWith('trace'))).toBe(true)
+		expect(traceLine).toContain('used')
+	})
+
+	it('refuses an existing target, naming Update, with or without --dry-run', async () => {
+		const root = repo()
+		const existing = write(root, '.agents/references/onboarding.md', 'mine\n')
+
+		for (const dryRun of [false, true]) {
+			stdout.mockClear()
+			stderr.mockClear()
+			expect(await create('onboarding', { root, 'dry-run': dryRun })).toBe(1)
+			expect(stderrLines().some((line) => line.startsWith('error: ') && line.includes('Update'))).toBe(true)
+			expect(stdout).not.toHaveBeenCalled()
+		}
+		expect(readFileSync(existing, 'utf8')).toBe('mine\n')
+	})
+
+	it('refuses a folder-form copy of the name in the target folder', async () => {
+		const root = repo()
+		write(root, '.agents/references/onboarding/README.md', 'mine\n')
+
+		expect(await create('onboarding', { root })).toBe(1)
+		expect(existsSync(join(root, '.agents/references/onboarding.md'))).toBe(false)
+	})
+
+	it('refuses when a copy above would shadow the new file', async () => {
+		const root = repo()
+		write(root, '.agents/references/onboarding.md', '## A\n')
+
+		expect(await create('onboarding', { root, scope: 'user' })).toBe(1)
+		expect(stderrLines().some((line) => line.startsWith('error: ') && line.includes('project'))).toBe(true)
+		expect(existsSync(join(fakeHome.value, '.agents'))).toBe(false)
+	})
+
+	it('writes under a copy above that merges', async () => {
+		const root = repo()
+		write(root, '.agents/references/onboarding.md', '---\nmerge: merge-sections\n---\n## A\n')
+
+		expect(await create('onboarding', { root, scope: 'user', format: 'json' })).toBe(0)
+		const target = join(fakeHome.value, '.agents/references/onboarding.md')
+		expect(existsSync(target)).toBe(true)
+		expect(report().trace?.find((step) => step.path === '~/.agents/references/onboarding.md')?.outcome).toBe('used')
+	})
+
+	it('refuses a missing or unreadable template', async () => {
+		const root = repo()
+		const missing = join(tempDir('reference-template-'), 'nope.md')
+		const folder = tempDir('reference-template-')
+
+		for (const path of [missing, folder]) {
+			stderr.mockClear()
+			expect(await create('onboarding', { root, template: path })).toBe(1)
+			expect(stderrLines().some((line) => line.startsWith('error: ') && line.includes(path))).toBe(true)
+		}
+		expect(existsSync(join(root, '.agents'))).toBe(false)
+	})
+
+	it('refuses a template whose frontmatter is not a YAML mapping', async () => {
+		const root = repo()
+
+		expect(await create('onboarding', { root, template: template('---\n- a\n- b\n---\n## A\n') })).toBe(1)
+		expect(stderrLines().some((line) => line.includes('not a YAML mapping'))).toBe(true)
+		expect(existsSync(join(root, '.agents'))).toBe(false)
+	})
+
+	it('refuses a create name that is a path', async () => {
+		const root = repo()
+
+		for (const name of ['../onboarding', 'onboarding.md']) {
+			expect(await create(name, { root })).toBe(1)
+		}
+		expect(existsSync(join(root, '.agents'))).toBe(false)
+	})
+
+	it('refuses a plugin-qualified name', async () => {
+		const root = repo()
+
+		expect(await create('ledgerkit/glossary', { root })).toBe(1)
+		expect(stderrLines().some((line) => line.includes('bare name'))).toBe(true)
+		expect(existsSync(join(root, '.agents'))).toBe(false)
+	})
+
+	it('refuses a scope other than project or user', async () => {
+		const root = repo()
+
+		for (const scope of ['plugin', 'managed']) {
+			stderr.mockClear()
+			expect(await create('onboarding', { root, scope })).toBe(1)
+			expect(stderrLines().some((line) => line.includes('project') && line.includes('user'))).toBe(true)
+		}
+		expect(existsSync(join(root, '.agents'))).toBe(false)
+	})
+
+	it('rejects an unsupported output format on create', async () => {
+		const root = repo()
+
+		expect(await create('onboarding', { root, format: 'yaml' })).toBe(1)
+		expect(stdout).not.toHaveBeenCalled()
+		expect(existsSync(join(root, '.agents'))).toBe(false)
+	})
+
+	it('refuses when the target folder cannot be created', async () => {
+		const root = repo()
+		write(root, '.agents/references', 'a file\n')
+
+		expect(await create('onboarding', { root })).toBe(1)
+		expect(stderrLines().some((line) => line.startsWith('error: '))).toBe(true)
+	})
+
+	it('reports a failure it cannot read a message from, and resolves --root against the working directory', async () => {
+		expect(await create('never-created', { 'dry-run': true })).toBe(0)
+		stdout.mockClear()
+		failure.value = 'unavailable'
+
+		expect(await create('never-created', { 'dry-run': true })).toBe(1)
+		expect(stderrLines()).toContain('error: Reference creation failed.\n')
 	})
 })
