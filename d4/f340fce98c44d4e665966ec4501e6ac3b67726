@@ -1,0 +1,36 @@
+packages/buddy-agent-harness/src/governance-overrides/governance.command.ts
+  s_798c17b0d850f6::t_82f79cd6305244 15,26,150
+.changeset/library-governance-docs.md
+  s_798c17b0d850f6::t_767f21d0084b53 1-5
+apps/web/public/llms.txt
+  s_798c17b0d850f6::t_58203f70282eb1 89-90
+packages/buddy-agent-harness/scripts/generate-llms-txt.ts
+  s_798c17b0d850f6::t_767f21d0084b53 67-68
+apps/web/src/content/docs/library/governance.md
+  s_798c17b0d850f6::t_e4fce8b00661a8 1-191,193-261
+  s_798c17b0d850f6::t_767f21d0084b53 192
+packages/buddy-agent-harness/llms.txt
+  s_798c17b0d850f6::t_58203f70282eb1 89-90
+packages/buddy-agent-harness/src/governance-overrides/governance-overrides.ts
+  s_798c17b0d850f6::t_82f79cd6305244 8-9,13,16-20,23-27,30,39,49-50,80,94-95,106-107,139-143,153-157
+apps/web/src/content/docs/library/index.md
+  s_798c17b0d850f6::t_767f21d0084b53 25
+apps/web/astro.config.mjs
+  s_798c17b0d850f6::t_767f21d0084b53 119
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "d4f340fce98c44d4e665966ec4501e6ac3b67726",
+  "prompts": {},
+  "sessions": {
+    "s_798c17b0d850f6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "bc490c6e-00eb-4cef-9f9e-a33c68c27e03",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "unional <homawong@gmail.com>"
+    }
+  }
+}
