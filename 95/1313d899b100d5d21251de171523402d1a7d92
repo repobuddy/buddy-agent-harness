@@ -1,0 +1,27 @@
+.changeset/enhance-session-scope.md
+  s_4fc1cb31c9f993::t_af3ecc34be8134 1-7
+apps/web/src/content/docs/skills/enhance.md
+  s_4fc1cb31c9f993::t_46da37336b5c70 42,231-250
+packages/buddy-agent-harness/skills/enhance/SKILL.md
+  s_4fc1cb31c9f993::t_4fdda5fa7fb5ce 15,100,124
+packages/buddy-agent-harness/skills/enhance/references/session-scope.history.md
+  s_4fc1cb31c9f993::t_c8726eadc940f3 1-9
+packages/buddy-agent-harness/skills/enhance/references/session-scope.md
+  s_4fc1cb31c9f993::t_cd2cb687ff1bb5 1-75
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "951313d899b100d5d21251de171523402d1a7d92",
+  "prompts": {},
+  "sessions": {
+    "s_4fc1cb31c9f993": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "ec28e99b-06ae-42f0-916f-322b549ee27b",
+        "model": "unknown"
+      },
+      "human_author": "unional <homawong@gmail.com>"
+    }
+  }
+}
