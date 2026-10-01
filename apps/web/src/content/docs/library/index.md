@@ -24,5 +24,6 @@ import type { InitializeOptions, InitializeResult } from 'buddy-agent-harness'
 | [Init and run](/library/init/) | `run`, the CLI entry point, and `initializeHarnesses` with the `init` command objects |
 | [References](/library/references/) | `referenceLayers`, `resolveReference`, `listReferences`, `searchReferences`, and `referenceCommand`: reading reference documents through the layered tiers |
 | [MCP and the harness registry](/library/mcp/) | `harnessRegistry`, the MCP server inventory `listMcpServers`, the golden-set check `diagnoseMcp`, and the shared MCP server model |
+| [Governance (deprecated)](/library/governance/) | The deprecated governance override layers, `resolveGovernance`, `listGovernances`, and `governanceCommand`, with the `reference` export that replaces each |
 
-More pages are planned: `library/doctor` for the bridge and instruction diagnostics, and a page for governance resolution.
+One more page is planned: `library/doctor` for the bridge and instruction diagnostics.

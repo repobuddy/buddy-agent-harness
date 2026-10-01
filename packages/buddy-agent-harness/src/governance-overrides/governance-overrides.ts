@@ -5,17 +5,29 @@ import { fileURLToPath } from 'node:url'
 /**
  * Order here is search order. `package` is the only member that isn't an override —
  * `--overrides-only` promises never to return it.
+ *
+ * @deprecated Use `ReferenceTier`. Removed in the next major version.
  */
 export type GovernanceScope = 'project' | 'user' | 'managed' | 'managed-deprecated' | 'package'
 
+/** @deprecated Use `ReferenceLayer`. Removed in the next major version. */
 export type GovernanceLayer = { scope: GovernanceScope; dir: string }
 
-/** A governance located but not read: what `list` reports. */
+/**
+ * A governance located but not read: what `list` reports.
+ *
+ * @deprecated Use `ReferenceRow`. Removed in the next major version.
+ */
 export type GovernanceEntry = { name: string; scope: GovernanceScope; path: string }
 
-/** A governance located and read: what `show` reports. */
+/**
+ * A governance located and read: what `show` reports.
+ *
+ * @deprecated Use `ResolvedReference`. Removed in the next major version.
+ */
 export type GovernanceDocument = GovernanceEntry & { content: string }
 
+/** @deprecated Use `ReferenceLayerOptions`. Removed in the next major version. */
 export type LayerOptions = {
 	root: string
 	home: string
@@ -24,6 +36,7 @@ export type LayerOptions = {
 	programData?: string | undefined
 }
 
+/** @deprecated Use `managedReferencesDir`. Removed in the next major version. */
 export function managedGovernancesDir(platform: NodeJS.Platform, programData?: string | undefined): string {
 	if (platform === 'darwin') return '/Library/Application Support/BuddyAgentHarness/governances'
 	if (platform === 'win32') return join(programData || 'C:\\ProgramData', 'BuddyAgentHarness', 'governances')
@@ -33,6 +46,8 @@ export function managedGovernancesDir(platform: NodeJS.Platform, programData?: s
 /**
  * Still read below the layer above, so a machine already using it keeps working; reported as
  * deprecated so an admin knows to move it.
+ *
+ * @deprecated Use `managedReferencesDir`. Removed in the next major version.
  */
 export function deprecatedManagedGovernancesDir(platform: NodeJS.Platform, programData?: string | undefined): string {
 	if (platform === 'darwin') return '/Library/Application Support/UniPlugin/governances'
@@ -62,6 +77,7 @@ export function packageGovernancesDir(from: string = fileURLToPath(import.meta.u
 	}
 }
 
+/** @deprecated Use `referenceLayers`. Removed in the next major version. */
 export function governanceLayers({ root, home, platform, programData }: LayerOptions): GovernanceLayer[] {
 	return [
 		{ scope: 'project', dir: projectGovernancesDir(root) },
@@ -75,6 +91,8 @@ export function governanceLayers({ root, home, platform, programData }: LayerOpt
 /**
  * Filters by scope rather than slicing the list, so a layer added later can't quietly become an
  * override by position.
+ *
+ * @deprecated Use `referenceLayers`. Removed in the next major version.
  */
 export function overrideLayers(layers: readonly GovernanceLayer[]): GovernanceLayer[] {
 	return layers.filter((layer) => layer.scope !== 'package')
@@ -85,6 +103,8 @@ const namePattern = /^[a-z0-9]+(?:[-.][a-z0-9]+)*$/i
 /**
  * Rejects rather than sanitizes — silently answering a different question is how untrusted input
  * reads a file outside the layer.
+ *
+ * @deprecated Use `parseReferenceName`. Removed in the next major version.
  */
 export function parseGovernanceName(value: string): string {
 	// Caught before the pattern, which would accept it and then look for `<name>.md.md`.
@@ -116,7 +136,11 @@ function documentNames(dir: string): string[] {
 	}
 }
 
-/** The first layer that holds the name wins; the rest are not read. */
+/**
+ * The first layer that holds the name wins; the rest are not read.
+ *
+ * @deprecated Use `resolveReference`. Removed in the next major version.
+ */
 export function resolveGovernance(name: string, layers: readonly GovernanceLayer[]): GovernanceDocument | undefined {
 	for (const { scope, dir } of layers) {
 		const path = join(dir, `${name}.md`)
@@ -126,7 +150,11 @@ export function resolveGovernance(name: string, layers: readonly GovernanceLayer
 	return undefined
 }
 
-/** Every name any layer holds, each reported at the layer that would win, sorted by name. */
+/**
+ * Every name any layer holds, each reported at the layer that would win, sorted by name.
+ *
+ * @deprecated Use `listReferences`. Removed in the next major version.
+ */
 export function listGovernances(layers: readonly GovernanceLayer[]): GovernanceEntry[] {
 	const found = new Map<string, GovernanceEntry>()
 	for (const { scope, dir } of layers) {
