@@ -10,6 +10,7 @@ packages/buddy-agent-harness/scripts/generate-llms-txt.ts
   s_798c17b0d850f6::t_767f21d0084b53 67-68
 apps/web/src/content/docs/library/index.md
   s_798c17b0d850f6::t_767f21d0084b53 27
+  s_798c17b0d850f6::t_f4a752140266b6 29
 .changeset/library-governance-docs.md
   s_798c17b0d850f6::t_767f21d0084b53 1-5
 packages/buddy-agent-harness/src/governance-overrides/governance-overrides.ts
