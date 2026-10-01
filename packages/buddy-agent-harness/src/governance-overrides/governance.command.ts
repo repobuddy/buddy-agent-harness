@@ -12,6 +12,7 @@ import {
 	resolveGovernance,
 } from './governance-overrides.ts'
 
+/** @deprecated Use `ReferenceListReport`. Removed in the next major version. */
 export type GovernanceListReport = {
 	/**
 	 * `status` is always a string, not optional — an optional key would drop this array out of
@@ -22,6 +23,7 @@ export type GovernanceListReport = {
 	governances: { name: string; scope: GovernanceScope; path: string }[] | string
 }
 
+/** @deprecated Use `ReferenceShowEntry`. Removed in the next major version. */
 export type GovernanceShowReport = {
 	name: string
 	scope: GovernanceScope
@@ -145,6 +147,7 @@ export const governanceShowCommand: cli.Command = command({
 	},
 })
 
+/** @deprecated Use `referenceCommand`. Removed in the next major version. */
 export const governanceCommand: cli.Command = command({
 	name: 'governance',
 	description:
