@@ -1,0 +1,31 @@
+apps/web/src/content/docs/library/index.md
+  s_8cea69daeca45d::t_ce2763145b85e8 27
+packages/buddy-agent-harness/scripts/generate-llms-txt.ts
+  s_8cea69daeca45d::t_ce2763145b85e8 58-62
+apps/web/public/llms.txt
+  s_8cea69daeca45d::t_ae323eef350e67 80-84
+apps/web/src/content/docs/library/doctor.md
+  s_8cea69daeca45d::t_e6a6bccaf37a3b 1-119,121-164,166-271
+packages/buddy-agent-harness/llms.txt
+  s_8cea69daeca45d::t_ae323eef350e67 80-84
+.changeset/library-doctor-docs.md
+  s_8cea69daeca45d::t_474ca0df64af91 1-5
+apps/web/astro.config.mjs
+  s_8cea69daeca45d::t_ce2763145b85e8 121
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "2a29a7762eceb400c95076bb617c7e3c90e5ccb8",
+  "prompts": {},
+  "sessions": {
+    "s_8cea69daeca45d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c28c2878-1616-4253-8877-4d40092bd213",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "unional <homawong@gmail.com>"
+    }
+  }
+}
