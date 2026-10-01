@@ -5,6 +5,7 @@ packages/buddy-agent-harness/llms.txt
 apps/web/astro.config.mjs
   s_50a0933a7bada5::t_dc11eec5541d98 115,121
   s_50a0933a7bada5::t_ad2e2bf9cf55ad 114
+  s_50a0933a7bada5::t_6bcb04fca657d7 119
 apps/web/src/content/docs/library/references.md
   s_50a0933a7bada5::t_dc11eec5541d98 42
   s_50a0933a7bada5::t_bc84a00b55fa5a 79
@@ -13,6 +14,8 @@ packages/buddy-agent-harness/scripts/generate-llms-txt.ts
   s_50a0933a7bada5::t_dc11eec5541d98 75-79,94
 apps/web/public/llms.txt
   s_50a0933a7bada5::t_4fca01780e9fd1 97-101
+apps/web/src/content/docs/library/index.md
+  s_50a0933a7bada5::t_6bcb04fca657d7 25,27
 ---
 {
   "schema_version": "authorship/3.0.0",
