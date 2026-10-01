@@ -117,6 +117,7 @@ export default defineConfig({
 						{ label: 'Overview', slug: 'library' },
 						{ label: 'init and run', slug: 'library/init' },
 						{ label: 'references', slug: 'library/references' },
+						{ label: 'MCP and the harness registry', slug: 'library/mcp' },
 					],
 				},
 				{
