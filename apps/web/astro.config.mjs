@@ -116,6 +116,7 @@ export default defineConfig({
 					items: [
 						{ label: 'Overview', slug: 'library' },
 						{ label: 'init and run', slug: 'library/init' },
+						{ label: 'references', slug: 'library/references' },
 					],
 				},
 				{

@@ -72,11 +72,11 @@ const libraryPages: Record<string, string | null> = {
 	'./initialize-harnesses/init.command.ts': 'library/init',
 	'./initialize-harnesses/initialize-harnesses.ts': 'library/init',
 	'./mcp-inventory/mcp-inventory.ts': null,
-	'./references/reference.command.ts': null,
-	'./references/reference-catalog.ts': null,
-	'./references/reference-document.ts': null,
-	'./references/reference-layers.ts': null,
-	'./references/resolve-reference.ts': null,
+	'./references/reference.command.ts': 'library/references',
+	'./references/reference-catalog.ts': 'library/references',
+	'./references/reference-document.ts': 'library/references',
+	'./references/reference-layers.ts': 'library/references',
+	'./references/resolve-reference.ts': 'library/references',
 }
 
 /**
