@@ -1,0 +1,33 @@
+packages/buddy-agent-harness/llms.txt
+  s_50a0933a7bada5::t_4fca01780e9fd1 96-100
+.changeset/library-references-docs.md
+  s_50a0933a7bada5::t_0cb561e2a3e3a6 1-5
+apps/web/astro.config.mjs
+  s_50a0933a7bada5::t_dc11eec5541d98 115-117
+  s_50a0933a7bada5::t_ad2e2bf9cf55ad 114
+apps/web/src/content/docs/library/references.md
+  s_50a0933a7bada5::t_dc11eec5541d98 42
+  s_50a0933a7bada5::t_bc84a00b55fa5a 79
+  s_50a0933a7bada5::t_58b7f15063a8b0 1-41,43-78,80-292
+packages/buddy-agent-harness/scripts/generate-llms-txt.ts
+  s_50a0933a7bada5::t_dc11eec5541d98 74-78,93
+  s_50a0933a7bada5::t_4fca01780e9fd1 83-84
+apps/web/public/llms.txt
+  s_50a0933a7bada5::t_4fca01780e9fd1 96-100
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "fe6836e36d0b0730dc5ff2dd11ca5160eba556d8",
+  "prompts": {},
+  "sessions": {
+    "s_50a0933a7bada5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a72154eb-0750-49d1-8b74-7b8344e04f6d",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "unional <homawong@gmail.com>"
+    }
+  }
+}
