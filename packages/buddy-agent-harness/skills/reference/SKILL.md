@@ -1,6 +1,7 @@
 ---
 name: reference
 description: Use this skill when loading, writing, updating, or finding a reference — a Markdown document agents read by name.
+user-invocable: false
 ---
 
 # Reference
@@ -16,6 +17,7 @@ Route the request to one mode, then follow that mode. A **reference** is a Markd
 | change what an existing reference says, the user's own or a plugin's | [Update](#update) |
 | find a reference for a topic, or see which ones exist | [Find](#find) |
 | see a reference, or learn why a name resolved to the copy it did | [Inspect](#inspect) |
+| learn where the agent looks for a reference, or where to put a copy that overrides it | [Inspect](#inspect) |
 | make a skill load a reference | [Wire a skill](#wire-a-skill) |
 
 Ask only when the request fits two modes. Otherwise pick one; outside Load, say which.
@@ -28,7 +30,7 @@ node <this skill's folder>/scripts/reference.mjs <subcommand> ... --root <reposi
 
 `scripts/reference.mjs` is the package's `reference` command bundled into one file; it needs no `node_modules`. Pass `--root` every time, so the repository's own `.agents/references/` is read.
 
-Outside Load, when it is missing or cannot run, use `npx -y buddy-agent-harness@^0.14.0 reference` with the same arguments. Load never falls back to a package runner.
+Outside Load, when it is missing or cannot run, use `npx -y buddy-agent-harness@^0.16.0 reference` with the same arguments. Load never falls back to a package runner.
 
 ## Load
 
@@ -44,8 +46,8 @@ Load `references/create.md` from this skill's folder and follow it.
 2. Choose the folder to write: `.agents/references/` for the project, or `~/.agents/references/` for the user alone.
 3. If the `used` layer is in that folder, it is the user's own copy. Edit that file in place, then go to step 6.
 4. Otherwise, write an override above it. Run `list` and find every plugin that holds the same name. An override applies to all of them, not only the one the user meant. If a second plugin holds it, tell the user before you write anything.
-5. Write `<name>.md` in the chosen folder. Use `merge: merge-sections` in the frontmatter when the user changes some sections and keeps the rest. With the default, `first-wins`, the override replaces the whole document.
-6. Run `show <name> --trace` again. The written file must be `used`, and every layer it replaces must be `shadowed`.
+5. Start the override with `create <name> --dry-run`, adding `--scope user` for the user's folder. Pass `--template <path>` with a file that holds only the sections the user changes, each under the heading path it has in the copy below, or the calling skill's template. `create` marks it `merge: merge-sections`, so the sections it does not redefine are kept. Show the user the path and content, then run it without `--dry-run` on approval.
+6. Run `show <name> --trace` again. The written file must be `used`. A layer below a `merge-sections` override stays `used`; a layer below a `first-wins` one is `shadowed`.
 
 ## Find
 
@@ -56,6 +58,7 @@ Load `references/create.md` from this skill's folder and follow it.
 
 - To read a reference, run `show <name>`.
 - To learn why a name resolved to one copy, run `show <name> --trace`. Report the layer that was `used`, and each layer that was `shadowed` or `not read`, with its reason.
+- To learn where to put a copy that overrides it, run `where <name>`; when a skill loads the name, add `--caller <that skill's folder>`. Report the slots in order and which are `used`, then the project and user files the user can write, each with its scope, and the merge note. A plugin or `caller` slot is a copy an override covers; never offer it as a place to write. If the user then wants the override written, go to [Update](#update).
 
 ## Wire a skill
 
@@ -75,3 +78,5 @@ Before reporting a Create or Update done:
 - No file in an installed plugin's `references/` folder changed.
 - The file and its path were shown to the user before the write.
 - `show <name> --trace` reports the written file as `used`.
+- A created reference holds no heading with a single `#`.
+- Every `##` heading of a `merge-sections` override matches a heading path in the copy below it. `show <name> --trace` warns when one does not.

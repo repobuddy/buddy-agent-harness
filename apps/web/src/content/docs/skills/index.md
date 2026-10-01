@@ -27,15 +27,16 @@ In Claude Code, add the [cyberplace](https://github.com/cyberuni/cyberplace) mar
 /plugin install buddy-agent-harness@cyberplace
 ```
 
-All five you can run yourself:
+Four you can run yourself:
 
 ```text
 /buddy-agent-harness:init-buddy-agent-harness
 /buddy-agent-harness:doctor-buddy-agent-harness
 /buddy-agent-harness:enhance
 /buddy-agent-harness:repair
-/buddy-agent-harness:reference
 ```
+
+The fifth, [`reference`](/skills/reference/), is not in the slash-command menu. Ask in words, such as "where do I put my own copy of `plugin-design`?", and the agent loads it.
 
 ## The commands behind them
 

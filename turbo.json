@@ -9,6 +9,7 @@
 		"test:dist": { "dependsOn": ["build"] },
 		"typecheck": { "dependsOn": ["^build"] },
 		"skill:gen:check": { "dependsOn": ["build"], "cache": false },
+		"llms:gen:check": { "dependsOn": ["build"], "cache": false },
 		"pack:check": { "dependsOn": ["build"], "cache": false },
 		"verify": {
 			"dependsOn": [
@@ -19,6 +20,7 @@
 				"coverage",
 				"test:dist",
 				"skill:gen:check",
+				"llms:gen:check",
 				"pack:check"
 			]
 		}

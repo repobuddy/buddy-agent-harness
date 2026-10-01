@@ -369,6 +369,221 @@ Feature: Read references by name through layered tiers
     When the command searches for it
     Then the result states that zero matched, and the command exits 0
 
+  # ── where ──
+
+  @behavior
+  Scenario: lists the project and user slots, in precedence order, marking used and shadowed
+    Given one name held by a project and a user layer
+    When the command reports where `name` can live
+    Then the slots are the project slot, then the user slot
+    And the project slot is used with its path relative to the root, and the user slot is shadowed
+    And the report states the merge rule
+
+  @behavior
+  Scenario: shows a plugin only while it ships the name, and leaves out the managed tier
+    Given a plugin that ships `name` and a plugin that does not
+    When the command reports where `name` can live
+    Then the slots are the project slot, the user slot, and the shipping plugin's slot marked used
+    And no managed slot is listed
+
+  @behavior
+  Scenario: names the file in an empty slot and leaves out superseded layers
+    Given a repository whose reference folders are all empty
+    When the command reports where `name` can live
+    Then each empty slot's path is the layer folder with `name.md`, and the command exits 0
+    And no superseded layer that holds no copy is listed
+
+  @behavior
+  Scenario: follows each copy's merge metadata: a merging override leaves the copy below it used
+    Given a project copy with `merge: merge-sections`, a user copy, and a plugin copy of `name`
+    When the command reports where `name` can live
+    Then the project and user slots are used and the plugin slot is shadowed
+
+  @behavior
+  Scenario: reports the caller's copy as Load reads it: used only when no layer holds the name
+    Given a caller skill folder with its own copy of a name, under `references/` or `references/governances/`
+    When the command reports where the name can live with `--caller`
+    Then a caller slot is listed with that copy's path
+    And it is used when no layer holds the name, and shadowed when one does
+
+  @behavior
+  Scenario: names the choices and fails for an ambiguous name
+    Given one name held by two plugins
+    When the command reports where the unqualified name can live
+    Then the report lists both `<plugin>/<name>` choices and the command exits 1
+
+  @behavior
+  Scenario: does not read the caller's copy of an ambiguous name
+    Given one name held by two plugins and by the caller's own copy
+    When the command reports where it can live with `--caller`
+    Then the caller slot is not read, because the name is ambiguous
+
+  # ── create ──
+
+  @behavior
+  Scenario: writes a project reference from the default template, with no title and top-level sections
+    Given a root with no `.agents` folder
+    And no layer holding a reference named `onboarding`
+    When the command creates `onboarding` with no template
+    Then `<root>/.agents/references/onboarding.md` exists and the command exits 0
+    And its frontmatter holds a `description` and a `tags` key and no `merge` key
+    And its body holds at least one `##` heading and no heading with a single `#`
+
+  @behavior
+  Scenario: writes the user tier's file with --scope user
+    Given a home folder with no `.agents` folder, and no layer holding `onboarding`
+    When the command creates `onboarding` with `--scope user`
+    Then `<home>/.agents/references/onboarding.md` exists and the command exits 0
+    And no file is written under the root's `.agents` folder
+
+  @behavior
+  Scenario: copies a template verbatim, frontmatter included
+    Given a template file whose frontmatter holds `description`, `tags`, and an `owner` key, followed by two `##` sections
+    And no layer holding `payments.glossary`
+    When the command creates `payments.glossary` with `--template` naming that file
+    Then the written file's bytes equal the template's bytes
+
+  @behavior
+  Scenario: marks the new file merge-sections when a lower layer holds the name
+    Given a declared dependency `ledgerkit` shipping `references/ledgerkit.glossary.md`
+    And a template file whose frontmatter holds a `description` and no `merge` key
+    When the command creates `ledgerkit.glossary` in the project tier with `--template` naming that file
+    Then the written frontmatter holds `merge: merge-sections`
+    And removing that one line leaves the written file's bytes equal to the template's bytes
+
+  @behavior
+  Scenario: counts a farther folder of the walk as a layer below
+    Given a root one folder below a `pnpm-workspace.yaml`, and the workspace root's `.agents/references/release-notes.md`
+    And a template file with no `merge` key
+    When the command creates `release-notes` at the root with that template
+    Then the written frontmatter holds `merge: merge-sections`
+
+  @behavior
+  Scenario: puts merge-sections in a frontmatter block of its own when the template has none
+    Given a user-tier `release-notes.md`, and a template file that starts with a `##` heading and has no frontmatter
+    When the command creates `release-notes` in the project tier with that template
+    Then the written file starts with a frontmatter block holding only `merge: merge-sections`
+    And the text after that block equals the template's bytes
+
+  @behavior
+  Scenario: keeps the template's own merge value
+    Given a user-tier `release-notes.md`, and a template file whose frontmatter sets `merge: first-wins`
+    When the command creates `release-notes` in the project tier with that template
+    Then the written file's bytes equal the template's bytes
+
+  @behavior
+  Scenario: warns on a heading with one hash and still writes
+    Given a template file with a `description` and a `# Payments` heading above its `##` sections
+    When the command creates a new name with that template
+    Then stderr carries a warning naming the heading with one hash
+    And the file is written and the command exits 0
+
+  @behavior
+  Scenario: does not warn on a one-hash line inside a code fence
+    Given a template file with a `description` whose only line starting with one hash sits inside a fenced code block
+    When the command creates a new name with that template
+    Then stderr carries no warning about a heading
+    And the file is written and the command exits 0
+
+  @behavior
+  Scenario: warns on a missing description and still writes
+    Given a template file with no frontmatter and one `##` section
+    When the command creates a new name with that template
+    Then stderr carries a warning that the reference has no `description`
+    And the file is written and the command exits 0
+
+  @behavior
+  Scenario: prints the target path and the exact content on --dry-run and writes nothing
+    Given a user-tier `release-notes.md`, and a template file with no `merge` key
+    When the command creates `release-notes` in the project tier with that template and `--dry-run`
+    Then stdout's first line is the target path `.agents/references/release-notes.md` under the root
+    And the text after the following blank line equals what the same command without `--dry-run` writes, `merge: merge-sections` included
+    And no file exists at the target and the command exits 0
+
+  @behavior
+  Scenario: reports the path, content, warnings, and a trace with the new file used
+    Given a user-tier `release-notes.md`, and a template file with a `description` and a `# Notes` heading
+    When the command creates `release-notes` in the project tier as JSON
+    Then the output is one object holding `name`, `scope`, `path`, `dryRun` false, `content`, `warnings`, and `trace`
+    And `warnings` holds the heading warning
+    And the trace step for the written file is found and `used`, and the user tier's step is `used` beneath it
+
+  @behavior
+  Scenario: writes the path and then the trace in text
+    Given no layer holding `onboarding`
+    When the command creates `onboarding`
+    Then stdout's first line is the written file's path
+    And the lines after it are the trace, whose step for that path is `used`
+
+  @behavior
+  Scenario: refuses an existing target, naming Update
+    Given `<root>/.agents/references/onboarding.md` already exists
+    When the command creates `onboarding`, with or without `--dry-run`
+    Then stderr names the `reference` skill's Update mode and the command exits 1
+    And the existing file's bytes are unchanged and nothing is written to stdout
+
+  @behavior
+  Scenario: refuses when a copy above would shadow the new file
+    Given the project's `.agents/references/onboarding.md` with no `merge` key
+    When the command creates `onboarding` with `--scope user`
+    Then stderr names the project layer that would shadow it and the command exits 1
+    And no file is written under the home folder
+
+  @behavior
+  Scenario: writes under a copy above that merges
+    Given the project's `.agents/references/onboarding.md` with `merge: merge-sections`
+    When the command creates `onboarding` with `--scope user`
+    Then `<home>/.agents/references/onboarding.md` is written and the command exits 0
+    And the trace step for the user file is `used`
+
+  @behavior
+  Scenario: refuses a missing or unreadable template
+    Given a `--template` path naming no file, or naming a folder
+    When the command creates a new name with it
+    Then stderr names the template path and the command exits 1
+    And no file is written
+
+  @behavior
+  Scenario: refuses a template whose frontmatter is not a YAML mapping
+    Given a template file whose frontmatter is a YAML list
+    When the command creates a new name with it
+    Then stderr says the frontmatter is not a YAML mapping and the command exits 1
+    And no file is written
+
+  @behavior
+  Scenario: refuses a create name that is a path
+    Given the name `../onboarding` or `onboarding.md`
+    When the command creates it
+    Then stderr gives the reason and the command exits 1
+    And no file is written
+
+  @behavior
+  Scenario: refuses a plugin-qualified name
+    Given the name `ledgerkit/glossary`
+    When the command creates it
+    Then stderr says an override is written under the bare name and the command exits 1
+    And no file is written
+
+  @behavior
+  Scenario: refuses a scope other than project or user
+    Given `--scope plugin`, or `--scope managed`
+    When the command creates a new name with it
+    Then stderr names the two accepted scopes and the command exits 1
+    And no file is written
+
+  @behavior
+  Scenario: rejects an unsupported output format on create
+    Given a command line naming a format the command does not support
+    When the command creates a new name
+    Then it writes the reason to stderr, nothing to stdout, and exits 1
+    And no file is written
+
+  @behavior
+  Scenario: refuses when the target folder cannot be created
+    Given a root whose `.agents/references` is a file
+    When the command creates a new name in the project tier
+    Then stderr gives the reason and the command exits 1
+
   # ── legacy ──
 
   @behavior

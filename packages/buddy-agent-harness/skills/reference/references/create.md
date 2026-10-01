@@ -27,7 +27,7 @@ To change a reference that already exists, use Update instead.
 
 ## 4. Write it
 
-Write the file in the folder from step 2:
+A reference is top-level `##` sections, with no `#` title, and a `description` in its frontmatter:
 
 ```md
 ---
@@ -35,14 +35,25 @@ description: One line that says what the reference covers.
 tags: [testing, fixtures]
 ---
 
-# Title
+## Fixtures
 
 Instructions only.
 ```
 
 - `description` and `tags` are what `search` matches. Always write a `description`.
+- Other frontmatter keys are allowed. `show --format json` returns them under `metadata`, merged key by key across the layers used.
+- If the user's text starts with a `#` title, drop the title and make the sections under it top-level `##` sections.
 - Write instructions an agent follows. Leave the rationale out.
-- Add `merge` only to a document that sits above another copy of the same name. Update covers this.
+
+For the project or the user, run `create`; never write the file by hand:
+
+1. Run `create <name> --dry-run`. Add `--scope user` for the user alone, and `--template <path>` when a calling skill or the user supplies the text; without it, the command writes its own template.
+2. Show the user the path and the content it printed, with any warning.
+3. On approval, run the same command without `--dry-run`. Its trace must report the new file `used`.
+
+If `create` refuses, report its reason and write nothing. An existing file means Update.
+
+For a plugin, `create` does not write into the plugin. Show the file and its path, then write it by hand on approval, under the same shape.
 
 ## 5. Connect it to a caller
 
@@ -53,4 +64,4 @@ Nothing loads a reference by itself. Tell the user where to name it:
 
 ## 6. Verify
 
-Run `show <name> --trace`. The new file must be the layer that is `used`. For a plugin reference, run the command where the plugin is installed. Otherwise, report that the plugin tier was not checked.
+Run `show <name> --trace`, unless `create`'s own trace already showed it. The new file must be the layer that is `used`. For a plugin reference, run the command where the plugin is installed. Otherwise, report that the plugin tier was not checked.

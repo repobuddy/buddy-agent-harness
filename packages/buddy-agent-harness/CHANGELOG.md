@@ -1,5 +1,30 @@
 # buddy-agent-harness
 
+## 0.16.0
+
+### Minor Changes
+
+- a0e476e: New `reference create <name>` starts a reference in the project tier, or with `--scope user` in `~/.agents/references/`. It copies `--template <path>` as it is, or writes a built-in template of top-level `##` sections with no `#` title. When a lower layer already holds the name, it adds `merge: merge-sections` so the new file overrides section by section, unless the template sets `merge` itself. It never overwrites a file, refuses a copy above that would shadow the new one, warns on a `#` heading or a missing `description`, and `--dry-run` prints the path and content without writing. The `reference` skill's Create and Update modes now write project and user references through it.
+
+### Patch Changes
+
+- 0dc25d9: Link the `diagnoseBridges`, `diagnoseInstructions`, `buildDoctorReport`, `doctorCommand`, `bridgeRepairs`, `instructionRepairs`, `doctorRepairs`, `doctorSkill`, and `renderDoctorSkill` exports and their types in the shipped `llms.txt` to their new documentation page instead of their source.
+- 851cb51: Mark the governance library exports deprecated with a `@deprecated` tag naming each one's `reference` replacement, such as `resolveGovernance` to `resolveReference`. They keep their behavior until the next major version. The shipped `llms.txt` now links them to their new documentation page instead of their source.
+- 03756a3: Link the `run`, `initializeHarnesses`, `initCommand`, `harnessCommand`, and `activate` exports in the shipped `llms.txt` to their new documentation page instead of their source.
+- 6ace999: `llms.txt` now links the harness registry and MCP library exports — `harnessRegistry`, `listMcpServers`, `diagnoseMcp`, `goldenSetPath`, and their types — to their new docs page, Library: MCP and the harness registry, instead of to their source.
+- 67ad576: `llms.txt` links the library's reference exports — `referenceLayers`, `resolveReference`, `listReferences`, `searchReferences`, `referenceCommand`, and their types — to their new docs page, instead of to the source.
+
+## 0.15.0
+
+### Minor Changes
+
+- 37bdd5a: Add `reference where <name>`, which shows where to write an override of a reference: the project file (relative to the reported `root`) and the user file, highest precedence first, with the plugin copy they would override. `--caller <skill folder>` reports that skill's own copy as the Load mode reads it. The `reference` skill's Inspect mode runs it when asked where to put an override.
+
+### Patch Changes
+
+- 42cee2c: Ship a generated `llms.txt` in the package, also served from the docs site at `/llms.txt`: an orientation map of the CLI commands, the skills, the library exports, and the documentation pages, with absolute links to each.
+- 4d3c72d: Hide the `reference` skill from the slash-command menu with `user-invocable: false`. Agents still load it by name.
+
 ## 0.14.0
 
 ### Minor Changes

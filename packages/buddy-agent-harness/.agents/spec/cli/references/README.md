@@ -7,7 +7,8 @@ concept: command-interface
 
 ## What
 
-How a caller reads a **reference** by name, finds one it cannot name, and learns which layer answered.
+How a caller reads a **reference** by name, finds one it cannot name, learns which layer answered,
+and starts a new one in the project or user tier.
 
 A reference is a Markdown document an agent reads on demand: a style guide, a playbook, a checklist,
 a governance. It is the counterpart of a skill. A harness loads every skill's frontmatter at session
@@ -18,9 +19,17 @@ a package's — and the command combines them. The **higher layer decides how**,
 frontmatter. Nothing here compares prose: when two layers disagree, the merge mode chosen by the
 higher one settles it, and reconciling meaning is left to whoever reads the result.
 
-This node owns the tiers, the file names, the merge modes, and the three commands over them. It
-replaces `governance-overrides` as the read path; that command stays, unchanged, as a deprecated alias
-(`../governance-overrides/`).
+This node owns the tiers, the file names, the merge modes, the four commands that read them, and
+the one command that writes: `create`, which starts a new file in the project or user tier and never
+touches a file that already exists. It replaces `governance-overrides` as the read path; that command
+stays, unchanged, as a deprecated alias (`../governance-overrides/`).
+
+`create` exists because a new reference has to follow rules a person cannot see from the file alone.
+`merge-sections` matches sections by their full heading path. A document with a `#` title holds every
+other section under that title, so an override that repeats the title replaces the whole document, and
+one that leaves it out has every section appended as a duplicate. `create` writes a file without a
+title, warns when a template has one, and marks an override as `merge-sections` when a copy of the name
+already sits below it.
 
 **Key terms**
 
@@ -36,6 +45,10 @@ replaces `governance-overrides` as the read path; that command stays, unchanged,
   `merge-sections`, read from the higher document's frontmatter.
 - **section path** — a heading and the headings above it, `Testing > Fixtures`; how `merge-sections`
   matches one document's section to another's.
+- **template** — the text `create` writes: a file the caller names with `--template`, or the built-in
+  default when it names none.
+- **target** — the one file `create` writes: `<name>.md` in the project `references/` folder at
+  `--root`, or in the user's.
 
 **Non-goals**
 
@@ -49,6 +62,12 @@ replaces `governance-overrides` as the read path; that command stays, unchanged,
 - **Recording each fetch.** `show` is the single read path so a record can be added there later.
 - **Reconciling contradictory prose.** Semantic work, not the resolver's.
 - **The encoder.** `../command-output/`.
+- **Editing a reference.** `create` never changes a file that exists; changing one is the `reference`
+  skill's Update mode.
+- **Writing a plugin's or the managed tier's folder.** A plugin's references ship with the plugin, and
+  the managed tier needs an admin. `create` writes the project or user tier only.
+- **Deciding what a reference should say.** `create` writes the template it is given; the words are the
+  caller's.
 
 ## Use Cases
 
@@ -68,6 +87,13 @@ replaces `governance-overrides` as the read path; that command stays, unchanged,
 - **plugin user** — enables a plugin in their harness and expects the references it ships to answer.
 - **package author** — ships `references/` in a package so every repository depending on it can read
   them.
+- **the `reference` skill, Create and Update** — writes a new reference or starts an override for a
+  person; wants to show the exact file before it exists, then write it and see it take effect.
+- **a calling plugin** — a skill in a plugin that ships a reference and offers to let a repository
+  override it; wants the repository's copy to start as its own shipped text and merge over it section
+  by section.
+- **a later reader of the reference** — never runs `create`, but reads what the merge produces; is hurt
+  by a `#` title that makes an override replace or duplicate the document.
 
 **Goals, and where each is served**
 
@@ -87,6 +113,12 @@ replaces `governance-overrides` as the read path; that command stays, unchanged,
 | plugin user | read references from the plugins the harness has enabled | the enabled-plugin layers |
 | package author | ship references a dependent repository can read and override | the plugin tier |
 | machine owner, repository owner | keep documents written for `governance` working | the legacy `governances/` layers |
+| the `reference` skill | show the person the exact file before anything is written | `create --dry-run` |
+| the `reference` skill | write a new project or user reference and see it answer | `create` |
+| the `reference` skill | start an override that keeps the sections it does not redefine | `create`, marking it `merge-sections` |
+| a calling plugin | seed a repository's override with its own shipped text | `create --template <its reference>` |
+| person at a shell | never lose an existing reference to a new one | `create` refusing an existing target |
+| a later reader | a merged reference with no replaced or duplicated document | the default template's shape, and the `#` warning |
 
 **Entry points**
 
@@ -95,11 +127,16 @@ replaces `governance-overrides` as the read path; that command stays, unchanged,
 | `reference show <name>...` | a caller needs one or more references | names, `--root`, `--format`, `--trace` | each document, in order; exit 0 when all were found, 1 otherwise |
 | `reference list` | a caller asks what is in play and what is shadowed | `--root`, `--format` | every layer, every name at every layer that holds it with its status, exit 0 |
 | `reference search <query>` | a caller cannot name the reference | the query, `--root`, `--format` | matches ranked, one compact row each, exit 0 |
+| `reference where <name>` | a person asks where a copy of a name can live, and where to write an override | the name, `--root`, `--caller`, `--format` | the name and root, then the project, user, shipping-plugin, and caller slots in precedence order with file path, status, and scope, and the merge rule; exit 0, or 1 for an ambiguous name |
 
-**Surface.** Names (`show`), a query (`search`), `--root` and `--format` (all three), and `--trace`
-(`show` only — `list` already reports every layer's status, and `search` ranks rather than resolves).
+| `reference create <name>` | a person or skill starts a new reference or an override | the name, `--template`, `--scope`, `--root`, `--dry-run`, `--format` | the target path and the exact content with `--dry-run`, else the file written and the path with a trace showing it `used`; exit 0, or 1 when refused |
+
+**Surface.** Names (`show`), a name (`where`, `create`), a query (`search`), `--root` and `--format` (all five), `--caller` (`where` only), `--trace`
+(`show` only — `list` already reports every layer's status, `search` ranks rather than resolves, and `create` always reports its trace after a write), and `--template`, `--scope`, `--dry-run` (`create` only).
 `--root` names the directory the project tier walks up from; `--format` serves the agent that parses (`toon`, `json`) and the
-person who reads (`text`); `--trace` serves the person asking why a layer did not answer.
+person who reads (`text`); `--trace` serves the person asking why a layer did not answer. `--template` serves the calling plugin that
+seeds a copy from its own text; `--scope` serves the person choosing who the new file applies to, and takes `project` or `user` only;
+`--dry-run` serves the skill that shows the file before it is written. `--dry-run` combines with every other `create` option.
 
 ### Tiers, highest precedence first
 
@@ -216,9 +253,64 @@ at the first `first-wins` document; every layer below it is **shadowed**.
 `name`, `tier`, `plugin`, `path`, `status` (`used`, `shadowed by <tier> (first-wins)`, `ambiguous`), `description`. A healthy empty run states its zero. The legacy and
 deprecated layers carry a status saying where their documents belong.
 
+`where` answers forward where `show --trace` answers backward. It resolves the name exactly as `show`
+does, with the same `--root` the `reference` skill's Load mode passes, then reports the slots a person can act on, in precedence order: each project and user layer, each plugin
+layer that holds the name, and, with `--caller <skill folder>`, the calling skill's own copy. A slot is
+`layer` (the tier, `plugin <name>`, or `caller`), `path`, `status`, `scope`. `path` is the file that matched, or `<layer folder>/<name>.md` where the layer holds no copy; a
+project path is relative to `root`, which the report states. `status` is `used`, `shadowed`, or
+`empty`, and follows each copy's `merge` metadata: a copy under a `merge-sections` or `combine` override
+stays `used`. The caller's copy is `used` only when no layer holds the name, as Load reads it, and
+`not read` for an ambiguous name. The managed tier is left out, since writing there needs an
+admin, and so is a superseded layer that holds no copy. `merge` states the merge rule: `first-wins`
+replaces the whole document; `merge-sections` keeps the sections the override does not redefine. A missing name is
+not an error, since the slots are what the caller asked for; an ambiguous one lists the
+`<plugin>/<name>` choices and exits 1.
+
 `search` ranks: exact name, name prefix, a name close to the query, `description` or `tags`, a
 heading, the body. Each match is one row — `name`, `tier`, `match`, `description` — best first, then
 by name. No match states its zero and exits 0.
+
+### `create`
+
+`create` writes one file, or with `--dry-run` shows the one file it would write. It checks, in this
+order, and a refusal at any step writes nothing:
+
+1. **Input.** The format, the name, and the scope are checked before anything is read. A name follows
+   `show`'s rules, and a `<plugin>/<name>` is refused too: an override is written under the bare name,
+   which every tier resolves, so a qualifier could only point at a plugin's folder, which `create`
+   never writes. `--scope` is `project` (the default) or `user`; any other value is refused.
+2. **Template.** `--template <path>` is read as it is. A path with no readable file is refused.
+   Frontmatter that is present but is not a YAML mapping is refused, because `show` would drop it; a
+   template with no frontmatter at all is accepted. With no `--template`, the built-in default is used:
+   frontmatter holding a `description` and a `tags` placeholder, then one or more `##` sections, and no
+   `#` heading. Its exact wording is the implementation's.
+3. **Target.** `project` writes `<root>/.agents/references/<name>.md`, at `--root` itself — the nearest
+   folder of the monorepo walk. `user` writes `.agents/references/<name>.md` in the home folder the user
+   tier reads. A target file that already exists is refused, with an error naming the `reference`
+   skill's Update mode. `create` never overwrites and has no `--force`.
+4. **Placement.** The name is resolved through the layers exactly as `show` resolves it.
+   - A layer **above** the target that holds the name as `first-wins` would shadow the new file, so
+     nothing would ever read it. `create` is refused, naming that layer. A higher copy that is
+     `combine` or `merge-sections` does not shadow it.
+   - A layer **below** the target that holds the name — a lower tier, a farther folder of the walk, or
+     the legacy `governances/` beside the target — makes the new file an **override**. `merge:
+     merge-sections` is added to its frontmatter, unless the template sets `merge` itself, to any
+     value. The line is added inside the template's frontmatter, or as a frontmatter block of its own
+     when the template has none. Nothing else in the template changes.
+5. **Warnings.** A `#` heading outside a code fence warns, and so does a missing `description`. On
+   stderr in `text`, in `warnings` otherwise. Neither stops the write.
+6. **Write.** `--dry-run` writes nothing. Otherwise any missing folder is created and the file written.
+
+**Output contract of `create`**
+
+- **Exit code**: 0 when the file was written, or would be with `--dry-run`; 1 when refused. A refusal
+  writes its reason on stderr and nothing on stdout.
+- **`text`** (default), with `--dry-run`: the target path on the first line, a blank line, then the
+  content exactly as it would be written.
+- **`text`**, written: the target path on the first line, then the trace of the name after the write.
+- **`json` / `toon`**: one object: `name`, `scope`, `path`, `dryRun`, `content`, `warnings`, and after a
+  write `trace` — the steps `show --trace` reports, in which the target's step is found and `used`.
+- Paths are written as `show` writes them, with the home folder as `~`.
 
 **Extensions**
 
@@ -230,6 +322,18 @@ by name. No match states its zero and exits 0.
   still answer.
 - **A qualified name for an enabled plugin with no install folder.** Its `not read` layer is the one
   traced; the tiers above still answer.
+- **`create`, a target that exists.** Refused, naming Update; the file is left as it was, with or
+  without `--dry-run`.
+- **`create`, a copy above that would shadow the new file.** Refused, naming the layer.
+- **`create`, a copy below.** Written as an override, `merge-sections` unless the template says
+  otherwise.
+- **`create`, a template that is missing, unreadable, or has frontmatter that is not a mapping.**
+  Refused.
+- **`create`, a template with a `#` heading or no `description`.** Written, with a warning.
+- **`create`, a qualified name, a name that is a path, or a scope other than `project` or `user`.**
+  Refused before anything is read.
+- **`create`, a target folder that cannot be created or written.** Refused with the system's reason,
+  exit 1.
 
 ## Control Flow
 
@@ -285,6 +389,42 @@ flowchart TD
   Y2 -->|no| AB[State the zero]
   AA --> E0
   AB --> E0
+```
+
+`create` runs its own decisions, then resolves the name through the same path as `show` (D to K
+above) to place the new file against the layers, and again after the write for its trace.
+
+```mermaid
+flowchart TD
+  CA[create: parse format, name, and scope] --> CB{Supported format, a bare name, project or user?}
+  CB -->|no| CX[Reason on stderr, nothing written, exit 1]
+  CB -->|yes| CD{--template given?}
+  CD -->|no| CE[The built-in default: description and tags, top-level sections, no title]
+  CD -->|yes| CF{A readable file?}
+  CF -->|no| CX
+  CF -->|yes| CG{Frontmatter a YAML mapping, or none?}
+  CG -->|no| CX
+  CG -->|yes| CH[The template text as it is]
+  CE --> CI[Target: name.md in the project references folder at the root, or the user's]
+  CH --> CI
+  CI --> CJ{Target file exists?}
+  CJ -->|yes| CK[Refuse, naming Update; exit 1]
+  CJ -->|no| CL[Resolve the name through the layers]
+  CL --> CM{A layer above the target holds it first-wins?}
+  CM -->|yes| CN[Refuse, naming the layer that would shadow it; exit 1]
+  CM -->|no| CO{A layer below the target holds it?}
+  CO -->|no| CS
+  CO -->|yes| CP{Template sets merge?}
+  CP -->|yes| CS
+  CP -->|no| CQ[Add merge: merge-sections to the frontmatter]
+  CQ --> CS{A heading with one hash outside a fence, or no description?}
+  CS -->|yes| CT[Warn]
+  CS -->|no| CU
+  CT --> CU{--dry-run?}
+  CU -->|yes| CV[Write the target path and the content; nothing written; exit 0]
+  CU -->|no| CW{Folder created and file written?}
+  CW -->|no| CX
+  CW -->|yes| CY[Resolve again; write the path and the trace, the new file used; exit 0]
 ```
 
 ## Scenario map
@@ -372,12 +512,52 @@ flowchart TD
 | W | a name in a project and a user layer | `marks shadowed layers in the listing` |
 | X | no layer holds a reference | `states the zero when no layer holds a reference` |
 
+### `reference where`
+
+| Edge | Path (Given) | Scenario |
+| --- | --- | --- |
+| AC | a name in a project and a user layer | `lists the project and user slots, in precedence order, marking used and shadowed` |
+| AC | a name a plugin ships | `shows a plugin only while it ships the name, and leaves out the managed tier` |
+| AC | a name no layer holds | `names the file in an empty slot and leaves out superseded layers` |
+| AC | an override with `merge: merge-sections` | `follows each copy's merge metadata: a merging override leaves the copy below it used` |
+| AC | `--caller` with the caller's own copies | `reports the caller's copy as Load reads it: used only when no layer holds the name` |
+| AD | an ambiguous name | `names the choices and fails for an ambiguous name` |
+| AD | an ambiguous name with `--caller` | `does not read the caller's copy of an ambiguous name` |
+
 ### `reference search`
 
 | Edge | Path (Given) | Scenario |
 | --- | --- | --- |
 | AA | matches of every kind | `ranks exact name, prefix, close name, description, heading, then body` |
 | AB | nothing matches | `states the zero when nothing matches` |
+
+### `reference create`
+
+| Edge | Path (Given) | Scenario |
+| --- | --- | --- |
+| CD→CE, CO→no, CW→CY | no template, no copy of the name, no `.agents` folder | `writes a project reference from the default template, with no title and top-level sections` |
+| CI | `--scope user` | `writes the user tier's file with --scope user` |
+| CG→CH, CO→no | a template with frontmatter and an extra key, no copy of the name | `copies a template verbatim, frontmatter included` |
+| CO→CP→CQ | a template without `merge`, a plugin's copy below | `marks the new file merge-sections when a lower layer holds the name` |
+| CO→CP→CQ | a template without `merge`, a copy in a farther folder of the walk | `counts a farther folder of the walk as a layer below` |
+| CO→CQ | a template with no frontmatter, a copy below | `puts merge-sections in a frontmatter block of its own when the template has none` |
+| CP→CS | a template setting `merge: first-wins`, a copy below | `keeps the template's own merge value` |
+| CS→CT | a template with a `#` heading | `warns on a heading with one hash and still writes` |
+| CS→no | a template whose only one-hash line is in a code fence | `does not warn on a one-hash line inside a code fence` |
+| CS→CT | a template with no frontmatter | `warns on a missing description and still writes` |
+| CU→CV | `--dry-run`, text, a copy below | `prints the target path and the exact content on --dry-run and writes nothing` |
+| CY | a write, json, a template with a `#` heading | `reports the path, content, warnings, and a trace with the new file used` |
+| CY | a write, text | `writes the path and then the trace in text` |
+| CJ→CK | an existing target, with or without `--dry-run` | `refuses an existing target, naming Update` |
+| CM→CN | a first-wins copy above the target | `refuses when a copy above would shadow the new file` |
+| CM→CO | a merge-sections copy above the target | `writes under a copy above that merges` |
+| CF→CX | a template path with no readable file | `refuses a missing or unreadable template` |
+| CG→CX | a template whose frontmatter is a YAML list | `refuses a template whose frontmatter is not a YAML mapping` |
+| CB→CX | a name that is a path | `refuses a create name that is a path` |
+| CB→CX | a `<plugin>/<name>` | `refuses a plugin-qualified name` |
+| CB→CX | `--scope plugin` or `--scope managed` | `refuses a scope other than project or user` |
+| CB→CX | an unsupported format | `rejects an unsupported output format on create` |
+| CW→CX | a target folder path that is a file | `refuses when the target folder cannot be created` |
 
 ### legacy and the deprecated command
 

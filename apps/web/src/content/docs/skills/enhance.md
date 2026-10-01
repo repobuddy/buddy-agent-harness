@@ -39,7 +39,7 @@ Every run reports, whichever way it went: what it read, the verdict for each add
 
 ## Where an addition goes
 
-Each addition says where it belongs. One about the repository belongs in its `AGENTS.md`. Delegation and List identifiers both describe how the agent works, and that holds in every repository you open, so the skill recommends your global instruction file first and names this repository's `AGENTS.md` as the alternative.
+Each addition says where it belongs. One about the repository belongs in its `AGENTS.md`. Delegation, List identifiers, and Session scope all describe how the agent works, and that holds in every repository you open, so the skill recommends your global instruction file first and names this repository's `AGENTS.md` as the alternative.
 
 | Destination | Reaches | Costs |
 | --- | --- | --- |
@@ -228,3 +228,23 @@ Like Delegation, the skill recommends your own global instruction file for it, s
 The section has no retired wording yet, so `references/list-identifiers.history.md` is empty, and a section already in your file is compared against the current text instead. The current text stands in for a retired wording and gets the same two questions. One that is this text with edits is offered the current text as a replacement, one sharing neither its sentences nor its shape is judged yours, and in between the skill asks. In this package's own repository the `eval-list-identifiers` skill scores this wording, so the skill can offer measurement as the third answer there; a repository without such a harness gets two answers.
 
 The wording was checked by blind A/B runs after it shipped. It was run against an empty control and three alternatives over three rounds, 684 turns in all. It kept its place in every round. Without the section, the agent renumbered a list after every revision and numbered two lists in one reply both from 1. With it, labels held through revisions in 48 of 48 runs. One known cost reproduced every time: it also labels a plain explanation that asks you nothing. Both narrowings tried to remove that cost, and both lost more than they gained. The backlog, the scores, and the harness are in `.agents/skills/eval-list-identifiers/`.
+
+### Session scope
+
+A `## Session scope` section, on keeping one session to one subject:
+
+```markdown wrap
+## Session scope
+
+Keep one session to one subject. Deciding how something should work and building it are two subjects: finish the first, write down what it settled, and start the second in a new session from what you wrote.
+
+When the user turns to unrelated work, do not carry the old subject into it. Name what you were working on, offer to continue it in its own session, and start this one from what the user just asked.
+
+A session that has run long on mixed work carries context you can no longer account for, and every later answer is drawn from it. Stop adding to it: record where the work stands and continue in a new session.
+```
+
+This one came from reading transcripts rather than from a hypothesis. Sessions that mixed design, implementation, and documentation ran to hundreds of turns, and the pattern that hurt was not length on its own: it was a subject changing without the context changing with it. One session turned from reference-design work to fleet dispatch at turn 8 and back at turn 11, carrying the design context into both. Another grew its context by a factor of several hundred while building a website. In both, the later answers were drawn from material that no longer applied.
+
+The text names no file to write the record to, and no command to compact or clear a session. Both are specific to a harness or a repository, and the wording has to hold wherever it is loaded. What it fixes is the decision — this is a new subject, so it is a new session — and the handoff that makes the split lossless.
+
+This section has no retired wording, so `references/session-scope.history.md` is empty and an existing section is compared against the current text, the same way List identifiers is. Unlike the other two, no harness scores this wording yet, so where the skill cannot tell whose words a section is, it offers you two answers instead of three and says measurement would need a harness that does not exist. Read the paragraphs above as the reason for the wording, not as a score: nothing here has been settled by runs.

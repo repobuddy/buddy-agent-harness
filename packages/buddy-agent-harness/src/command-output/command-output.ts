@@ -4,7 +4,7 @@ import { isRecord } from '../is-record/is-record.ts'
 
 export type OutputFormat = 'json' | 'toon' | 'text'
 
-const formats: readonly OutputFormat[] = ['toon', 'json', 'text']
+export const formats: readonly OutputFormat[] = ['toon', 'json', 'text']
 
 /** Rejects anything but the supported formats so an unknown value never falls back silently. */
 export function parseFormat(value: string | undefined): OutputFormat {

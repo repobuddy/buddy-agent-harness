@@ -1,4 +1,6 @@
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
+import { join, relative, resolve } from 'node:path'
 import type { cli } from 'clibuilder'
 import { command, exitCodes, z } from 'clibuilder'
 import {
@@ -9,9 +11,11 @@ import {
 	writeDocument,
 	writeResult,
 } from '../command-output/command-output.ts'
+import { readTemplate, templateWarnings, withMergeSections } from './create-reference.ts'
 import { listReferences, type ReferenceRow, type SearchMatch, searchReferences } from './reference-catalog.ts'
-import { type ReferenceLayer, type ReferenceTier, referenceLayers } from './reference-layers.ts'
+import { projectReferencesDir, type ReferenceLayer, type ReferenceTier, referenceLayers } from './reference-layers.ts'
 import {
+	layersFor as layersTraced,
 	parseReferenceName,
 	type ResolvedReference,
 	resolveReference,
@@ -43,6 +47,36 @@ export type ReferenceListReport = {
 	warnings?: string[]
 }
 
+export type ReferenceWhereSlot = {
+	/** The tier, `plugin <name>` for a plugin's copy, or `caller` for the calling skill's own copy. */
+	layer: string
+	path: string
+	status: string
+	scope: string
+}
+
+export type ReferenceWhereReport = {
+	name: string
+	/** What a project path is relative to. */
+	root: string
+	slots: ReferenceWhereSlot[]
+	merge: string
+	/** The `<plugin>/<name>` choices when two plugins hold the name. */
+	plugins?: string[]
+	warnings?: string[]
+}
+
+export type ReferenceCreateReport = {
+	name: string
+	scope: CreateScope
+	path: string
+	dryRun: boolean
+	content: string
+	warnings: string[]
+	/** Only after a write: the name resolved again, the new file's step `used`. */
+	trace?: Omit<TraceEntry, 'description'>[]
+}
+
 export type ReferenceSearchReport = { query: string; references: SearchMatch[] | string }
 
 type CommonArgs = { root: string | undefined; format: string | undefined }
@@ -68,6 +102,10 @@ function fail(error: unknown, fallback: string): number {
 	return exitCodes.error
 }
 
+function traceOf(resolved: ResolvedReference, home: string): Omit<TraceEntry, 'description'>[] {
+	return resolved.trace.map(({ description: _, ...step }) => ({ ...step, path: collapseHome(home, step.path) }))
+}
+
 function showEntry(
 	resolved: ResolvedReference,
 	home: string,
@@ -89,12 +127,7 @@ function showEntry(
 	if (resolved.status === 'missing') entry.suggestions = suggestions
 	if (resolved.status === 'ambiguous') entry.plugins = resolved.plugins
 	entry.warnings = resolved.warnings
-	if (trace) {
-		entry.trace = resolved.trace.map(({ description: _, ...step }) => ({
-			...step,
-			path: collapseHome(home, step.path),
-		}))
-	}
+	if (trace) entry.trace = traceOf(resolved, home)
 	return entry
 }
 
@@ -243,9 +276,212 @@ export const referenceSearchCommand: cli.Command = command({
 	},
 })
 
+/** Managed is left out: writing there needs an admin, and most of it cannot be read locally. */
+const slotScopes: Partial<Record<ReferenceTier, string>> = {
+	project: 'everyone working in this repository',
+	user: 'only you, in every repository',
+	plugin: 'read-only; override it with the project or user file',
+}
+
+const callerScope = "read-only; the calling skill's own copy, read only when no layer holds the name"
+
+const mergeNote =
+	'The default, first-wins, makes the override replace the whole document. Set `merge: merge-sections` in its frontmatter to keep the sections it does not redefine.'
+
+function slotStatus(outcome: string): string {
+	if (outcome === 'missing') return 'empty'
+	return outcome.startsWith('shadowed') ? 'shadowed' : outcome
+}
+
+/** Where Load reads the caller's copy when no layer holds the name, in the order it tries them. */
+function callerCopy(caller: string, name: string): string | undefined {
+	return [join(caller, 'references', `${name}.md`), join(caller, 'references', 'governances', `${name}.md`)].find(
+		(path) => existsSync(path),
+	)
+}
+
+function callerStatus(resolved: ResolvedReference): string {
+	if (resolved.status === 'missing') return 'used'
+	return resolved.status === 'ambiguous' ? 'not read — the name is ambiguous' : 'shadowed'
+}
+
+export const referenceWhereCommand: cli.Command = command({
+	name: 'where',
+	description:
+		'List the project and user files an override of a reference can be written to, highest precedence first, with the copy each overrides and who it applies to.',
+	arguments: [
+		{
+			name: 'name',
+			description: 'Reference name, without the `.md` extension; `<plugin>/<name>` picks one plugin.',
+			type: z.string(),
+		},
+	],
+	options: {
+		root: rootOption,
+		caller: {
+			description:
+				"Folder of the skill that loads the reference, so its own copy is reported as the reference skill's Load mode reads it.",
+			type: z.optional(z.string()),
+		},
+		format: listFormatOption,
+	},
+	async run(args: CommonArgs & { name: string; caller: string | undefined }) {
+		try {
+			const format = parseFormat(args.format)
+			const name = parseReferenceName(args.name)
+			const home = homedir()
+			const layers = await layersFor(args, home)
+			const root = resolve(args.root ?? process.cwd())
+			const display = (path: string) => collapseHome(home, path)
+			const resolved = resolveReference(name, layers, { display })
+			const traced = layersTraced(name, layers)
+			const slots: ReferenceWhereSlot[] = []
+			for (const [index, step] of resolved.trace.entries()) {
+				const layer = traced[index] as ReferenceLayer
+				const scope = slotScopes[step.tier]
+				// A legacy folder or a plugin is never a place to write, so it shows only while it holds a copy.
+				if (!scope || ((layer.status || step.tier === 'plugin') && !step.found)) continue
+				const path = step.found ? step.path : join(layer.dir, `${name.name}.md`)
+				slots.push({
+					layer: step.tier === 'plugin' ? `plugin ${step.plugin}` : step.tier,
+					path: step.tier === 'project' ? relative(root, path) : display(path),
+					status: slotStatus(step.outcome),
+					scope,
+				})
+			}
+			const copy = args.caller === undefined ? undefined : callerCopy(resolve(args.caller), name.name)
+			if (copy) {
+				slots.push({ layer: 'caller', path: display(copy), status: callerStatus(resolved), scope: callerScope })
+			}
+			const report: ReferenceWhereReport = { name: name.name, root: display(root), slots, merge: mergeNote }
+			if (resolved.status === 'ambiguous') report.plugins = resolved.plugins
+			if (resolved.warnings.length) report.warnings = resolved.warnings
+			writeResult(report, format)
+			if (resolved.status !== 'ambiguous') return exitCodes.success
+			process.stderr.write(
+				`error: ${missReason({ name: name.raw, status: 'ambiguous', plugins: resolved.plugins, warnings: [] })}\n`,
+			)
+			return exitCodes.error
+		} catch (error) {
+			return fail(error, 'Reference placement lookup failed.')
+		}
+	},
+})
+
+type CreateScope = 'project' | 'user'
+
+function parseScope(value: string | undefined): CreateScope {
+	if (value !== 'project' && value !== 'user') throw new Error('--scope must be project or user.')
+	return value
+}
+
+type CreateArgs = CommonArgs & {
+	name: string
+	template: string | undefined
+	scope: string | undefined
+	'dry-run': boolean | undefined
+}
+
+export const referenceCreateCommand: cli.Command = command({
+	name: 'create',
+	description:
+		'Start a new reference in the project or user tier from a template, marked merge-sections when it overrides a copy below. Never overwrites.',
+	arguments: [{ name: 'name', description: 'Reference name, without the `.md` extension.', type: z.string() }],
+	options: {
+		root: rootOption,
+		template: {
+			description:
+				'File whose text is written as it is, frontmatter included. Defaults to a built-in template of top-level `##` sections with no `#` title.',
+			type: z.optional(z.string()),
+		},
+		scope: {
+			description:
+				'Tier to write: project (default), `.agents/references/` at the root, or user, `~/.agents/references/`.',
+			type: z.optional(z.string()),
+			default: 'project',
+		},
+		'dry-run': {
+			description: 'Print the target path and the exact content, and write nothing.',
+			type: z.optional(z.boolean()),
+		},
+		format: {
+			description:
+				'Output format: text (default) writes the path, then the content or the trace; toon and json return an object.',
+			type: z.optional(z.string()),
+			default: 'text',
+		},
+	},
+	async run(args: CreateArgs) {
+		try {
+			const format = parseFormat(args.format)
+			const name = parseReferenceName(args.name)
+			if (name.plugin !== undefined) {
+				throw new Error(
+					`an override is written under the bare name, which every tier resolves; ask for "${name.name}".`,
+				)
+			}
+			const scope = parseScope(args.scope)
+			const template = readTemplate(args.template === undefined ? undefined : resolve(args.template))
+			const home = homedir()
+			const dir =
+				scope === 'project'
+					? projectReferencesDir(resolve(args.root ?? process.cwd()))
+					: join(home, '.agents', 'references')
+			const target = join(dir, `${name.name}.md`)
+			const display = (path: string) => collapseHome(home, path)
+			const layers = await layersFor(args, home)
+			const { trace } = resolveReference(name, layers, { display })
+			const at = layers.findIndex((layer) => layer.dir === dir)
+			if (trace[at]?.found) {
+				throw new Error(
+					`${display(trace[at].path)} already holds "${name.name}"; change it with the reference skill's Update mode.`,
+				)
+			}
+			const shadow = trace.slice(0, at).find((step) => step.found && step.merge === 'first-wins')
+			if (shadow) {
+				throw new Error(
+					`the ${shadow.tier} copy ${display(shadow.path)} is first-wins, so nothing would read a new ${scope} file; change that copy instead.`,
+				)
+			}
+			const overrides = trace.slice(at + 1).some((step) => step.found)
+			const content =
+				overrides && template.metadata['merge'] === undefined ? withMergeSections(template.content) : template.content
+			const warnings = templateWarnings(template)
+			const report: ReferenceCreateReport = {
+				name: name.name,
+				scope,
+				path: display(target),
+				dryRun: Boolean(args['dry-run']),
+				content,
+				warnings,
+			}
+			if (!report.dryRun) {
+				mkdirSync(dir, { recursive: true })
+				writeFileSync(target, content, { flag: 'wx' })
+				report.trace = traceOf(resolveReference(name, layers, { display }), home)
+			}
+			if (format !== 'text') writeResult(report, format)
+			else {
+				for (const warning of warnings) process.stderr.write(`warning: ${warning}\n`)
+				if (report.trace) process.stdout.write(`${report.path}\n\n${renderText({ trace: report.trace })}\n`)
+				else writeDocument(`${report.path}\n\n${content}`)
+			}
+			return exitCodes.success
+		} catch (error) {
+			return fail(error, 'Reference creation failed.')
+		}
+	},
+})
+
 export const referenceCommand: cli.Command = command({
 	name: 'reference',
 	description:
-		'Read on-demand reference documents by name, layered across the managed, project, user, and plugin tiers. Read-only.',
-	commands: [referenceShowCommand, referenceListCommand, referenceSearchCommand],
+		'Read on-demand reference documents by name, layered across the managed, project, user, and plugin tiers, and start a new one in the project or user tier.',
+	commands: [
+		referenceShowCommand,
+		referenceListCommand,
+		referenceSearchCommand,
+		referenceWhereCommand,
+		referenceCreateCommand,
+	],
 })

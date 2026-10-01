@@ -1,6 +1,6 @@
 {
 	"name": "buddy-agent-harness",
-	"version": "0.14.0",
+	"version": "0.16.0",
 	"description": "Initialize standards-based agent configuration across agent harnesses",
 	"keywords": [
 		"repobuddy",
@@ -37,6 +37,7 @@
 		"!**/*.{test,spec}.ts",
 		"skills",
 		"plugin.json",
+		"llms.txt",
 		".claude-plugin",
 		".cursor-plugin",
 		".codex-plugin"
@@ -45,6 +46,8 @@
 		"build": "tsdown && pnpm skill:gen",
 		"coverage": "vitest run --coverage",
 		"dev": "node bin/buddy-agent-harness.mjs",
+		"llms:gen": "tsx scripts/generate-llms-txt.ts",
+		"llms:gen:check": "tsx scripts/generate-llms-txt.ts --check",
 		"pack:check": "tsx scripts/pack-check.ts",
 		"prepack": "pnpm build",
 		"skill:gen": "tsx scripts/generate-skills.ts",

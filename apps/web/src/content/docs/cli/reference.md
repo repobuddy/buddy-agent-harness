@@ -1,15 +1,17 @@
 ---
 title: 'CLI: reference'
-description: 'CLI reference for buddy-agent-harness reference: show, list, and search on-demand reference documents across layered tiers.'
+description: 'CLI reference for buddy-agent-harness reference: show, list, search, where, and create on-demand reference documents across layered tiers.'
 ---
 
 ```sh
 buddy-agent-harness reference show <name>... [--root <directory>] [--trace] [--format text|toon|json]
 buddy-agent-harness reference list [--root <directory>] [--format toon|json|text]
 buddy-agent-harness reference search <query> [--root <directory>] [--format toon|json|text]
+buddy-agent-harness reference where <name> [--root <directory>] [--caller <skill folder>] [--format toon|json|text]
+buddy-agent-harness reference create <name> [--template <path>] [--scope project|user] [--root <directory>] [--dry-run] [--format text|toon|json]
 ```
 
-A **reference** is a Markdown document an agent reads on demand. [References and Skills](/agent-configuration/references/) covers when to write one instead of a skill. `reference` is read-only: it never writes a document.
+A **reference** is a Markdown document an agent reads on demand. [References and Skills](/agent-configuration/references/) covers when to write one instead of a skill. Every subcommand but `create` is read-only. `create` writes one new file in the project or user tier and never changes a file that exists.
 
 `--root` is the directory the project tier is read from, walking up to the repository root. It defaults to the current directory.
 
@@ -144,3 +146,52 @@ Finds a reference an agent cannot name. Matches are ranked: exact name, name pre
 ```sh
 buddy-agent-harness reference search fixtures
 ```
+
+## `reference where`
+
+Answers where a copy of a name can live, so you know the file to write to override it. `show --trace` answers the other way: why a name resolved to the copy it did.
+
+```sh
+buddy-agent-harness reference where testing --format text
+```
+
+It resolves the name exactly as `show` does, and reports the slots you can act on, highest precedence first: the project file, the user file, the plugin copy it overrides when a plugin ships the name, and with `--caller <skill folder>`, the loading skill's own copy. `root` states the folder a project path is relative to.
+
+| Field | Meaning |
+| --- | --- |
+| `layer` | `project`, `user`, `plugin <name>` for the plugin that ships the copy, or `caller` for the loading skill's own copy |
+| `path` | the file to write, or the file that holds the name. A project path is relative to `root` |
+| `status` | `used`, `shadowed`, or `empty`. It follows each copy's `merge` metadata, so a copy under a merging override stays `used`. The caller's copy is `used` only when no layer holds the name |
+| `scope` | who the slot applies to: everyone working in this repository (project), only you (user), or read-only for a plugin's or the caller's copy, which you override with the project or user file |
+
+`merge` explains how an override combines with what it covers: by default it replaces the whole document; set `merge: merge-sections` in its frontmatter to keep the sections it does not redefine.
+
+A name no layer holds is not an error; the slots are still the answer. An ambiguous name lists the `<plugin>/<name>` choices and exits `1`.
+
+## `reference create`
+
+Starts a new reference, or an override of a copy a lower layer holds.
+
+```sh
+buddy-agent-harness reference create release-policy --template ./references/acme.release-policy.md --dry-run
+```
+
+| Option | Meaning |
+| --- | --- |
+| `--scope` | `project` (default) writes `<root>/.agents/references/<name>.md`; `user` writes `~/.agents/references/<name>.md`. It never writes a plugin's or the managed folder |
+| `--template` | a file written as it is, frontmatter included. Without it, a built-in template: a `description` and `tags` placeholder, then top-level `##` sections, with no `#` title |
+| `--dry-run` | prints the target path, a blank line, and the exact content; writes nothing |
+
+When a layer below the target already holds the name, `create` adds `merge: merge-sections` to the frontmatter, so the new file replaces only the sections it writes. A template that sets `merge` itself keeps its value. A plugin can pass its own shipped reference as `--template` to start a repository's copy from its text.
+
+The file is written as top-level `##` sections because `merge-sections` matches a section by its full heading path. A `#` title holds every other section under it: an override that repeats the title replaces the whole document, and one that leaves it out has every section added as a duplicate. `create` warns on a `#` heading outside a code fence, and on a missing `description`, and still writes.
+
+| Refused, exit `1`, nothing written | Why |
+| --- | --- |
+| the target file exists | change it with the `reference` skill's Update mode; there is no `--force` |
+| a `first-wins` copy in a layer above the target | nothing would read the new file |
+| a template path with no readable file, or frontmatter that is not a YAML mapping | `show` would drop that frontmatter |
+| a name that is a path, or `<plugin>/<name>` | an override is written under the bare name |
+| a scope other than `project` or `user` | |
+
+After a write, `text` prints the path and then the name's trace, in which the new file is `used`. `--format json` and `toon` return one object: `name`, `scope`, `path`, `dryRun`, `content`, `warnings`, and after a write `trace`.

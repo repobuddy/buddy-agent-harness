@@ -112,6 +112,17 @@ export default defineConfig({
 					],
 				},
 				{
+					label: 'Library',
+					items: [
+						{ label: 'Overview', slug: 'library' },
+						{ label: 'init and run', slug: 'library/init' },
+						{ label: 'references', slug: 'library/references' },
+						{ label: 'MCP and the harness registry', slug: 'library/mcp' },
+						{ label: 'doctor', slug: 'library/doctor' },
+						{ label: 'governance (deprecated)', slug: 'library/governance' },
+					],
+				},
+				{
 					label: 'Agent Configuration',
 					items: [
 						{ label: 'Open Standards', slug: 'agent-configuration/open-standards' },
