@@ -13,6 +13,7 @@ apps/web/astro.config.mjs
   s_3b1fccdec29331::t_3f41f6a9cabc5e 1-5
 apps/web/src/content/docs/library/index.md
   s_3b1fccdec29331::t_e8b87b4863cec2 26
+  s_3b1fccdec29331::t_2ada4429ab9dd1 28
 ---
 {
   "schema_version": "authorship/3.0.0",
