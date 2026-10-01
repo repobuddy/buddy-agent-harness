@@ -12,6 +12,7 @@ packages/buddy-agent-harness/llms.txt
 apps/web/astro.config.mjs
   s_3b1fccdec29331::t_bdb81e309a41a8 115,121
   s_3b1fccdec29331::t_9b6d0f7287641f 114
+  s_3b1fccdec29331::t_e12b7f4a053f9e 119
 ---
 {
   "schema_version": "authorship/3.0.0",
