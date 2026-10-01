@@ -1,5 +1,6 @@
 apps/web/src/content/docs/library/index.md
   s_8cea69daeca45d::t_ce2763145b85e8 26
+  s_8cea69daeca45d::t_acee62082b8f84 28
 packages/buddy-agent-harness/scripts/generate-llms-txt.ts
   s_8cea69daeca45d::t_ce2763145b85e8 58-62
 apps/web/public/llms.txt
