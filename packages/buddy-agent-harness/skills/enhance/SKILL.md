@@ -12,7 +12,7 @@ The split matters: initialization has to run everywhere and invent nothing, so i
 
 Every addition is **offered, never written on sight**. An addition asserts something about how the repository is worked in — it stays true whether or not this tool ever ran — so it is material under the rule in `../init/references/agents-md.md`, and material content needs approval. Nothing here goes inside the `buddy-agent-harness` managed region; that region is for the tool's own bookkeeping.
 
-Two additions ship today: `references/delegation.md` and `references/list-identifiers.md`. Classify, offer, and report each one on its own; the owner's answer to one decides nothing about the other. Each addition's reference file carries the text to offer, a `## Covered when` criterion for the subject already being present, a `## Stale when` section naming the history file its stale check reads and what else that check needs for this addition, and a `## Where it belongs` recommendation naming which instruction file the text should go in. The retired wordings themselves are kept beside it — `references/<addition>.history.md` — and are what a present section is compared against.
+Three additions ship today: `references/delegation.md`, `references/list-identifiers.md`, and `references/session-scope.md`. Classify, offer, and report each one on its own; the owner's answer to one decides nothing about the others. Each addition's reference file carries the text to offer, a `## Covered when` criterion for the subject already being present, a `## Stale when` section naming the history file its stale check reads and what else that check needs for this addition, and a `## Where it belongs` recommendation naming which instruction file the text should go in. The retired wordings themselves are kept beside it — `references/<addition>.history.md` — and are what a present section is compared against.
 
 ## 1. Find the instruction file
 
@@ -97,7 +97,7 @@ A section from a retired wording in a file that is **not** the root `AGENTS.md` 
 
 Where an addition is **absent**, show its text **verbatim** — the whole thing, not a summary — say where it would go, and ask.
 
-**Where it goes is part of the offer, and the addition decides it.** Read its `## Where it belongs` and lead with what that section recommends. An addition whose subject is the repository belongs in the repository's `AGENTS.md`; one whose subject is how the agent works belongs in the owner's own global instruction file, because it holds in every repository they open and a copy per repository is a copy per repository to keep in step. Delegation and list identifiers are both the second kind, and their references recommend the global file.
+**Where it goes is part of the offer, and the addition decides it.** Read its `## Where it belongs` and lead with what that section recommends. An addition whose subject is the repository belongs in the repository's `AGENTS.md`; one whose subject is how the agent works belongs in the owner's own global instruction file, because it holds in every repository they open and a copy per repository is a copy per repository to keep in step. Delegation, list identifiers, and session scope are all the second kind, and their references recommend the global file.
 
 The global file is `~/.agents/AGENTS.md`, the user-scope counterpart of the root `AGENTS.md`. Say that the harness in use reads it only where a user-scope instruction file of its own loads it. Where the harness documents that file, name it: on Claude Code it is `~/.claude/CLAUDE.md`.
 
@@ -121,7 +121,7 @@ Where you **cannot tell**, say that first, in those words. Then show three texts
 
 Put the third every time the repository can actually do it, because the owner may not remember either, and the question they care about is not where the section came from but **which wording serves them better**. Provenance is a stand-in for that; when the stand-in fails, ask the real question.
 
-Measurement means running each wording against a set of real tasks and comparing how the agent behaves — whatever harness this repository has for that addition's wording. In this package's own repository `eval-delegation` scores Delegation's and `eval-list-identifiers` scores List identifiers'; a consumer repository will have its own or none. **Look before you offer it.** Where the repository has no harness for that addition, say the third answer would need one it does not have, and put the other two.
+Measurement means running each wording against a set of real tasks and comparing how the agent behaves — whatever harness this repository has for that addition's wording. In this package's own repository `eval-delegation` scores Delegation's and `eval-list-identifiers` scores List identifiers'; Session scope has none, and a consumer repository will have its own or none. **Look before you offer it.** Where the repository has no harness for that addition, say the third answer would need one it does not have, and put the other two.
 
 **Ask before running it, and never run it unasked** — it is many model runs, and the owner is the one paying for them.
 
