@@ -1,0 +1,81 @@
+{
+	"createdAt": "2026-10-02T10:28:59.464Z",
+	"commit": "c7a8bbf90e10db97c853b62e66b0597cfd486353",
+	"model": "sonnet",
+	"harness": "claude-code",
+	"runner": "print",
+	"runsPerTask": 5,
+	"summary": {
+		"tasks": [
+			{
+				"task": "fix-credential-segments",
+				"runs": 5,
+				"passes": 5,
+				"passRate": 1,
+				"capped": 0,
+				"errors": 0,
+				"medianInputTokens": 10,
+				"medianOutputTokens": 739,
+				"medianCacheReadTokens": 85365,
+				"medianTurns": 5,
+				"medianToolCalls": 4,
+				"medianWallMs": 23887,
+				"totalCostUsd": 0.2925,
+				"costPerSuccessUsd": 0.0585
+			},
+			{
+				"task": "fix-divergence-direction",
+				"runs": 5,
+				"passes": 5,
+				"passRate": 1,
+				"capped": 0,
+				"errors": 0,
+				"medianInputTokens": 10,
+				"medianOutputTokens": 797,
+				"medianCacheReadTokens": 85561,
+				"medianTurns": 5,
+				"medianToolCalls": 4,
+				"medianWallMs": 25185,
+				"totalCostUsd": 0.2879,
+				"costPerSuccessUsd": 0.0576
+			},
+			{
+				"task": "pat-credential-segment",
+				"runs": 5,
+				"passes": 5,
+				"passRate": 1,
+				"capped": 0,
+				"errors": 0,
+				"medianInputTokens": 18,
+				"medianOutputTokens": 2213,
+				"medianCacheReadTokens": 176419,
+				"medianTurns": 9,
+				"medianToolCalls": 8,
+				"medianWallMs": 32745,
+				"totalCostUsd": 0.5536,
+				"costPerSuccessUsd": 0.1107
+			},
+			{
+				"task": "skills-projection-answer",
+				"runs": 5,
+				"passes": 5,
+				"passRate": 1,
+				"capped": 0,
+				"errors": 0,
+				"medianInputTokens": 8,
+				"medianOutputTokens": 495,
+				"medianCacheReadTokens": 68389,
+				"medianTurns": 4,
+				"medianToolCalls": 3,
+				"medianWallMs": 9453,
+				"totalCostUsd": 0.2774,
+				"costPerSuccessUsd": 0.0555
+			}
+		],
+		"runs": 20,
+		"passes": 20,
+		"passRate": 1,
+		"totalCostUsd": 1.4115,
+		"costPerSuccessUsd": 0.0706
+	}
+}
