@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { doctorCommand } from '../diagnose-bridges/doctor.command.ts'
 import { governanceCommand } from '../governance-overrides/governance.command.ts'
-import { referenceCommand } from '../references/reference.command.ts'
+import { referenceCommand } from '../references/references.ts'
 import { activate, harnessCommand, initCommand } from './init.command.ts'
 import { initializeHarnesses } from './initialize-harnesses.ts'
 

@@ -4,7 +4,7 @@ import { parseFormat, writeResult } from '../command-output/command-output.ts'
 import { doctorCommand } from '../diagnose-bridges/doctor.command.ts'
 import { governanceCommand } from '../governance-overrides/governance.command.ts'
 import { parseHarnesses } from '../harness-registry/harness-registry.ts'
-import { referenceCommand } from '../references/reference.command.ts'
+import { referenceCommand } from '../references/references.ts'
 import { parseForce } from '../skill-projection/skill-projection.ts'
 import { initializeHarnesses } from './initialize-harnesses.ts'
 

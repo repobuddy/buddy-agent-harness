@@ -73,11 +73,8 @@ const libraryPages: Record<string, string | null> = {
 	'./initialize-harnesses/init.command.ts': 'library/init',
 	'./initialize-harnesses/initialize-harnesses.ts': 'library/init',
 	'./mcp-inventory/mcp-inventory.ts': 'library/mcp',
-	'./references/reference.command.ts': 'library/references',
-	'./references/reference-catalog.ts': 'library/references',
-	'./references/reference-document.ts': 'library/references',
-	'./references/reference-layers.ts': 'library/references',
-	'./references/resolve-reference.ts': 'library/references',
+	'./references/references.ts': 'library/references',
+	'buddy-agent-reference': 'library/references',
 }
 
 /**

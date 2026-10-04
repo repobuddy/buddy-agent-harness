@@ -163,7 +163,7 @@ The two graphs never meet, and that is the point: the path is collapsed **before
 
 ## References
 
-- `../../../../src/command-output/command-output.ts` is the whole layer: the format check, the stdout write, the text renderer, and the home collapse.
+- `../../../../../buddy-agent-reference/src/command-output/command-output.ts` is the whole layer: the format check, the stdout write, the text renderer, and the home collapse. It lives in the `buddy-agent-reference` package, which the `reference` command moved to; `../../../../src/command-output/command-output.ts` re-exports it and adds the `bin` path.
 - `../governance-overrides/` is the caller of the document write, and states why a governance is written rather than encoded.
 - `../diagnosis-report/` states which of these formats `doctor` advertises and why the healthy answer is stated outright rather than left empty; this node states how any of it is encoded.
 - AXI §10 backs the home collapse: a path that embeds a username is one a reader cannot paste back.

@@ -1,5 +1,5 @@
 import { harnessIds, skillInvocation } from '@cyberuni/agent-harness'
-import { PACKAGE_PLUGIN } from './reference-layers.ts'
+import { PACKAGE_PLUGIN } from './references.ts'
 
 export const referenceSkill = 'reference'
 

@@ -149,6 +149,6 @@ flowchart TD
 
 ## References
 
-- `../../../../src/command-output/command-output.ts` holds the encoder shared with the `init` command, including the `~` collapse in `bin` (AXI §10) and the text renderer's table alignment.
+- `../../../../src/command-output/command-output.ts` holds the encoder shared with the `init` command, re-exported from the `buddy-agent-reference` package, including the `~` collapse in `bin` (AXI §10) and the text renderer's table alignment.
 - `../references/` owns the tiers this report's `references` section is drawn from, their order, and the status on each row.
 - AXI §5 backs the healthy answer: the zero is stated with its context so an agent does not re-run with other flags to confirm that an empty section really meant "nothing wrong".

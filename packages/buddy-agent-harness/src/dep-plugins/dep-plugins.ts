@@ -50,21 +50,7 @@ export function marketplaceName(packageName: string): string {
 	return cleaned || 'agent-plugins'
 }
 
-/**
- * Includes `devDependencies` — a plugin can supply a project's testing or release workflow.
- * Transitive dependencies are excluded; see `resolve.ts`.
- */
-export function declaredDependencies(manifest: unknown): string[] {
-	if (!manifest || typeof manifest !== 'object') return []
-	const record = manifest as Record<string, unknown>
-	const names = new Set<string>()
-	for (const field of ['dependencies', 'devDependencies']) {
-		const group = record[field]
-		if (!group || typeof group !== 'object') continue
-		for (const name of Object.keys(group as Record<string, unknown>)) names.add(name)
-	}
-	return [...names].sort()
-}
+export { declaredDependencies } from 'buddy-agent-reference'
 
 export type BuildCatalogOptions = {
 	name: string

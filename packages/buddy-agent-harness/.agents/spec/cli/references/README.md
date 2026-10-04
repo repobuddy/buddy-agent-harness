@@ -568,8 +568,11 @@ flowchart TD
 
 ## References
 
-- `../../../../src/references/` is the implementation: layers, documents and merge, resolution,
-  search, and the command.
+- `../../../../../buddy-agent-reference/src/` is the implementation: layers, documents and merge,
+  resolution, search, and the command. It is its own package, `buddy-agent-reference`, so a tool can
+  bundle the resolver without depending on `buddy-agent-harness`.
+- `../../../../src/references/` names `buddy-agent-harness` as the plugin whose own references come
+  first, and generates the `reference` skill's invocation table.
 - `../governance-overrides/` is the deprecated command this replaces as the read path.
 - `../command-output/` owns the encoder and the verbatim document write.
 - Issue #153 is the source proposal; #152 the epic; #122 and its comment the decisions it revises.
