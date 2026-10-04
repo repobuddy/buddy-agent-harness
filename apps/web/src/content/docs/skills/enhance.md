@@ -46,7 +46,7 @@ Each addition says where it belongs. One about the repository belongs in its `AG
 | `~/.agents/AGENTS.md` | every repository you open, you only | one copy |
 | this repository's `AGENTS.md` | everyone who clones it, and any agent CI runs | a copy per repository |
 
-`~/.agents/AGENTS.md` is the user-scope counterpart of the root `AGENTS.md`, the same way `~/.agents/skills/` is for `.agents/skills/`. A harness reads it through its own user-scope file, so that file has to load it. On Claude Code that is `~/.claude/CLAUDE.md`, for example as a symlink to `~/.agents/AGENTS.md`. The skill writes only the root `AGENTS.md`. For a global placement, it gives you the text and the path, and you add it yourself.
+`~/.agents/AGENTS.md` is the user-scope counterpart of the root `AGENTS.md`, the same way `~/.agents/skills/` is for `.agents/skills/`. A harness reads it through its own user-scope file, so that file has to load it. On Claude Code that is `~/.claude/CLAUDE.md`, with an `@~/.agents/AGENTS.md` import or as a symlink to `~/.agents/AGENTS.md`. Before it hands a global placement over, the skill runs [`doctor`](/cli/doctor/#reaching-agentsagentsmd) and says whether the harness you are using loads the file. Where it does not, the skill gives you the line or symlink that bridges it, beside the text. The skill writes only the root `AGENTS.md`. For a global placement, it gives you the text and the path, and you add it yourself.
 
 The cost to avoid is reading the same text twice. Every copy is loaded into every session that reaches it, so a section in both your global file and a repository is paid for twice. The skill checks the instructions its agent already loads from outside the repository:
 

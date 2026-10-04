@@ -4,6 +4,7 @@
  */
 export const launchers: readonly { skill: string; subcommand: string }[] = [
 	{ skill: 'doctor-buddy-agent-harness', subcommand: 'doctor' },
+	{ skill: 'enhance', subcommand: 'doctor' },
 	{ skill: 'init-buddy-agent-harness', subcommand: 'init' },
 	{ skill: 'init-buddy-agent-harness', subcommand: 'doctor' },
 	{ skill: 'reference', subcommand: 'reference' },
