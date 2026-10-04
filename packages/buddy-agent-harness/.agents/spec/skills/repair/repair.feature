@@ -50,6 +50,13 @@ Feature: Repair agent configuration that doctor reported as wrong
     And the golden MCP set is unchanged
 
   @behavior
+  Scenario: hands a global-instructions step to the user and writes nothing outside the repository
+    Given a `doctor` report carrying a `global-instructions-unbridged` finding for `~/.claude/CLAUDE.md`
+    When the agent runs the `repair` skill
+    Then the report gives the user the step `doctor` states for that finding, unchanged
+    And `~/.claude/CLAUDE.md` is unchanged, whatever the owner answers
+
+  @behavior
   Scenario: names no owner for a finding whose repair names no skill
     Given a `doctor` report carrying an `unpinned-copy` finding whose repair names a `git` invocation and no skill
     When the agent runs the `repair` skill

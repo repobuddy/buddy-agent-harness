@@ -34,6 +34,7 @@ Every correction is **offered with its before and after, and written only on app
 - **canonical configuration** — the root `AGENTS.md` and the `.agents/` tree; the one source every harness is pointed at.
 - **bridge** — what a harness that cannot read `.agents/` is given instead: a skills projection (`.claude/skills`) or an instruction bridge (`.gemini/settings.json`).
 - **bridge finding** — a `doctor` finding about a bridge, whether it has stopped resolving or was never completed. **Never repaired here.** Whether it has an owner at all is the seam node's to state: `../../workflows/detect-and-repair/`.
+- **global-instructions finding** — a `doctor` finding that a harness's user-scope file does not load `~/.agents/AGENTS.md`. **Never repaired here**: the file is in the user's home directory, outside the repository every write here is confined to, so the step `doctor` names is handed to the user unchanged.
 - **MCP finding** — a `doctor` finding that a golden MCP server set and a harness's copy of it disagree. **Never repaired here**, and it names no owner at all — which side is right is a judgment about servers, not a correction to a file.
 - **configuration finding** — a `doctor` finding that configuration around the bridges is present and wrong. The one family repaired here, and `references/classes.md` carries a section per `problem` in it. That membership is the remit: a `problem` with a section there is this skill's, and a `problem` without one is not.
 - **material** — content that stays true whether or not this tool ever ran. Material content is the user's; `repair` reports it and writes none of it.
@@ -123,6 +124,7 @@ Detection is the command's, so a run holds no state of its own and there is no f
 | D→E | doctor reports a diverged bridge on both sides | `hands a two-sided divergence on rather than picking a side` |
 | D→E | doctor reports a file the harness reads instead of AGENTS.md | `hands a shadowing instruction file to init rather than editing it` |
 | D→E | doctor reports an MCP finding | `hands an MCP finding on as work for a person` |
+| D→E | doctor reports a global-instructions finding | `hands a global-instructions step to the user and writes nothing outside the repository` |
 | D→E | doctor reports a finding whose repair names no skill | `names no owner for a finding whose repair names no skill` |
 | F→G | doctor reports an unloadable-skill finding with no description to quote | `reports a missing description rather than inventing one` |
 | H→I | doctor reports an unread-local-override finding | `presents the options and leaves the choice to the owner` |

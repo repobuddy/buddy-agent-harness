@@ -37,6 +37,8 @@ The `instructions-*` findings are worth a note, because they look like configura
 
 **MCP findings** — the `mcp-*` set, reported when a golden MCP server set and a harness's copy of it disagree — are split. `mcp-unprojected` and `mcp-diverged-golden` are the two cases where the golden set is plainly ahead: a harness missing a server it declares, or a field only the golden side changed. Those are the skill's — it runs [`buddy-agent-harness mcp project`](/cli/mcp/) as a dry run, shows the plan beside each target file as it stands, and applies it with `--write` once you approve. A row the command refuses, or one it holds back because the harness side also changed, is reported without an offered write. `mcp-undeclared` and `mcp-diverged-target` are the mirror cases, where the harness side is plainly ahead. For those the skill runs [`mcp reconcile`](/cli/mcp/#mcp-reconcile), offers each field on its own, and passes `--accept` only for the fields you approve; a literal credential is refused and never shown. Every other `mcp-*` finding — `mcp-diverged-both`, `-unknown`, and the two `-unreadable` findings — belongs to nobody: `doctor` states its repair in full and the skill passes it to you unchanged.
 
+**Global instruction findings** — `global-instructions-missing` and `global-instructions-unbridged`, where a harness's user-scope file such as `~/.claude/CLAUDE.md` does not load `~/.agents/AGENTS.md` — are never the skill's to write. The file is in your home directory, and nothing this package ships writes outside the repository. The skill gives you the exact line or symlink `doctor` names, and you add it yourself.
+
 **Configuration findings** are its own:
 
 | Finding | What is wrong |
