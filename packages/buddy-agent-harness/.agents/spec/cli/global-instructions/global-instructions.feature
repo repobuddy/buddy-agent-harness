@@ -84,3 +84,61 @@ Feature: Report whether each installed harness loads ~/.agents/AGENTS.md
     When the command diagnoses the global instructions
     Then it reports a `global-instructions-missing` problem naming `~/.gemini/GEMINI.md`
     And the repair hands the user `ln -s ~/.agents/AGENTS.md ~/.gemini/GEMINI.md`
+
+  # ── a directory moved by a variable ──
+
+  @behavior
+  Scenario: reads the user file from the directory a variable moves it to, and names the variable
+    Given `CODEX_HOME` set to a directory outside the home directory, holding an `AGENTS.md` symlinked to `~/.agents/AGENTS.md`
+    When the command diagnoses the global instructions
+    Then it reports `$CODEX_HOME/AGENTS.md` with kind `symlink` and status `ok`
+
+  @behavior
+  Scenario: hands over the bridge at the moved path
+    Given a home directory holding `~/.agents/AGENTS.md`, `CLAUDE_CONFIG_DIR` set to a directory with no `CLAUDE.md`, and `COPILOT_HOME` set to a directory with no `copilot-instructions.md`
+    When the command diagnoses the global instructions
+    Then the repair hands the user the line `@~/.agents/AGENTS.md` to add to `$CLAUDE_CONFIG_DIR/CLAUDE.md`
+    And the repair hands the user `ln -s ~/.agents/AGENTS.md $COPILOT_HOME/copilot-instructions.md`
+
+  @behavior
+  Scenario: reads an empty variable as unset
+    Given `CODEX_HOME` set to an empty string, and `~/.codex/` with no `AGENTS.md`
+    When the command diagnoses the global instructions
+    Then it reports `~/.codex/AGENTS.md` with status `missing`
+
+  # ── a file read in place of the user file ──
+
+  @behavior
+  Scenario: reports a bridged user file as overridden where an override beside it holds content
+    Given a `~/.codex/AGENTS.md` symlinked to `~/.agents/AGENTS.md`, and a `~/.codex/AGENTS.override.md` with content of its own
+    When the command diagnoses the global instructions
+    Then it reports `~/.codex/AGENTS.md` with kind `symlink` and status `overridden`
+    And it reports a `global-instructions-overridden` problem naming `~/.codex/AGENTS.override.md`, whose repair has an empty command
+    And the repair hands the user moving that content into `~/.agents/AGENTS.md` and removing the override
+
+  @behavior
+  Scenario: reports the user file under an override too, so both steps are handed over at once
+    Given a home directory holding `~/.agents/AGENTS.md`, and `CODEX_HOME` set to a directory holding an `AGENTS.override.md` with content and no `AGENTS.md`
+    When the command diagnoses the global instructions
+    Then it reports a `global-instructions-overridden` problem naming `$CODEX_HOME/AGENTS.override.md`
+    And it reports a `global-instructions-missing` problem naming `$CODEX_HOME/AGENTS.md`
+
+  @behavior
+  Scenario: reports an override without a finding where there is no global file to go unread
+    Given a `~/.codex/AGENTS.override.md` with content of its own, and no `~/.agents/AGENTS.md`
+    When the command diagnoses the global instructions
+    Then it reports `~/.codex/AGENTS.md` with status `overridden`
+    And it reports no problem
+
+  @behavior
+  Scenario: ignores an override that holds only whitespace
+    Given a `~/.codex/AGENTS.md` symlinked to `~/.agents/AGENTS.md`, and a `~/.codex/AGENTS.override.md` holding only whitespace
+    When the command diagnoses the global instructions
+    Then it reports `~/.codex/AGENTS.md` with status `ok`
+
+  @behavior
+  Scenario: accepts an override that is itself a symlink to the global file
+    Given a `~/.codex/AGENTS.override.md` symlinked to `~/.agents/AGENTS.md`
+    When the command diagnoses the global instructions
+    Then it reports `~/.codex/AGENTS.override.md` with kind `symlink` and status `ok`
+    And it reports no problem

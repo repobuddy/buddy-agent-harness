@@ -45,6 +45,7 @@ describe('doctor command', () => {
 			root: process.cwd(),
 			cli: 'buddy-agent-harness',
 			home: homedir(),
+			env: process.env,
 		})
 		expect(stdout).toHaveBeenCalledWith(expect.stringContaining('bridges[1]{harness,path,kind,status}'))
 		expect(stdout).toHaveBeenCalledWith(expect.stringContaining('instructions[1]{harness,path,kind,status}'))
@@ -58,6 +59,7 @@ describe('doctor command', () => {
 			harnesses: ['gemini-cli', 'codex'],
 			cli: 'buddy-agent-harness',
 			home: homedir(),
+			env: process.env,
 		})
 	})
 

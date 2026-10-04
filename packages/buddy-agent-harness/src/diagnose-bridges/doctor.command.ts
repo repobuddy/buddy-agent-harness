@@ -111,6 +111,7 @@ export const doctorCommand: cli.Command = command({
 				...(harnesses.length ? { harnesses } : {}),
 				cli: commandInvocation,
 				home,
+				env: process.env,
 			})
 			const git = new GitBridgeState(root)
 			const configuration = [

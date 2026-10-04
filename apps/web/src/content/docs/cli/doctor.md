@@ -193,13 +193,23 @@ Which harnesses are checked is the same question as for skills: the registry rec
 
 Gemini CLI's project bridge does not carry over. At user scope, `context.fileName` names files inside `~/.gemini/` only, so no setting can point it at `~/.agents/`. Cursor keeps its user rules in a settings panel, and Devin Desktop documents no user-scope path, so neither gets a row.
 
+Three harnesses let a variable move their directory: `CODEX_HOME` replaces `~/.codex`, `COPILOT_HOME` replaces `~/.copilot`, and `CLAUDE_CONFIG_DIR` replaces `~/.claude`. Where one is set and non-empty, `doctor` looks for the directory and the file under it, and writes the path from the variable, so the report says which one moved it:
+
+```
+globalInstructions[1]{harness,path,kind,status}:
+  codex,$CODEX_HOME/AGENTS.md,symlink,ok
+```
+
+Codex also reads `AGENTS.override.md` before `AGENTS.md`, and uses whichever first holds more than whitespace. An override that does not load the global file makes the row `overridden`, however well `AGENTS.md` is bridged, and the `global-instructions-overridden` finding names the override. Its repair is to move what it says into `~/.agents/AGENTS.md` and remove it. An override that is itself a symlink to the global file is `ok`.
+
 | Status | Meaning |
 | --- | --- |
 | `ok` | The file imports the global file, or is a symlink to it. |
 | `missing` | The harness has no user-scope instruction file at all. |
 | `unbridged` | The file holds content of its own and does not load the global file. |
+| `overridden` | The harness reads another file in its place, and that file does not load the global file. |
 
-The rows are reported whether or not `~/.agents/AGENTS.md` exists, so a skill handing text over for it can say which harnesses will load it. A finding, `global-instructions-missing` or `global-instructions-unbridged`, is raised only where the file exists and a harness is not loading it.
+The rows are reported whether or not `~/.agents/AGENTS.md` exists, so a skill handing text over for it can say which harnesses will load it. A finding, `global-instructions-missing`, `global-instructions-unbridged`, or `global-instructions-overridden`, is raised only where the file exists and a harness is not loading it.
 
 **The repair is handed to you, never made.** The file is in your home directory, and nothing this package ships writes outside the repository. Each repair has an empty `command`, and its `instruction` names the exact line or symlink to add yourself:
 

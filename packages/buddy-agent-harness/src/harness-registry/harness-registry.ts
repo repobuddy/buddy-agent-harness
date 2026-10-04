@@ -37,6 +37,11 @@ export type HarnessScope = {
 	instructionBridge?: InstructionBridge
 	/** Files whose presence beside `AGENTS.md` stop the harness reading it. */
 	shadowedBy?: readonly string[]
+	/**
+	 * An environment variable that, set and non-empty, replaces the `detect` directory: every path
+	 * under it is read from the variable's value instead.
+	 */
+	relocatedBy?: string
 	/** Where this harness keeps its own MCP servers; `doctor` compares against it and never writes. */
 	mcpConfig?: McpConfig
 	/** What this harness reads that no other can, reported so it can be converted to canonical form. */
@@ -100,6 +105,7 @@ export const harnessRegistry: readonly Harness[] = [
 		user: {
 			detect: '.claude',
 			...skillsProjection('claude-code', 'user'),
+			relocatedBy: 'CLAUDE_CONFIG_DIR',
 			instructionBridge: { kind: 'import', path: '.claude/CLAUDE.md', line: `@~/${globalInstructions}` },
 		},
 	},
@@ -130,6 +136,9 @@ export const harnessRegistry: readonly Harness[] = [
 			detect: '.codex',
 			...skillsProjection('codex', 'user'),
 			instructionBridge: { kind: 'symlink', path: '.codex/AGENTS.md' },
+			// Read in place of `AGENTS.md` only when it holds more than whitespace (E-CODEX-06).
+			shadowedBy: ['.codex/AGENTS.override.md'],
+			relocatedBy: 'CODEX_HOME',
 		},
 	},
 	{
@@ -146,6 +155,7 @@ export const harnessRegistry: readonly Harness[] = [
 		user: {
 			detect: '.copilot',
 			...skillsProjection('copilot-cli', 'user'),
+			relocatedBy: 'COPILOT_HOME',
 			instructionBridge: { kind: 'symlink', path: '.copilot/copilot-instructions.md' },
 		},
 	},
