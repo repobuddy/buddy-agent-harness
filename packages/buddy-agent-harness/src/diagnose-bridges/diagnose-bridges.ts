@@ -173,7 +173,7 @@ export function diagnoseBridges({ root, harnesses: preferred = [], cli, home, en
 	const global =
 		home === undefined
 			? { globalInstructions: [], findings: [] }
-			: diagnoseGlobalInstructions(home, preferred, cli, env)
+			: diagnoseGlobalInstructions(home, preferred, cli, env, root)
 	findings.push(...global.findings)
 
 	return {

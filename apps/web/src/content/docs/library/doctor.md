@@ -118,17 +118,18 @@ function diagnoseGlobalInstructions(
 	preferred: readonly HarnessName[],
 	cli: string,
 	env?: NodeJS.ProcessEnv,
+	start?: string,
 ): { globalInstructions: GlobalInstructionReport[]; findings: BridgeFinding[] }
 ```
 
-Checks whether each harness installed under `home`, or named in `preferred`, loads `~/.agents/AGENTS.md` through its own user-scope file, looked up under the directory a variable in `env` moves it to. `diagnoseBridges` calls it when given `home`. It reads the home directory and writes nothing. A finding is raised only where `~/.agents/AGENTS.md` exists. [Reaching ~/.agents/AGENTS.md](/cli/doctor/#reaching-agentsagentsmd) has the rules.
+Checks whether each harness installed under `home`, or named in `preferred`, loads `~/.agents/AGENTS.md` through its own user-scope file, looked up under the directory a variable in `env` moves it to. Where Claude Code's `CLAUDE_CONFIG_DIR` is set but empty, Claude Code reads its config folder from the directory it starts in, and that is `start`, which defaults to `process.cwd()`. `diagnoseBridges` calls it when given `home`, passing `root` as `start`. It reads the home directory and writes nothing. A finding is raised only where `~/.agents/AGENTS.md` exists. [Reaching ~/.agents/AGENTS.md](/cli/doctor/#reaching-agentsagentsmd) has the rules.
 
 ### GlobalInstructionReport
 
 | Field | Type | Meaning |
 | --- | --- | --- |
 | `harness` | `HarnessName` | The harness |
-| `path` | `string` | Its user-scope instruction file, written from `~`, such as `~/.claude/CLAUDE.md`, or from the variable that moved it, such as `$CODEX_HOME/AGENTS.md`. Where a file read in its place loads the global file, that file, such as `~/.codex/AGENTS.override.md` |
+| `path` | `string` | Its user-scope instruction file, written from `~`, such as `~/.claude/CLAUDE.md`, or from the variable that moved it, such as `$CODEX_HOME/AGENTS.md`. Under an empty `CLAUDE_CONFIG_DIR`, it is `./CLAUDE.md`, relative to `start`. Where a file read in its place loads the global file, that file, such as `~/.codex/AGENTS.override.md` |
 | `kind` | `GlobalInstructionKind` | What is at that path: `import`, `symlink`, `file`, or `none` |
 | `status` | `GlobalInstructionStatus` | `ok`, `missing`, `unbridged`, or `overridden` |
 

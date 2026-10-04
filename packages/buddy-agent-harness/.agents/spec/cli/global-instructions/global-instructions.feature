@@ -101,10 +101,69 @@ Feature: Report whether each installed harness loads ~/.agents/AGENTS.md
     And the repair hands the user `ln -s ~/.agents/AGENTS.md $COPILOT_HOME/copilot-instructions.md`
 
   @behavior
-  Scenario: reads an empty variable as unset
-    Given `CODEX_HOME` set to an empty string, and `~/.codex/` with no `AGENTS.md`
+  Scenario Outline: reads the home directory where <variable> is unset
+    Given `<variable>` unset, and `~/<directory>/` with no `<file>`
     When the command diagnoses the global instructions
-    Then it reports `~/.codex/AGENTS.md` with status `missing`
+    Then it reports `~/<directory>/<file>` with status `missing`
+
+    Examples:
+      | variable          | directory | file                    |
+      | CODEX_HOME        | .codex    | AGENTS.md               |
+      | COPILOT_HOME      | .copilot  | copilot-instructions.md |
+      | CLAUDE_CONFIG_DIR | .claude   | CLAUDE.md               |
+
+  @behavior
+  Scenario Outline: reads the directory <variable> names where it is set
+    Given `<variable>` set to a directory with no `<file>`
+    When the command diagnoses the global instructions
+    Then it reports `$<variable>/<file>` with status `missing`
+
+    Examples:
+      | variable          | file                    |
+      | CODEX_HOME        | AGENTS.md               |
+      | COPILOT_HOME      | copilot-instructions.md |
+      | CLAUDE_CONFIG_DIR | CLAUDE.md               |
+
+  @behavior
+  Scenario Outline: reads an empty <variable> as unset, as that harness does
+    Given `<variable>` set to an empty string, `~/<directory>/` with no `<file>`, and `~/.agents/AGENTS.md`
+    When the command diagnoses the global instructions
+    Then it reports `~/<directory>/<file>` with status `missing`
+    And it reports a `global-instructions-missing` problem naming `~/<directory>/<file>`
+
+    Examples:
+      | variable     | directory | file                    |
+      | CODEX_HOME   | .codex    | AGENTS.md               |
+      | COPILOT_HOME | .copilot  | copilot-instructions.md |
+
+  @behavior
+  Scenario: reads an empty CLAUDE_CONFIG_DIR as the directory Claude Code starts in, and blames the variable
+    Given `CLAUDE_CONFIG_DIR` set to an empty string, `~/.agents/AGENTS.md`, and a start directory with no `CLAUDE.md`
+    When the command diagnoses the global instructions
+    Then it reports `./CLAUDE.md` with status `missing`
+    And it reports a `global-instructions-emptied` problem naming `$CLAUDE_CONFIG_DIR`, whose repair has an empty command
+    And the repair hands the user the step to unset `CLAUDE_CONFIG_DIR` or set it to the folder meant
+    And it reports no `global-instructions-missing` problem
+
+  @behavior
+  Scenario: reports the file an empty CLAUDE_CONFIG_DIR reads, and still blames the variable where it loads the global file
+    Given `CLAUDE_CONFIG_DIR` set to an empty string, `~/.agents/AGENTS.md`, and a start directory whose `CLAUDE.md` holds `@~/.agents/AGENTS.md`
+    When the command diagnoses the global instructions
+    Then it reports `./CLAUDE.md` with kind `import` and status `ok`
+    And it reports a `global-instructions-emptied` problem naming `$CLAUDE_CONFIG_DIR`
+
+  @behavior
+  Scenario: raises no finding for an empty CLAUDE_CONFIG_DIR where there is no global file to go unread
+    Given `CLAUDE_CONFIG_DIR` set to an empty string, no `~/.agents/AGENTS.md`, and a start directory with no `CLAUDE.md`
+    When the command diagnoses the global instructions
+    Then it reports `./CLAUDE.md` with status `missing`
+    And it reports no finding
+
+  @behavior
+  Scenario: reads an empty CLAUDE_CONFIG_DIR from the repository, where Claude Code starts
+    Given `CLAUDE_CONFIG_DIR` set to an empty string, and a repository whose `CLAUDE.md` holds `@~/.agents/AGENTS.md`
+    When the command diagnoses the repository
+    Then it reports `./CLAUDE.md` with kind `import` and status `ok`
 
   # ── a file read in place of the user file ──
 

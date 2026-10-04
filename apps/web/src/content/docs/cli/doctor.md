@@ -200,6 +200,13 @@ globalInstructions[1]{harness,path,kind,status}:
   codex,$CODEX_HOME/AGENTS.md,symlink,ok
 ```
 
+A variable that is set but empty is read the way the harness reads it. Codex and Copilot CLI read it as unset, so the file is the one under `~`. Claude Code reads an empty `CLAUDE_CONFIG_DIR` as the directory it starts in, so its user-scope file becomes whichever `CLAUDE.md` is there: in a repository, the project's own. The row names that file relative to the directory `doctor` ran in, `./CLAUDE.md`, and the `global-instructions-emptied` finding blames the variable instead of the file. You most likely didn't mean to set it, and bridging that file would only work in one directory, and through the project's file. The repair is to unset it, or set it to the folder you meant:
+
+```
+help[1]{command,instruction}:
+  "","hand the user this step, since nothing here writes outside the repository: unset CLAUDE_CONFIG_DIR where your shell sets it, or set it to the folder you meant"
+```
+
 Codex also reads `AGENTS.override.md` before `AGENTS.md`, and uses whichever first holds more than whitespace. An override that does not load the global file makes the row `overridden`, however well `AGENTS.md` is bridged, and the `global-instructions-overridden` finding names the override. Its repair is to move what it says into `~/.agents/AGENTS.md` and remove it. An override that is itself a symlink to the global file is `ok`.
 
 | Status | Meaning |
@@ -209,7 +216,7 @@ Codex also reads `AGENTS.override.md` before `AGENTS.md`, and uses whichever fir
 | `unbridged` | The file holds content of its own and does not load the global file. |
 | `overridden` | The harness reads another file in its place, and that file does not load the global file. |
 
-The rows are reported whether or not `~/.agents/AGENTS.md` exists, so a skill handing text over for it can say which harnesses will load it. A finding, `global-instructions-missing`, `global-instructions-unbridged`, or `global-instructions-overridden`, is raised only where the file exists and a harness is not loading it.
+The rows are reported whether or not `~/.agents/AGENTS.md` exists, so a skill handing text over for it can say which harnesses will load it. A finding, `global-instructions-missing`, `global-instructions-unbridged`, `global-instructions-overridden`, or `global-instructions-emptied`, is raised only where the file exists and a harness is not loading it.
 
 **The repair is handed to you, never made.** The file is in your home directory, and nothing this package ships writes outside the repository. Each repair has an empty `command`, and its `instruction` names the exact line or symlink to add yourself:
 

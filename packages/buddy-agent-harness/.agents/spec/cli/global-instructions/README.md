@@ -21,8 +21,8 @@ It is a separate node from `../instruction-bridges/` because its root is the hom
 
 - **global instruction file** — `~/.agents/AGENTS.md`.
 - **user-scope instruction file** — the file a harness reads from the home directory for every repository, recorded per harness as the path of its user-scope `instructionBridge`.
-- **global instruction problem** — `global-instructions-missing` (no user-scope file at all), `global-instructions-unbridged` (a file that loads its own content and not the global one), or `global-instructions-overridden` (a file the harness reads in place of its user-scope file, which does not load the global one).
-- **relocating variable** — an environment variable that, set and non-empty, replaces a harness's user-scope directory: `CODEX_HOME` for `~/.codex`, `COPILOT_HOME` for `~/.copilot`, `CLAUDE_CONFIG_DIR` for `~/.claude`. Recorded per harness as its user-scope `relocatedBy`.
+- **global instruction problem** — `global-instructions-missing` (no user-scope file at all), `global-instructions-unbridged` (a file that loads its own content and not the global one), `global-instructions-overridden` (a file the harness reads in place of its user-scope file, which does not load the global one), or `global-instructions-emptied` (a relocating variable set but empty, which the harness reads as the directory it starts in).
+- **relocating variable** — an environment variable that, set and non-empty, replaces a harness's user-scope directory: `CODEX_HOME` for `~/.codex`, `COPILOT_HOME` for `~/.copilot`, `CLAUDE_CONFIG_DIR` for `~/.claude`. Recorded per harness as its user-scope `relocatedBy`; `emptyRelocatesToStart` marks a harness that reads an empty value as the directory it starts in.
 
 **Non-goals**
 
@@ -57,7 +57,8 @@ No option of its own. A harness is checked where its user-scope detection direct
 - **An import written with the absolute home path.** `ok`, the same as the `~` spelling.
 - **An import line in a file whose harness has no import.** `unbridged`: the line loads nothing there.
 - **A path that cannot be read as a file.** `unbridged` rather than failing the run.
-- **A relocating variable is set and non-empty.** The detection directory, the user-scope file, and any file read in its place are all looked up under the variable's value, and the row and the step write the path from the variable — `$CODEX_HOME/AGENTS.md` — so the report names it and stays publishable. An empty value is read as unset: Codex reads it so; Claude Code reads it as a relative path, and Copilot CLI's reading is unsettled (E-CC-19, E-COPILOT-05), so modelling either would be a guess.
+- **A relocating variable is set and non-empty.** The detection directory, the user-scope file, and any file read in its place are all looked up under the variable's value, and the row and the step write the path from the variable — `$CODEX_HOME/AGENTS.md` — so the report names it and stays publishable.
+- **A relocating variable is set but empty.** Read the way the harness reads it. Codex and Copilot CLI read it as unset (E-CODEX-06, E-COPILOT-06), so the file is the one under `~`. Claude Code reads it as the directory it starts in (E-CC-20), so the row names `CLAUDE.md` in the start directory, written with a leading `./` — the repository root for the command — and the finding is `global-instructions-emptied`, naming `$CLAUDE_CONFIG_DIR` in place of the file's own: the user most likely did not mean it, and bridging the file there would bridge one directory, and the project's file at that.
 - **A file read in place of the user-scope file.** Codex reads `AGENTS.override.md` before `AGENTS.md`, and uses the first that holds more than whitespace. Where that override does not land on the global file, the row is `overridden` and the finding names the override; the user-scope file's own finding, if any, is reported beside it. An override that is a symlink to the global file is `ok`, and the row names it, since it is the file the harness reads.
 
 ## Scenario map
@@ -78,7 +79,13 @@ No option of its own. A harness is checked where its user-scope detection direct
 | no home directory given | `checks the user-scope files only when given a home directory` |
 | a relocating variable set | `reads the user file from the directory a variable moves it to, and names the variable` |
 | a relocating variable set, and no user file under it | `hands over the bridge at the moved path` |
-| a relocating variable set to an empty string | `reads an empty variable as unset` |
+| a relocating variable unset | `reads the home directory where <variable> is unset` |
+| a relocating variable set, for each harness | `reads the directory <variable> names where it is set` |
+| `CODEX_HOME` or `COPILOT_HOME` set to an empty string | `reads an empty <variable> as unset, as that harness does` |
+| `CLAUDE_CONFIG_DIR` set to an empty string, and no file where Claude Code starts | `reads an empty CLAUDE_CONFIG_DIR as the directory Claude Code starts in, and blames the variable` |
+| `CLAUDE_CONFIG_DIR` set to an empty string, and a bridged file where Claude Code starts | `reports the file an empty CLAUDE_CONFIG_DIR reads, and still blames the variable where it loads the global file` |
+| `CLAUDE_CONFIG_DIR` set to an empty string, and no global file | `raises no finding for an empty CLAUDE_CONFIG_DIR where there is no global file to go unread` |
+| `CLAUDE_CONFIG_DIR` set to an empty string, through `diagnoseBridges` | `reads an empty CLAUDE_CONFIG_DIR from the repository, where Claude Code starts` |
 | a non-empty override beside a bridged user file | `reports a bridged user file as overridden where an override beside it holds content` |
 | a non-empty override and no user file | `reports the user file under an override too, so both steps are handed over at once` |
 | a non-empty override and no global file | `reports an override without a finding where there is no global file to go unread` |

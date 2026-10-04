@@ -42,6 +42,11 @@ export type HarnessScope = {
 	 * under it is read from the variable's value instead.
 	 */
 	relocatedBy?: string
+	/**
+	 * `relocatedBy` set to an empty string is read as the directory the harness starts in, rather
+	 * than as unset.
+	 */
+	emptyRelocatesToStart?: true
 	/** Where this harness keeps its own MCP servers; `doctor` compares against it and never writes. */
 	mcpConfig?: McpConfig
 	/** What this harness reads that no other can, reported so it can be converted to canonical form. */
@@ -106,6 +111,8 @@ export const harnessRegistry: readonly Harness[] = [
 			detect: '.claude',
 			...skillsProjection('claude-code', 'user'),
 			relocatedBy: 'CLAUDE_CONFIG_DIR',
+			// The resolver uses `??`, so an empty value is a relative path (E-CC-19, E-CC-20).
+			emptyRelocatesToStart: true,
 			instructionBridge: { kind: 'import', path: '.claude/CLAUDE.md', line: `@~/${globalInstructions}` },
 		},
 	},

@@ -70,6 +70,7 @@ export type GlobalInstructionProblem =
 	| 'global-instructions-missing'
 	| 'global-instructions-unbridged'
 	| 'global-instructions-overridden'
+	| 'global-instructions-emptied'
 
 /** Everything `doctor` can report against, across every section. */
 export type DoctorProblem =
@@ -385,6 +386,15 @@ const globalInstructionTable: Record<GlobalInstructionProblem, RepairRow> = {
 		}),
 		skillRepair: () =>
 			'hand the user the move of what that file says into the global file, and its removal; write nothing yourself',
+	},
+	'global-instructions-emptied': {
+		detail:
+			'the variable is set but empty, which this harness reads as the directory it starts in rather than as unset — its user-scope file is whichever one sits there, not the one in its own folder',
+		repair: ({ file }) => ({
+			command: '',
+			instruction: `${handOver} unset ${file.slice(1)} where your shell sets it, or set it to the folder you meant`,
+		}),
+		skillRepair: () => 'hand the user the step of unsetting that variable; write nothing yourself',
 	},
 }
 
@@ -717,6 +727,17 @@ function relocationList(): string {
 		.join(', ')
 }
 
+/** The relocating variables whose empty value the harness reads as the directory it starts in, or as unset. */
+function emptyRelocationList(asStart: boolean): string {
+	return new Intl.ListFormat('en').format(
+		harnessRegistry.flatMap(({ user }) =>
+			user?.relocatedBy === undefined || (user.emptyRelocatesToStart === true) !== asStart
+				? []
+				: [`\`${user.relocatedBy}\``],
+		),
+	)
+}
+
 /** One row per harness with a user-scope file that can load the global one. */
 function globalBridgeRows(): string {
 	return harnessRegistry
@@ -751,7 +772,7 @@ function scopeRows(scope: HarnessScope): string {
 		`| instruction bridge | ${bridge === undefined ? 'none' : bridgeCell(bridge)} |`,
 		...(scope.relocatedBy
 			? [
-					`| moved by | \`${scope.relocatedBy}\` — set and non-empty, it replaces \`${scope.detect}\`, and every path under it moves with it |`,
+					`| moved by | \`${scope.relocatedBy}\` — set and non-empty, it replaces \`${scope.detect}\`, and every path under it moves with it; set but empty, ${scope.emptyRelocatesToStart ? `it is read as the directory the harness starts in, so \`${scope.detect}\` is that directory` : 'it is read as unset'} |`,
 				]
 			: []),
 		...(scope.shadowedBy
@@ -884,7 +905,7 @@ ${globalBridgeRows()}
 
 Cursor keeps its user rules in a settings panel rather than a file, so there is nothing on disk to check; Devin Desktop documents no user-scope path. Neither gets a row.
 
-A harness's directory can be moved by a variable: ${relocationList()}. Where one is set and non-empty, the row and the step name the file under it, written from the variable — \`$CODEX_HOME/AGENTS.md\` — so the step works in the shell the user ran \`doctor\` from.
+A harness's directory can be moved by a variable: ${relocationList()}. Where one is set and non-empty, the row and the step name the file under it, written from the variable — \`$CODEX_HOME/AGENTS.md\` — so the step works in the shell the user ran \`doctor\` from. Set but empty, it is read the way the harness reads it: as unset for ${emptyRelocationList(false)}, and as the directory the harness starts in for ${emptyRelocationList(true)}.
 
 ${repairTable(globalInstructionRepairs)}
 
@@ -893,6 +914,8 @@ ${repairTable(globalInstructionRepairs)}
 \`unbridged\` is the one to read carefully. The file is there and holds instructions of its own, so the harness loads something — just not the global file. Where the bridge is a symlink, the file it replaces holds content that has to move into \`${globalFile}\` first, or it is lost.
 
 \`overridden\` is the quietest. The user-scope file may be bridged perfectly and still go unread, because the harness reads another file in its place: Codex reads \`AGENTS.override.md\` before \`AGENTS.md\`, and uses whichever first holds more than whitespace. The finding names that file. Its content moves into \`${globalFile}\` before it is removed; where the user-scope file has a problem of its own, that finding is reported beside it, so both steps are handed over at once.
+
+\`global-instructions-emptied\` blames the variable, not a file. A harness that reads an empty variable as the directory it starts in reads its user-scope file from there — in a repository, the project's own file — so the row names that path, relative, from the directory \`doctor\` ran in. The finding names the variable, and the step is to unset it or set it to the folder meant: editing the file the row names would bridge one directory only, and the project's file rather than the user's.
 
 A row is reported for every harness installed for this user, whether or not \`${globalFile}\` exists, so a skill handing text over for that file can say which harnesses will load it. A finding is raised only where the file exists and a harness is not loading it.
 `,
