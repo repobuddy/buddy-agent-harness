@@ -688,3 +688,43 @@ Status values: `confirmed`, `contested`, `thin`. Confidence: high / medium / low
 - **Notes**: "Cursor supports four types of rules"; `AGENTS.md` is one, described as "Agent instructions in markdown format. Simple alternative to `.cursor/rules`." Verbatim: "Create an `AGENTS.md` file in your project root. Write instructions in plain markdown. Cursor picks it up automatically." Supported in the project root and in subdirectories, where nested instructions "are combined with parent directories, with more specific instructions taking precedence." It carries no conditional attachment — no globs, no description-gating, no `@`-mention-only — and the docs name that as the tradeoff: "For more control over when rules apply, use project rules in `.cursor/rules/` instead."
 - **Precedence against `.mdc` is undocumented.** The documented order is "Team Rules → Project Rules → User Rules", and `AGENTS.md` is not placed in it. The two coexist; Cursor loads both.
 - **`CLAUDE.md` is a Cursor instruction file too.** Verbatim: "Cursor reads `CLAUDE.md` files the same way it reads `AGENTS.md`", and "`CLAUDE.md` files are always applied to every conversation, regardless of any `alwaysApply` frontmatter setting." **This cuts against writing one for any repository that Cursor also reads**: the file Claude Code reads *instead of* `AGENTS.md` is one Cursor loads unconditionally *in addition to* it. Also relevant to `.cursor/rules/`: "A plain `.md` file in `.cursor/rules` is ignored by the rules system because it has no frontmatter."
+
+## E-CC-18 — Claude Code's user-scope file imports a home-relative path
+
+- **Date**: 2026-10-03
+- **Status**: confirmed
+- **Confidence**: high
+- **Source**: Claude Code memory documentation — https://code.claude.com/docs/en/memory — official docs
+- **Notes**: The user-scope instruction file is `~/.claude/CLAUDE.md` ("User instructions | `~/.claude/CLAUDE.md` | Personal preferences for all projects"). Imports are `@path`; "Both relative and absolute paths are allowed", and the page's own example imports from the home directory: `@~/.claude/my-project-instructions.md`. User-scope files load their imports without the approval dialog. The direct `AGENTS.md` read (E-CC-14) is project scope only, so nothing reads `~/.agents/AGENTS.md` until `~/.claude/CLAUDE.md` holds `@~/.agents/AGENTS.md`, or is a symlink to it.
+
+## E-CODEX-05 — Codex's user-scope instructions are `~/.codex/AGENTS.md`, with no include syntax
+
+- **Date**: 2026-10-03
+- **Status**: confirmed
+- **Confidence**: high on the path; medium on the absence of an include, which the docs show by silence
+- **Source**: Codex AGENTS.md guide — https://developers.openai.com/codex/guides/agents-md — official docs
+- **Notes**: "Codex checks your home directory (default `~/.codex`)" for `AGENTS.override.md`, then `AGENTS.md`, and "uses only the first non-empty file at this level". `CODEX_HOME` relocates the directory. No import syntax is documented, and `~/.agents/AGENTS.md` is not named. The only bridge is a symlink: `~/.codex/AGENTS.md` → `~/.agents/AGENTS.md`. A non-empty `~/.codex/AGENTS.override.md` would take precedence over that symlink; not checked.
+
+## E-GEM-03 — At user scope, `context.fileName` names files inside `~/.gemini/` only
+
+- **Date**: 2026-10-03
+- **Status**: confirmed
+- **Confidence**: high on the lookup; medium on the import being refused, which is read from source and not run
+- **Source**: Gemini CLI configuration reference — https://github.com/google-gemini/gemini-cli/blob/main/docs/reference/configuration.md — and `packages/core/src/utils/memoryDiscovery.ts` (`getGlobalMemoryPaths`) — vendor docs and source
+- **Notes**: "Global context file: Location: `~/.gemini/<configured-context-filename>`"; the source joins the home directory, `.gemini`, and each configured filename. So `context.fileName: ["AGENTS.md"]` in `~/.gemini/settings.json` loads `~/.gemini/AGENTS.md`, never `~/.agents/AGENTS.md`: **a setting cannot bridge the global file**, unlike the project-scope bridge. An `@` import in `~/.gemini/GEMINI.md` is validated against an allowed-directory list rooted at `~/.gemini`, so `~/.agents/AGENTS.md` falls outside it. The bridge is a symlink: `~/.gemini/GEMINI.md` → `~/.agents/AGENTS.md` (or a symlink named `AGENTS.md` there plus `AGENTS.md` in `context.fileName`).
+
+## E-COPILOT-04 — Copilot CLI refuses a home-relative import in its user instructions
+
+- **Date**: 2026-10-03
+- **Status**: confirmed
+- **Confidence**: high on the path and the refusal; low on whether a symlink leaving `~/.copilot` is followed
+- **Source**: Adding custom instructions for Copilot CLI — https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-custom-instructions — official docs
+- **Notes**: User-level instructions are `$HOME/.copilot/copilot-instructions.md`, relocated by `COPILOT_HOME`. "Absolute paths and paths beginning with `~/` are not loaded" by an `@` reference, so the bridge is a symlink: `~/.copilot/copilot-instructions.md` → `~/.agents/AGENTS.md`.
+
+## E-CUR-08 — Cursor's user rules are not a file
+
+- **Date**: 2026-10-03
+- **Status**: confirmed
+- **Confidence**: high
+- **Source**: Cursor rules documentation — https://cursor.com/docs/rules — official docs
+- **Notes**: "User Rules are global preferences defined in **Customize → Rules** that apply across all projects." They live in the settings UI, and no home-directory instruction file is documented, so nothing on disk can be checked for loading `~/.agents/AGENTS.md`. Devin Desktop documents no user-scope path this registry records, so it has none either.
