@@ -2,7 +2,12 @@ import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { referenceLayers } from './reference-layers.ts'
+import {
+	deprecatedManagedGovernancesDir,
+	managedGovernancesDir,
+	managedReferencesDir,
+	referenceLayers,
+} from './reference-layers.ts'
 
 function tempDir(prefix = 'reference-layers-'): string {
 	return mkdtempSync(join(tmpdir(), prefix))
@@ -35,18 +40,29 @@ describe('referenceLayers', () => {
 			root,
 			home: tempDir(),
 			platform: 'linux',
-			packageRoot: join(root, 'node_modules', 'dep-a'),
+			plugin: { name: 'host', root: join(root, 'node_modules', 'dep-a') },
 		})
 		expect(layers.some((layer) => layer.plugins.includes('dep-a'))).toBe(false)
 	})
 
-	it('tolerates a packageRoot that does not exist on disk', async () => {
+	it('tolerates a plugin root that does not exist on disk', async () => {
 		const root = tempDir()
 		const packageRoot = join(root, 'does-not-exist')
 
-		const layers = await referenceLayers({ root, home: tempDir(), platform: 'linux', packageRoot })
+		const layers = await referenceLayers({
+			root,
+			home: tempDir(),
+			platform: 'linux',
+			plugin: { name: 'host', root: packageRoot },
+		})
 
-		expect(layers.some((layer) => layer.dir === join(packageRoot, 'references'))).toBe(true)
+		expect(layers.find((layer) => layer.dir === join(packageRoot, 'references'))?.plugins).toEqual(['host'])
+	})
+
+	it('reads no plugin layer of its own when no plugin runs the resolver', async () => {
+		const layers = await referenceLayers({ root: tempDir(), home: tempDir(), platform: 'linux', env: {} })
+
+		expect(layers.filter(({ tier }) => tier === 'plugin')).toEqual([])
 	})
 
 	it('names a plugin by both its package name and its plugin.json name, when they differ', async () => {
@@ -77,7 +93,7 @@ describe('referenceLayers', () => {
 		])
 	})
 
-	it('drops an enabled plugin whose folder is this package itself', async () => {
+	it('drops an enabled plugin whose folder is the plugin running the resolver', async () => {
 		const home = tempDir()
 		const packageRoot = tempDir()
 		write(packageRoot, 'references/testing.md', '# own\n')
@@ -92,9 +108,37 @@ describe('referenceLayers', () => {
 			root: tempDir(),
 			home,
 			platform: 'linux',
-			packageRoot,
+			plugin: { name: 'buddy-agent-harness', root: packageRoot },
 			env: { CLAUDECODE: '1', CLAUDE_CODE_SESSION_ID: 'session' },
 		})
 		expect(layers.filter(({ dir }) => dir === join(packageRoot, 'references'))).toHaveLength(1)
+	})
+})
+
+describe('the managed folders', () => {
+	it('names the managed folders per platform', () => {
+		expect(managedReferencesDir('linux')).toBe('/etc/buddy-agent-harness/references')
+		expect(managedGovernancesDir('linux')).toBe('/etc/buddy-agent-harness/governances')
+		expect(managedGovernancesDir('darwin')).toBe('/Library/Application Support/BuddyAgentHarness/governances')
+		expect(managedGovernancesDir('win32', 'D:\\ProgramData')).toBe(
+			join('D:\\ProgramData', 'BuddyAgentHarness', 'governances'),
+		)
+	})
+
+	// Pinned so a machine already carrying one keeps working: these are the paths `universal-plugin`
+	// wrote, and they are still read.
+	it('still names the folder universal-plugin wrote, per platform', () => {
+		expect(deprecatedManagedGovernancesDir('linux')).toBe('/etc/universal-plugin/governances')
+		expect(deprecatedManagedGovernancesDir('darwin')).toBe('/Library/Application Support/UniPlugin/governances')
+		expect(deprecatedManagedGovernancesDir('win32', 'D:\\ProgramData')).toBe(
+			join('D:\\ProgramData', 'UniPlugin', 'governances'),
+		)
+	})
+
+	it('falls back to the default program data folder when Windows does not name one', () => {
+		expect(managedGovernancesDir('win32', '')).toBe(join('C:\\ProgramData', 'BuddyAgentHarness', 'governances'))
+		expect(deprecatedManagedGovernancesDir('win32', undefined)).toBe(
+			join('C:\\ProgramData', 'UniPlugin', 'governances'),
+		)
 	})
 })

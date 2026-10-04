@@ -8,7 +8,7 @@ import { buildDoctorReport, doctorCommand } from './diagnose-bridges/doctor.comm
 import { governanceCommand } from './governance-overrides/governance.command.ts'
 import * as publicApi from './index.ts'
 import { activate, initCommand } from './initialize-harnesses/init.command.ts'
-import { referenceCommand } from './references/reference.command.ts'
+import { referenceCommand } from './references/references.ts'
 
 const packageRoot = dirname(dirname(fileURLToPath(import.meta.url)))
 

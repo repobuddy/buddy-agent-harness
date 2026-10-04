@@ -1,6 +1,10 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import {
+	deprecatedManagedGovernancesDir as referenceDeprecatedManagedGovernancesDir,
+	managedGovernancesDir as referenceManagedGovernancesDir,
+} from 'buddy-agent-reference'
 
 /**
  * Order here is search order. `package` is the only member that isn't an override —
@@ -38,9 +42,7 @@ export type LayerOptions = {
 
 /** @deprecated Use `managedReferencesDir`. Removed in the next major version. */
 export function managedGovernancesDir(platform: NodeJS.Platform, programData?: string | undefined): string {
-	if (platform === 'darwin') return '/Library/Application Support/BuddyAgentHarness/governances'
-	if (platform === 'win32') return join(programData || 'C:\\ProgramData', 'BuddyAgentHarness', 'governances')
-	return '/etc/buddy-agent-harness/governances'
+	return referenceManagedGovernancesDir(platform, programData)
 }
 
 /**
@@ -50,9 +52,7 @@ export function managedGovernancesDir(platform: NodeJS.Platform, programData?: s
  * @deprecated Use `managedReferencesDir`. Removed in the next major version.
  */
 export function deprecatedManagedGovernancesDir(platform: NodeJS.Platform, programData?: string | undefined): string {
-	if (platform === 'darwin') return '/Library/Application Support/UniPlugin/governances'
-	if (platform === 'win32') return join(programData || 'C:\\ProgramData', 'UniPlugin', 'governances')
-	return '/etc/universal-plugin/governances'
+	return referenceDeprecatedManagedGovernancesDir(platform, programData)
 }
 
 export function projectGovernancesDir(root: string): string {

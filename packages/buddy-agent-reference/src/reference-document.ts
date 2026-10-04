@@ -1,5 +1,5 @@
 import { parse } from 'yaml'
-import { isRecord } from '../is-record/is-record.ts'
+import { isRecord } from './is-record/is-record.ts'
 
 export type MergeMode = 'first-wins' | 'combine' | 'merge-sections'
 

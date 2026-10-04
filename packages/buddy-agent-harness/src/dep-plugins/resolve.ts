@@ -1,6 +1,6 @@
-import { existsSync, readFileSync } from 'node:fs'
-import { createRequire } from 'node:module'
-import { dirname, join } from 'node:path'
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
+import { packageDir } from 'buddy-agent-reference'
 import type { DepPlugin } from './dep-plugins.ts'
 
 export type SkipReason = 'unresolved' | 'no-manifest' | 'unnamed'
@@ -13,34 +13,6 @@ function readJson(path: string): unknown {
 	} catch {
 		return undefined
 	}
-}
-
-function ancestorCandidates(startDir: string, pkg: string): string[] {
-	const segments = pkg.split('/')
-	const candidates: string[] = []
-	let dir = startDir
-	for (;;) {
-		candidates.push(join(dir, 'node_modules', ...segments))
-		const parent = dirname(dir)
-		if (parent === dir) break
-		dir = parent
-	}
-	return candidates
-}
-
-/**
- * Anchored at the declaring manifest (required for pnpm's isolation), then falls back to a
- * `node_modules` walk — an `exports` map without a `./package.json` entry blocks the first.
- */
-export function packageDir(pkg: string, fromManifest: string): string | undefined {
-	try {
-		const require = createRequire(fromManifest)
-		return dirname(require.resolve(`${pkg}/package.json`))
-	} catch {}
-	for (const candidate of ancestorCandidates(dirname(fromManifest), pkg)) {
-		if (existsSync(join(candidate, 'package.json'))) return candidate
-	}
-	return undefined
 }
 
 /** A manifest lives at the package root — the Agent Plugins Specification's pinned location. */

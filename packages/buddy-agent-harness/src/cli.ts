@@ -5,7 +5,7 @@ import { doctorCommand } from './diagnose-bridges/doctor.command.ts'
 import { governanceCommand } from './governance-overrides/governance.command.ts'
 import { initCommand } from './initialize-harnesses/init.command.ts'
 import { mcpCommand } from './project-mcp/mcp.command.ts'
-import { referenceCommand } from './references/reference.command.ts'
+import { referenceCommand } from './references/references.ts'
 
 /**
  * `../package.json` resolves from both `src/cli.ts` and the bundled `dist/cli.mjs` — one directory

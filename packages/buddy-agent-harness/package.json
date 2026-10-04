@@ -61,7 +61,7 @@
 	},
 	"dependencies": {
 		"@cyberuni/agent-harness": "^0.3.0",
-		"@toon-format/toon": "^4.1.1",
+		"buddy-agent-reference": "workspace:^",
 		"clibuilder": "^11.3.0",
 		"jsonc-parser": "^3.3.1",
 		"smol-toml": "^1.8.0",
@@ -69,6 +69,7 @@
 		"yaml": "^2.9.0"
 	},
 	"devDependencies": {
+		"@toon-format/toon": "^4.1.1",
 		"@types/node": "^24.12.4",
 		"@vitest/coverage-v8": "^5.0.0",
 		"tsdown": "^0.23.0",

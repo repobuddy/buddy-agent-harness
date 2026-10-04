@@ -1,14 +1,8 @@
 import { existsSync, readFileSync, realpathSync, statSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
-import { declaredDependencies } from '../dep-plugins/dep-plugins.ts'
-import { packageDir } from '../dep-plugins/resolve.ts'
-import {
-	deprecatedManagedGovernancesDir,
-	managedGovernancesDir,
-	packageGovernancesDir,
-} from '../governance-overrides/governance-overrides.ts'
-import { isRecord } from '../is-record/is-record.ts'
+import { declaredDependencies, packageDir } from './dependencies/dependencies.ts'
 import { detectedHarnesses, enabledPluginLayers, harnessManagedLayers } from './harness-layers.ts'
+import { isRecord } from './is-record/is-record.ts'
 
 /** Order here is precedence order, highest first. */
 export type ReferenceTier = 'managed' | 'project' | 'user' | 'plugin'
@@ -29,15 +23,38 @@ export type ReferenceLayerOptions = {
 	home: string
 	platform: NodeJS.Platform
 	programData?: string | undefined
-	/** This package's own root, the `buddy-agent-harness` plugin. */
-	packageRoot?: string | undefined
+	/**
+	 * The plugin running the resolver. Its `references/` is the first plugin layer, and its install,
+	 * when a harness has it enabled, is not read a second time.
+	 */
+	plugin?: ReferencePlugin | undefined
 	/** Detects the harness and reads its settings. Defaults to `process.env`. */
 	env?: Readonly<Record<string, string | undefined>>
 }
 
-export const PACKAGE_PLUGIN = 'buddy-agent-harness'
+export type ReferencePlugin = {
+	/** The name a qualified `<plugin>/<name>` uses for it. */
+	name: string
+	/** The package root, which holds its `references/`. */
+	root: string
+}
+
 export const LEGACY_STATUS = 'legacy — move these documents to references/ beside it'
 export const DEPRECATED_STATUS = 'deprecated — move these documents to the managed references/ layer'
+
+/** Read below the managed `references/` layer, so a machine already using it keeps working. */
+export function managedGovernancesDir(platform: NodeJS.Platform, programData?: string | undefined): string {
+	if (platform === 'darwin') return '/Library/Application Support/BuddyAgentHarness/governances'
+	if (platform === 'win32') return join(programData || 'C:\\ProgramData', 'BuddyAgentHarness', 'governances')
+	return '/etc/buddy-agent-harness/governances'
+}
+
+/** Still read, below the layer above, and reported as deprecated so an admin knows to move it. */
+export function deprecatedManagedGovernancesDir(platform: NodeJS.Platform, programData?: string | undefined): string {
+	if (platform === 'darwin') return '/Library/Application Support/UniPlugin/governances'
+	if (platform === 'win32') return join(programData || 'C:\\ProgramData', 'UniPlugin', 'governances')
+	return '/etc/universal-plugin/governances'
+}
 
 export function managedReferencesDir(platform: NodeJS.Platform, programData?: string | undefined): string {
 	return join(dirname(managedGovernancesDir(platform, programData)), 'references')
@@ -133,12 +150,19 @@ function dependencyLayers(root: string, skip: ReadonlySet<string>): ReferenceLay
 	return layers
 }
 
+function ownLayers({ name, root }: ReferencePlugin): ReferenceLayer[] {
+	return [
+		{ tier: 'plugin', dir: join(root, 'references'), plugins: [name], status: '' },
+		{ tier: 'plugin', dir: join(root, 'governances'), plugins: [name], status: LEGACY_STATUS },
+	]
+}
+
 export async function referenceLayers({
 	root,
 	home,
 	platform,
 	programData,
-	packageRoot = dirname(packageGovernancesDir()),
+	plugin,
 	env = process.env,
 }: ReferenceLayerOptions): Promise<ReferenceLayer[]> {
 	const layer = (tier: ReferenceTier, dir: string, status = ''): ReferenceLayer => ({
@@ -147,10 +171,9 @@ export async function referenceLayers({
 		plugins: [],
 		status,
 	})
-	const self = [PACKAGE_PLUGIN]
 	const harnesses = detectedHarnesses(env)
 	const chain = projectChain(root)
-	const ownRoot = canonical(packageRoot)
+	const ownRoot = plugin && canonical(plugin.root)
 	const enabled = await enabledPluginLayers(harnesses, chain, { env, homedir: home, cwd: resolve(root), platform })
 	const layers: ReferenceLayer[] = [
 		layer('managed', managedReferencesDir(platform, programData)),
@@ -160,10 +183,9 @@ export async function referenceLayers({
 		...chain.flatMap(projectReferenceLayers),
 		layer('user', join(home, '.agents', 'references')),
 		layer('user', join(home, '.agents', 'governances'), LEGACY_STATUS),
-		{ tier: 'plugin', dir: join(packageRoot, 'references'), plugins: self, status: '' },
-		{ tier: 'plugin', dir: join(packageRoot, 'governances'), plugins: self, status: LEGACY_STATUS },
+		...(plugin ? ownLayers(plugin) : []),
 		...enabled.filter(({ dir, skipped }) => skipped || (isDirectory(dir) && canonical(dirname(dir)) !== ownRoot)),
-		...dependencyLayers(root, new Set([ownRoot])),
+		...dependencyLayers(root, new Set(ownRoot ? [ownRoot] : [])),
 	]
 	// A repository checked out at the home directory would read the same folder as project and user.
 	const seen = new Set<string>()

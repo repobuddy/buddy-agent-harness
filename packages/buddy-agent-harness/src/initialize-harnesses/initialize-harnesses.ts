@@ -1,8 +1,7 @@
 import { mkdirSync } from 'node:fs'
 import { join } from 'node:path'
+import { projectReferenceLayers, projectReferencesDir, referenceNames } from 'buddy-agent-reference'
 import { type HarnessName, selectHarnesses } from '../harness-registry/harness-registry.ts'
-import { projectReferenceLayers, projectReferencesDir } from '../references/reference-layers.ts'
-import { referenceNames } from '../references/resolve-reference.ts'
 import { countSkills, type ForceSelection, projectSkills } from '../skill-projection/skill-projection.ts'
 
 export type InitializeOptions = {

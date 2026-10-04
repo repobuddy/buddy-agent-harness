@@ -1,21 +1,18 @@
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join, relative } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { deprecatedManagedGovernancesDir, managedGovernancesDir } from '../governance-overrides/governance-overrides.ts'
 import {
+	createReferenceCommand,
+	createReferenceCommands,
 	type ReferenceCreateReport,
 	type ReferenceListReport,
 	type ReferenceSearchReport,
 	type ReferenceShowEntry,
 	type ReferenceWhereReport,
-	referenceCreateCommand,
-	referenceListCommand,
-	referenceSearchCommand,
-	referenceShowCommand,
-	referenceWhereCommand,
 } from './reference.command.ts'
-import { managedReferencesDir } from './reference-layers.ts'
+import { deprecatedManagedGovernancesDir, managedGovernancesDir, managedReferencesDir } from './reference-layers.ts'
 
 /** The command reads the home directory itself; a fixture per test needs its own fake one. */
 const fakeHome = vi.hoisted(() => ({ value: '' }))
@@ -70,6 +67,16 @@ vi.mock('@cyberuni/agent-harness', async (importOriginal) => {
 			return harness.allPolicyRead ? { ...result, unread: [] } : result
 		},
 	}
+})
+
+const {
+	show: referenceShowCommand,
+	list: referenceListCommand,
+	search: referenceSearchCommand,
+	where: referenceWhereCommand,
+	create: referenceCreateCommand,
+} = createReferenceCommands({
+	plugin: { name: 'buddy-agent-reference', root: dirname(dirname(fileURLToPath(import.meta.url))) },
 })
 
 const stdout = vi.spyOn(process.stdout, 'write').mockImplementation(() => true)
@@ -1558,5 +1565,25 @@ describe('create', () => {
 
 		expect(await create('never-created', { 'dry-run': true })).toBe(1)
 		expect(stderrLines()).toContain('error: Reference creation failed.\n')
+	})
+})
+
+describe('createReferenceCommand', () => {
+	it('groups every subcommand under `reference`', () => {
+		const group = createReferenceCommand() as unknown as { name: string; commands: { name: string }[] }
+
+		expect(group.name).toBe('reference')
+		expect(group.commands.map(({ name }) => name)).toEqual(['show', 'list', 'search', 'where', 'create'])
+	})
+
+	it('reads no plugin layer of its own when no plugin runs it', async () => {
+		const { list: listAlone } = createReferenceCommands()
+		const root = repo()
+
+		expect(
+			await (listAlone as unknown as { run(value: ListArgs): Promise<number> }).run({ root, format: 'json' }),
+		).toBe(0)
+		const report = JSON.parse(written()) as ReferenceListReport
+		expect(report.layers.some(({ plugin }) => plugin === 'buddy-agent-reference')).toBe(false)
 	})
 })
