@@ -1,7 +1,8 @@
 import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import type { Harness, HarnessScope } from '../harness-registry/harness-registry.ts'
-import { harnessRegistry } from '../harness-registry/harness-registry.ts'
+import { globalInstructions, harnessRegistry } from '../harness-registry/harness-registry.ts'
+import type { InstructionBridge } from '../harness-registry/instruction-bridge.ts'
 import type { NonstandardKind } from '../harness-registry/nonstandard-artifact.ts'
 import { type Locator, locatorText } from './locator.ts'
 
@@ -64,8 +65,17 @@ export type InstructionProblem =
 	| 'instructions-shadowing'
 	| 'instructions-superseded'
 
+/** Every way a harness's user-scope instruction file fails to load `~/.agents/AGENTS.md`. */
+export type GlobalInstructionProblem = 'global-instructions-missing' | 'global-instructions-unbridged'
+
 /** Everything `doctor` can report against, across every section. */
-export type DoctorProblem = BridgeProblem | InstructionProblem | ConfigurationFault | McpProblem | NonstandardProblem
+export type DoctorProblem =
+	| BridgeProblem
+	| InstructionProblem
+	| GlobalInstructionProblem
+	| ConfigurationFault
+	| McpProblem
+	| NonstandardProblem
 
 /** Alias kept for callers that name the whole set rather than one section. */
 export type ConfigurationProblem = DoctorProblem
@@ -312,6 +322,51 @@ const instructionTable: Record<InstructionProblem, RepairRow> = {
 
 export const instructionRepairs: readonly Repair[] = repairsOf(instructionTable)
 
+const globalFile = `~/${globalInstructions}`
+
+/** The step that bridges one harness's user-scope file, in the words it is handed over in. */
+export function globalBridgeStep(bridge: InstructionBridge): string {
+	return bridge.kind === 'import'
+		? `add the line \`${bridge.line}\` to ~/${bridge.path}`
+		: `run \`ln -s ${globalFile} ~/${bridge.path}\``
+}
+
+/** The bridge for a reported path; undefined for a path no harness registers, such as a table's `<path>`. */
+function userBridgeAt(file: string): InstructionBridge | undefined {
+	return harnessRegistry
+		.map((harness) => harness.user?.instructionBridge)
+		.find((candidate) => candidate !== undefined && `~/${candidate.path}` === file)
+}
+
+/** The step for one reported file, or a pointer to where it is written when the path is not one. */
+function stepAt(file: string, keepContent: boolean): string {
+	const bridge = userBridgeAt(file)
+	if (bridge === undefined) return `add the bridge the harness page names for ${file}`
+	// A symlink replaces the file, so what it says has to move first or it is lost.
+	const keep =
+		keepContent && bridge.kind !== 'import' ? `move what ${file} says into ${globalFile} and remove it, then ` : ''
+	return `${keep}${globalBridgeStep(bridge)}`
+}
+
+/** Outside the repository, so never written: a repair is a step handed to the user. */
+const handOver = 'hand the user this step, since nothing here writes outside the repository:'
+
+const globalInstructionTable: Record<GlobalInstructionProblem, RepairRow> = {
+	'global-instructions-missing': {
+		detail: `no user-scope instruction file at this path — the harness loads none of ${globalFile}`,
+		repair: ({ file }) => ({ command: '', instruction: `${handOver} ${stepAt(file, false)}` }),
+		skillRepair: () => 'hand the user the step the harness page names for that file; write nothing yourself',
+	},
+	'global-instructions-unbridged': {
+		detail: `the file holds its own content and does not load ${globalFile} — text placed there reaches no session of this harness`,
+		repair: ({ file }) => ({ command: '', instruction: `${handOver} ${stepAt(file, true)}` }),
+		skillRepair: () =>
+			'hand the user the step the harness page names for that file, keeping what the file says; write nothing yourself',
+	},
+}
+
+export const globalInstructionRepairs: readonly Repair[] = repairsOf(globalInstructionTable)
+
 const configurationTable: Record<ConfigurationFault, RepairRow> = {
 	'deprecated-harness': {
 		detail:
@@ -498,6 +553,7 @@ export const nonstandardRepairs: readonly Repair[] = repairsOf(nonstandardTable)
 const doctorTable: Record<DoctorProblem, RepairRow> = {
 	...bridgeTable,
 	...instructionTable,
+	...globalInstructionTable,
 	...configurationTable,
 	...mcpTable,
 	...nonstandardTable,
@@ -571,6 +627,8 @@ The command is read-only. It never repairs anything, so it is safe to run at any
 
 \`instructions\` is everything standing between a harness and \`AGENTS.md\`, with a \`status\` of \`ok\`, \`missing\`, \`unbridged\`, \`unreadable\`, \`shadowing\`, or \`superseded\`. The last two are not bridges: they are files that suppress an \`AGENTS.md\` the harness would otherwise read by itself. A separate section because nothing about any of them is shared with \`bridges\`: a different \`kind\`, a different status vocabulary, and a repair that is never a command.
 
+\`globalInstructions\` is the same question one level up: whether each harness installed for this user loads \`${globalFile}\` through its own user-scope file, with a \`status\` of \`ok\`, \`missing\`, or \`unbridged\`. No harness reads that file by itself, so text placed there reaches only the harnesses whose row is \`ok\`. The rows are there whether or not the file exists; a finding is raised only when it exists and goes unread.
+
 \`findings\` explains each problem and carries more than the two sections above: the configuration, MCP, and non-standard findings have no section of their own, because they are about files rather than about bridges. \`help\` carries each repair, one row per distinct repair, with two columns:
 
 - \`command\` — a shell invocation that, run exactly as given, **completes** the repair.
@@ -594,6 +652,7 @@ Every \`problem\` name routes to exactly one page. Load the page for the finding
 | --- | --- |
 | \`references/bridges.md\` | any \`bridges\` row that is not \`ok\` |
 | \`references/instructions.md\` | any \`instructions\` row that is not \`ok\` |
+| \`references/global-instructions.md\` | any \`globalInstructions\` row that is not \`ok\` |
 | \`references/configuration.md\` | a finding about the configuration around the bridges rather than a bridge |
 | \`references/mcp.md\` | any finding whose path is an MCP locator — **always** before acting on a credential finding |
 | \`references/nonstandard.md\` | a finding about configuration only one harness can read |
@@ -605,6 +664,7 @@ Every \`problem\` name routes to exactly one page. Load the page for the finding
 - Edit skills at \`.agents/skills/<name>/SKILL.md\`. Editing through a bridge is only safe when that bridge is a symlink.
 - Do not add bridges to \`.gitignore\`. An untracked bridge swallows a real edit silently.
 - Never repeat a value from a file an \`mcp-literal-secret\` or \`mcp-committed-secret\` finding points at. The report withheld it on purpose, and quoting it back puts it in the transcript anyway.
+- Never write outside the repository. A \`globalInstructions\` repair is a step for the user to take in their own home directory; hand it over exactly as reported.
 - Write instructions in \`AGENTS.md\`, never in \`CLAUDE.md\`. Content written there reaches one harness, drifts from the canonical file, and — because Claude Code prefers it — takes \`AGENTS.md\` out of that harness's context entirely.
 `
 }
@@ -625,6 +685,30 @@ function conversionOf(kind: NonstandardKind): string {
 	}
 }
 
+/** One row per harness with a user-scope file that can load the global one. */
+function globalBridgeRows(): string {
+	return harnessRegistry
+		.flatMap((harness) => {
+			const bridge = harness.user?.instructionBridge
+			return bridge === undefined
+				? []
+				: [`| \`${harness.name}\` | \`~/${bridge.path}\` | ${globalBridgeStep(bridge)} |`]
+		})
+		.join('\n')
+}
+
+/** One instruction bridge, as its harness page states it. */
+function bridgeCell(bridge: InstructionBridge): string {
+	switch (bridge.kind) {
+		case 'settings-entry':
+			return `\`${bridge.path}\` — \`AGENTS.md\` in the \`${bridge.key}\` entry`
+		case 'import':
+			return `\`${bridge.path}\` — the line \`${bridge.line}\`, which loads \`${globalFile}\``
+		case 'symlink':
+			return `\`${bridge.path}\` — a symlink to \`${globalFile}\`, since no import this file supports reaches it`
+	}
+}
+
 /** How one harness's scope reads, for its generated reference page. */
 function scopeRows(scope: HarnessScope): string {
 	const bridge = scope.instructionBridge
@@ -632,9 +716,7 @@ function scopeRows(scope: HarnessScope): string {
 	return [
 		`| detection directory | \`${scope.detect}\` |`,
 		`| skills projection | ${scope.skillsDirectory ? `\`${scope.skillsDirectory}\` — written by \`init\`` : 'none — reads `.agents/skills` natively'} |`,
-		`| instruction bridge | ${
-			bridge === undefined ? 'none' : `\`${bridge.path}\` — \`AGENTS.md\` in the \`${bridge.key}\` entry`
-		} |`,
+		`| instruction bridge | ${bridge === undefined ? 'none' : bridgeCell(bridge)} |`,
 		...(scope.shadowedBy
 			? [
 					`| suppresses \`AGENTS.md\` | ${scope.shadowedBy
@@ -663,7 +745,7 @@ function harnessPage(harness: Harness, hasInitReference: boolean): GeneratedDoc 
 			? '\nNo user-scope paths are primary-sourced for this harness, so `doctor` describes none.\n'
 			: `\n## User scope
 
-Described, never written: \`init\` and \`doctor\` both work inside a repository.
+Described, never written: \`init\` works inside a repository, and \`doctor\` reads only the instruction bridge here, to report whether it loads \`${globalFile}\`.
 
 | What | Path |
 | --- | --- |
@@ -749,6 +831,29 @@ ${repairTable(instructionRepairs)}
 \`superseded\` is not a fault. It is the bridge this tool used to write, still working and no longer needed, and there is one reason to keep it: sessions that cannot read \`AGENTS.md\` directly — a Claude Code before v2.1.277, a third-party provider such as Amazon Bedrock, telemetry disabled, or hooks disabled. Offer the removal; do not make it.
 
 Shadows are reported per directory holding an \`AGENTS.md\`, so a monorepo gets one row per suppressed file rather than one per repository. A \`CLAUDE.md\` in one subtree says nothing about another.
+`,
+		},
+		{
+			path: 'references/global-instructions.md',
+			content: `${generatedSkillWarning}
+
+# Global instruction findings
+
+\`${globalFile}\` is the user-scope counterpart of the root \`AGENTS.md\`: instructions that hold in every repository one person opens. No harness reads it by itself. Each reads a user-scope file of its own, and that file has to load the global one — by an import where the harness supports one that reaches the home directory, and otherwise by being a symlink to it.
+
+| Harness | User-scope file | What loads \`${globalFile}\` |
+| --- | --- | --- |
+${globalBridgeRows()}
+
+Cursor keeps its user rules in a settings panel rather than a file, so there is nothing on disk to check; Devin Desktop documents no user-scope path. Neither gets a row.
+
+${repairTable(globalInstructionRepairs)}
+
+**Hand the step over; never take it.** The file is in the user's home directory, outside the repository this tool works in, so every repair carries an empty \`command\` and names the step for the user to take themselves.
+
+\`unbridged\` is the one to read carefully. The file is there and holds instructions of its own, so the harness loads something — just not the global file. Where the bridge is a symlink, the file it replaces holds content that has to move into \`${globalFile}\` first, or it is lost.
+
+A row is reported for every harness installed for this user, whether or not \`${globalFile}\` exists, so a skill handing text over for that file can say which harnesses will load it. A finding is raised only where the file exists and a harness is not loading it.
 `,
 		},
 		{

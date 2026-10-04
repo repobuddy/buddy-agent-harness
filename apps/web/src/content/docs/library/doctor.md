@@ -12,10 +12,12 @@ import {
 	bridgeRepairs,
 	buildDoctorReport,
 	diagnoseBridges,
+	diagnoseGlobalInstructions,
 	diagnoseInstructions,
 	doctorCommand,
 	doctorRepairs,
 	doctorSkill,
+	globalInstructionRepairs,
 	instructionRepairs,
 	renderDoctorSkill,
 } from 'buddy-agent-harness'
@@ -46,6 +48,7 @@ for (const finding of result.findings) console.log(finding.problem, finding.repa
 | `root` | `string` | The repository or package directory to diagnose |
 | `harnesses` | `HarnessName[]` | Harnesses to check in addition to Claude Code and Cursor and to the harnesses detected under `root`. Defaults to `[]` |
 | `cli` | `string` | How to name this tool in the repair commands, such as `buddy-agent-harness` |
+| `home` | `string` | The home directory whose user-scope instruction files are checked for loading `~/.agents/AGENTS.md`. Omitted, none are |
 
 ### DiagnoseResult
 
@@ -53,8 +56,9 @@ for (const finding of result.findings) console.log(finding.problem, finding.repa
 | --- | --- | --- |
 | `bridges` | `BridgeReport[]` | One row per skills bridge |
 | `instructions` | `InstructionReport[]` | One row per instruction bridge and per file that suppresses `AGENTS.md`. Kept out of `bridges` because its `kind` and `status` vocabularies differ and its repair is never a command |
+| `globalInstructions` | `GlobalInstructionReport[]` | One row per harness installed for the user, saying whether its user-scope file loads `~/.agents/AGENTS.md`. Empty when `home` is omitted |
 | `divergence` | `DivergenceReport[]` | One row per `diverged` bridge, with the side that moved |
-| `findings` | `BridgeFinding[]` | One row per problem, across both sections |
+| `findings` | `BridgeFinding[]` | One row per problem, across every section |
 
 ### BridgeReport
 
@@ -104,6 +108,27 @@ type DivergenceDirection = 'bridge' | 'canonical' | 'both' | 'unknown'
 ```
 
 Which side of a diverged copy moved since the last commit where the bridge and `.agents/skills` agreed. It is `unknown` when `root` is not in a git repository or no such commit is found. [Divergence](/cli/doctor/#divergence) says what to do for each.
+
+## diagnoseGlobalInstructions
+
+```ts
+function diagnoseGlobalInstructions(
+	home: string,
+	preferred: readonly HarnessName[],
+	cli: string,
+): { globalInstructions: GlobalInstructionReport[]; findings: BridgeFinding[] }
+```
+
+Checks whether each harness installed under `home`, or named in `preferred`, loads `~/.agents/AGENTS.md` through its own user-scope file. `diagnoseBridges` calls it when given `home`. It reads the home directory and writes nothing. A finding is raised only where `~/.agents/AGENTS.md` exists. [Reaching ~/.agents/AGENTS.md](/cli/doctor/#reaching-agentsagentsmd) has the rules.
+
+### GlobalInstructionReport
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `harness` | `HarnessName` | The harness |
+| `path` | `string` | Its user-scope instruction file, written from `~`, such as `~/.claude/CLAUDE.md` |
+| `kind` | `GlobalInstructionKind` | What is at that path: `import`, `symlink`, `file`, or `none` |
+| `status` | `GlobalInstructionStatus` | `ok`, `missing`, or `unbridged` |
 
 ## diagnoseInstructions
 
@@ -182,6 +207,7 @@ When there are findings, each repair moves into `help`, one entry per distinct p
 | `bin` | `string` | The `bin` it was given |
 | `bridges` | `BridgeReport[]` | The skills bridges |
 | `instructions` | `InstructionReport[]` | The instruction bridges and shadowing files |
+| `globalInstructions` | `GlobalInstructionReport[]` | Whether each installed harness loads `~/.agents/AGENTS.md` |
 | `references` | `DoctorReference[] \| string` | The references held, or the zero sentence |
 | `divergence` | `DivergenceReport[]` | Present only when there are findings and a bridge diverged |
 | `findings` | `{ path: string; problem: DoctorProblem; detail: string }[] \| string` | The findings without their repairs, or the zero sentence |
@@ -213,9 +239,10 @@ Each problem `doctor` can report has one row: what the finding means and how to 
 | --- | --- |
 | `bridgeRepairs` | One `Repair` per `BridgeProblem`, in the order `doctor` reports them |
 | `instructionRepairs` | One `Repair` per `InstructionProblem` |
+| `globalInstructionRepairs` | One `Repair` per `GlobalInstructionProblem` |
 | `doctorRepairs` | One `Repair` per `DoctorProblem`, across every section |
 
-All three are `readonly Repair[]`.
+All four are `readonly Repair[]`.
 
 ```ts
 const degraded = bridgeRepairs.find(({ problem }) => problem === 'degraded')
@@ -237,7 +264,13 @@ degraded?.repair({ file: '.claude/skills' }, 'buddy-agent-harness').command
 ### DoctorProblem
 
 ```ts
-type DoctorProblem = BridgeProblem | InstructionProblem | ConfigurationFault | McpProblem | NonstandardProblem
+type DoctorProblem =
+	| BridgeProblem
+	| InstructionProblem
+	| GlobalInstructionProblem
+	| ConfigurationFault
+	| McpProblem
+	| NonstandardProblem
 ```
 
 Every finding name `doctor` can report, across every section. `ConfigurationProblem` is an alias for the same union.
@@ -246,6 +279,7 @@ Every finding name `doctor` can report, across every section. `ConfigurationProb
 | --- | --- | --- |
 | `BridgeProblem` | `no-canonical`, `missing`, `degraded`, `stale`, `diverged-bridge`, `diverged-canonical`, `diverged-both`, `diverged-unknown`, `unpinned-copy` | [Output](/cli/doctor/#output), [Divergence](/cli/doctor/#divergence), [The skip-worktree bit](/cli/doctor/#the-skip-worktree-bit) |
 | `InstructionProblem` | `no-instructions`, `instructions-missing`, `instructions-unbridged`, `instructions-unreadable`, `instructions-shadowing`, `instructions-superseded` | [Reaching AGENTS.md](/cli/doctor/#reaching-agentsmd) |
+| `GlobalInstructionProblem` | `global-instructions-missing`, `global-instructions-unbridged` | [Reaching ~/.agents/AGENTS.md](/cli/doctor/#reaching-agentsagentsmd) |
 | `ConfigurationFault` | `deprecated-harness`, `ignored-bridge`, `unread-local-override`, `unloadable-skill` | [Configuration findings](/cli/doctor/#configuration-findings) |
 | `McpProblem` | `mcp-golden-unreadable`, `mcp-target-unreadable`, `mcp-unprojected`, `mcp-undeclared`, `mcp-diverged-target`, `mcp-diverged-golden`, `mcp-diverged-both`, `mcp-diverged-unknown`, `mcp-literal-secret`, `mcp-committed-secret` | [MCP Servers](/agent-configuration/mcp-servers/) |
 | `NonstandardProblem` | `nonstandard-instructions`, `nonstandard-rule`, `nonstandard-command`, `nonstandard-skill`, `nonstandard-subagent` | [Non-standard configuration findings](/cli/doctor/#non-standard-configuration-findings) |

@@ -18,6 +18,7 @@ export type DoctorReport = {
 	bin: string
 	bridges: DiagnoseResult['bridges']
 	instructions: DiagnoseResult['instructions']
+	globalInstructions: DiagnoseResult['globalInstructions']
 	/**
 	 * References the managed, project, and user tiers hold, with the status `reference list` gives;
 	 * reported rather than diagnosed, since a reference is a choice, not a fault.
@@ -56,6 +57,7 @@ export function buildDoctorReport(
 			bin,
 			bridges: result.bridges,
 			instructions: result.instructions,
+			globalInstructions: result.globalInstructions,
 			references,
 			findings: `0 problems found — ${bridges} and the configuration around them is current`,
 		}
@@ -65,6 +67,7 @@ export function buildDoctorReport(
 		bin,
 		bridges: result.bridges,
 		instructions: result.instructions,
+		globalInstructions: result.globalInstructions,
 		references,
 		...(result.divergence.length ? { divergence: result.divergence } : {}),
 		findings: findings.map(({ path, problem, detail }) => ({ path, problem, detail })),
@@ -81,7 +84,7 @@ export function buildDoctorReport(
 export const doctorCommand: cli.Command = command({
 	name: 'doctor',
 	description:
-		"Report whether this repository's harness bridges still resolve — skills into .agents/skills, instructions into AGENTS.md. Read-only.",
+		"Report whether this repository's harness bridges still resolve — skills into .agents/skills, instructions into AGENTS.md — and whether each harness's user-scope file loads ~/.agents/AGENTS.md. Read-only.",
 	options: {
 		root: {
 			description: 'Repository or package directory. Defaults to the current directory.',
@@ -107,6 +110,7 @@ export const doctorCommand: cli.Command = command({
 				root,
 				...(harnesses.length ? { harnesses } : {}),
 				cli: commandInvocation,
+				home,
 			})
 			const git = new GitBridgeState(root)
 			const configuration = [

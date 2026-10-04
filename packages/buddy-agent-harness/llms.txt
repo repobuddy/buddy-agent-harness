@@ -16,7 +16,7 @@ Documentation site: [One canonical agent configuration](https://repobuddy.github
 
 - [CLI Overview](https://repobuddy.github.io/buddy-agent-harness/cli/): The buddy-agent-harness command line, and when to use it instead of the skill.
 - [`buddy-agent-harness init`](https://repobuddy.github.io/buddy-agent-harness/cli/init/): Set up canonical agent skills for the harnesses already enabled in a repository.
-- [`buddy-agent-harness doctor`](https://repobuddy.github.io/buddy-agent-harness/cli/doctor/): Report whether this repository's harness bridges still resolve — skills into .agents/skills, instructions into AGENTS.md. Read-only.
+- [`buddy-agent-harness doctor`](https://repobuddy.github.io/buddy-agent-harness/cli/doctor/): Report whether this repository's harness bridges still resolve — skills into .agents/skills, instructions into AGENTS.md — and whether each harness's user-scope file loads ~/.agents/AGENTS.md. Read-only.
 - [`buddy-agent-harness mcp`](https://repobuddy.github.io/buddy-agent-harness/cli/mcp/): Work with the golden MCP server set at .agents/buddy-agent-harness/mcp.toml.
 - [`buddy-agent-harness mcp project`](https://repobuddy.github.io/buddy-agent-harness/cli/mcp/): Project the golden MCP server set into each enabled harness. A dry run unless --write; never overwrites a change made on the harness side.
 - [`buddy-agent-harness mcp reconcile`](https://repobuddy.github.io/buddy-agent-harness/cli/mcp/): Import a harness-side MCP change into the golden set, one approved field at a time. A dry run unless --accept names a field.
@@ -78,9 +78,10 @@ Documentation site: [One canonical agent configuration](https://repobuddy.github
 
 - [Library: `cli.ts`](https://repobuddy.github.io/buddy-agent-harness/library/init/): exports `run`.
 - [Library: `diagnose-bridges/diagnose-bridges.ts`](https://repobuddy.github.io/buddy-agent-harness/library/doctor/): exports `diagnoseBridges`, type `BridgeFinding`, type `BridgeKind`, type `BridgeReport`, type `BridgeStatus`, type `DiagnoseOptions`, type `DiagnoseResult`, type `DivergenceReport`.
+- [Library: `diagnose-bridges/diagnose-global-instructions.ts`](https://repobuddy.github.io/buddy-agent-harness/library/doctor/): exports `diagnoseGlobalInstructions`, type `GlobalInstructionKind`, type `GlobalInstructionReport`, type `GlobalInstructionStatus`.
 - [Library: `diagnose-bridges/diagnose-instructions.ts`](https://repobuddy.github.io/buddy-agent-harness/library/doctor/): exports `diagnoseInstructions`, type `InstructionKind`, type `InstructionReport`, type `InstructionStatus`.
 - [Library: `diagnose-bridges/doctor.command.ts`](https://repobuddy.github.io/buddy-agent-harness/library/doctor/): exports `buildDoctorReport`, `doctorCommand`, type `DoctorReference`, type `DoctorReport`.
-- [Library: `diagnose-bridges/doctor-guidance.ts`](https://repobuddy.github.io/buddy-agent-harness/library/doctor/): exports `bridgeRepairs`, `doctorRepairs`, `doctorSkill`, `instructionRepairs`, `renderDoctorSkill`, type `BridgeProblem`, type `ConfigurationFault`, type `ConfigurationProblem`, type `DoctorProblem`, type `InstructionProblem`, type `McpProblem`, type `Repair`.
+- [Library: `diagnose-bridges/doctor-guidance.ts`](https://repobuddy.github.io/buddy-agent-harness/library/doctor/): exports `bridgeRepairs`, `doctorRepairs`, `doctorSkill`, `globalInstructionRepairs`, `instructionRepairs`, `renderDoctorSkill`, type `BridgeProblem`, type `ConfigurationFault`, type `ConfigurationProblem`, type `DoctorProblem`, type `GlobalInstructionProblem`, type `InstructionProblem`, type `McpProblem`, type `Repair`.
 - [Library: `diagnose-bridges/git-bridge-state.ts`](https://repobuddy.github.io/buddy-agent-harness/library/doctor/): exports type `DivergenceDirection`.
 - [Library: `diagnose-mcp/diagnose-mcp.ts`](https://repobuddy.github.io/buddy-agent-harness/library/mcp/): exports `diagnoseMcp`, type `DiagnoseMcpOptions`.
 - [Library: `diagnose-mcp/mcp-baseline.ts`](https://repobuddy.github.io/buddy-agent-harness/library/mcp/): exports type `McpDirection`.

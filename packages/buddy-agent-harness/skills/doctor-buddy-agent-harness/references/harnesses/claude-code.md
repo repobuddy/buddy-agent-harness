@@ -16,13 +16,13 @@ Where `doctor` looks inside a repository.
 
 ## User scope
 
-Described, never written: `init` and `doctor` both work inside a repository.
+Described, never written: `init` works inside a repository, and `doctor` reads only the instruction bridge here, to report whether it loads `~/.agents/AGENTS.md`.
 
 | What | Path |
 | --- | --- |
 | detection directory | `.claude` |
 | skills projection | `.claude/skills` — written by `init` |
-| instruction bridge | none |
+| instruction bridge | `.claude/CLAUDE.md` — the line `@~/.agents/AGENTS.md`, which loads `~/.agents/AGENTS.md` |
 | MCP configuration | none |
 
 ## Configuration only this harness reads

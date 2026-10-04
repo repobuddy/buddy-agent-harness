@@ -61,6 +61,7 @@ describe('diagnoseBridges', () => {
 		expect(result).toEqual({
 			bridges: [{ harness: 'claude-code', path: '.claude/skills', kind: 'symlink', status: 'ok' }],
 			instructions: [],
+			globalInstructions: [],
 			divergence: [],
 			findings: [],
 		})

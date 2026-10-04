@@ -46,6 +46,7 @@ This project mirrors its source surfaces so a contributor can find a spec beside
 | [`cli/`](./cli/README.md) | Index over the package's command-line product surface |
 | [`cli/bridge-resolution/`](./cli/bridge-resolution/README.md) | Report whether every skills bridge still resolves into `.agents/skills` |
 | [`cli/instruction-bridges/`](./cli/instruction-bridges/README.md) | Report whether every enabled harness can still read `AGENTS.md` |
+| [`cli/global-instructions/`](./cli/global-instructions/README.md) | Report whether each installed harness loads `~/.agents/AGENTS.md` |
 | [`cli/configuration-diagnosis/`](./cli/configuration-diagnosis/README.md) | Report agent configuration that is present and wrong |
 | [`cli/mcp-diagnosis/`](./cli/mcp-diagnosis/README.md) | Report drift between a golden MCP server set and the harness copies of it |
 | [`cli/mcp-projection/`](./cli/mcp-projection/README.md) | Project a golden MCP server set into each harness's own MCP file |

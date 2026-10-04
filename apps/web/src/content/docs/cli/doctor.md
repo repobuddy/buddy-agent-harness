@@ -47,6 +47,8 @@ bridges[2]{harness,path,kind,status}:
 instructions[2]{harness,path,kind,status}:
   gemini-cli,.gemini/settings.json,none,missing
   claude-code,CLAUDE.md,file,shadowing
+globalInstructions[1]{harness,path,kind,status}:
+  claude-code,~/.claude/CLAUDE.md,import,ok
 references[2]{name,tier,path,status}:
   testing,project,~/code/acme/.agents/references/testing.md,used
   testing,user,~/.agents/references/testing.md,shadowed by project (first-wins)
@@ -84,6 +86,8 @@ bridges[2]{harness,path,kind,status}:
   windsurf,.windsurf/skills,symlink,ok
 instructions[1]{harness,path,kind,status}:
   gemini-cli,.gemini/settings.json,settings-entry,ok
+globalInstructions[1]{harness,path,kind,status}:
+  claude-code,~/.claude/CLAUDE.md,import,ok
 references: 0 references — no layer outside the plugin tier holds one
 findings: 0 problems found — all 3 bridges resolve and the configuration around them is current
 ```
@@ -173,6 +177,38 @@ A repository with no root `AGENTS.md` gets one finding saying so, provided somet
 `.gemini/settings.json` may legally carry comments — the Gemini CLI loader strips them before parsing — so `doctor` strips them too. Reporting a commented settings file as broken would be a false alarm on a file that works. A trailing comma is still a parse error, because nothing documents it as accepted. [Harness Differences](/agent-configuration/harness-differences/#json-configuration-disagrees-about-comments) covers the disagreement between the two `settings.json` files.
 
 Which harnesses are checked is the same question as for skills: the registry records, per harness, an instruction bridge or the filenames that shadow `AGENTS.md`, and `--harness` gates both kinds together. Codex, Cursor, Copilot CLI, and Devin Desktop read `AGENTS.md` where it lies and nothing documented suppresses it, so they get no rows — see [Harness Differences](/agent-configuration/harness-differences/).
+
+## Reaching ~/.agents/AGENTS.md
+
+`~/.agents/AGENTS.md` is the user-scope counterpart of the root `AGENTS.md`: instructions that hold in every repository you open. The [`enhance` skill](/skills/enhance/) hands text over for it, and other tools do too. No harness reads it by itself. Each harness reads a user-scope file of its own, and that file has to load the global one. Where none does, text placed in the global file does nothing in that harness, and nothing says so.
+
+`globalInstructions` reports, for each harness installed for you, whether its user-scope file loads the global one. A harness counts as installed where its user-scope directory exists in your home directory, such as `~/.claude`, or where `--harness` names it.
+
+| Harness | User-scope file | What loads `~/.agents/AGENTS.md` |
+| --- | --- | --- |
+| Claude Code | `~/.claude/CLAUDE.md` | the line `@~/.agents/AGENTS.md`, or the file as a symlink to it |
+| Codex | `~/.codex/AGENTS.md` | the file as a symlink to it. Codex has no import |
+| Copilot CLI | `~/.copilot/copilot-instructions.md` | the file as a symlink to it. Copilot CLI refuses an import that starts with `~/` |
+| Gemini CLI | `~/.gemini/GEMINI.md` | the file as a symlink to it |
+
+Gemini CLI's project bridge does not carry over. At user scope, `context.fileName` names files inside `~/.gemini/` only, so no setting can point it at `~/.agents/`. Cursor keeps its user rules in a settings panel, and Devin Desktop documents no user-scope path, so neither gets a row.
+
+| Status | Meaning |
+| --- | --- |
+| `ok` | The file imports the global file, or is a symlink to it. |
+| `missing` | The harness has no user-scope instruction file at all. |
+| `unbridged` | The file holds content of its own and does not load the global file. |
+
+The rows are reported whether or not `~/.agents/AGENTS.md` exists, so a skill handing text over for it can say which harnesses will load it. A finding, `global-instructions-missing` or `global-instructions-unbridged`, is raised only where the file exists and a harness is not loading it.
+
+**The repair is handed to you, never made.** The file is in your home directory, and nothing this package ships writes outside the repository. Each repair has an empty `command`, and its `instruction` names the exact line or symlink to add yourself:
+
+```
+help[1]{command,instruction}:
+  "","hand the user this step, since nothing here writes outside the repository: add the line `@~/.agents/AGENTS.md` to ~/.claude/CLAUDE.md"
+```
+
+Where the bridge is a symlink, the file it replaces may hold content of its own. That content has to move into `~/.agents/AGENTS.md` first, or it is lost, and the repair says so. The vendor sources behind each row are in [Sources & Confidence](/sources/).
 
 ## References
 

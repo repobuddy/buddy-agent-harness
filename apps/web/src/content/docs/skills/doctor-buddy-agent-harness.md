@@ -29,6 +29,8 @@ The report has two of them. `bridges` covers the skills projections into `.agent
 
 For each one the report gives a `kind` (what is on disk now) and a `status` (whether it works). A `findings` entry explains each problem and a `help` row carries its repair in two columns: a `command` that runs verbatim and completes it, and an `instruction` in the imperative. An empty `command` means no single invocation does the job — act on the instruction. Apply the repair, then run `doctor` again.
 
+A third section, `globalInstructions`, looks past the repository to you: whether each harness installed for you loads `~/.agents/AGENTS.md` through its own user-scope file, such as `~/.claude/CLAUDE.md`. No harness reads that file by itself, so text placed there reaches only the harnesses whose row is `ok`. The repair is a line or a symlink in your home directory, and the skill hands it to you rather than writing it. [Reaching ~/.agents/AGENTS.md](/cli/doctor/#reaching-agentsagentsmd) has the details.
+
 Every instruction repair is `/buddy-agent-harness:init-buddy-agent-harness` rather than a command. Those files carry prose someone wrote, and restoring a bridge without discarding what displaced it — or deciding whether a redundant one is being kept on purpose — is the `init-buddy-agent-harness` skill's judgment.
 
 A healthy repository says so outright instead of printing an empty section, so an agent does not re-run with other flags to check whether "nothing" meant "nothing wrong".

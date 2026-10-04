@@ -101,15 +101,15 @@ A harness with no `mcpConfig` is never read or written. Devin Desktop documents 
 
 ### InstructionBridge
 
-What a harness needs to read `AGENTS.md`. Only Gemini CLI has one, at project scope.
+What a harness needs to read `AGENTS.md` at one scope. At project scope only Gemini CLI has one. At user scope it is what loads `~/.agents/AGENTS.md`, and every harness with a user-scope instruction file has one.
 
-| Field | Type | Meaning |
+`kind` is the union's tag, and the other fields depend on it. `path` is relative to the scope's root: the repository, or the home directory.
+
+| `kind` | Other fields | Meaning |
 | --- | --- | --- |
-| `kind` | `'settings-entry'` | An `AGENTS.md` entry in an array inside a JSON settings file. |
-| `path` | `string` | Repository-relative path of the settings file: `.gemini/settings.json`. |
-| `key` | `string` | Dotted path to the array within it, as the harness documents it: `context.fileName`. |
-
-`kind` is the union's tag. Today it has one member; a harness that needs a different shape adds another.
+| `'settings-entry'` | `path`, `key` | An `AGENTS.md` entry in the array at the dotted `key` of a JSON settings file. Gemini CLI at project scope: `.gemini/settings.json`, `context.fileName`. |
+| `'import'` | `path`, `line` | A `line` in the harness's own instruction file that pulls the canonical file in. Claude Code at user scope: `.claude/CLAUDE.md`, `@~/.agents/AGENTS.md`. |
+| `'symlink'` | `path` | The harness's own instruction file as a symlink to the canonical file. Codex, Copilot CLI, and Gemini CLI at user scope. |
 
 ## listMcpServers
 

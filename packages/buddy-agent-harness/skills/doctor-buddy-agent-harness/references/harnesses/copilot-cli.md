@@ -15,13 +15,13 @@ Where `doctor` looks inside a repository.
 
 ## User scope
 
-Described, never written: `init` and `doctor` both work inside a repository.
+Described, never written: `init` works inside a repository, and `doctor` reads only the instruction bridge here, to report whether it loads `~/.agents/AGENTS.md`.
 
 | What | Path |
 | --- | --- |
 | detection directory | `.copilot` |
 | skills projection | none — reads `.agents/skills` natively |
-| instruction bridge | none |
+| instruction bridge | `.copilot/copilot-instructions.md` — a symlink to `~/.agents/AGENTS.md`, since no import this file supports reaches it |
 | MCP configuration | none |
 
 ## Configuration only this harness reads

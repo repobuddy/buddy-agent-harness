@@ -2,6 +2,7 @@ import { lstatSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { type HarnessName, selectHarnesses } from '../harness-registry/harness-registry.ts'
 import { linksTo } from '../skill-projection/skill-projection.ts'
+import { diagnoseGlobalInstructions, type GlobalInstructionReport } from './diagnose-global-instructions.ts'
 import { diagnoseInstructions, type InstructionReport } from './diagnose-instructions.ts'
 import { filesUnder } from './directory-files.ts'
 import { type BridgeProblem, type DoctorProblem, type RepairAction, repairFor } from './doctor-guidance.ts'
@@ -40,6 +41,11 @@ export type DiagnoseOptions = {
 	harnesses?: HarnessName[]
 	/** How to name this tool in the repair commands. */
 	cli: string
+	/**
+	 * The home directory whose user-scope instruction files are checked for loading
+	 * `~/.agents/AGENTS.md`; omitted, none are.
+	 */
+	home?: string
 }
 
 export type DiagnoseResult = {
@@ -49,6 +55,8 @@ export type DiagnoseResult = {
 	 * is never a command.
 	 */
 	instructions: InstructionReport[]
+	/** One row per installed harness whose user-scope file can load `~/.agents/AGENTS.md`. */
+	globalInstructions: GlobalInstructionReport[]
 	divergence: DivergenceReport[]
 	findings: BridgeFinding[]
 }
@@ -121,7 +129,7 @@ function inspect(target: string, path: string, canonical: string, git: GitBridge
  * Read-only: nothing is created, moved, or repaired — the caller decides what to run from the
  * repair each finding carries.
  */
-export function diagnoseBridges({ root, harnesses: preferred = [], cli }: DiagnoseOptions): DiagnoseResult {
+export function diagnoseBridges({ root, harnesses: preferred = [], cli, home }: DiagnoseOptions): DiagnoseResult {
 	const canonical = join(root, '.agents', 'skills')
 	const git = new GitBridgeState(root)
 	const selected = selectHarnesses(root, preferred)
@@ -157,5 +165,15 @@ export function diagnoseBridges({ root, harnesses: preferred = [], cli }: Diagno
 	const instructions = diagnoseInstructions(root, selected, cli)
 	findings.push(...instructions.findings)
 
-	return { bridges, instructions: instructions.instructions, divergence, findings }
+	const global =
+		home === undefined ? { globalInstructions: [], findings: [] } : diagnoseGlobalInstructions(home, preferred, cli)
+	findings.push(...global.findings)
+
+	return {
+		bridges,
+		instructions: instructions.instructions,
+		globalInstructions: global.globalInstructions,
+		divergence,
+		findings,
+	}
 }

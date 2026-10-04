@@ -15,7 +15,7 @@ Where `doctor` looks inside a repository.
 
 ## User scope
 
-Described, never written: `init` and `doctor` both work inside a repository.
+Described, never written: `init` works inside a repository, and `doctor` reads only the instruction bridge here, to report whether it loads `~/.agents/AGENTS.md`.
 
 | What | Path |
 | --- | --- |

@@ -56,6 +56,7 @@ const skillPages: Record<string, string | null> = {
 const libraryPages: Record<string, string | null> = {
 	'./cli.ts': 'library/init',
 	'./diagnose-bridges/diagnose-bridges.ts': 'library/doctor',
+	'./diagnose-bridges/diagnose-global-instructions.ts': 'library/doctor',
 	'./diagnose-bridges/diagnose-instructions.ts': 'library/doctor',
 	'./diagnose-bridges/doctor.command.ts': 'library/doctor',
 	'./diagnose-bridges/doctor-guidance.ts': 'library/doctor',

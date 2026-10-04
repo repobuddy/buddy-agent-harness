@@ -12,6 +12,7 @@ import {
 	type DoctorProblem,
 	doctorRepairs,
 	doctorSkill,
+	globalInstructionRepairs,
 	handWrittenPinTargets,
 	initSkillInvocation,
 	instructionRepairs,
@@ -380,7 +381,14 @@ describe('the detect-and-repair seam', () => {
 	// exclusion-derived family quietly absorb it and assert the wrong owner for every one of its
 	// problems — which is exactly what happened when the MCP family landed.
 	it('accounts for every problem in exactly one family', () => {
-		const families = [bridgeRepairs, instructionRepairs, configurationRepairs, mcpRepairs, nonstandardRepairs]
+		const families = [
+			bridgeRepairs,
+			instructionRepairs,
+			globalInstructionRepairs,
+			configurationRepairs,
+			mcpRepairs,
+			nonstandardRepairs,
+		]
 		const counted = families.flatMap((family) => family.map((entry) => entry.problem))
 
 		expect(new Set(counted).size).toBe(counted.length)

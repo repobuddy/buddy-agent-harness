@@ -36,7 +36,7 @@ It is a separate node from `../bridge-resolution/` rather than a case of it, and
 - **Repairing.** Never. Rewriting an instruction file touches prose a person authored; see `../../workflows/detect-and-repair/` for who owns it.
 - **Reading what the instructions say.** Whether the bridge exists is decidable by reading the file; whether the instructions are any good is nobody's business here.
 - **Nested files beyond their own directory.** A shadow suppresses the `AGENTS.md` **beside** it and nothing deeper, so the check is per directory rather than per harness, and a `CLAUDE.md` in one subtree says nothing about another.
-- **User-scope instruction bridges.** They exist and the registry describes them. `doctor` diagnoses a repository, so the check is project scope only.
+- **User-scope instruction bridges.** `../global-instructions/`: a different root, a different set of harnesses, and a repair only the user makes.
 - **Skills bridges.** `../bridge-resolution/`.
 - **The shape of the report.** `../diagnosis-report/`.
 
