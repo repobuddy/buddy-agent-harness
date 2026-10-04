@@ -99,7 +99,17 @@ Where an addition is **absent**, show its text **verbatim** — the whole thing,
 
 **Where it goes is part of the offer, and the addition decides it.** Read its `## Where it belongs` and lead with what that section recommends. An addition whose subject is the repository belongs in the repository's `AGENTS.md`; one whose subject is how the agent works belongs in the owner's own global instruction file, because it holds in every repository they open and a copy per repository is a copy per repository to keep in step. Delegation, list identifiers, and session scope are all the second kind, and their references recommend the global file.
 
-The global file is `~/.agents/AGENTS.md`, the user-scope counterpart of the root `AGENTS.md`. Say that the harness in use reads it only where a user-scope instruction file of its own loads it. Where the harness documents that file, name it: on Claude Code it is `~/.claude/CLAUDE.md`.
+The global file is `~/.agents/AGENTS.md`, the user-scope counterpart of the root `AGENTS.md`. No harness reads it by itself; a harness reads it only where a user-scope instruction file of its own loads it. **Say whether the harness in use does**, and do not judge that yourself — `doctor` owns the check:
+
+```sh
+node scripts/doctor.mjs
+```
+
+That path is relative to this skill's own directory; fall back to `npx -y buddy-agent-harness@^0.17.0 doctor` when it is missing or cannot be run. Read the `globalInstructions` row for the harness you are running in:
+
+- **`ok`** — say that this harness loads `~/.agents/AGENTS.md`, through the file the row names.
+- **`missing` or `unbridged`** — say that it does not yet, so the text would reach no session of this harness until it does. Name the file the row gives, and hand over the step that bridges it beside the text: `../doctor-buddy-agent-harness/references/global-instructions.md` names it per harness, and where `doctor` reported a finding for that file, its `help` row carries the same step. Where the row is `unbridged` and the step is a symlink, say that what the file holds moves into `~/.agents/AGENTS.md` first.
+- **No row** — say that this harness keeps no user-scope instruction file `doctor` can check, so whether it loads the global file is not something you can confirm.
 
 Name both destinations and what each buys — the global file reaches every repository the owner opens and nobody else; the project file reaches everyone who clones it, at a copy per repository.
 
@@ -136,7 +146,7 @@ Do not argue for any of it past one sentence. The user is reading the actual tex
 
 On approval of an **addition** for the repository, or a request for the team copy of an **already global** one, write the section into the root `AGENTS.md` at the end of the owner's prose, outside the managed region, preserving the surrounding file exactly.
 
-On approval of a **global placement**, write nothing. Give the text and `~/.agents/AGENTS.md`, and say it belongs at the end of that file. Nothing in a repository changes, and the run still reports.
+On approval of a **global placement**, write nothing. Give the text and `~/.agents/AGENTS.md`, and say it belongs at the end of that file. Where the harness in use does not load that file yet, give the step that bridges it too. Nothing outside the repository is written, the bridge included, and the run still reports.
 
 On approval of a **replacement**, replace that one section in place — from its heading through to the next heading of the same or higher level — and leave every other byte of the file as it was. Do not relocate it, do not reformat around it, and do not touch the managed region.
 

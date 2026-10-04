@@ -7,6 +7,9 @@ import type { BridgeFinding } from './diagnose-bridges.ts'
 import { type InstructionProblem, repairFor } from './doctor-guidance.ts'
 import { parseJsonWithComments } from './json-with-comments.ts'
 
+/** The one bridge shape a repository needs: Gemini CLI's `context.fileName` entry. */
+type SettingsEntry = Extract<InstructionBridge, { kind: 'settings-entry' }>
+
 /** What is on disk where an instruction bridge belongs, or where a shadowing file may sit. */
 export type InstructionKind = 'import' | 'symlink' | 'settings-entry' | 'file' | 'none'
 /**
@@ -103,10 +106,12 @@ export function diagnoseInstructions(
 	harnesses: readonly Harness[],
 	cli: string,
 ): { instructions: InstructionReport[]; findings: BridgeFinding[] } {
-	// Project scope only: the user-scope bridges are neither written nor read by this tool.
+	// Project scope only; `diagnoseGlobalInstructions` checks the user-scope bridges.
 	const bridged = harnesses
 		.map((harness) => ({ name: harness.name, bridge: harness.project.instructionBridge }))
-		.filter((harness): harness is { name: HarnessName; bridge: InstructionBridge } => Boolean(harness.bridge))
+		.filter(
+			(harness): harness is { name: HarnessName; bridge: SettingsEntry } => harness.bridge?.kind === 'settings-entry',
+		)
 
 	const instructions: InstructionReport[] = []
 	const findings: BridgeFinding[] = []

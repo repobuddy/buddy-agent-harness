@@ -15,7 +15,7 @@ This node owns **the seam and nothing else**. What each finding means is the det
 
 **Detection has exactly one home.** Every check lives in the `doctor` command. That is what lets the finding set grow without touching a skill, and it is why `doctor` refuses to carry repairs: the moment it writes, it stops being safe to run from a session-start hook, and the hook is the only thing that notices a broken bridge before a person does.
 
-**Repair has an owner per finding where one exists, and the finding names it.** Two families are uniform: every instruction-bridge finding repairs through **`init`**, which writes those bridges in the first place, and every configuration finding repairs through **`repair`**, because no `init` flag corrects a file the user already wrote. The MCP family is uniform the other way — none of its ten problems names a skill, because correcting a drifted server set is the user's judgment about which side is right.
+**Repair has an owner per finding where one exists, and the finding names it.** Two families are uniform: every instruction-bridge finding repairs through **`init`**, which writes those bridges in the first place, and every configuration finding repairs through **`repair`**, because no `init` flag corrects a file the user already wrote. The MCP family is uniform the other way — none of its ten problems names a skill, because correcting a drifted server set is the user's judgment about which side is right. So is the global-instruction family: both of its problems are a step in the user's home directory, outside the repository every skill here writes in, so each is handed to the user and names no skill.
 
 The bridge-resolution family is **not** uniform, and that is a property of the seam rather than an oversight. Six of its nine problems repair by rebuilding the bridge, and name `init`. Three name **no skill at all**:
 
@@ -76,7 +76,7 @@ That one repair is **rendered twice**, for the two consumers, and the renderings
 
 Where they part is the bridge family. The skill rendering sends every bridge problem a rebuild fixes to `/buddy-agent-harness:init-buddy-agent-harness`, because a skill must not run `init` itself. The command rendering gives those same problems a **runnable `command`** and names no skill at all, because a caller reading the command's output can simply run it. Neither is wrong; they answer different questions for different readers.
 
-So **an owner is not something a consumer can always read off the report.** In `help`, the instruction names a skill for the eight problems in the instruction and configuration families and for none of the nineteen bridge and MCP problems. Route on `problem`, which every finding carries, rather than on a skill name in `help`.
+So **an owner is not something a consumer can always read off the report.** In `help`, the instruction names a skill for the eight problems in the instruction and configuration families and for none of the twenty-one bridge, global-instruction, and MCP problems. Route on `problem`, which every finding carries, rather than on a skill name in `help`.
 
 **Extensions**
 

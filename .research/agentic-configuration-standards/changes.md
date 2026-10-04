@@ -1,5 +1,23 @@
 # Changes — Agentic Configuration Standards
 
+## 2026-10-03 — No harness reads `~/.agents/AGENTS.md` without a bridge
+
+**What changed**: E-CC-18, E-CODEX-05, E-GEM-03, E-COPILOT-04, and E-CUR-08 added, each naming a
+harness's user-scope instruction file and what makes it load `~/.agents/AGENTS.md`.
+
+**Why**: `enhance` hands global placements over for `~/.agents/AGENTS.md`, and other tools now do
+too (#215). Whether any harness actually loads that file had never been recorded.
+
+**Material conclusions**:
+
+- **None reads it natively.** Claude Code bridges it with an `@~/.agents/AGENTS.md` import in
+  `~/.claude/CLAUDE.md`; Codex, Gemini CLI, and Copilot CLI only through a symlink at their own
+  user-scope file; Cursor's user rules are a settings panel, with nothing on disk to check.
+- **Gemini CLI's project bridge does not carry over.** At user scope `context.fileName` names files
+  inside `~/.gemini/`, so the setting that bridges a repository cannot bridge the global file.
+
+**Triggering evidence**: E-CC-18, E-CODEX-05, E-GEM-03, E-COPILOT-04, E-CUR-08.
+
 ## 2026-09-28 — Cursor reads AGENTS.md in every mode; the mode claim was wrong
 
 **What changed**: E-CUR-05, E-CUR-06, and E-CUR-07 added. E-CUR-02 superseded. Cursor's own help

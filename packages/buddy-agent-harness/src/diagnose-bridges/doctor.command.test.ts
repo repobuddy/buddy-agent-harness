@@ -20,6 +20,7 @@ function run(args: { format?: string; harness?: string; root?: string }): Promis
 const healthy: DiagnoseResult = {
 	bridges: [{ harness: 'claude-code', path: '.claude/skills', kind: 'symlink', status: 'ok' }],
 	instructions: [{ harness: 'gemini-cli', path: '.gemini/settings.json', kind: 'settings-entry', status: 'ok' }],
+	globalInstructions: [],
 	divergence: [],
 	findings: [],
 }
@@ -40,7 +41,11 @@ describe('doctor command', () => {
 	it('diagnoses the working directory in TOON by default', async () => {
 		await run({ format: 'toon' })
 
-		expect(mockedDiagnoseBridges).toHaveBeenCalledWith({ root: process.cwd(), cli: 'buddy-agent-harness' })
+		expect(mockedDiagnoseBridges).toHaveBeenCalledWith({
+			root: process.cwd(),
+			cli: 'buddy-agent-harness',
+			home: homedir(),
+		})
 		expect(stdout).toHaveBeenCalledWith(expect.stringContaining('bridges[1]{harness,path,kind,status}'))
 		expect(stdout).toHaveBeenCalledWith(expect.stringContaining('instructions[1]{harness,path,kind,status}'))
 	})
@@ -52,6 +57,7 @@ describe('doctor command', () => {
 			root: '/workspace',
 			harnesses: ['gemini-cli', 'codex'],
 			cli: 'buddy-agent-harness',
+			home: homedir(),
 		})
 	})
 
@@ -62,6 +68,7 @@ describe('doctor command', () => {
 		mockedDiagnoseBridges.mockReturnValue({
 			bridges: [{ harness: 'claude-code', path: '.claude/skills', kind: 'file', status: 'degraded' }],
 			instructions: [],
+			globalInstructions: [],
 			divergence: [],
 			findings: [
 				{
@@ -181,6 +188,7 @@ describe('buildDoctorReport', () => {
 			bin: '~/bin/bah',
 			bridges: healthy.bridges,
 			instructions: [],
+			globalInstructions: [],
 			references: '0 references — no layer outside the plugin tier holds one',
 			findings: '0 problems found — the 1 bridge resolves and the configuration around them is current',
 		})
@@ -205,6 +213,7 @@ describe('buildDoctorReport', () => {
 				{ harness: 'windsurf', path: '.windsurf/skills', kind: 'none', status: 'missing' },
 			],
 			instructions: [],
+			globalInstructions: [],
 			divergence: [],
 			findings: [
 				{
@@ -239,6 +248,7 @@ describe('buildDoctorReport', () => {
 		const report = buildDoctorReport('~/bin/bah', {
 			bridges: [{ harness: 'claude-code', path: '.claude/skills', kind: 'copy', status: 'diverged' }],
 			instructions: [],
+			globalInstructions: [],
 			divergence: [{ path: '.claude/skills', direction: 'both' }],
 			findings: [
 				{
@@ -272,6 +282,7 @@ describe('buildDoctorReport', () => {
 		const report = buildDoctorReport('~/bin/bah', {
 			bridges: [],
 			instructions: [],
+			globalInstructions: [],
 			divergence: [],
 			findings: [
 				{
@@ -310,6 +321,7 @@ describe('buildDoctorReport', () => {
 			buildDoctorReport('~/bin/bah', {
 				bridges: [],
 				instructions: [],
+				globalInstructions: [],
 				divergence: [],
 				findings: [
 					{
@@ -339,6 +351,7 @@ describe('buildDoctorReport', () => {
 		const report = buildDoctorReport('~/bin/bah', {
 			bridges: [],
 			instructions: [],
+			globalInstructions: [],
 			divergence: [],
 			findings: [
 				{
@@ -358,6 +371,7 @@ describe('buildDoctorReport', () => {
 		const report = buildDoctorReport('~/bin/bah', {
 			bridges: [{ harness: 'claude-code', path: '.claude/skills', kind: 'copy', status: 'diverged' }],
 			instructions: [],
+			globalInstructions: [],
 			divergence: [{ path: '.claude/skills', direction: 'bridge' }],
 			findings: [
 				{

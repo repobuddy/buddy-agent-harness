@@ -27,6 +27,8 @@ The command is read-only. It never repairs anything, so it is safe to run at any
 
 `instructions` is everything standing between a harness and `AGENTS.md`, with a `status` of `ok`, `missing`, `unbridged`, `unreadable`, `shadowing`, or `superseded`. The last two are not bridges: they are files that suppress an `AGENTS.md` the harness would otherwise read by itself. A separate section because nothing about any of them is shared with `bridges`: a different `kind`, a different status vocabulary, and a repair that is never a command.
 
+`globalInstructions` is the same question one level up: whether each harness installed for this user loads `~/.agents/AGENTS.md` through its own user-scope file, with a `status` of `ok`, `missing`, or `unbridged`. No harness reads that file by itself, so text placed there reaches only the harnesses whose row is `ok`. The rows are there whether or not the file exists; a finding is raised only when it exists and goes unread.
+
 `findings` explains each problem and carries more than the two sections above: the configuration, MCP, and non-standard findings have no section of their own, because they are about files rather than about bridges. `help` carries each repair, one row per distinct repair, with two columns:
 
 - `command` — a shell invocation that, run exactly as given, **completes** the repair.
@@ -50,6 +52,7 @@ Every `problem` name routes to exactly one page. Load the page for the finding i
 | --- | --- |
 | `references/bridges.md` | any `bridges` row that is not `ok` |
 | `references/instructions.md` | any `instructions` row that is not `ok` |
+| `references/global-instructions.md` | any `globalInstructions` row that is not `ok` |
 | `references/configuration.md` | a finding about the configuration around the bridges rather than a bridge |
 | `references/mcp.md` | any finding whose path is an MCP locator — **always** before acting on a credential finding |
 | `references/nonstandard.md` | a finding about configuration only one harness can read |
@@ -61,4 +64,5 @@ Every `problem` name routes to exactly one page. Load the page for the finding i
 - Edit skills at `.agents/skills/<name>/SKILL.md`. Editing through a bridge is only safe when that bridge is a symlink.
 - Do not add bridges to `.gitignore`. An untracked bridge swallows a real edit silently.
 - Never repeat a value from a file an `mcp-literal-secret` or `mcp-committed-secret` finding points at. The report withheld it on purpose, and quoting it back puts it in the transcript anyway.
+- Never write outside the repository. A `globalInstructions` repair is a step for the user to take in their own home directory; hand it over exactly as reported.
 - Write instructions in `AGENTS.md`, never in `CLAUDE.md`. Content written there reaches one harness, drifts from the canonical file, and — because Claude Code prefers it — takes `AGENTS.md` out of that harness's context entirely.

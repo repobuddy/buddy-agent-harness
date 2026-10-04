@@ -35,6 +35,7 @@ That rule holds for every finding `doctor` reports today and for the ones it rep
 
 - **Findings that are yours.** Look the `problem` up in `references/classes.md`, which carries the correction and the stopping point for each.
 - **Findings that are not yours.** Report each one and pass on the repair `doctor` states for it, unchanged. **Who to hand it to is read off that repair, and the question is whether it names `init`.** Some name the `/buddy-agent-harness:init-buddy-agent-harness` skill and some name a `buddy-agent-harness init` command line; both mean the same thing — the finding is `init`'s, because `init` is what writes a bridge and what consolidates an instruction file in the first place, and deciding what to preserve while it does is judgment this skill's corrections never carry. Hand it to the **skill** and never run the command yourself: rebuilding a projection can relocate skills a user wrote, and on the Windows case the naive repair is to recreate the link, the operation that already failed on that machine. A repair naming `init` in **neither** form — a `git` invocation, a reconciliation by hand, an MCP finding with no section in `classes.md` — is work for a person; say that rather than inferring an owner, and never rebuild over a two-sided divergence, which discards whichever side holds the newer edit.
+- **A step in the user's home directory.** A `global-instructions-missing` or `global-instructions-unbridged` finding is about a harness's user-scope file not loading `~/.agents/AGENTS.md`. Its repair is the exact line or symlink to add there, and it is the user's to make: give it to them word for word, and write nothing outside the repository yourself, approved or not.
 
 ## 3. Draw the line at material content
 
@@ -70,5 +71,6 @@ A run that finds nothing still reports. "Nothing found" without saying `doctor` 
 - **Never detect.** `doctor` owns detection. A check written here is a second home for it, and two homes drift.
 - **Never rebuild a bridge.** That is `doctor`'s diagnosis and `init`'s repair.
 - **Never consolidate.** Moving content into `AGENTS.md` is `init`'s and has one home.
+- **Never write outside the repository.** A user-scope file is the user's to change; hand over the step `doctor` names.
 - **Correct only non-material content.** Project policy is the user's, even when it is wrong.
 - Local agent configuration only. Do not change workflows, GitHub Actions, repository settings, security scanning, branch rules, or unrelated project files — a retired harness name in a workflow file is not yours to rename.

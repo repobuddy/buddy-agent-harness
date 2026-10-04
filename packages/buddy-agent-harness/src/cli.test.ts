@@ -179,6 +179,7 @@ describe('the process boundary', () => {
 		expect(writers).toEqual([
 			'bin/buddy-agent-harness.mjs',
 			'skills/doctor-buddy-agent-harness/scripts/doctor.mjs',
+			'skills/enhance/scripts/doctor.mjs',
 			'skills/init-buddy-agent-harness/scripts/doctor.mjs',
 			'skills/init-buddy-agent-harness/scripts/init.mjs',
 			'skills/reference/scripts/reference.mjs',

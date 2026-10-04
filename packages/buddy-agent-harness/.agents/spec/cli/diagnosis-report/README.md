@@ -20,7 +20,7 @@ That shape had no owner, and the cost was concrete. When a field was added to `f
 **Key terms**
 
 - **report** — what one `doctor` run writes to stdout: one object, encoded once.
-- **section** — a top-level key of that object: `bin`, `bridges`, `instructions`, `references`, `divergence`, `findings`, `help`.
+- **section** — a top-level key of that object: `bin`, `bridges`, `instructions`, `globalInstructions`, `references`, `divergence`, `findings`, `help`.
 - **finding row** — one entry in `findings`: a `path`, a `problem` name, and a `detail` in prose. The repair is not on the row; it is in `help`.
 - **repair** — one entry in `help`: a `command` and an `instruction`. Together they say what fixes a finding and whether a program may do it.
 - **healthy answer** — what `findings` holds when nothing is wrong: a sentence stating the zero with its context, in place of the rows.
@@ -68,6 +68,8 @@ That shape had no owner, and the cost was concrete. When a field was added to `f
 `bin` names the executable that produced the report, with the user's home directory collapsed to `~`. A report that a caller cannot trace back to the binary that wrote it cannot be reproduced.
 
 `bridges` and `instructions` are two sections rather than one. They share no `kind` and no `status` vocabulary, and merging them would force a consumer to know which vocabulary applied before it could read a row.
+
+`globalInstructions` is a third, for a different root: each row is a harness's user-scope file in the home directory, written from `~`, and says whether it loads `~/.agents/AGENTS.md`. It is present on every report, empty where no harness is installed for the user, and it is not counted in the healthy summary, which is about the repository's bridges. See `../global-instructions/`.
 
 `divergence` and `help` are the two **conditional** sections: `divergence` is present only when a bridge has diverged, and `help` only when something is wrong. Each answers a question that has no meaning otherwise, and a consumer branches on the section being **absent** rather than empty.
 

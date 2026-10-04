@@ -10,6 +10,12 @@ export type {
 } from './diagnose-bridges/diagnose-bridges.ts'
 export { diagnoseBridges } from './diagnose-bridges/diagnose-bridges.ts'
 export type {
+	GlobalInstructionKind,
+	GlobalInstructionReport,
+	GlobalInstructionStatus,
+} from './diagnose-bridges/diagnose-global-instructions.ts'
+export { diagnoseGlobalInstructions } from './diagnose-bridges/diagnose-global-instructions.ts'
+export type {
 	InstructionKind,
 	InstructionReport,
 	InstructionStatus,
@@ -22,6 +28,7 @@ export type {
 	ConfigurationFault,
 	ConfigurationProblem,
 	DoctorProblem,
+	GlobalInstructionProblem,
 	InstructionProblem,
 	McpProblem,
 	Repair,
@@ -30,6 +37,7 @@ export {
 	bridgeRepairs,
 	doctorRepairs,
 	doctorSkill,
+	globalInstructionRepairs,
 	instructionRepairs,
 	renderDoctorSkill,
 } from './diagnose-bridges/doctor-guidance.ts'

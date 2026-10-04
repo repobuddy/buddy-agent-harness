@@ -73,6 +73,13 @@ export function skillsProjection(
 }
 
 /**
+ * The user-scope counterpart of the root `AGENTS.md`, relative to the home directory. No harness
+ * reads it natively; each loads it only through a user-scope `instructionBridge` (E-CC-18, E-CODEX-05,
+ * E-GEM-03, E-COPILOT-04, E-CUR-08).
+ */
+export const globalInstructions = '.agents/AGENTS.md'
+
+/**
  * Skills directories come from `@cyberuni/agent-harness`, except for the harnesses it does not know
  * (`devin-desktop`, `windsurf`); see `.research/agentic-configuration-standards/` for the rest.
  */
@@ -90,7 +97,11 @@ export const harnessRegistry: readonly Harness[] = [
 				{ path: '.claude/agents', shape: 'directory', kind: 'subagent' },
 			],
 		},
-		user: { detect: '.claude', ...skillsProjection('claude-code', 'user') },
+		user: {
+			detect: '.claude',
+			...skillsProjection('claude-code', 'user'),
+			instructionBridge: { kind: 'import', path: '.claude/CLAUDE.md', line: `@~/${globalInstructions}` },
+		},
 	},
 	{
 		name: 'cursor',
@@ -115,7 +126,11 @@ export const harnessRegistry: readonly Harness[] = [
 			mcpConfig: { path: '.codex/config.toml', key: 'mcp_servers', format: 'toml', dialect: 'codex', shared: true },
 			nonstandard: [{ path: '.codex/skills', shape: 'directory', kind: 'skill' }],
 		},
-		user: { detect: '.codex', ...skillsProjection('codex', 'user') },
+		user: {
+			detect: '.codex',
+			...skillsProjection('codex', 'user'),
+			instructionBridge: { kind: 'symlink', path: '.codex/AGENTS.md' },
+		},
 	},
 	{
 		name: 'copilot-cli',
@@ -128,7 +143,11 @@ export const harnessRegistry: readonly Harness[] = [
 				{ path: '.github/skills', shape: 'directory', kind: 'skill' },
 			],
 		},
-		user: { detect: '.copilot', ...skillsProjection('copilot-cli', 'user') },
+		user: {
+			detect: '.copilot',
+			...skillsProjection('copilot-cli', 'user'),
+			instructionBridge: { kind: 'symlink', path: '.copilot/copilot-instructions.md' },
+		},
 	},
 	{
 		name: 'gemini-cli',
@@ -148,7 +167,12 @@ export const harnessRegistry: readonly Harness[] = [
 				{ path: '.gemini/skills', shape: 'directory', kind: 'skill' },
 			],
 		},
-		user: { detect: '.gemini', ...skillsProjection('gemini-cli', 'user') },
+		// Not `context.fileName`: at user scope it names files inside `~/.gemini/` only (E-GEM-03).
+		user: {
+			detect: '.gemini',
+			...skillsProjection('gemini-cli', 'user'),
+			instructionBridge: { kind: 'symlink', path: '.gemini/GEMINI.md' },
+		},
 	},
 	{ name: 'devin-desktop', project: { detect: '.devin' } },
 	{

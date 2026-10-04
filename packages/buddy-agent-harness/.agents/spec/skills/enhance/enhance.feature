@@ -202,6 +202,23 @@ Feature: Offer the current wording of a vetted section to a repository that alre
     And the offer says that harness reads the text only where a user-scope instruction file of its own loads `~/.agents/AGENTS.md`
 
   @behavior
+  Scenario: says the harness in use loads the global file when doctor reports it does
+    Given a `doctor` report whose `globalInstructions` row for the harness in use has status `ok`
+    And a root `AGENTS.md` the `## Delegation` section is absent from
+    When the `## Delegation` section is offered with the global destination
+    Then the offer says the harness in use loads `~/.agents/AGENTS.md`
+    And it hands over no step to bridge it
+
+  @behavior
+  Scenario: hands over the bridge beside the text when the harness in use does not load the global file
+    Given a `doctor` report whose `globalInstructions` row for the harness in use has status `missing`
+    And a root `AGENTS.md` the `## Delegation` section is absent from
+    When the `## Delegation` section is offered with the global destination
+    Then the offer says the text would not reach the harness in use until its user-scope file loads `~/.agents/AGENTS.md`
+    And it hands over the step that bridges that file beside the text
+    And no file outside the repository is written
+
+  @behavior
   Scenario: treats a heading inside a fenced block as an example rather than as coverage
     Given a root `AGENTS.md` documenting this package
     And a fenced code block inside it containing the `## Delegation` heading and the section's text
