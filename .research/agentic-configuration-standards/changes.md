@@ -1,5 +1,23 @@
 # Changes — Agentic Configuration Standards
 
+## 2026-10-03 — An empty relocating variable, per harness
+
+**What changed**: E-CC-20 and E-COPILOT-06 added; E-CC-19 and E-COPILOT-05 point at them for the
+empty value they left open.
+
+**Why**: #220. doctor read an empty `CODEX_HOME`, `COPILOT_HOME`, or `CLAUDE_CONFIG_DIR` as unset,
+which only Codex was known to do.
+
+**Material conclusions**:
+
+- **Claude Code reads an empty `CLAUDE_CONFIG_DIR` as the directory it starts in.** Its user-scope
+  file becomes `./CLAUDE.md`: in a repository, the project's own file. The fix is the variable, not
+  the file.
+- **Copilot CLI reads an empty `COPILOT_HOME` as unset**, like Codex: the file stays
+  `~/.copilot/copilot-instructions.md`.
+
+**Triggering evidence**: E-CC-20, E-COPILOT-06.
+
 ## 2026-10-03 — Moved config folders, Codex's override, and Copilot's symlinks
 
 **What changed**: E-CODEX-06, E-CC-19, and E-COPILOT-05 added; E-CODEX-05 and E-COPILOT-04 point

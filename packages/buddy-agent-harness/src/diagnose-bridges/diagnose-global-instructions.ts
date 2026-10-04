@@ -23,7 +23,8 @@ export type GlobalInstructionReport = {
 	harness: HarnessName
 	/**
 	 * The harness's user-scope instruction file, written from `~` so the report is publishable, or
-	 * from the variable that moved it, such as `$CODEX_HOME`.
+	 * from the variable that moved it, such as `$CODEX_HOME`, or from `.` where an empty variable moved
+	 * it to the directory the harness starts in.
 	 */
 	path: string
 	kind: GlobalInstructionKind
@@ -58,14 +59,26 @@ function importsGlobal(body: string, bridge: InstructionBridge, home: string): b
 /** Where the harness reads one user-scope path from, absolute and as the report writes it. */
 type Located = { absolute: string; display: string }
 
-/** Follows `relocatedBy` the way the harnesses do: an empty value is no value (E-CODEX-06, E-CC-19, E-COPILOT-05). */
-function locate(home: string, scope: HarnessScope, env: NodeJS.ProcessEnv, path: string): Located {
+/** Where the harness puts its user-scope directory, and the variable to blame when it is set but empty. */
+type Base = { moved?: { root: string; display: string }; emptied?: string }
+
+/**
+ * Follows `relocatedBy` the way each harness does. An empty value is no value to Codex and Copilot CLI
+ * (E-CODEX-06, E-COPILOT-06), and the directory Claude Code starts in to Claude Code (E-CC-20).
+ */
+function base(scope: HarnessScope, env: NodeJS.ProcessEnv, start: string): Base {
 	const variable = scope.relocatedBy
-	const moved = variable === undefined ? undefined : env[variable]
+	const value = variable === undefined ? undefined : env[variable]
+	if (variable === undefined || value === undefined) return {}
+	if (value !== '') return { moved: { root: resolve(value), display: `$${variable}` } }
+	return scope.emptyRelocatesToStart ? { moved: { root: start, display: '.' }, emptied: variable } : {}
+}
+
+function locate(home: string, scope: HarnessScope, { moved }: Base, path: string): Located {
 	if (!moved || (path !== scope.detect && !path.startsWith(`${scope.detect}/`)))
 		return { absolute: join(home, path), display: `~/${path}` }
 	const rest = path.slice(scope.detect.length)
-	return { absolute: join(resolve(moved), rest), display: `$${variable}${rest}` }
+	return { absolute: join(moved.root, rest), display: `${moved.display}${rest}` }
 }
 
 /** A shadow is read only where it is a file holding more than whitespace (E-CODEX-06). */
@@ -109,14 +122,16 @@ function finding(path: string, problem: GlobalInstructionProblem, cli: string): 
 
 /**
  * Whether each harness the user has installed loads `~/.agents/AGENTS.md` through its own user-scope
- * file, read from wherever `env` moves it. Read-only: the repair is handed to the user, since
- * nothing here writes outside the repository.
+ * file, read from wherever `env` moves it — `start`, for a harness that reads an empty variable as
+ * the directory it starts in. Read-only: the repair is handed to the user, since nothing here
+ * writes outside the repository.
  */
 export function diagnoseGlobalInstructions(
 	home: string,
 	preferred: readonly HarnessName[],
 	cli: string,
 	env: NodeJS.ProcessEnv = {},
+	start: string = process.cwd(),
 ): { globalInstructions: GlobalInstructionReport[]; findings: BridgeFinding[] } {
 	// Rows are reported with or without the global file, so `enhance` can say whether text handed over
 	// for it would load; a finding needs a file that is going unread.
@@ -128,13 +143,14 @@ export function diagnoseGlobalInstructions(
 		const user = harness.user
 		const bridge = user?.instructionBridge
 		if (!user || !bridge) continue
-		if (!preferred.includes(harness.name) && !isDirectory(locate(home, user, env, user.detect).absolute)) continue
+		const moved = base(user, env, start)
+		if (!preferred.includes(harness.name) && !isDirectory(locate(home, user, moved, user.detect).absolute)) continue
 
-		const file = locate(home, user, env, bridge.path)
+		const file = locate(home, user, moved, bridge.path)
 		const inspection = inspect(home, file.absolute, bridge)
 		// The harness reads the first shadow that holds anything, and its own file only where none does.
 		const shadow = (user.shadowedBy ?? [])
-			.map((path) => locate(home, user, env, path))
+			.map((path) => locate(home, user, moved, path))
 			.find(({ absolute }) => readsAsShadow(absolute))
 
 		if (shadow !== undefined) {
@@ -147,7 +163,9 @@ export function diagnoseGlobalInstructions(
 			if (hasGlobal) findings.push(finding(shadow.display, 'global-instructions-overridden', cli))
 		} else rows.push({ harness: harness.name, path: file.display, kind: inspection.kind, status: inspection.status })
 
-		if (hasGlobal && inspection.problem) findings.push(finding(file.display, inspection.problem, cli))
+		// The file a step would edit is not the user's own while the variable is empty: blame the variable.
+		if (hasGlobal && moved.emptied) findings.push(finding(`$${moved.emptied}`, 'global-instructions-emptied', cli))
+		else if (hasGlobal && inspection.problem) findings.push(finding(file.display, inspection.problem, cli))
 	}
 
 	return { globalInstructions: rows, findings }

@@ -22,7 +22,7 @@ Described, never written: `init` works inside a repository, and `doctor` reads o
 | detection directory | `.codex` |
 | skills projection | none — reads `.agents/skills` natively |
 | instruction bridge | `.codex/AGENTS.md` — a symlink to `~/.agents/AGENTS.md`, since no import this file supports reaches it |
-| moved by | `CODEX_HOME` — set and non-empty, it replaces `.codex`, and every path under it moves with it |
+| moved by | `CODEX_HOME` — set and non-empty, it replaces `.codex`, and every path under it moves with it; set but empty, it is read as unset |
 | suppresses `AGENTS.md` | `.codex/AGENTS.override.md` — this harness reads `AGENTS.md` itself, and reads one of these instead where it finds one |
 | MCP configuration | none |
 

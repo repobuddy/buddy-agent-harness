@@ -741,9 +741,9 @@ Status values: `confirmed`, `contested`, `thin`. Confidence: high / medium / low
 
 - **Date**: 2026-10-03
 - **Status**: confirmed
-- **Confidence**: high on the relocation; medium on an empty value, which the code reads oddly and doctor does not model
+- **Confidence**: high on the relocation; an empty value is settled by E-CC-20
 - **Source**: Claude Code 2.1.289's shipped bundle (`~/.local/share/claude/versions/2.1.289`, minified JS inside the executable) — vendor code; the docs (https://code.claude.com/docs/en/env-vars, https://code.claude.com/docs/en/memory) name the variable as the config directory but do not say where the user `CLAUDE.md` goes
-- **Notes**: `function o(){return process.env.CLAUDE_CONFIG_DIR}`, `var we=us(()=>(o()??u(R(),".claude")).normalize("NFC"),o)`, and `case"User":return je(we(),"CLAUDE.md")`: the user-scope file is `$CLAUDE_CONFIG_DIR/CLAUDE.md` when the variable is set. The resolver uses `??`, so an **empty** value is not unset there — it yields a relative path — while other call sites use `||`. doctor reads an empty value as unset, the documented behavior of Codex, and does not model the relative path. The `@~/.agents/AGENTS.md` import is unaffected: `~/` in an import resolves from the home directory, not the config directory, so the line handed over is the same.
+- **Notes**: `function o(){return process.env.CLAUDE_CONFIG_DIR}`, `var we=us(()=>(o()??u(R(),".claude")).normalize("NFC"),o)`, and `case"User":return je(we(),"CLAUDE.md")`: the user-scope file is `$CLAUDE_CONFIG_DIR/CLAUDE.md` when the variable is set. The resolver uses `??`, so an **empty** value is not unset there — it yields a relative path — while other call sites use `||`. E-CC-20 confirms the relative path by test. The `@~/.agents/AGENTS.md` import is unaffected: `~/` in an import resolves from the home directory, not the config directory, so the line handed over is the same.
 
 ## E-COPILOT-05 — Copilot CLI follows a symlink out of its directory for its user instructions
 
@@ -751,4 +751,20 @@ Status values: `confirmed`, `contested`, `thin`. Confidence: high / medium / low
 - **Status**: confirmed
 - **Confidence**: high
 - **Source**: a reproducible local test with Copilot CLI 1.0.90 (the shipped binary bundles its JS unreadably, so no code excerpt); `COPILOT_HOME` from Adding custom instructions for Copilot CLI — https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-custom-instructions — official docs
-- **Notes**: The docs: "If you set the `COPILOT_HOME` environment variable, Copilot CLI uses that directory instead of `$HOME/.copilot`." The test: `$COPILOT_HOME/copilot-instructions.md` a symlink to a file outside `COPILOT_HOME` holding a marker line, then `COPILOT_HOME=<dir> copilot -p "hi" --log-level all --log-dir <logs>`. The logged model request carried `<custom_instruction>` holding the marker, so the target is loaded: no realpath or containment refusal applies to this file, unlike an `@` reference (E-COPILOT-04). The symlink bridge stands. How an empty `COPILOT_HOME` is read is not settled; doctor reads it as unset, as for the other two.
+- **Notes**: The docs: "If you set the `COPILOT_HOME` environment variable, Copilot CLI uses that directory instead of `$HOME/.copilot`." The test: `$COPILOT_HOME/copilot-instructions.md` a symlink to a file outside `COPILOT_HOME` holding a marker line, then `COPILOT_HOME=<dir> copilot -p "hi" --log-level all --log-dir <logs>`. The logged model request carried `<custom_instruction>` holding the marker, so the target is loaded: no realpath or containment refusal applies to this file, unlike an `@` reference (E-COPILOT-04). The symlink bridge stands. How an empty `COPILOT_HOME` is read is settled by E-COPILOT-06.
+
+## E-CC-20 — An empty `CLAUDE_CONFIG_DIR` puts the config folder in the directory Claude Code starts in
+
+- **Date**: 2026-10-03
+- **Status**: confirmed
+- **Confidence**: high
+- **Source**: a reproducible local test with Claude Code 2.1.289; the resolver is E-CC-19's
+- **Notes**: An empty `HOME` directory and an empty working directory, then, from the working directory, `HOME=<home> CLAUDE_CONFIG_DIR= claude -p "hi"`. It stopped at "Not logged in", but first wrote `projects/<cwd-slug>/<session>.jsonl`, `sessions/`, and `backups/.claude.json.backup.*` into the **working directory**, and nothing under `<home>/.claude/`. Only `<home>/.claude.json` landed in the home directory, written by a call site that uses `||`. The config folder, and with it the user-scope file `join(configDir, "CLAUDE.md")`, is therefore `./CLAUDE.md` relative to wherever Claude Code is started: in a repository, that is the project's own `CLAUDE.md`. Unsetting the variable restores `~/.claude`.
+
+## E-COPILOT-06 — Copilot CLI reads an empty `COPILOT_HOME` as unset
+
+- **Date**: 2026-10-03
+- **Status**: confirmed
+- **Confidence**: high on the directory; the instruction file is the one the docs place in that directory (E-COPILOT-05)
+- **Source**: a reproducible local test with Copilot CLI 1.0.91 (the launcher; it ran the 1.0.90 package); the bundled JS is unreadable, so no code excerpt
+- **Notes**: An empty `HOME` directory holding `.copilot/copilot-instructions.md`, and a working directory holding a `copilot-instructions.md` of its own, then, from the working directory, `HOME=<home> COPILOT_HOME= copilot -p "hi" --log-level all --log-dir <logs>`. It stopped at "No authentication information found", but first wrote `config.json`, `session-state/`, and `installed-plugins/` under `<home>/.copilot/`, and nothing into the working directory. The control, `COPILOT_HOME=<dir>` with a fresh `HOME`, wrote the same three under `<dir>` and created no `<home>/.copilot`, so the test tells the two apart. An empty value falls back to `$HOME/.copilot`, as Codex's does (E-CODEX-06) and unlike Claude Code's (E-CC-20).

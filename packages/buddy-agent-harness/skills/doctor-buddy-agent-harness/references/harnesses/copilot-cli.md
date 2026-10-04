@@ -22,7 +22,7 @@ Described, never written: `init` works inside a repository, and `doctor` reads o
 | detection directory | `.copilot` |
 | skills projection | none — reads `.agents/skills` natively |
 | instruction bridge | `.copilot/copilot-instructions.md` — a symlink to `~/.agents/AGENTS.md`, since no import this file supports reaches it |
-| moved by | `COPILOT_HOME` — set and non-empty, it replaces `.copilot`, and every path under it moves with it |
+| moved by | `COPILOT_HOME` — set and non-empty, it replaces `.copilot`, and every path under it moves with it; set but empty, it is read as unset |
 | MCP configuration | none |
 
 ## Configuration only this harness reads

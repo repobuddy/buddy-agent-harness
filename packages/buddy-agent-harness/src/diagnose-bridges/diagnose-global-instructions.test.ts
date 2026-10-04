@@ -197,10 +197,75 @@ describe('diagnoseGlobalInstructions', () => {
 		])
 	})
 
-	it('reads an empty variable as unset', () => {
-		expect(diagnose(home(['.codex']), [], { CODEX_HOME: '' }).globalInstructions).toEqual([
-			{ harness: 'codex', path: '~/.codex/AGENTS.md', kind: 'none', status: 'missing' },
+	const relocating = [
+		{ harness: 'codex', variable: 'CODEX_HOME', directory: '.codex', file: 'AGENTS.md' },
+		{ harness: 'copilot-cli', variable: 'COPILOT_HOME', directory: '.copilot', file: 'copilot-instructions.md' },
+		{ harness: 'claude-code', variable: 'CLAUDE_CONFIG_DIR', directory: '.claude', file: 'CLAUDE.md' },
+	]
+
+	it.each(relocating)('reads the home directory where $variable is unset', ({ harness, directory, file }) => {
+		expect(diagnose(home([directory]), [], {}).globalInstructions).toEqual([
+			{ harness, path: `~/${directory}/${file}`, kind: 'none', status: 'missing' },
 		])
+	})
+
+	it.each(relocating)('reads the directory $variable names where it is set', ({ harness, variable, file }) => {
+		expect(diagnose(home([]), [], { [variable]: elsewhere() }).globalInstructions).toEqual([
+			{ harness, path: `$${variable}/${file}`, kind: 'none', status: 'missing' },
+		])
+	})
+
+	it.each(relocating.filter(({ harness }) => harness !== 'claude-code'))(
+		'reads an empty $variable as unset, as that harness does',
+		({ harness, variable, directory, file }) => {
+			expect(diagnose(home([directory]), [], { [variable]: '' })).toEqual({
+				globalInstructions: [{ harness, path: `~/${directory}/${file}`, kind: 'none', status: 'missing' }],
+				findings: [expect.objectContaining({ path: `~/${directory}/${file}`, problem: 'global-instructions-missing' })],
+			})
+		},
+	)
+
+	it('reads an empty CLAUDE_CONFIG_DIR as the directory Claude Code starts in, and blames the variable', () => {
+		const root = home(['.claude'])
+		const start = elsewhere()
+
+		expect(diagnoseGlobalInstructions(root, [], cli, { CLAUDE_CONFIG_DIR: '' }, start)).toEqual({
+			globalInstructions: [{ harness: 'claude-code', path: './CLAUDE.md', kind: 'none', status: 'missing' }],
+			findings: [
+				{
+					path: '$CLAUDE_CONFIG_DIR',
+					problem: 'global-instructions-emptied',
+					detail: repairFor('global-instructions-emptied').detail,
+					repair: {
+						command: '',
+						instruction: `${handOver} unset CLAUDE_CONFIG_DIR where your shell sets it, or set it to the folder you meant`,
+					},
+				},
+			],
+		})
+	})
+
+	it('reports the file an empty CLAUDE_CONFIG_DIR reads, and still blames the variable where it loads the global file', () => {
+		const root = home([])
+		const start = elsewhere()
+		write(start, 'CLAUDE.md', '@~/.agents/AGENTS.md\n')
+
+		const result = diagnoseGlobalInstructions(root, [], cli, { CLAUDE_CONFIG_DIR: '' }, start)
+		expect(result.globalInstructions).toEqual([
+			{ harness: 'claude-code', path: './CLAUDE.md', kind: 'import', status: 'ok' },
+		])
+		expect(result.findings.map(({ path, problem }) => ({ path, problem }))).toEqual([
+			{ path: '$CLAUDE_CONFIG_DIR', problem: 'global-instructions-emptied' },
+		])
+	})
+
+	it('raises no finding for an empty CLAUDE_CONFIG_DIR where there is no global file to go unread', () => {
+		expect(
+			diagnoseGlobalInstructions(home([], { global: false }), [], cli, { CLAUDE_CONFIG_DIR: '' }, elsewhere()),
+		).toEqual({
+			globalInstructions: [{ harness: 'claude-code', path: './CLAUDE.md', kind: 'none', status: 'missing' }],
+			findings: [],
+		})
 	})
 
 	// ── a file read in place of the user file ──
@@ -294,5 +359,14 @@ describe('diagnoseBridges', () => {
 			{ harness: 'claude-code', path: '~/.claude/CLAUDE.md', kind: 'none', status: 'missing' },
 		])
 		expect(result.findings.map(({ problem }) => problem)).toEqual(['global-instructions-missing'])
+	})
+
+	it('reads an empty CLAUDE_CONFIG_DIR from the repository, where Claude Code starts', () => {
+		const root = repository()
+		write(root, 'CLAUDE.md', '@~/.agents/AGENTS.md\n')
+
+		expect(diagnoseBridges({ root, cli, home: home([]), env: { CLAUDE_CONFIG_DIR: '' } }).globalInstructions).toEqual([
+			{ harness: 'claude-code', path: './CLAUDE.md', kind: 'import', status: 'ok' },
+		])
 	})
 })
