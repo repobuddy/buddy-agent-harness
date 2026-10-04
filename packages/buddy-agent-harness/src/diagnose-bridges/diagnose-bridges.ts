@@ -46,6 +46,11 @@ export type DiagnoseOptions = {
 	 * `~/.agents/AGENTS.md`; omitted, none are.
 	 */
 	home?: string
+	/**
+	 * The environment the harnesses run in, for the variables that move their user-scope files —
+	 * `CODEX_HOME`, `COPILOT_HOME`, `CLAUDE_CONFIG_DIR`; omitted, none is followed.
+	 */
+	env?: NodeJS.ProcessEnv
 }
 
 export type DiagnoseResult = {
@@ -129,7 +134,7 @@ function inspect(target: string, path: string, canonical: string, git: GitBridge
  * Read-only: nothing is created, moved, or repaired — the caller decides what to run from the
  * repair each finding carries.
  */
-export function diagnoseBridges({ root, harnesses: preferred = [], cli, home }: DiagnoseOptions): DiagnoseResult {
+export function diagnoseBridges({ root, harnesses: preferred = [], cli, home, env }: DiagnoseOptions): DiagnoseResult {
 	const canonical = join(root, '.agents', 'skills')
 	const git = new GitBridgeState(root)
 	const selected = selectHarnesses(root, preferred)
@@ -166,7 +171,9 @@ export function diagnoseBridges({ root, harnesses: preferred = [], cli, home }: 
 	findings.push(...instructions.findings)
 
 	const global =
-		home === undefined ? { globalInstructions: [], findings: [] } : diagnoseGlobalInstructions(home, preferred, cli)
+		home === undefined
+			? { globalInstructions: [], findings: [] }
+			: diagnoseGlobalInstructions(home, preferred, cli, env)
 	findings.push(...global.findings)
 
 	return {

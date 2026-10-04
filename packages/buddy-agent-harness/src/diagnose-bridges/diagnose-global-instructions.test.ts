@@ -22,8 +22,13 @@ function write(root: string, path: string, content: string): void {
 	writeFileSync(join(root, path), content)
 }
 
-function diagnose(root: string, preferred: ('codex' | 'gemini-cli')[] = []) {
-	return diagnoseGlobalInstructions(root, preferred, cli)
+function diagnose(root: string, preferred: ('codex' | 'gemini-cli')[] = [], env: NodeJS.ProcessEnv = {}) {
+	return diagnoseGlobalInstructions(root, preferred, cli, env)
+}
+
+/** A directory outside the home directory, standing in for one a variable moved a harness to. */
+function elsewhere(): string {
+	return mkdtempSync(join(tmpdir(), 'buddy-agent-harness-moved-'))
 }
 
 describe('diagnoseGlobalInstructions', () => {
@@ -155,6 +160,113 @@ describe('diagnoseGlobalInstructions', () => {
 				repair: { command: '', instruction: `${handOver} run \`ln -s ~/.agents/AGENTS.md ~/.gemini/GEMINI.md\`` },
 			}),
 		])
+	})
+
+	// ── a home directory moved by a variable ──
+
+	it('reads the user file from the directory a variable moves it to, and names the variable', () => {
+		const root = home([])
+		const codex = elsewhere()
+		symlinkSync(join(root, '.agents', 'AGENTS.md'), join(codex, 'AGENTS.md'))
+
+		expect(diagnose(root, [], { CODEX_HOME: codex })).toEqual({
+			globalInstructions: [{ harness: 'codex', path: '$CODEX_HOME/AGENTS.md', kind: 'symlink', status: 'ok' }],
+			findings: [],
+		})
+	})
+
+	it('hands over the bridge at the moved path', () => {
+		const root = home(['.claude', '.copilot'])
+		const claude = elsewhere()
+		const copilot = elsewhere()
+
+		expect(
+			diagnose(root, [], { CLAUDE_CONFIG_DIR: claude, COPILOT_HOME: copilot }).findings.map(({ path, repair }) => ({
+				path,
+				instruction: repair.instruction,
+			})),
+		).toEqual([
+			{
+				path: '$CLAUDE_CONFIG_DIR/CLAUDE.md',
+				instruction: `${handOver} add the line \`@~/.agents/AGENTS.md\` to $CLAUDE_CONFIG_DIR/CLAUDE.md`,
+			},
+			{
+				path: '$COPILOT_HOME/copilot-instructions.md',
+				instruction: `${handOver} run \`ln -s ~/.agents/AGENTS.md $COPILOT_HOME/copilot-instructions.md\``,
+			},
+		])
+	})
+
+	it('reads an empty variable as unset', () => {
+		expect(diagnose(home(['.codex']), [], { CODEX_HOME: '' }).globalInstructions).toEqual([
+			{ harness: 'codex', path: '~/.codex/AGENTS.md', kind: 'none', status: 'missing' },
+		])
+	})
+
+	// ── a file read in place of the user file ──
+
+	it('reports a bridged user file as overridden where an override beside it holds content', () => {
+		const root = home(['.codex'])
+		symlinkSync('../.agents/AGENTS.md', join(root, '.codex', 'AGENTS.md'))
+		write(root, '.codex/AGENTS.override.md', '# Mine\n')
+
+		expect(diagnose(root)).toEqual({
+			globalInstructions: [{ harness: 'codex', path: '~/.codex/AGENTS.md', kind: 'symlink', status: 'overridden' }],
+			findings: [
+				{
+					path: '~/.codex/AGENTS.override.md',
+					problem: 'global-instructions-overridden',
+					detail:
+						'the harness reads this file in place of its own user-scope file, so whatever that file loads goes unread, and this one does not load ~/.agents/AGENTS.md',
+					repair: {
+						command: '',
+						instruction: `${handOver} move what ~/.codex/AGENTS.override.md says into ~/.agents/AGENTS.md and remove it`,
+					},
+				},
+			],
+		})
+	})
+
+	it('reports the user file under an override too, so both steps are handed over at once', () => {
+		const root = home([])
+		const codex = elsewhere()
+		write(codex, 'AGENTS.override.md', '# Mine\n')
+
+		expect(diagnose(root, [], { CODEX_HOME: codex }).findings.map(({ path, problem }) => ({ path, problem }))).toEqual([
+			{ path: '$CODEX_HOME/AGENTS.override.md', problem: 'global-instructions-overridden' },
+			{ path: '$CODEX_HOME/AGENTS.md', problem: 'global-instructions-missing' },
+		])
+	})
+
+	it('reports an override without a finding where there is no global file to go unread', () => {
+		const root = home(['.codex'], { global: false })
+		write(root, '.codex/AGENTS.override.md', '# Mine\n')
+
+		expect(diagnose(root)).toEqual({
+			globalInstructions: [{ harness: 'codex', path: '~/.codex/AGENTS.md', kind: 'none', status: 'overridden' }],
+			findings: [],
+		})
+	})
+
+	// Codex skips a file that is empty once trimmed, and reads the next one.
+	it('ignores an override that holds only whitespace', () => {
+		const root = home(['.codex'])
+		symlinkSync('../.agents/AGENTS.md', join(root, '.codex', 'AGENTS.md'))
+		write(root, '.codex/AGENTS.override.md', '  \n')
+
+		expect(diagnose(root).globalInstructions).toEqual([
+			{ harness: 'codex', path: '~/.codex/AGENTS.md', kind: 'symlink', status: 'ok' },
+		])
+	})
+
+	it('accepts an override that is itself a symlink to the global file', () => {
+		const root = home(['.codex'])
+		symlinkSync('../.agents/AGENTS.md', join(root, '.codex', 'AGENTS.override.md'))
+
+		expect(diagnose(root)).toEqual({
+			globalInstructions: [{ harness: 'codex', path: '~/.codex/AGENTS.override.md', kind: 'symlink', status: 'ok' }],
+			findings: [],
+		})
 	})
 
 	it('names where the step is written for a path no harness registers', () => {

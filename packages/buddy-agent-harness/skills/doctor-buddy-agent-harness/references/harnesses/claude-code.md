@@ -23,6 +23,7 @@ Described, never written: `init` works inside a repository, and `doctor` reads o
 | detection directory | `.claude` |
 | skills projection | `.claude/skills` — written by `init` |
 | instruction bridge | `.claude/CLAUDE.md` — the line `@~/.agents/AGENTS.md`, which loads `~/.agents/AGENTS.md` |
+| moved by | `CLAUDE_CONFIG_DIR` — set and non-empty, it replaces `.claude`, and every path under it moves with it |
 | MCP configuration | none |
 
 ## Configuration only this harness reads

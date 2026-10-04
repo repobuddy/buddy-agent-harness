@@ -21,14 +21,13 @@ It is a separate node from `../instruction-bridges/` because its root is the hom
 
 - **global instruction file** — `~/.agents/AGENTS.md`.
 - **user-scope instruction file** — the file a harness reads from the home directory for every repository, recorded per harness as the path of its user-scope `instructionBridge`.
-- **global instruction problem** — `global-instructions-missing` (no user-scope file at all) or `global-instructions-unbridged` (a file that loads its own content and not the global one).
+- **global instruction problem** — `global-instructions-missing` (no user-scope file at all), `global-instructions-unbridged` (a file that loads its own content and not the global one), or `global-instructions-overridden` (a file the harness reads in place of its user-scope file, which does not load the global one).
+- **relocating variable** — an environment variable that, set and non-empty, replaces a harness's user-scope directory: `CODEX_HOME` for `~/.codex`, `COPILOT_HOME` for `~/.copilot`, `CLAUDE_CONFIG_DIR` for `~/.claude`. Recorded per harness as its user-scope `relocatedBy`.
 
 **Non-goals**
 
 - **Writing.** Never, by `doctor` or by any skill: see the repair above.
 - **Harnesses with no user-scope file on disk.** Cursor keeps its user rules in a settings panel, and Devin Desktop documents no user-scope path; neither gets a row.
-- **Precedence inside a harness's home directory.** A non-empty `~/.codex/AGENTS.override.md` would win over `~/.codex/AGENTS.md`; it is not checked.
-- **Relocated home directories.** `CODEX_HOME`, `COPILOT_HOME`, and `CLAUDE_CONFIG_DIR` are not followed; the rows describe the default paths.
 - **What the global file says.** Whether it loads is decidable; whether it is any good is not this node's.
 
 ## Use Cases
@@ -48,7 +47,7 @@ It is a separate node from `../instruction-bridges/` because its root is the hom
 
 **Surface**
 
-No option of its own. A harness is checked where its user-scope detection directory exists in the home directory, or where `--harness` names it. The library entry point takes the home directory as `home`; omitted, nothing is checked, so a caller diagnosing a repository alone never reads outside it.
+No option of its own. A harness is checked where its user-scope detection directory exists, or where `--harness` names it. The library entry point takes the home directory as `home`; omitted, nothing is checked, so a caller diagnosing a repository alone never reads outside it. It takes the environment as `env`; omitted, no relocating variable is followed, so the result never depends on the shell the caller happened to run in. The command passes its own environment.
 
 **Extensions**
 
@@ -58,6 +57,8 @@ No option of its own. A harness is checked where its user-scope detection direct
 - **An import written with the absolute home path.** `ok`, the same as the `~` spelling.
 - **An import line in a file whose harness has no import.** `unbridged`: the line loads nothing there.
 - **A path that cannot be read as a file.** `unbridged` rather than failing the run.
+- **A relocating variable is set and non-empty.** The detection directory, the user-scope file, and any file read in its place are all looked up under the variable's value, and the row and the step write the path from the variable — `$CODEX_HOME/AGENTS.md` — so the report names it and stays publishable. An empty value is read as unset: Codex reads it so; Claude Code reads it as a relative path, and Copilot CLI's reading is unsettled (E-CC-19, E-COPILOT-05), so modelling either would be a guess.
+- **A file read in place of the user-scope file.** Codex reads `AGENTS.override.md` before `AGENTS.md`, and uses the first that holds more than whitespace. Where that override does not land on the global file, the row is `overridden` and the finding names the override; the user-scope file's own finding, if any, is reported beside it. An override that is a symlink to the global file is `ok`, and the row names it, since it is the file the harness reads.
 
 ## Scenario map
 
@@ -75,9 +76,17 @@ No option of its own. A harness is checked where its user-scope detection direct
 | a path that is not a readable file | `reads a user file it cannot read as unbridged rather than failing the run` |
 | Gemini CLI's user settings naming `AGENTS.md` | `checks GEMINI.md rather than the settings file at user scope` |
 | no home directory given | `checks the user-scope files only when given a home directory` |
+| a relocating variable set | `reads the user file from the directory a variable moves it to, and names the variable` |
+| a relocating variable set, and no user file under it | `hands over the bridge at the moved path` |
+| a relocating variable set to an empty string | `reads an empty variable as unset` |
+| a non-empty override beside a bridged user file | `reports a bridged user file as overridden where an override beside it holds content` |
+| a non-empty override and no user file | `reports the user file under an override too, so both steps are handed over at once` |
+| a non-empty override and no global file | `reports an override without a finding where there is no global file to go unread` |
+| an override holding only whitespace | `ignores an override that holds only whitespace` |
+| an override that is a symlink to the global file | `accepts an override that is itself a symlink to the global file` |
 
 ## References
 
 - `../../../../src/diagnose-bridges/diagnose-global-instructions.ts` is the check.
 - `../../../../src/harness-registry/harness-registry.ts` records each harness's user-scope bridge.
-- `../../../../../../.research/agentic-configuration-standards/evidence.md` holds E-CC-18, E-CODEX-05, E-GEM-03, E-COPILOT-04, and E-CUR-08, the vendor facts behind each row.
+- `../../../../../../.research/agentic-configuration-standards/evidence.md` holds E-CC-18, E-CC-19, E-CODEX-05, E-CODEX-06, E-GEM-03, E-COPILOT-04, E-COPILOT-05, and E-CUR-08, the vendor facts behind each row.

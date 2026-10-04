@@ -66,7 +66,10 @@ export type InstructionProblem =
 	| 'instructions-superseded'
 
 /** Every way a harness's user-scope instruction file fails to load `~/.agents/AGENTS.md`. */
-export type GlobalInstructionProblem = 'global-instructions-missing' | 'global-instructions-unbridged'
+export type GlobalInstructionProblem =
+	| 'global-instructions-missing'
+	| 'global-instructions-unbridged'
+	| 'global-instructions-overridden'
 
 /** Everything `doctor` can report against, across every section. */
 export type DoctorProblem =
@@ -324,18 +327,29 @@ export const instructionRepairs: readonly Repair[] = repairsOf(instructionTable)
 
 const globalFile = `~/${globalInstructions}`
 
-/** The step that bridges one harness's user-scope file, in the words it is handed over in. */
-export function globalBridgeStep(bridge: InstructionBridge): string {
-	return bridge.kind === 'import'
-		? `add the line \`${bridge.line}\` to ~/${bridge.path}`
-		: `run \`ln -s ${globalFile} ~/${bridge.path}\``
+/**
+ * The step that bridges one harness's user-scope file, in the words it is handed over in; `file` is
+ * where it was found, which a variable such as `$CODEX_HOME` may have moved.
+ */
+export function globalBridgeStep(bridge: InstructionBridge, file = `~/${bridge.path}`): string {
+	return bridge.kind === 'import' ? `add the line \`${bridge.line}\` to ${file}` : `run \`ln -s ${globalFile} ${file}\``
+}
+
+/** Every spelling of a user-scope path a report can carry: from `~`, and from the variable that moves it. */
+function userSpellings(scope: HarnessScope, path: string): string[] {
+	const under = `${scope.detect}/`
+	return scope.relocatedBy !== undefined && path.startsWith(under)
+		? [`~/${path}`, `$${scope.relocatedBy}/${path.slice(under.length)}`]
+		: [`~/${path}`]
 }
 
 /** The bridge for a reported path; undefined for a path no harness registers, such as a table's `<path>`. */
 function userBridgeAt(file: string): InstructionBridge | undefined {
-	return harnessRegistry
-		.map((harness) => harness.user?.instructionBridge)
-		.find((candidate) => candidate !== undefined && `~/${candidate.path}` === file)
+	for (const { user } of harnessRegistry) {
+		const bridge = user?.instructionBridge
+		if (user && bridge && userSpellings(user, bridge.path).includes(file)) return bridge
+	}
+	return undefined
 }
 
 /** The step for one reported file, or a pointer to where it is written when the path is not one. */
@@ -345,7 +359,7 @@ function stepAt(file: string, keepContent: boolean): string {
 	// A symlink replaces the file, so what it says has to move first or it is lost.
 	const keep =
 		keepContent && bridge.kind !== 'import' ? `move what ${file} says into ${globalFile} and remove it, then ` : ''
-	return `${keep}${globalBridgeStep(bridge)}`
+	return `${keep}${globalBridgeStep(bridge, file)}`
 }
 
 /** Outside the repository, so never written: a repair is a step handed to the user. */
@@ -362,6 +376,15 @@ const globalInstructionTable: Record<GlobalInstructionProblem, RepairRow> = {
 		repair: ({ file }) => ({ command: '', instruction: `${handOver} ${stepAt(file, true)}` }),
 		skillRepair: () =>
 			'hand the user the step the harness page names for that file, keeping what the file says; write nothing yourself',
+	},
+	'global-instructions-overridden': {
+		detail: `the harness reads this file in place of its own user-scope file, so whatever that file loads goes unread, and this one does not load ${globalFile}`,
+		repair: ({ file }) => ({
+			command: '',
+			instruction: `${handOver} move what ${file} says into ${globalFile} and remove it`,
+		}),
+		skillRepair: () =>
+			'hand the user the move of what that file says into the global file, and its removal; write nothing yourself',
 	},
 }
 
@@ -627,7 +650,7 @@ The command is read-only. It never repairs anything, so it is safe to run at any
 
 \`instructions\` is everything standing between a harness and \`AGENTS.md\`, with a \`status\` of \`ok\`, \`missing\`, \`unbridged\`, \`unreadable\`, \`shadowing\`, or \`superseded\`. The last two are not bridges: they are files that suppress an \`AGENTS.md\` the harness would otherwise read by itself. A separate section because nothing about any of them is shared with \`bridges\`: a different \`kind\`, a different status vocabulary, and a repair that is never a command.
 
-\`globalInstructions\` is the same question one level up: whether each harness installed for this user loads \`${globalFile}\` through its own user-scope file, with a \`status\` of \`ok\`, \`missing\`, or \`unbridged\`. No harness reads that file by itself, so text placed there reaches only the harnesses whose row is \`ok\`. The rows are there whether or not the file exists; a finding is raised only when it exists and goes unread.
+\`globalInstructions\` is the same question one level up: whether each harness installed for this user loads \`${globalFile}\` through its own user-scope file, with a \`status\` of \`ok\`, \`missing\`, \`unbridged\`, or \`overridden\`. No harness reads that file by itself, so text placed there reaches only the harnesses whose row is \`ok\`. The rows are there whether or not the file exists; a finding is raised only when it exists and goes unread.
 
 \`findings\` explains each problem and carries more than the two sections above: the configuration, MCP, and non-standard findings have no section of their own, because they are about files rather than about bridges. \`help\` carries each repair, one row per distinct repair, with two columns:
 
@@ -685,6 +708,15 @@ function conversionOf(kind: NonstandardKind): string {
 	}
 }
 
+/** Every variable that moves a harness's user-scope directory, as prose. */
+function relocationList(): string {
+	return harnessRegistry
+		.flatMap(({ name, user }) =>
+			user?.relocatedBy === undefined ? [] : [`\`${user.relocatedBy}\` for \`${name}\` (\`~/${user.detect}\`)`],
+		)
+		.join(', ')
+}
+
 /** One row per harness with a user-scope file that can load the global one. */
 function globalBridgeRows(): string {
 	return harnessRegistry
@@ -717,6 +749,11 @@ function scopeRows(scope: HarnessScope): string {
 		`| detection directory | \`${scope.detect}\` |`,
 		`| skills projection | ${scope.skillsDirectory ? `\`${scope.skillsDirectory}\` — written by \`init\`` : 'none — reads `.agents/skills` natively'} |`,
 		`| instruction bridge | ${bridge === undefined ? 'none' : bridgeCell(bridge)} |`,
+		...(scope.relocatedBy
+			? [
+					`| moved by | \`${scope.relocatedBy}\` — set and non-empty, it replaces \`${scope.detect}\`, and every path under it moves with it |`,
+				]
+			: []),
 		...(scope.shadowedBy
 			? [
 					`| suppresses \`AGENTS.md\` | ${scope.shadowedBy
@@ -847,11 +884,15 @@ ${globalBridgeRows()}
 
 Cursor keeps its user rules in a settings panel rather than a file, so there is nothing on disk to check; Devin Desktop documents no user-scope path. Neither gets a row.
 
+A harness's directory can be moved by a variable: ${relocationList()}. Where one is set and non-empty, the row and the step name the file under it, written from the variable — \`$CODEX_HOME/AGENTS.md\` — so the step works in the shell the user ran \`doctor\` from.
+
 ${repairTable(globalInstructionRepairs)}
 
 **Hand the step over; never take it.** The file is in the user's home directory, outside the repository this tool works in, so every repair carries an empty \`command\` and names the step for the user to take themselves.
 
 \`unbridged\` is the one to read carefully. The file is there and holds instructions of its own, so the harness loads something — just not the global file. Where the bridge is a symlink, the file it replaces holds content that has to move into \`${globalFile}\` first, or it is lost.
+
+\`overridden\` is the quietest. The user-scope file may be bridged perfectly and still go unread, because the harness reads another file in its place: Codex reads \`AGENTS.override.md\` before \`AGENTS.md\`, and uses whichever first holds more than whitespace. The finding names that file. Its content moves into \`${globalFile}\` before it is removed; where the user-scope file has a problem of its own, that finding is reported beside it, so both steps are handed over at once.
 
 A row is reported for every harness installed for this user, whether or not \`${globalFile}\` exists, so a skill handing text over for that file can say which harnesses will load it. A finding is raised only where the file exists and a harness is not loading it.
 `,

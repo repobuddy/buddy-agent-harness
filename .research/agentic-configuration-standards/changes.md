@@ -1,5 +1,25 @@
 # Changes — Agentic Configuration Standards
 
+## 2026-10-03 — Moved config folders, Codex's override, and Copilot's symlinks
+
+**What changed**: E-CODEX-06, E-CC-19, and E-COPILOT-05 added; E-CODEX-05 and E-COPILOT-04 point
+at them for what they left open.
+
+**Why**: #218 named three cases the global-instructions check (#216) did not cover, each one where
+it could report the wrong file or the wrong result.
+
+**Material conclusions**:
+
+- **Each variable replaces the harness's directory itself.** `CODEX_HOME`, `CLAUDE_CONFIG_DIR`, and
+  `COPILOT_HOME` move the user-scope file to `$VAR/<file>`. Codex reads an empty value as unset;
+  Claude Code does not, and Copilot CLI's is unsettled.
+- **Codex's override wins only when it holds more than whitespace.** A bridged `AGENTS.md` beside a
+  non-empty `AGENTS.override.md` loads nothing.
+- **Copilot CLI follows a symlink out of its directory.** The symlink bridge recorded in #216 works;
+  only `@` references are confined.
+
+**Triggering evidence**: E-CODEX-06, E-CC-19, E-COPILOT-05.
+
 ## 2026-10-03 — No harness reads `~/.agents/AGENTS.md` without a bridge
 
 **What changed**: E-CC-18, E-CODEX-05, E-GEM-03, E-COPILOT-04, and E-CUR-08 added, each naming a

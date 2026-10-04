@@ -49,6 +49,7 @@ for (const finding of result.findings) console.log(finding.problem, finding.repa
 | `harnesses` | `HarnessName[]` | Harnesses to check in addition to Claude Code and Cursor and to the harnesses detected under `root`. Defaults to `[]` |
 | `cli` | `string` | How to name this tool in the repair commands, such as `buddy-agent-harness` |
 | `home` | `string` | The home directory whose user-scope instruction files are checked for loading `~/.agents/AGENTS.md`. Omitted, none are |
+| `env` | `NodeJS.ProcessEnv` | The environment whose `CODEX_HOME`, `COPILOT_HOME`, and `CLAUDE_CONFIG_DIR` move a harness's user-scope directory. Omitted, none is followed. The `doctor` command passes `process.env` |
 
 ### DiagnoseResult
 
@@ -116,19 +117,20 @@ function diagnoseGlobalInstructions(
 	home: string,
 	preferred: readonly HarnessName[],
 	cli: string,
+	env?: NodeJS.ProcessEnv,
 ): { globalInstructions: GlobalInstructionReport[]; findings: BridgeFinding[] }
 ```
 
-Checks whether each harness installed under `home`, or named in `preferred`, loads `~/.agents/AGENTS.md` through its own user-scope file. `diagnoseBridges` calls it when given `home`. It reads the home directory and writes nothing. A finding is raised only where `~/.agents/AGENTS.md` exists. [Reaching ~/.agents/AGENTS.md](/cli/doctor/#reaching-agentsagentsmd) has the rules.
+Checks whether each harness installed under `home`, or named in `preferred`, loads `~/.agents/AGENTS.md` through its own user-scope file, looked up under the directory a variable in `env` moves it to. `diagnoseBridges` calls it when given `home`. It reads the home directory and writes nothing. A finding is raised only where `~/.agents/AGENTS.md` exists. [Reaching ~/.agents/AGENTS.md](/cli/doctor/#reaching-agentsagentsmd) has the rules.
 
 ### GlobalInstructionReport
 
 | Field | Type | Meaning |
 | --- | --- | --- |
 | `harness` | `HarnessName` | The harness |
-| `path` | `string` | Its user-scope instruction file, written from `~`, such as `~/.claude/CLAUDE.md` |
+| `path` | `string` | Its user-scope instruction file, written from `~`, such as `~/.claude/CLAUDE.md`, or from the variable that moved it, such as `$CODEX_HOME/AGENTS.md`. Where a file read in its place loads the global file, that file, such as `~/.codex/AGENTS.override.md` |
 | `kind` | `GlobalInstructionKind` | What is at that path: `import`, `symlink`, `file`, or `none` |
-| `status` | `GlobalInstructionStatus` | `ok`, `missing`, or `unbridged` |
+| `status` | `GlobalInstructionStatus` | `ok`, `missing`, `unbridged`, or `overridden` |
 
 ## diagnoseInstructions
 
