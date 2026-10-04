@@ -703,7 +703,7 @@ Status values: `confirmed`, `contested`, `thin`. Confidence: high / medium / low
 - **Status**: confirmed
 - **Confidence**: high on the path; medium on the absence of an include, which the docs show by silence
 - **Source**: Codex AGENTS.md guide — https://developers.openai.com/codex/guides/agents-md — official docs
-- **Notes**: "Codex checks your home directory (default `~/.codex`)" for `AGENTS.override.md`, then `AGENTS.md`, and "uses only the first non-empty file at this level". `CODEX_HOME` relocates the directory. No import syntax is documented, and `~/.agents/AGENTS.md` is not named. The only bridge is a symlink: `~/.codex/AGENTS.md` → `~/.agents/AGENTS.md`. A non-empty `~/.codex/AGENTS.override.md` would take precedence over that symlink; not checked.
+- **Notes**: "Codex checks your home directory (default `~/.codex`)" for `AGENTS.override.md`, then `AGENTS.md`, and "uses only the first non-empty file at this level". `CODEX_HOME` relocates the directory. No import syntax is documented, and `~/.agents/AGENTS.md` is not named. The only bridge is a symlink: `~/.codex/AGENTS.md` → `~/.agents/AGENTS.md`. A non-empty `~/.codex/AGENTS.override.md` takes precedence over that symlink; E-CODEX-06 settles how.
 
 ## E-GEM-03 — At user scope, `context.fileName` names files inside `~/.gemini/` only
 
@@ -717,7 +717,7 @@ Status values: `confirmed`, `contested`, `thin`. Confidence: high / medium / low
 
 - **Date**: 2026-10-03
 - **Status**: confirmed
-- **Confidence**: high on the path and the refusal; low on whether a symlink leaving `~/.copilot` is followed
+- **Confidence**: high on the path and the refusal; whether a symlink leaving `~/.copilot` is followed was low here and is settled by E-COPILOT-05
 - **Source**: Adding custom instructions for Copilot CLI — https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-custom-instructions — official docs
 - **Notes**: User-level instructions are `$HOME/.copilot/copilot-instructions.md`, relocated by `COPILOT_HOME`. "Absolute paths and paths beginning with `~/` are not loaded" by an `@` reference, so the bridge is a symlink: `~/.copilot/copilot-instructions.md` → `~/.agents/AGENTS.md`.
 
@@ -728,3 +728,27 @@ Status values: `confirmed`, `contested`, `thin`. Confidence: high / medium / low
 - **Confidence**: high
 - **Source**: Cursor rules documentation — https://cursor.com/docs/rules — official docs
 - **Notes**: "User Rules are global preferences defined in **Customize → Rules** that apply across all projects." They live in the settings UI, and no home-directory instruction file is documented, so nothing on disk can be checked for loading `~/.agents/AGENTS.md`. Devin Desktop documents no user-scope path this registry records, so it has none either.
+
+## E-CODEX-06 — `CODEX_HOME` replaces `~/.codex`; `AGENTS.override.md` wins when it holds more than whitespace
+
+- **Date**: 2026-10-03
+- **Status**: confirmed
+- **Confidence**: high
+- **Source**: openai/codex at `d0759639f20af955a5c6447f4683e99bf42ab6cf` — `codex-rs/utils/home-dir/src/lib.rs` (`find_codex_home`) and `codex-rs/codex-home/src/instructions/mod.rs` (`load_from_codex_home`) — vendor source; the CLI checked locally is codex-cli 0.159.3
+- **Notes**: `std::env::var("CODEX_HOME").ok().filter(|val| !val.is_empty())`: an empty value is unset. Set, "the value must exist and be a directory. The value will be canonicalized and this function will Err otherwise", and the global file is `codex_home.join(candidate)` — the variable replaces `~/.codex` itself. The loader tries `for candidate in [LOCAL_AGENTS_MD_FILENAME, DEFAULT_AGENTS_MD_FILENAME]` (`"AGENTS.override.md"`, then `"AGENTS.md"`), skips a candidate that is missing or `!metadata.is_file()`, and returns the first whose `contents.trim()` is non-empty: an override holding only whitespace falls through to `AGENTS.md`. The reads are `tokio::fs::metadata` and `tokio::fs::read`, which follow symlinks, with no containment check, so a symlink out of `~/.codex` — at either name — is read.
+
+## E-CC-19 — `CLAUDE_CONFIG_DIR` replaces `~/.claude`, and the user-scope `CLAUDE.md` moves with it
+
+- **Date**: 2026-10-03
+- **Status**: confirmed
+- **Confidence**: high on the relocation; medium on an empty value, which the code reads oddly and doctor does not model
+- **Source**: Claude Code 2.1.289's shipped bundle (`~/.local/share/claude/versions/2.1.289`, minified JS inside the executable) — vendor code; the docs (https://code.claude.com/docs/en/env-vars, https://code.claude.com/docs/en/memory) name the variable as the config directory but do not say where the user `CLAUDE.md` goes
+- **Notes**: `function o(){return process.env.CLAUDE_CONFIG_DIR}`, `var we=us(()=>(o()??u(R(),".claude")).normalize("NFC"),o)`, and `case"User":return je(we(),"CLAUDE.md")`: the user-scope file is `$CLAUDE_CONFIG_DIR/CLAUDE.md` when the variable is set. The resolver uses `??`, so an **empty** value is not unset there — it yields a relative path — while other call sites use `||`. doctor reads an empty value as unset, the documented behavior of Codex, and does not model the relative path. The `@~/.agents/AGENTS.md` import is unaffected: `~/` in an import resolves from the home directory, not the config directory, so the line handed over is the same.
+
+## E-COPILOT-05 — Copilot CLI follows a symlink out of its directory for its user instructions
+
+- **Date**: 2026-10-03
+- **Status**: confirmed
+- **Confidence**: high
+- **Source**: a reproducible local test with Copilot CLI 1.0.90 (the shipped binary bundles its JS unreadably, so no code excerpt); `COPILOT_HOME` from Adding custom instructions for Copilot CLI — https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-custom-instructions — official docs
+- **Notes**: The docs: "If you set the `COPILOT_HOME` environment variable, Copilot CLI uses that directory instead of `$HOME/.copilot`." The test: `$COPILOT_HOME/copilot-instructions.md` a symlink to a file outside `COPILOT_HOME` holding a marker line, then `COPILOT_HOME=<dir> copilot -p "hi" --log-level all --log-dir <logs>`. The logged model request carried `<custom_instruction>` holding the marker, so the target is loaded: no realpath or containment refusal applies to this file, unlike an `@` reference (E-COPILOT-04). The symlink bridge stands. How an empty `COPILOT_HOME` is read is not settled; doctor reads it as unset, as for the other two.
