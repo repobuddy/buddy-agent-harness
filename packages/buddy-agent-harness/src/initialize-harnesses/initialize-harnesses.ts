@@ -1,6 +1,6 @@
 import { mkdirSync } from 'node:fs'
 import { join } from 'node:path'
-import { projectReferenceLayers, projectReferencesDir, referenceNames } from 'buddy-agent-reference'
+import { projectReferenceLayers, projectReferencesDir, referenceNames } from '@cyberuni/agent-harness'
 import { type HarnessName, selectHarnesses } from '../harness-registry/harness-registry.ts'
 import { countSkills, type ForceSelection, projectSkills } from '../skill-projection/skill-projection.ts'
 

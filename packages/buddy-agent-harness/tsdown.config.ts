@@ -25,7 +25,6 @@ const inlineDeps = {
 		alwaysBundle: [
 			/^@cyberuni\/agent-harness(\/|$)/,
 			/^@toon-format\/toon(\/|$)/,
-			/^buddy-agent-reference(\/|$)/,
 			/^clibuilder(\/|$)/,
 			/^jsonc-parser(\/|$)/,
 			/^smol-toml(\/|$)/,

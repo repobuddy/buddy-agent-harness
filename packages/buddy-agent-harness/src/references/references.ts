@@ -1,10 +1,10 @@
 import { dirname } from 'node:path'
 import {
-	createReferenceCommand,
 	type ReferenceLayerOptions as LayerOptions,
 	referenceLayers as layersOf,
 	type ReferenceLayer,
-} from 'buddy-agent-reference'
+} from '@cyberuni/agent-harness'
+import { createReferenceCommand } from '@cyberuni/agent-harness/commands'
 import type { cli } from 'clibuilder'
 import { packageGovernancesDir } from '../governance-overrides/governance-overrides.ts'
 
@@ -15,7 +15,7 @@ export type ReferenceLayerOptions = Omit<LayerOptions, 'plugin'> & {
 	packageRoot?: string | undefined
 }
 
-/** `buddy-agent-reference`'s layers, with this package as the plugin whose own references come first. */
+/** `@cyberuni/agent-harness`'s reference layers, with this package as the plugin whose own references come first. */
 export function referenceLayers({
 	packageRoot = dirname(packageGovernancesDir()),
 	...options

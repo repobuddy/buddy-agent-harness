@@ -569,9 +569,9 @@ flowchart TD
 
 ## References
 
-- `../../../../../buddy-agent-reference/src/` is the implementation: layers, documents and merge,
-  resolution, search, and the command. It is its own package, `buddy-agent-reference`, so a tool can
-  bundle the resolver without depending on `buddy-agent-harness`.
+- `@cyberuni/agent-harness` is the implementation: layers, documents and merge, resolution, and
+  search at its root, and the command at `@cyberuni/agent-harness/commands`, so a tool can bundle the
+  resolver without depending on `buddy-agent-harness`.
 - `../../../../src/references/` names `buddy-agent-harness` as the plugin whose own references come
   first.
 - `../governance-overrides/` is the deprecated command this replaces as the read path.

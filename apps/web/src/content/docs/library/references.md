@@ -17,7 +17,7 @@ import {
 
 These exports are the engine behind the [`reference` command](/cli/reference/). Use them to read [reference documents](/agent-configuration/references/) from your own code, with the same tiers, file names, and merge rules the command uses. That page covers those rules; this one covers the functions and types.
 
-The engine ships on its own as the [`buddy-agent-reference`](#the-buddy-agent-reference-package) package; `buddy-agent-harness` re-exports it, naming itself as the plugin whose own references come first.
+The engine comes from [`@cyberuni/agent-harness`](#the-cyberuniagent-harness-package); `buddy-agent-harness` re-exports it, naming itself as the plugin whose own references come first.
 
 Every function here is read-only. The work splits into three steps:
 
@@ -293,14 +293,15 @@ The output of `reference search`.
 | `query` | `string` | the query, trimmed |
 | `references` | `SearchMatch[] \| string` | the matches, or a sentence stating the zero when nothing matches |
 
-## The `buddy-agent-reference` package
+## The `@cyberuni/agent-harness` package
 
 ```ts
-import { createReferenceCommand, loadReference, referenceLayers, whereReference } from 'buddy-agent-reference'
+import { loadReference, referenceLayers, whereReference } from '@cyberuni/agent-harness'
+import { createReferenceCommand } from '@cyberuni/agent-harness/commands'
 ```
 
-A tool that resolves references without depending on `buddy-agent-harness`, such as a skill script that bundles the resolver, imports them from `buddy-agent-reference`. Every export above but `referenceCommand` is there under the same name. Three things differ.
+A tool that resolves references without depending on `buddy-agent-harness`, such as a skill script that bundles the resolver, imports them from `@cyberuni/agent-harness`. Every export above but `referenceCommand` is there under the same name; the report types `ReferenceListReport`, `ReferenceSearchReport`, and `ReferenceShowEntry` come from `@cyberuni/agent-harness/commands`. Three things differ.
 
 - No plugin is assumed. `ReferenceLayerOptions` takes `plugin: { name, root }` in place of `packageRoot`: the plugin calling the resolver, whose `references/` is the first plugin layer. Without it, the plugin tier holds only the enabled plugins and the declared dependencies.
 - `loadReference(name, options)` resolves one name in one call. `home` and `platform` default to the machine's own, and a name no layer holds comes back with status `missing`.
-- `whereReference(name, layers, { root, caller?, display? })` returns the report `reference where` prints. `createReferenceCommand({ plugin })` builds the `reference` command for a host CLI, and the package's own `buddy-agent-reference` binary runs its subcommands at the top level.
+- `whereReference(name, layers, { root, caller?, display? })` returns the report `reference where` prints. `createReferenceCommand({ plugin })` builds the `reference` command for a host CLI.

@@ -8,7 +8,7 @@ A repository keeps one canonical agent configuration — a root `AGENTS.md` and 
 
 Of the CLI's top-level commands, `doctor` and `governance` say they are read-only; `init`, `mcp`, `dep-plugins`, and `reference` can write.
 
-Every runnable command takes `--format` with `toon`, `json`, or `text`; the default is `toon`, except that `reference show`, `reference create`, and `governance show` default to `text`.
+Every runnable command takes `--format` with `toon`, `json`, or `text`; the default is `toon`, except that `reference show`, `reference create`, `reference delete`, and `governance show` default to `text`.
 
 Documentation site: [One canonical agent configuration](https://repobuddy.github.io/buddy-agent-harness/).
 
@@ -21,12 +21,13 @@ Documentation site: [One canonical agent configuration](https://repobuddy.github
 - [`buddy-agent-harness mcp project`](https://repobuddy.github.io/buddy-agent-harness/cli/mcp/): Project the golden MCP server set into each enabled harness. A dry run unless --write; never overwrites a change made on the harness side.
 - [`buddy-agent-harness mcp reconcile`](https://repobuddy.github.io/buddy-agent-harness/cli/mcp/): Import a harness-side MCP change into the golden set, one approved field at a time. A dry run unless --accept names a field.
 - [`buddy-agent-harness dep-plugins`](https://repobuddy.github.io/buddy-agent-harness/cli/dep-plugins/): Derive the marketplace catalog for plugins shipped by this repository’s dependencies, so a harness can install them. Writes the catalog; installing is the harness’s own job.
-- [`buddy-agent-harness reference`](https://repobuddy.github.io/buddy-agent-harness/cli/reference/): Read on-demand reference documents by name, layered across the managed, project, user, and plugin tiers, and start a new one in the project or user tier.
+- [`buddy-agent-harness reference`](https://repobuddy.github.io/buddy-agent-harness/cli/reference/): Read on-demand reference documents by name, layered across the managed, project, user, and plugin tiers, and start or delete one in the project or user tier.
 - [`buddy-agent-harness reference show`](https://repobuddy.github.io/buddy-agent-harness/cli/reference/): Print one or more references, each resolved through the tiers and combined as its layers ask.
 - [`buddy-agent-harness reference list`](https://repobuddy.github.io/buddy-agent-harness/cli/reference/): List every layer, and every reference at every layer that holds it, marked used or shadowed.
 - [`buddy-agent-harness reference search`](https://repobuddy.github.io/buddy-agent-harness/cli/reference/): Find references by name, description, tags, headings, or body, best match first.
 - [`buddy-agent-harness reference where`](https://repobuddy.github.io/buddy-agent-harness/cli/reference/): List the project and user files an override of a reference can be written to, highest precedence first, with the copy each overrides and who it applies to.
 - [`buddy-agent-harness reference create`](https://repobuddy.github.io/buddy-agent-harness/cli/reference/): Start a new reference in the project or user tier from a template, marked merge-sections when it overrides a copy below. Never overwrites.
+- [`buddy-agent-harness reference delete`](https://repobuddy.github.io/buddy-agent-harness/cli/reference/): Delete the project or user copy of a reference, and report which copy answers the name afterwards. Never deletes a plugin-shipped or managed copy.
 - [`buddy-agent-harness governance`](https://repobuddy.github.io/buddy-agent-harness/cli/governance/): Deprecated: use `reference`. Read the governance documents the project, user, and machine-wide override layers hold. Read-only.
 - [`buddy-agent-harness governance list`](https://repobuddy.github.io/buddy-agent-harness/cli/governance/): List every governance the override layers hold, each at the layer that would win.
 - [`buddy-agent-harness governance show`](https://repobuddy.github.io/buddy-agent-harness/cli/governance/): Print one governance document, resolved through the layers in order.
@@ -75,7 +76,8 @@ Documentation site: [One canonical agent configuration](https://repobuddy.github
 
 ## Optional
 
-- [Library: `buddy-agent-reference`](https://repobuddy.github.io/buddy-agent-harness/library/references/): exports `listReferences`, `managedReferencesDir`, `parseReferenceName`, `resolveReference`, `searchReferences`, type `MatchKind`, type `MergeMode`, type `ReferenceLayer`, type `ReferenceListing`, type `ReferenceListReport`, type `ReferenceName`, type `ReferenceRow`, type `ReferenceSearchReport`, type `ReferenceShowEntry`, type `ReferenceStatus`, type `ReferenceTier`, type `ResolvedReference`, type `ResolveOptions`, type `SearchMatch`, type `TraceEntry`, type `UsedLayer`.
+- [Library: `@cyberuni/agent-harness`](https://repobuddy.github.io/buddy-agent-harness/library/references/): exports `listReferences`, `managedReferencesDir`, `parseReferenceName`, `resolveReference`, `searchReferences`, type `MatchKind`, type `MergeMode`, type `ReferenceLayer`, type `ReferenceListing`, type `ReferenceName`, type `ReferenceRow`, type `ReferenceStatus`, type `ReferenceTier`, type `ResolvedReference`, type `ResolveOptions`, type `SearchMatch`, type `TraceEntry`, type `UsedLayer`.
+- [Library: `@cyberuni/agent-harness/commands`](https://repobuddy.github.io/buddy-agent-harness/library/references/): exports type `ReferenceListReport`, type `ReferenceSearchReport`, type `ReferenceShowEntry`.
 - [Library: `cli.ts`](https://repobuddy.github.io/buddy-agent-harness/library/init/): exports `run`.
 - [Library: `diagnose-bridges/diagnose-bridges.ts`](https://repobuddy.github.io/buddy-agent-harness/library/doctor/): exports `diagnoseBridges`, type `BridgeFinding`, type `BridgeKind`, type `BridgeReport`, type `BridgeStatus`, type `DiagnoseOptions`, type `DiagnoseResult`, type `DivergenceReport`.
 - [Library: `diagnose-bridges/diagnose-global-instructions.ts`](https://repobuddy.github.io/buddy-agent-harness/library/doctor/): exports `diagnoseGlobalInstructions`, type `GlobalInstructionKind`, type `GlobalInstructionReport`, type `GlobalInstructionStatus`.
