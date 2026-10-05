@@ -15,7 +15,7 @@ A **reference** is a Markdown document an agent reads on demand. [References and
 
 `--root` is the directory the project tier is read from, walking up to the repository root. It defaults to the current directory.
 
-A skill does not run this command itself. It names the [`reference` skill](/skills/reference/#loading-from-a-skill), which runs `show` from a launcher bundled in its own folder.
+A skill does not run this command itself. It names the [`reference` skill](https://github.com/cyberuni/agent-harness/tree/main/packages/agent-harness/skills/reference) in the `agent-harness` plugin, which runs `show` from a launcher bundled in its own folder.
 
 ## Tiers
 

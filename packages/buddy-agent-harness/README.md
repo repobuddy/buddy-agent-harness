@@ -16,6 +16,8 @@ In Claude Code, add the [cyberplace](https://github.com/cyberuni/cyberplace) mar
 /plugin install buddy-agent-harness@cyberplace
 ```
 
+The plugin depends on the `agent-harness` plugin, whose `reference` skill loads the references these skills name. Claude Code installs it with this one. Cursor, Codex, and GitHub Copilot CLI read no plugin dependencies, so install `agent-harness` there yourself.
+
 ## CLI
 
 `init` runs behind the `init-buddy-agent-harness` skill, which sorts the configuration you already wrote before the command links anything. Install the package alongside `repobuddy` to mount every command on `buddy`, as `buddy agent-harness doctor`, `buddy agent-harness init`, and `buddy agent-harness dep-plugins`.

@@ -32,5 +32,4 @@ Where to look when writing or checking documentation in this repository. Pointer
 | the `doctor-buddy-agent-harness` skill's finding-and-repair table | `packages/buddy-agent-harness/src/diagnose-bridges/doctor-guidance.ts` |
 | per-harness project-scope MCP file, key, and format | `packages/buddy-agent-harness/src/harness-registry/harness-registry.ts` |
 | CLI commands and options | `packages/buddy-agent-harness/src/cli.ts` |
-| how each harness types the `reference` skill, in its `README.md` | `packages/buddy-agent-harness/src/references/reference-invocation.ts`, from `@cyberuni/agent-harness` |
 | `llms.txt`, in the package and in `apps/web/public/` — CLI commands, skills, library exports, docs pages | `packages/buddy-agent-harness/scripts/generate-llms-txt.ts`, from `src/cli.ts`, `skills/*/SKILL.md`, `src/index.ts`, and the docs pages' frontmatter |
