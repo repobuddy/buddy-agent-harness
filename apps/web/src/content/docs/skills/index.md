@@ -5,7 +5,7 @@ description: The skills the plugin ships, init, doctor, enhance and repair, the 
 
 The plugin ships four skills. [`init`](/skills/init-buddy-agent-harness/) gives a repository one canonical agent configuration and bridges the harnesses that cannot read it. [`doctor`](/skills/doctor-buddy-agent-harness/) reports whether those bridges still resolve. [`enhance`](/skills/enhance/) offers guidance the repository does not have yet. [`repair`](/skills/repair/) corrects configuration that is present and wrong.
 
-The [`reference` skill](https://github.com/cyberuni/agent-harness/tree/main/packages/agent-harness/skills/reference), which writes, updates, and finds references, and through which other skills load theirs, ships in the `agent-harness` plugin instead.
+The [`reference` skill](https://github.com/cyberuni/agent-harness/tree/main/packages/agent-harness/skills/reference), which writes, updates, and finds references, and through which other skills load theirs, ships in the `cyber-agent-harness` plugin instead.
 
 `init` and `doctor` each have a CLI command behind them. The skill is the half that needs judgment about files you wrote; the command is the mechanical half. `enhance` has no command, because there is no mechanical half to hand off.
 
@@ -28,7 +28,7 @@ In Claude Code, add the [cyberplace](https://github.com/cyberuni/cyberplace) mar
 /plugin install buddy-agent-harness@cyberplace
 ```
 
-In Claude Code, the plugin declares a dependency on the `agent-harness` plugin from the same marketplace, so this also installs `agent-harness` and its `reference` skill. Cursor, Codex, and GitHub Copilot CLI have no plugin dependencies; install `agent-harness` there yourself.
+In Claude Code, the plugin declares a dependency on the `cyber-agent-harness` plugin from the same marketplace, so this also installs `cyber-agent-harness` and its `reference` skill. Cursor, Codex, and GitHub Copilot CLI have no plugin dependencies; install `cyber-agent-harness` there yourself.
 
 Four you can run yourself:
 
@@ -39,7 +39,7 @@ Four you can run yourself:
 /buddy-agent-harness:repair
 ```
 
-To work with a reference, type `/agent-harness:reference`, or ask in words, such as "where do I put my own copy of `plugin-design`?".
+To work with a reference, type `/cyber-agent-harness:reference`, or ask in words, such as "where do I put my own copy of `plugin-design`?".
 
 ## The commands behind them
 
