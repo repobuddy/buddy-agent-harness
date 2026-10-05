@@ -13,6 +13,12 @@
 	"extensions": {
 		"org.cyberuni.universal-plugin": {
 			"skills": "./skills/",
+			"dependencies": [
+				{
+					"name": "agent-harness",
+					"marketplace": "cyberplace"
+				}
+			],
 			"harnesses": {
 				"claude-code": {},
 				"cursor": {
