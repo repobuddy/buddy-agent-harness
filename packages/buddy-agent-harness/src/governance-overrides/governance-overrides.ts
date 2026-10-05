@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url'
 import {
 	deprecatedManagedGovernancesDir as referenceDeprecatedManagedGovernancesDir,
 	managedGovernancesDir as referenceManagedGovernancesDir,
-} from 'buddy-agent-reference'
+} from '@cyberuni/agent-harness'
 
 /**
  * Order here is search order. `package` is the only member that isn't an override —

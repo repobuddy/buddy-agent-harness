@@ -60,8 +60,7 @@
 		"node": ">=22"
 	},
 	"dependencies": {
-		"@cyberuni/agent-harness": "^0.3.0",
-		"buddy-agent-reference": "workspace:^",
+		"@cyberuni/agent-harness": "^0.5.0",
 		"clibuilder": "^11.3.0",
 		"jsonc-parser": "^3.3.1",
 		"smol-toml": "^1.8.0",

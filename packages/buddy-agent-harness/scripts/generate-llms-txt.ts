@@ -39,6 +39,7 @@ const commandPages: Record<string, string | null> = {
 	'reference search': 'cli/reference',
 	'reference where': 'cli/reference',
 	'reference create': 'cli/reference',
+	'reference delete': 'cli/reference',
 	governance: 'cli/governance',
 	'governance list': 'cli/governance',
 	'governance show': 'cli/governance',
@@ -73,7 +74,8 @@ const libraryPages: Record<string, string | null> = {
 	'./initialize-harnesses/initialize-harnesses.ts': 'library/init',
 	'./mcp-inventory/mcp-inventory.ts': 'library/mcp',
 	'./references/references.ts': 'library/references',
-	'buddy-agent-reference': 'library/references',
+	'@cyberuni/agent-harness': 'library/references',
+	'@cyberuni/agent-harness/commands': 'library/references',
 }
 
 /**

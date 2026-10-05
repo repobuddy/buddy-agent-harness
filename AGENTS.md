@@ -1,6 +1,6 @@
 # Buddy Agent Harness
 
-A pnpm + turbo monorepo: the `buddy-agent-harness` npm package — the CLI and the skills it ships — and `buddy-agent-reference`, the reference resolver it builds on, in `packages/`, and the docs site in `apps/web`.
+A pnpm + turbo monorepo: the `buddy-agent-harness` npm package — the CLI and the skills it ships — in `packages/`, and the docs site in `apps/web`.
 
 `pnpm verify` is the gate for all of it, not only the code: biome, the build, typecheck, a coverage run with 100% thresholds, the shipped-skill drift check, the check that every relative reference in the spec resolves, and the docs-site build that catches a broken page or slug. Run it before calling work done.
 

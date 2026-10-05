@@ -63,7 +63,7 @@ describe('skillsProjection', () => {
 	})
 
 	it('throws when @cyberuni/agent-harness does not confirm the directories', () => {
-		expect(() => skillsProjection('kilo', 'user')).toThrow('records no user skills directories for kilo')
+		expect(() => skillsProjection('crush', 'user')).toThrow('records no user skills directories for crush')
 	})
 })
 

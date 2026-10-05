@@ -32,7 +32,7 @@ jobs:
         with:
           disable_search: true
           fail_ci_if_error: true
-          files: packages/buddy-agent-harness/coverage/lcov.info,packages/buddy-agent-reference/coverage/lcov.info
+          files: packages/buddy-agent-harness/coverage/lcov.info
           flags: unit
           use_oidc: true
 

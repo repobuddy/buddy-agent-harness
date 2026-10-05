@@ -1,6 +1,6 @@
 ---
 title: 'CLI: reference'
-description: 'CLI reference for buddy-agent-harness reference: show, list, search, where, and create on-demand reference documents across layered tiers.'
+description: 'CLI reference for buddy-agent-harness reference: show, list, search, where, create, and delete on-demand reference documents across layered tiers.'
 ---
 
 ```sh
@@ -9,9 +9,10 @@ buddy-agent-harness reference list [--root <directory>] [--format toon|json|text
 buddy-agent-harness reference search <query> [--root <directory>] [--format toon|json|text]
 buddy-agent-harness reference where <name> [--root <directory>] [--caller <skill folder>] [--format toon|json|text]
 buddy-agent-harness reference create <name> [--template <path>] [--scope project|user] [--root <directory>] [--dry-run] [--format text|toon|json]
+buddy-agent-harness reference delete <name> [--scope project|user] [--root <directory>] [--dry-run] [--format text|toon|json]
 ```
 
-A **reference** is a Markdown document an agent reads on demand. [References and Skills](/agent-configuration/references/) covers when to write one instead of a skill. Every subcommand but `create` is read-only. `create` writes one new file in the project or user tier and never changes a file that exists.
+A **reference** is a Markdown document an agent reads on demand. [References and Skills](/agent-configuration/references/) covers when to write one instead of a skill. Every subcommand but `create` and `delete` is read-only. `create` writes one new file in the project or user tier and never changes a file that exists. `delete` removes one file from the project or user tier and never touches a plugin-shipped or managed copy.
 
 `--root` is the directory the project tier is read from, walking up to the repository root. It defaults to the current directory.
 
@@ -195,3 +196,24 @@ The file is written as top-level `##` sections because `merge-sections` matches 
 | a scope other than `project` or `user` | |
 
 After a write, `text` prints the path and then the name's trace, in which the new file is `used`. `--format json` and `toon` return one object: `name`, `scope`, `path`, `dryRun`, `content`, `warnings`, and after a write `trace`.
+
+## `reference delete`
+
+Removes the project or user copy of a reference, and reports which copy answers the name afterwards.
+
+```sh
+buddy-agent-harness reference delete release-policy --dry-run
+```
+
+| Option | Meaning |
+| --- | --- |
+| `--scope` | `project` (default) deletes from `<root>/.agents/references/`; `user` deletes from `~/.agents/references/`. It never deletes a plugin's or the managed copy |
+| `--dry-run` | prints the file that would be deleted and what would answer the name then; deletes nothing |
+
+| Refused, exit `1`, nothing deleted | Why |
+| --- | --- |
+| no copy of the name in the target tier | the message says which copy answers the name instead |
+| a name that is a path, or `<plugin>/<name>` | a project or user copy is held under the bare name |
+| a scope other than `project` or `user` | |
+
+`text` prints the path, `deleted` (or `would delete`) with what answers the name next, and then the name's trace without the file. `--format json` and `toon` return one object: `name`, `scope`, `path`, `dryRun`, `next`, and `trace`.

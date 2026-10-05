@@ -3,11 +3,8 @@ export type {
 	MergeMode,
 	ReferenceLayer,
 	ReferenceListing,
-	ReferenceListReport,
 	ReferenceName,
 	ReferenceRow,
-	ReferenceSearchReport,
-	ReferenceShowEntry,
 	ReferenceStatus,
 	ReferenceTier,
 	ResolvedReference,
@@ -15,14 +12,19 @@ export type {
 	SearchMatch,
 	TraceEntry,
 	UsedLayer,
-} from 'buddy-agent-reference'
+} from '@cyberuni/agent-harness'
 export {
 	listReferences,
 	managedReferencesDir,
 	parseReferenceName,
 	resolveReference,
 	searchReferences,
-} from 'buddy-agent-reference'
+} from '@cyberuni/agent-harness'
+export type {
+	ReferenceListReport,
+	ReferenceSearchReport,
+	ReferenceShowEntry,
+} from '@cyberuni/agent-harness/commands'
 export { run } from './cli.ts'
 export type {
 	BridgeFinding,

@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { packageDir } from 'buddy-agent-reference'
+import { packageDir } from '@cyberuni/agent-harness'
 import type { DepPlugin } from './dep-plugins.ts'
 
 export type SkipReason = 'unresolved' | 'no-manifest' | 'unnamed'

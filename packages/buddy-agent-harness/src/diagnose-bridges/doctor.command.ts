@@ -1,5 +1,5 @@
 import { homedir } from 'node:os'
-import { listReferences, type ReferenceRow } from 'buddy-agent-reference'
+import { listReferences, type ReferenceRow } from '@cyberuni/agent-harness'
 import type { cli } from 'clibuilder'
 import { command, exitCodes, z } from 'clibuilder'
 import { collapseHome, displayBinPath, parseFormat, writeResult } from '../command-output/command-output.ts'
