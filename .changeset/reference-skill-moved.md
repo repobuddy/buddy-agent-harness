@@ -2,7 +2,7 @@
 'buddy-agent-harness': minor
 ---
 
-The `reference` skill moved to the `cyber-agent-harness` plugin, and the `buddy-agent-harness` plugin no longer ships it. The plugin now declares a dependency on `cyber-agent-harness@cyberplace`, so in Claude Code, installing `buddy-agent-harness` installs `cyber-agent-harness` and its `reference` skill with it. Cursor, Codex, and GitHub Copilot CLI read no plugin dependencies, so install `cyber-agent-harness` there yourself.
+The `reference` skill moved to the `cyber-agent-harness` plugin, and the `buddy-agent-harness` plugin no longer ships it. The plugin now declares a dependency on `cyber-agent-harness`, which Claude Code resolves from the marketplace `buddy-agent-harness` is installed from, so installing `buddy-agent-harness` installs `cyber-agent-harness` and its `reference` skill with it. Cursor, Codex, and GitHub Copilot CLI read no plugin dependencies, so install `cyber-agent-harness` there yourself.
 
 A calling skill's line changes from "in the `buddy-agent-harness` plugin" to "in the `cyber-agent-harness` plugin":
 

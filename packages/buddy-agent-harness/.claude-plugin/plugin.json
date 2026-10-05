@@ -10,10 +10,5 @@
 	"license": "MIT",
 	"keywords": ["agent", "skills", "harness", "claude-code", "codex"],
 	"skills": "./skills/",
-	"dependencies": [
-		{
-			"name": "cyber-agent-harness",
-			"marketplace": "cyberplace"
-		}
-	]
+	"dependencies": ["cyber-agent-harness"]
 }
