@@ -57,7 +57,8 @@ already sits below it.
   to read from them.
 - **Scanning for plugins.** Nothing under `node_modules` is globbed, and a plugin a harness has
   installed but not enabled is never read: installing a plugin does not activate it.
-- **Loading a reference from inside a skill.** That is the `reference` skill's Load mode, which builds on the
+- **Loading a reference from inside a skill.** That is the Load mode of the `reference` skill in the `cyber-agent-harness`
+  plugin, which builds on the
   `show` contract below.
 - **Recording each fetch.** `show` is the single read path so a record can be added there later.
 - **Reconciling contradictory prose.** Semantic work, not the resolver's.
@@ -75,7 +76,7 @@ already sits below it.
 
 - **an agent following instructions** — told to read `testing` and `release-checklist` before it
   starts; wants the documents on stdout, in the order asked, and a clear signal when one is missing.
-- **a skill** — the `reference` skill's Load mode runs `show` on behalf of every skill that needs a
+- **a skill** — the `cyber-agent-harness` plugin's `reference` skill, in Load mode, runs `show` on behalf of every skill that needs a
   reference; it reads the exit code first and the documents second.
 - **an agent that cannot name what it needs** — knows the subject, not the file; runs `search`.
 - **person at a shell** — writes a project or user override and wants to see that it took effect,
@@ -572,7 +573,7 @@ flowchart TD
   resolution, search, and the command. It is its own package, `buddy-agent-reference`, so a tool can
   bundle the resolver without depending on `buddy-agent-harness`.
 - `../../../../src/references/` names `buddy-agent-harness` as the plugin whose own references come
-  first, and generates the `reference` skill's invocation table.
+  first.
 - `../governance-overrides/` is the deprecated command this replaces as the read path.
 - `../command-output/` owns the encoder and the verbatim document write.
 - Issue #153 is the source proposal; #152 the epic; #122 and its comment the decisions it revises.

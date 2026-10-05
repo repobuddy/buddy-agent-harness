@@ -49,7 +49,6 @@ const skillPages: Record<string, string | null> = {
 	'doctor-buddy-agent-harness': 'skills/doctor-buddy-agent-harness',
 	enhance: 'skills/enhance',
 	repair: 'skills/repair',
-	reference: 'skills/reference',
 }
 
 /** Module `src/index.ts` re-exports from, to the docs page covering it. */

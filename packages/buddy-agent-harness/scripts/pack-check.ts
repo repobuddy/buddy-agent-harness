@@ -1,13 +1,13 @@
 /**
  * Packs the package as `npm publish` would and checks the tarball directly — the shipped skill
  * scripts are gitignored, so there's no committed copy to diff against. Confirms every one is
- * present, and that `doctor` and `reference` each run standalone from a copied-out skill folder with
- * no `node_modules` above it.
+ * present, and that `doctor` runs standalone from a copied-out skill folder with no `node_modules`
+ * above it.
  *
  *   pnpm pack:check
  */
 import { execFileSync } from 'node:child_process'
-import { cpSync, existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { cpSync, existsSync, mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -60,23 +60,8 @@ try {
 		fail(`the standalone run of ${scriptPath} did not print parseable JSON:\n${stdout}`)
 	}
 
-	const referenceSkillDir = join(runDir, 'reference')
-	cpSync(join(pkgDir, 'skills', 'reference'), referenceSkillDir, { recursive: true })
-	const referenceScript = join(referenceSkillDir, ...launcherFor('reference').split('/'))
-	const probe = '# Probe\n\nread from the project tier\n'
-	mkdirSync(join(runDir, '.agents', 'references'), { recursive: true })
-	writeFileSync(join(runDir, '.agents', 'references', 'pack-check-probe.md'), probe)
-
-	const document = execFileSync(process.execPath, [referenceScript, 'show', 'pack-check-probe', '--root', runDir], {
-		cwd: runDir,
-		encoding: 'utf8',
-	})
-	if (document !== probe)
-		fail(`the standalone run of ${referenceScript} did not print the probe reference:\n${document}`)
-
 	process.stdout.write('pack-check: every shipped script and llms.txt is packed\n')
 	process.stdout.write('pack-check: doctor.mjs ran standalone from a copied-out skill folder\n')
-	process.stdout.write('pack-check: reference.mjs ran standalone from a copied-out skill folder\n')
 } finally {
 	rmSync(packDir, { recursive: true, force: true })
 	rmSync(runDir, { recursive: true, force: true })

@@ -19,7 +19,6 @@ import {
 	renderDoctorReferences,
 	renderDoctorSkill,
 } from '../src/diagnose-bridges/doctor-guidance.ts'
-import { referenceSkill, renderReferenceReadme } from '../src/references/reference-invocation.ts'
 import { launchers } from '../src/skill-scripts/launchers.ts'
 
 const packageRoot = dirname(dirname(fileURLToPath(import.meta.url)))
@@ -62,9 +61,6 @@ function initHarnessReferences(): Set<string> {
 for (const doc of renderDoctorReferences(initHarnessReferences())) {
 	targets.push({ path: skillPath(doctorSkill.name, ...doc.path.split('/')), expected: doc.content })
 }
-
-const referenceReadme = skillPath(referenceSkill, 'README.md')
-targets.push({ path: referenceReadme, expected: renderReferenceReadme(read(referenceReadme) ?? '') })
 
 // Every hand-written SKILL.md with an `npx` fallback: only the pin is regenerated, so edited prose
 // survives.
@@ -114,7 +110,7 @@ if (!check) process.exit(0)
 
 if (stale.length > 0) {
 	process.stdout.write(
-		`error: out of date with src/diagnose-bridges/doctor-guidance.ts, src/references/reference-invocation.ts, or version ${version}: ${stale.join(', ')}\n` +
+		`error: out of date with src/diagnose-bridges/doctor-guidance.ts or version ${version}: ${stale.join(', ')}\n` +
 			'help: Run `pnpm --filter buddy-agent-harness skill:gen` and commit the result\n',
 	)
 	process.exit(1)

@@ -33,11 +33,10 @@ Documentation site: [One canonical agent configuration](https://repobuddy.github
 
 ## Skills
 
-- [Skills](https://repobuddy.github.io/buddy-agent-harness/skills/): The skills the plugin ships, init, doctor, enhance, repair and reference, and when to run the CLI instead.
+- [Skills](https://repobuddy.github.io/buddy-agent-harness/skills/): The skills the plugin ships, init, doctor, enhance and repair, the reference skill it brings with it, and when to run the CLI instead.
 - [`doctor-buddy-agent-harness`](https://repobuddy.github.io/buddy-agent-harness/skills/doctor-buddy-agent-harness/): Use this skill when a repository loads no project skills, when skills are missing after a clone, when a harness appears to be ignoring AGENTS.md, or when checking whether the agent configuration bridges into .claude/skills and the other harness files still resolve.
 - [`enhance`](https://repobuddy.github.io/buddy-agent-harness/skills/enhance/): Use this skill when a repository already has an AGENTS.md and you want to add guidance it is missing, or to refresh a vetted section it carries in an outdated form — offering each one at a time and writing only what the user approves. Runs on its own or straight after init.
 - [`init-buddy-agent-harness`](https://repobuddy.github.io/buddy-agent-harness/skills/init-buddy-agent-harness/): Use this skill when initializing, adopting, or migrating a repository's agent configuration to the open AGENTS.md and Agent Skills standards, so one canonical source works across Claude Code, Codex, Cursor, Copilot CLI, and other agent harnesses.
-- [`reference`](https://repobuddy.github.io/buddy-agent-harness/skills/reference/): Use this skill when loading, writing, updating, or finding a reference — a Markdown document agents read by name. Not user-invocable: the agent loads it when asked in words, rather than from a typed command.
 - [`repair`](https://repobuddy.github.io/buddy-agent-harness/skills/repair/): Use this skill when a repository's agent configuration is present but wrong or outdated — a retired harness name, a git-ignored bridge, an AGENTS.local.md nothing reads, a skill a harness refuses to load, or an MCP server that differs between the golden set and a harness, on the side that is plainly ahead. Runs doctor to find them, then offers each correction with its before and after and writes only what is approved.
 
 ## Getting started

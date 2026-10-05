@@ -42,7 +42,6 @@ This project mirrors its source surfaces so a contributor can find a spec beside
 | [`skills/init-buddy-agent-harness/`](./skills/init-buddy-agent-harness/README.md) | What the `init-buddy-agent-harness` skill consolidates, declines to invent, and writes without asking |
 | [`skills/enhance/`](./skills/enhance/README.md) | Which vetted sections the `enhance` skill offers, when it offers a current wording in place of one it has retired, and when it asks rather than deciding |
 | [`skills/repair/`](./skills/repair/README.md) | Correct agent configuration that is present and wrong |
-| [`skills/reference/`](./skills/reference/README.md) | Route reference work to `reference show`, `list`, or `search`, write a new reference or an override under the naming rule, and load the references a skill names, with the caller's copy as the fallback ([`load/`](./skills/reference/load/README.md)) |
 | [`cli/`](./cli/README.md) | Index over the package's command-line product surface |
 | [`cli/bridge-resolution/`](./cli/bridge-resolution/README.md) | Report whether every skills bridge still resolves into `.agents/skills` |
 | [`cli/instruction-bridges/`](./cli/instruction-bridges/README.md) | Report whether every enabled harness can still read `AGENTS.md` |
@@ -79,7 +78,7 @@ What is still outstanding:
 
 | Concept | Facets |
 |---|---|
-| `command-interface` | `cli/bridge-resolution/` (behavior) · `cli/command-output/` (behavior) · `cli/configuration-diagnosis/` (behavior) · `cli/diagnosis-report/` (behavior) · `cli/entry-point/` (behavior) · `cli/governance-overrides/` (behavior) · `cli/instruction-bridges/` (behavior) · `cli/mcp-diagnosis/` (behavior) · `cli/mcp-projection/` (behavior) · `cli/mcp-reconcile/` (behavior) · `cli/references/` (behavior) · `skills/reference/` (behavior) |
+| `command-interface` | `cli/bridge-resolution/` (behavior) · `cli/command-output/` (behavior) · `cli/configuration-diagnosis/` (behavior) · `cli/diagnosis-report/` (behavior) · `cli/entry-point/` (behavior) · `cli/governance-overrides/` (behavior) · `cli/instruction-bridges/` (behavior) · `cli/mcp-diagnosis/` (behavior) · `cli/mcp-projection/` (behavior) · `cli/mcp-reconcile/` (behavior) · `cli/references/` (behavior) |
 | `harness-compatibility` | `cli/nonstandard-configuration/` (behavior) · `skills/enhance/` (behavior) · `skills/harness-init/` (behavior) · `skills/init-buddy-agent-harness/` (behavior) · `skills/repair/` (behavior) · `workflows/detect-and-repair/` (workflow) |
 | `release-tooling` | `tooling/` (reference) |
 

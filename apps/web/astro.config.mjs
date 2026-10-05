@@ -46,7 +46,8 @@ export default defineConfig({
 			'/guides/migrating': '/getting-started/migrating/',
 			'/skills/init': '/skills/init-buddy-agent-harness/',
 			'/skills/doctor': '/skills/doctor-buddy-agent-harness/',
-			'/skills/load-reference': '/skills/reference/#loading-from-a-skill',
+			'/skills/reference': '/agent-configuration/references/',
+			'/skills/load-reference': '/agent-configuration/references/',
 		}).map(([from, to]) => [from, base.replace(/\/$/, '') + to]),
 	),
 	integrations: [
@@ -96,7 +97,6 @@ export default defineConfig({
 						{ label: 'doctor-buddy-agent-harness', slug: 'skills/doctor-buddy-agent-harness' },
 						{ label: 'enhance', slug: 'skills/enhance' },
 						{ label: 'repair', slug: 'skills/repair' },
-						{ label: 'reference', slug: 'skills/reference' },
 					],
 				},
 				{
