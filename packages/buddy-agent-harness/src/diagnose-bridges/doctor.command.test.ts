@@ -1,9 +1,9 @@
 import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
 import { homedir, tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { encode } from '@toon-format/toon'
+import { encodeResult, renderText } from '@clibuilder/axi'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { collapseHome, displayBinPath, renderText } from '../command-output/command-output.ts'
+import { collapseHome, displayBinPath } from '../command-output/command-output.ts'
 import { type DiagnoseResult, diagnoseBridges } from './diagnose-bridges.ts'
 import { buildDoctorReport, doctorCommand } from './doctor.command.ts'
 
@@ -106,10 +106,7 @@ describe('doctor command', () => {
 	})
 
 	// Returned rather than written: a caller that is not the process learns of the failure too.
-	it('reports an invalid format, an unsupported harness, and a failed diagnosis', async () => {
-		expect(await run({ format: 'yaml' })).toBe(1)
-		expect(stderr).toHaveBeenCalledWith('error: --format must be toon, json, or text.\n')
-
+	it('reports an unsupported harness and a failed diagnosis', async () => {
 		expect(await run({ format: 'json', harness: 'aider' })).toBe(1)
 		expect(stderr).toHaveBeenCalledWith(expect.stringContaining('Unsupported harness: aider'))
 
@@ -366,7 +363,7 @@ describe('buildDoctorReport', () => {
 		})
 
 		expect(report.help).toEqual([{ command: '', instruction: 'move AGENTS.local.md to CLAUDE.local.md' }])
-		expect(encode(report)).toContain('help[1]{command,instruction}:')
+		expect(encodeResult(report, 'toon')).toContain('help[1]{command,instruction}:')
 	})
 
 	it('adds a divergence section only when a bridge has diverged', async () => {

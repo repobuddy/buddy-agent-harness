@@ -232,7 +232,7 @@ const doctorCommand: cli.Command
 
 The [`doctor`](/cli/doctor/) command as a `clibuilder` command object, with the `--root`, `--harness`, and `--format` options. Its `run` calls `diagnoseBridges`, adds the configuration, MCP, and non-standard findings and the references outside the plugin tier, and writes `buildDoctorReport`'s result in the requested format.
 
-It returns `0` whether or not there are findings. It returns `1` when the diagnosis fails, such as on an unknown format or harness name, and writes the failure to stderr.
+It returns `0` whether or not there are findings. It returns `1` when the diagnosis fails, such as on an unknown harness name, and writes the failure to stderr. An unknown `--format` never reaches `run`: `clibuilder` rejects it as a usage error, exit code `2`.
 
 ## The repair tables
 

@@ -17,11 +17,10 @@ Feature: Report every doctor finding through one output shape
     And it checks the named harnesses in addition to the defaults
 
   @behavior
-  Scenario: reports an invalid format, an unsupported harness, and a failed diagnosis
-    Given a command line naming a format the command does not support
+  Scenario: reports an unsupported harness and a failed diagnosis
+    Given a command line naming a harness the registry does not carry
     When the command runs
     Then it writes the reason to stderr and exits 1
-    And a harness name the registry does not carry is rejected the same way
     And a diagnosis that throws is reported the same way
 
   @behavior

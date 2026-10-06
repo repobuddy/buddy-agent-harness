@@ -1,7 +1,8 @@
 import { homedir } from 'node:os'
+import { createOutput, defineFormatOption, formatOption, type OutputFormat } from '@clibuilder/axi'
 import type { cli } from 'clibuilder'
 import { command, exitCodes, z } from 'clibuilder'
-import { collapseHome, parseFormat, writeDocument, writeResult } from '../command-output/command-output.ts'
+import { collapseHome } from '../command-output/command-output.ts'
 import {
 	type GovernanceLayer,
 	type GovernanceScope,
@@ -31,7 +32,7 @@ export type GovernanceShowReport = {
 	content: string
 }
 
-type Args = { root: string | undefined; format: string | undefined; 'overrides-only': boolean | undefined }
+type Args = { root: string | undefined; format: OutputFormat | undefined; 'overrides-only': boolean | undefined }
 
 function layersFor(args: Args): GovernanceLayer[] {
 	const layers = governanceLayers({
@@ -65,16 +66,12 @@ export const governanceListCommand: cli.Command = command({
 	options: {
 		root: rootOption,
 		'overrides-only': overridesOnlyOption,
-		format: {
-			description: 'Output format: toon (default), json, or text for a human-readable report.',
-			type: z.optional(z.string()),
-			default: 'toon',
-		},
+		format: formatOption,
 	},
 	run(args: Args) {
 		process.stderr.write(GOVERNANCE_DEPRECATED)
 		try {
-			const format = parseFormat(args.format)
+			const output = createOutput(args.format)
 			const home = homedir()
 			const layers = layersFor(args)
 			const entries = listGovernances(layers)
@@ -88,7 +85,7 @@ export const governanceListCommand: cli.Command = command({
 					? entries.map(({ name, scope, path }) => ({ name, scope, path: collapseHome(home, path) }))
 					: '0 governances — no layer holds one',
 			}
-			writeResult(report, format)
+			output.result(report)
 			return exitCodes.success
 		} catch (error) {
 			process.stderr.write(`error: ${error instanceof Error ? error.message : 'Governance listing failed.'}\n`)
@@ -104,17 +101,16 @@ export const governanceShowCommand: cli.Command = command({
 	options: {
 		root: rootOption,
 		'overrides-only': overridesOnlyOption,
-		format: {
+		format: defineFormatOption({
+			default: 'text',
 			description:
 				'Output format: text (default) writes the document itself; toon and json wrap it with the layer it came from.',
-			type: z.optional(z.string()),
-			default: 'text',
-		},
+		}),
 	},
 	run(args: Args & { name: string }) {
 		process.stderr.write(GOVERNANCE_DEPRECATED)
 		try {
-			const format = parseFormat(args.format)
+			const output = createOutput(args.format)
 			const name = parseGovernanceName(args.name)
 			const found = resolveGovernance(name, layersFor(args))
 			if (!found) {
@@ -128,17 +124,14 @@ export const governanceShowCommand: cli.Command = command({
 				)
 				return exitCodes.error
 			}
-			if (format === 'text') {
-				writeDocument(found.content)
-			} else {
-				const report: GovernanceShowReport = {
-					name: found.name,
-					scope: found.scope,
-					path: collapseHome(homedir(), found.path),
-					content: found.content,
-				}
-				writeResult(report, format)
+			const report: GovernanceShowReport = {
+				name: found.name,
+				scope: found.scope,
+				path: collapseHome(homedir(), found.path),
+				content: found.content,
 			}
+			// text is the document itself: run through the text renderer, Markdown comes back as one escaped line.
+			output.result(report, { text: ({ content }) => content })
 			return exitCodes.success
 		} catch (error) {
 			process.stderr.write(`error: ${error instanceof Error ? error.message : 'Governance lookup failed.'}\n`)

@@ -55,13 +55,6 @@ Feature: Resolve a governance through the override layers
     And no reported path carries the home directory in full
 
   @behavior
-  Scenario: rejects an unsupported output format rather than falling back
-    Given a command line naming a format the command does not support
-    When the command lists the governances
-    Then it writes the reason to stderr and exits non-zero
-    And it writes nothing to stdout
-
-  @behavior
   Scenario: resolves the project layer against the working directory when no root is named
     Given a command line naming no root
     When the command lists the governances
@@ -179,13 +172,6 @@ Feature: Resolve a governance through the override layers
     When the command shows it
     Then it writes to stderr what a governance name is and exits non-zero
     And it reads no file
-
-  @behavior
-  Scenario: rejects an unsupported output format rather than falling back
-    Given a command line naming a format the command does not support
-    When the command shows a governance
-    Then it writes the reason to stderr and exits non-zero
-    And it writes nothing to stdout
 
   @behavior
   Scenario: reports a failure it cannot read a message from

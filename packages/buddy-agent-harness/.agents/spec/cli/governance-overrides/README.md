@@ -100,7 +100,9 @@ through `reference` now (`../references/`), as legacy layers of the reference ti
   of the list, so a layer added in the middle later cannot quietly become an override.
 - **`--format`** takes `toon`, `json`, or `text`. `list` defaults to `toon`, the format an agent
   parses. `show` defaults to `text`, because for `show` the document **is** the result: a Markdown
-  body run through TOON or through the text renderer comes back as one escaped line.
+  body run through TOON or through the text renderer comes back as one escaped line. Any other
+  value is a usage error: clibuilder refuses it with exit code 2 before the command runs, so
+  neither subcommand sees an unsupported format (`../command-output/`).
 
 **Where each layer is**
 
@@ -151,9 +153,7 @@ Two entry points, one sub-graph each.
 
 ```mermaid
 flowchart TD
-  A[Parse the format] --> B{Format supported?}
-  B -->|no| C[Write the reason to stderr and exit 1]
-  B -->|yes| D[Build the layers in lookup order]
+  A[Arguments parsed, format already valid] --> D[Build the layers in lookup order]
   D --> E{Only overrides?}
   E -->|yes| F[Drop every layer whose scope is package]
   E -->|no| G[Keep every layer]
@@ -170,9 +170,7 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-  M[Parse the format] --> N{Format supported?}
-  N -->|no| O[Write the reason to stderr and exit 1]
-  N -->|yes| P{Is the name a file stem?}
+  M[Arguments parsed, format already valid] --> P{Is the name a file stem?}
   P -->|no| O
   P -->|yes| Q[Build the layers, dropping package if only overrides count]
   Q --> R[Read each layer in order until one yields a document]
@@ -202,7 +200,6 @@ The two graphs share the layer construction and nothing else. `list` never reads
 | E→F | `--overrides-only` | `leaves the package layer out when only overrides were asked for` |
 | I→J | no layer holds anything | `states the zero outright rather than leaving the section empty` |
 | L | a layer under the user's home directory | `collapses the home directory out of the reported paths` |
-| B→C | an unsupported format | `rejects an unsupported output format rather than falling back` |
 | D | no `--root` | `resolves the project layer against the working directory when no root is named` |
 | D | each platform | `names a machine-wide directory this package owns, per platform` |
 | D | each platform | `still names the directory universal-plugin wrote, per platform` |
@@ -226,7 +223,6 @@ The two graphs share the layer construction and nothing else. `list` never reads
 | S→T | `--overrides-only` and no override | `exits non-zero, writing nothing to stdout, when no override layer holds the name` |
 | S→T | no layer at all holds it | `exits non-zero when no layer at all holds the name` |
 | P→O | a name with a path separator, `..`, or a `.md` suffix | `rejects a name that is a path rather than reading outside the layer` |
-| N→O | an unsupported format | `rejects an unsupported output format rather than falling back` |
 | →T | a failure with no message | `reports a failure it cannot read a message from` |
 
 ## References

@@ -156,12 +156,6 @@ describe('governance list', () => {
 		expect(written()).toContain('layers')
 	})
 
-	it('rejects an unsupported output format rather than falling back', () => {
-		expect(list({ root: repository(), format: 'yaml' })).toBe(1)
-		expect(stderr).toHaveBeenCalledWith('error: --format must be toon, json, or text.\n')
-		expect(stdout).not.toHaveBeenCalled()
-	})
-
 	it('resolves the project layer against the working directory when no root is named', () => {
 		expect(list({})).toBe(0)
 
@@ -179,6 +173,13 @@ describe('governance list', () => {
 
 		expect(list({ root: repository() })).toBe(1)
 		expect(stderr).toHaveBeenCalledWith('error: Governance listing failed.\n')
+	})
+
+	it('reports the message of a failure that carries one', () => {
+		failure.value = new Error('layer unreadable')
+
+		expect(list({ root: repository() })).toBe(1)
+		expect(stderr).toHaveBeenCalledWith('error: layer unreadable\n')
 	})
 })
 
@@ -239,13 +240,6 @@ describe('governance show', () => {
 
 		expect(stdout).not.toHaveBeenCalled()
 		expect(stderr).toHaveBeenCalledWith(expect.stringContaining('is not a governance name'))
-	})
-
-	it('rejects an unsupported output format rather than falling back', () => {
-		expect(show('agent-tool-output', { root: repository({ 'agent-tool-output': '# Rules' }), format: 'yaml' })).toBe(1)
-
-		expect(stderr).toHaveBeenCalledWith('error: --format must be toon, json, or text.\n')
-		expect(stdout).not.toHaveBeenCalled()
 	})
 
 	it('reports a failure it cannot read a message from', () => {

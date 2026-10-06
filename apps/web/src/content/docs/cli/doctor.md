@@ -292,6 +292,8 @@ These findings stay within the command's contract: read-only, `--harness`-indepe
 
 `doctor` exits `0` even when it has findings. The diagnosis succeeded, and a non-zero code reads to an agent as "this command is broken, try something else." A `--strict` flag for CI, the one caller that genuinely wants a failing process, is not implemented yet.
 
+It exits `1` when the diagnosis itself fails, such as on an unknown `--harness` name, and `2` on a usage error: an unknown option, or a `--format` other than `toon`, `json`, or `text`.
+
 ## No `--fix`
 
 Every repair is already expressible with existing `init` flags, and each finding names the exact command — or says plainly, with an empty `command`, that no command does it:

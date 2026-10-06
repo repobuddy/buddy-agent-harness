@@ -1,6 +1,6 @@
+import { createOutput, formatOption } from '@clibuilder/axi'
 import type { cli } from 'clibuilder'
 import { command, exitCodes, z } from 'clibuilder'
-import { parseFormat, writeResult } from '../command-output/command-output.ts'
 import { GitBridgeState } from '../diagnose-bridges/git-bridge-state.ts'
 import { projectionRecordPath } from '../diagnose-mcp/mcp-baseline.ts'
 import { goldenSetPath } from '../diagnose-mcp/mcp-sources.ts'
@@ -30,15 +30,11 @@ export const mcpProjectCommand: cli.Command = command({
 			description: 'Apply the plan and record what was projected. Without it nothing on disk changes.',
 			type: z.optional(z.boolean()),
 		},
-		format: {
-			description: 'Output format: toon (default), json, or text for a human-readable report.',
-			type: z.optional(z.string()),
-			default: 'toon',
-		},
+		format: formatOption,
 	},
 	run(args) {
 		try {
-			const format = parseFormat(args.format)
+			const output = createOutput(args.format)
 			const root = args.root ?? process.cwd()
 			const write = args.write === true
 			const plan = projectMcp({ root, git: new GitBridgeState(root), write })
@@ -49,15 +45,12 @@ export const mcpProjectCommand: cli.Command = command({
 				return exitCodes.error
 			}
 			if (plan.kind === 'absent') {
-				writeResult(
-					{
-						golden: `0 servers — no golden set at ${goldenSetPath}`,
-						mode: 'nothing to project',
-						actions: '0 changes',
-						record: 'not written',
-					} satisfies ProjectionReport,
-					format,
-				)
+				output.result({
+					golden: `0 servers — no golden set at ${goldenSetPath}`,
+					mode: 'nothing to project',
+					actions: '0 changes',
+					record: 'not written',
+				} satisfies ProjectionReport)
 				return exitCodes.success
 			}
 			const report: ProjectionReport = {
@@ -67,7 +60,7 @@ export const mcpProjectCommand: cli.Command = command({
 				...(plan.entries.length ? { entries: plan.entries } : {}),
 				record: write ? projectionRecordPath : 'not written — dry run',
 			}
-			writeResult(report, format)
+			output.result(report)
 			return exitCodes.success
 		} catch (error) {
 			process.stderr.write(`error: ${error instanceof Error ? error.message : 'MCP projection failed.'}\n`)
