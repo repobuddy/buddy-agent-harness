@@ -1,6 +1,6 @@
+import { createOutput, formatOption } from '@clibuilder/axi'
 import type { cli } from 'clibuilder'
 import { command, exitCodes, z } from 'clibuilder'
-import { parseFormat, writeResult } from '../command-output/command-output.ts'
 import { GitBridgeState } from '../diagnose-bridges/git-bridge-state.ts'
 import { projectionRecordPath } from '../diagnose-mcp/mcp-baseline.ts'
 import { goldenSetPath } from '../diagnose-mcp/mcp-sources.ts'
@@ -28,15 +28,11 @@ export const mcpReconcileCommand: cli.Command = command({
 				'Approve one field by the path a dry run lists for it; repeat for each field. There is no approve-all.',
 			type: z.optional(z.array(z.string())),
 		},
-		format: {
-			description: 'Output format: toon (default), json, or text for a human-readable report.',
-			type: z.optional(z.string()),
-			default: 'toon',
-		},
+		format: formatOption,
 	},
 	run(args) {
 		try {
-			const format = parseFormat(args.format)
+			const output = createOutput(args.format)
 			const root = args.root ?? process.cwd()
 			const accept = args.accept ?? []
 			const plan = reconcileMcp({ root, git: new GitBridgeState(root), accept })
@@ -51,15 +47,12 @@ export const mcpReconcileCommand: cli.Command = command({
 				return exitCodes.error
 			}
 			if (plan.kind === 'absent') {
-				writeResult(
-					{
-						golden: `0 servers — no golden set at ${goldenSetPath}`,
-						mode: 'nothing to reconcile into',
-						fields: '0 fields',
-						record: 'not written',
-					} satisfies ReconcileReport,
-					format,
-				)
+				output.result({
+					golden: `0 servers — no golden set at ${goldenSetPath}`,
+					mode: 'nothing to reconcile into',
+					fields: '0 fields',
+					record: 'not written',
+				} satisfies ReconcileReport)
 				return exitCodes.success
 			}
 			const report: ReconcileReport = {
@@ -70,7 +63,7 @@ export const mcpReconcileCommand: cli.Command = command({
 				fields: plan.rows.length ? plan.rows : '0 fields — no harness holds a change the golden set lacks',
 				record: plan.written ? projectionRecordPath : 'not written — dry run',
 			}
-			writeResult(report, format)
+			output.result(report)
 			return exitCodes.success
 		} catch (error) {
 			process.stderr.write(`error: ${error instanceof Error ? error.message : 'MCP reconcile failed.'}\n`)

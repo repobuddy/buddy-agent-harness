@@ -79,14 +79,17 @@ describe('mcp reconcile command', () => {
 		})
 	})
 
-	it('rejects an invalid format, and reports a thrown error or a generic one', () => {
-		expect(run({ format: 'yaml' })).toBe(1)
-		expect(stderr).toHaveBeenCalledWith('error: --format must be toon, json, or text.\n')
-
+	it('reports a thrown error or a generic one', () => {
 		mockedReconcileMcp.mockImplementationOnce(() => {
 			throw 'unavailable'
 		})
 		expect(run({ format: 'json' })).toBe(1)
 		expect(stderr).toHaveBeenCalledWith('error: MCP reconcile failed.\n')
+
+		mockedReconcileMcp.mockImplementationOnce(() => {
+			throw new Error('golden set locked')
+		})
+		expect(run({ format: 'json' })).toBe(1)
+		expect(stderr).toHaveBeenCalledWith('error: golden set locked\n')
 	})
 })

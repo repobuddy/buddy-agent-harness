@@ -1,8 +1,9 @@
 import { homedir } from 'node:os'
+import { createOutput, formatOption } from '@clibuilder/axi'
 import { listReferences, type ReferenceRow } from '@cyberuni/agent-harness'
 import type { cli } from 'clibuilder'
 import { command, exitCodes, z } from 'clibuilder'
-import { collapseHome, displayBinPath, parseFormat, writeResult } from '../command-output/command-output.ts'
+import { collapseHome, displayBinPath } from '../command-output/command-output.ts'
 import { type ConfigurationFinding, diagnoseConfiguration } from '../diagnose-configuration/diagnose-configuration.ts'
 import { diagnoseMcp } from '../diagnose-mcp/diagnose-mcp.ts'
 import { diagnoseNonstandard } from '../diagnose-nonstandard/diagnose-nonstandard.ts'
@@ -94,15 +95,11 @@ export const doctorCommand: cli.Command = command({
 			description: 'Comma-separated harnesses to check in addition to Claude Code and Cursor, e.g. codex,gemini-cli.',
 			type: z.optional(z.string()),
 		},
-		format: {
-			description: 'Output format: toon (default), json, or text for a human-readable report.',
-			type: z.optional(z.string()),
-			default: 'toon',
-		},
+		format: formatOption,
 	},
 	async run(args) {
 		try {
-			const format = parseFormat(args.format)
+			const output = createOutput(args.format)
 			const harnesses = parseHarnesses(args.harness)
 			const root = args.root ?? process.cwd()
 			const home = homedir()
@@ -135,7 +132,7 @@ export const doctorCommand: cli.Command = command({
 				.map(({ name, tier, path, status }) => ({ name, tier, path: collapseHome(home, path), status }))
 			// Exit stays 0 even with findings: a non-zero code reads to an agent as "this command
 			// is broken".
-			writeResult(buildDoctorReport(displayBinPath(home, process.argv[1]), result, configuration, held), format)
+			output.result(buildDoctorReport(displayBinPath(home, process.argv[1]), result, configuration, held))
 			return exitCodes.success
 		} catch (error) {
 			process.stderr.write(`error: ${error instanceof Error ? error.message : 'Harness diagnosis failed.'}\n`)

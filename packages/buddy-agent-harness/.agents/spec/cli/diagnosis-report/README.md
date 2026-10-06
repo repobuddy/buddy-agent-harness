@@ -61,7 +61,7 @@ That shape had no owner, and the cost was concrete. When a field was added to `f
 
 - **`--root`** names the repository or package directory, defaulting to the current directory.
 - **`--harness`** is the detecting nodes' and is passed through unread by this node, except that a name the registry does not carry is **rejected** rather than ignored.
-- **`--format`** takes `toon` (the default), `json`, or `text`. Anything else is an **error**, never a silent fallback: a caller that misspelled a format and got TOON anyway would parse the wrong thing and never learn why.
+- **`--format`** takes `toon` (the default), `json`, or `text`. Anything else is a **usage error** (exit 2, reported by clibuilder before `run` is called), never a silent fallback: a caller that misspelled a format and got TOON anyway would parse the wrong thing and never learn why.
 
 **Sections, and why each is separate**
 
@@ -99,14 +99,18 @@ The guard is worth keeping because it is the table that makes it unreachable, no
 - **No managed, project, or user layer holds a reference.** `references` holds a sentence stating the zero and that only the plugin tier was left out, for the same reason the healthy `findings` answer is stated outright.
 - **Nothing is wrong.** `findings` holds a sentence stating the count and what it covers, counting the skills bridges and the instruction bridges together — a reader learns nothing is wrong from one number rather than by adding two. The count is worded for one bridge as well as for many.
 - **Findings exist.** The exit code stays **0**. The diagnosis succeeded; a non-zero code reads to an agent as "this command is broken, try something else", which sends it looking for another way to ask instead of at the report it was just handed.
-- **The diagnosis fails, the format is invalid, or a harness is not supported.** The message goes to **stderr** and the exit code is **1**. That is the only thing that distinguishes a broken tool from a broken repository.
+- **The diagnosis fails or a harness is not supported.** The message goes to **stderr** and the exit code is **1**. That is the only thing that distinguishes a broken tool from a broken repository.
+- **The format is not one of the three.** A usage error: clibuilder rejects the `--format` value with exit code **2** before `run` is called, so nothing is diagnosed and no report is written — only clibuilder's usage text. The code differs from 1 because the invocation, not the tool or the repository, is what is wrong; `../entry-point/` applies it to the process.
 - **Two findings report the same problem at two paths.** Two `help` entries, because each repair names its own path. The deduplication is not reached.
 
 ## Control Flow
 
 ```mermaid
 flowchart TD
-  A[Parse the format and the requested harnesses] --> B{Format supported and every harness known?}
+  A0[clibuilder parses the arguments] --> A0a{Format one of the three?}
+  A0a -->|no| A0b[Usage error: exit 2 before run is called]
+  A0a -->|yes| A[Parse the requested harnesses]
+  A --> B{Every harness known?}
   B -->|no| C[Write the reason to stderr and exit 1]
   B -->|yes| D[Run every family against the root]
   D --> D2[List the references and set references to the non-plugin rows or the stated zero]
@@ -128,7 +132,8 @@ flowchart TD
 | --- | --- | --- |
 | A→D | no `--root` and no `--harness` | `diagnoses the working directory in TOON by default` |
 | A→D | an explicit root and requested harnesses | `passes an explicit root and the requested harnesses through` |
-| B→C | an unsupported format, an unknown harness, or a diagnosis that throws | `reports an invalid format, an unsupported harness, and a failed diagnosis` |
+| A0a→A0b | an unsupported format | `applies a rejected invocation's usage code to the process` (`../entry-point/`) |
+| B→C | an unknown harness, or a diagnosis that throws | `reports an unsupported harness and a failed diagnosis` |
 | E→F | nothing wrong | `states the healthy answer outright rather than leaving findings empty` |
 | E→F | one bridge and no instruction bridges | `counts the instruction bridges alongside the skills bridges` |
 | E→G, G→H | findings from more than one family | `moves each repair into help and keeps findings to the diagnosis and its name` |

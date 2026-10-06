@@ -72,11 +72,7 @@ describe('init command', () => {
 	})
 
 	// Returned rather than written: a caller that is not the process learns of the failure too.
-	it('reports invalid formats and initialization failures', () => {
-		expect(run({ format: 'yaml', root: '/workspace' })).toBe(1)
-		expect(stderr).toHaveBeenCalledWith('error: --format must be toon, json, or text.\n')
-
-		stderr.mockClear()
+	it('reports initialization failures', () => {
 		mockedInitializeHarnesses.mockImplementationOnce(() => {
 			throw 'unavailable'
 		})

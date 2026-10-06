@@ -127,4 +127,4 @@ Feature: Initialize local agent skills across coding harnesses
   Scenario: rejects an unsupported output format
     Given a consumer repository has canonical skill `review`
     When the agent runs `buddy-agent-harness init --format yaml`
-    Then the command exits with an error that names the supported output formats and writes no initialization artifacts
+    Then the command exits with usage code 2, clibuilder naming the allowed formats, and writes no initialization artifacts

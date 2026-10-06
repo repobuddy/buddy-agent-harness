@@ -23,16 +23,17 @@ function bah(...args: string[]): { status: number | null; stdout: string; stderr
 
 describe('the process boundary', () => {
 	it('applies a reported failure to the process', () => {
-		const { status, stderr, stdout } = bah('doctor', '--format', 'yaml')
+		const { status, stderr, stdout } = bah('doctor', '--harness', 'aider')
 
 		expect(status).toBe(1)
-		expect(stderr).toContain('--format must be toon, json, or text.')
+		expect(stderr).toContain('Unsupported harness: aider')
 		// The failure belongs on stderr alone: the report is what stdout carries.
 		expect(stdout).toBe('')
 	})
 
 	it("applies a rejected invocation's usage code to the process", () => {
 		expect(bah('doctor', '--nope').status).toBe(2)
+		expect(bah('doctor', '--format', 'yaml').status).toBe(2)
 		expect(bah('no-such-command').status).toBe(2)
 	})
 
@@ -57,7 +58,7 @@ describe('a generated launcher', () => {
 	}
 
 	it('applies a reported failure to the process', () => {
-		const { status, stdout } = launcher('repair', 'doctor.mjs', '--format', 'yaml')
+		const { status, stdout } = launcher('repair', 'doctor.mjs', '--harness', 'aider')
 
 		expect(status).toBe(1)
 		expect(stdout).toBe('')
@@ -65,6 +66,7 @@ describe('a generated launcher', () => {
 
 	it("applies a rejected invocation's usage code to the process", () => {
 		expect(launcher('doctor-buddy-agent-harness', 'doctor.mjs', '--nope').status).toBe(2)
+		expect(launcher('doctor-buddy-agent-harness', 'doctor.mjs', '--format', 'yaml').status).toBe(2)
 	})
 
 	it('reports the diagnosis of the working directory when asked correctly', () => {

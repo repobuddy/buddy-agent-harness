@@ -13,10 +13,10 @@
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { dirname, join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { formats } from '@clibuilder/axi'
 import type { cli } from 'clibuilder'
 import { parse as parseYaml } from 'yaml'
 import { rootCommand } from '../src/cli.ts'
-import { formats } from '../src/command-output/command-output.ts'
 
 const packageRoot = dirname(dirname(fileURLToPath(import.meta.url)))
 const repoRoot = dirname(dirname(packageRoot))

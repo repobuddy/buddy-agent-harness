@@ -118,13 +118,6 @@ describe('mcp project command', () => {
 		expect(stdoutText()).not.toContain('"golden":')
 	})
 
-	it('rejects an invalid format before calling projectMcp', () => {
-		expect(run({ format: 'yaml' })).toBe(1)
-
-		expect(stderr).toHaveBeenCalledWith('error: --format must be toon, json, or text.\n')
-		expect(mockedProjectMcp).not.toHaveBeenCalled()
-	})
-
 	it('reports a thrown Error message and a generic one for a non-Error throw', () => {
 		mockedProjectMcp.mockImplementationOnce(() => {
 			throw new Error('git failed')

@@ -37,7 +37,7 @@ The skill is for local agent-configuration setup only. It preserves user-authore
 ```mermaid
 flowchart TD
   A[Locate repository root] --> B{Requested output format valid?}
-  B -->|no| C[Report format error]
+  B -->|no| C[clibuilder reports a usage error, exit 2, before init runs]
   B -->|yes| D[Inspect canonical agent configuration]
   D --> D2[Create the canonical skills directory and the project references layer if absent]
   D2 --> E[Read instructions, skills, and tool settings]

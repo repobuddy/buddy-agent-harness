@@ -189,7 +189,7 @@ Returns every name any layer holds, each reported at the layer that would win, s
 const governanceCommand: cli.Command
 ```
 
-The [`governance`](/cli/governance/) command group as a `clibuilder` command object, holding `list` and `show`. Each subcommand writes the deprecation warning to stderr before it runs. Each returns `0` on success and `1` on failure, such as an unknown format. `show` also returns `1` when it rejects the name or no layer holds it. A failure goes to stderr, never to stdout.
+The [`governance`](/cli/governance/) command group as a `clibuilder` command object, holding `list` and `show`. Each subcommand writes the deprecation warning to stderr before it runs. Each returns `0` on success and `1` on failure. An unknown `--format` never reaches `run`: `clibuilder` rejects it as a usage error, exit code `2`. `show` also returns `1` when it rejects the name or no layer holds it. A failure goes to stderr, never to stdout.
 
 `harnessCommand` mounts it; see [Init and run](/library/init/#harnesscommand).
 

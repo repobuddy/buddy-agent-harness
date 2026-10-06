@@ -1,8 +1,8 @@
 import { homedir } from 'node:os'
 import { resolve } from 'node:path'
+import { createOutput, formatOption } from '@clibuilder/axi'
 import type { cli } from 'clibuilder'
 import { command, exitCodes, z } from 'clibuilder'
-import { parseFormat, writeResult } from '../command-output/command-output.ts'
 import { CATALOG_DIR, CATALOG_PATH, catalogStatus, deriveCatalog, type WriteOutcome, writeCatalog } from './generate.ts'
 import { COPILOT_LIMITATION, type PluginRuntime, runtimes } from './harness-plugins.ts'
 import { type Action, reconcile } from './reconcile.ts'
@@ -72,15 +72,11 @@ export const depPluginsCommand: cli.Command = command({
 			description: 'Report whether the catalog is current without writing it. For CI and postinstall.',
 			type: z.optional(z.boolean()),
 		},
-		format: {
-			description: 'Output format: toon (default), json, or text for a human-readable report.',
-			type: z.optional(z.string()),
-			default: 'toon',
-		},
+		format: formatOption,
 	},
 	run(args) {
 		try {
-			const format = parseFormat(args.format)
+			const output = createOutput(args.format)
 			const root = args.root ?? process.cwd()
 			const derived = deriveCatalog(root)
 
@@ -139,7 +135,7 @@ export const depPluginsCommand: cli.Command = command({
 				actions: actions.length ? actions : '0 actions — every detected harness matches the catalog',
 				...(notes.length ? { notes } : {}),
 			}
-			writeResult(report, format)
+			output.result(report)
 
 			// Exit code reflects staleness under --check only; everything else is in the report, not
 			// the exit code.
