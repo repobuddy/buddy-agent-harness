@@ -207,8 +207,8 @@ importers:
   packages/buddy-agent-harness:
     dependencies:
       '@clibuilder/axi':
-        specifier: ^0.1.0
-        version: 0.1.0(clibuilder@11.3.0(typescript@7.0.2))
+        specifier: ^0.2.0
+        version: 0.2.0(clibuilder@11.3.0(typescript@7.0.2))
       '@cyberuni/agent-harness':
         specifier: ^0.5.0
         version: 0.5.0(typescript@7.0.2)
@@ -574,11 +574,11 @@ packages:
     resolution: {integrity: sha512-dlT1m5e/0yUL0kRNcQn7yGLVThkgbB0Ga/1AmfDDC/8ik6AIiSf2QLQO2zPYvefsHP0aFgxO93cVLCCfDp7kzQ==}
     engines: {node: '>= 20.12.0'}
 
-  '@clibuilder/axi@0.1.0':
-    resolution: {integrity: sha512-axduLxgCRP33iEPv8AGeFY9xDo0z6LH5JwhqpF/JqNmKo99UNI5rmSLduEjCfgIBc7TRwM1jiV0mBFNPKuLabA==}
+  '@clibuilder/axi@0.2.0':
+    resolution: {integrity: sha512-OdQGC+WX7nJKV3Mu78RX7ZeLFi6OKCcokancO63HznGLEvT4Rh7YonmLya92rtXdsVHsJ9Z8AfOZC5LpM33f8A==}
     engines: {node: '>= 20.19'}
     peerDependencies:
-      clibuilder: ^11.0.0
+      clibuilder: ^11.3.3
 
   '@ctrl/tinycolor@4.2.0':
     resolution: {integrity: sha512-kzyuwOAQnXJNLS9PSyrk0CWk35nWJW/zl/6KvnTBMFK65gm7U1/Z5BqjxeapjZCIhQcM/DsrEmcbRwDyXyXK4A==}
@@ -3674,7 +3674,7 @@ snapshots:
       fast-wrap-ansi: 0.2.2
       sisteransi: 1.0.5
 
-  '@clibuilder/axi@0.1.0(clibuilder@11.3.0(typescript@7.0.2))':
+  '@clibuilder/axi@0.2.0(clibuilder@11.3.0(typescript@7.0.2))':
     dependencies:
       '@toon-format/toon': 4.1.1
       clibuilder: 11.3.0(typescript@7.0.2)
