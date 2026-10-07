@@ -9,9 +9,9 @@
 		"preview": "astro preview"
 	},
 	"dependencies": {
-		"@astrojs/markdown-remark": "7.3.1",
+		"@astrojs/markdown-remark": "7.3.2",
 		"@astrojs/starlight": "0.42.5",
-		"astro": "7.3.5"
+		"astro": "7.3.6"
 	},
 	"devDependencies": {
 		"typescript": "^7.0.0"
