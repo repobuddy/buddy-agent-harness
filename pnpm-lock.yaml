@@ -210,8 +210,8 @@ importers:
         specifier: ^0.2.0
         version: 0.2.0(clibuilder@11.3.0(typescript@7.0.2))
       '@cyberuni/agent-harness':
-        specifier: ^0.5.0
-        version: 0.5.0(typescript@7.0.2)
+        specifier: ^0.6.0
+        version: 0.6.0(typescript@7.0.2)
       clibuilder:
         specifier: ^11.3.0
         version: 11.3.0(typescript@7.0.2)
@@ -574,6 +574,12 @@ packages:
     resolution: {integrity: sha512-dlT1m5e/0yUL0kRNcQn7yGLVThkgbB0Ga/1AmfDDC/8ik6AIiSf2QLQO2zPYvefsHP0aFgxO93cVLCCfDp7kzQ==}
     engines: {node: '>= 20.12.0'}
 
+  '@clibuilder/axi@0.1.0':
+    resolution: {integrity: sha512-axduLxgCRP33iEPv8AGeFY9xDo0z6LH5JwhqpF/JqNmKo99UNI5rmSLduEjCfgIBc7TRwM1jiV0mBFNPKuLabA==}
+    engines: {node: '>= 20.19'}
+    peerDependencies:
+      clibuilder: ^11.0.0
+
   '@clibuilder/axi@0.2.0':
     resolution: {integrity: sha512-OdQGC+WX7nJKV3Mu78RX7ZeLFi6OKCcokancO63HznGLEvT4Rh7YonmLya92rtXdsVHsJ9Z8AfOZC5LpM33f8A==}
     engines: {node: '>= 20.19'}
@@ -593,8 +599,8 @@ packages:
   '@cucumber/messages@34.2.1':
     resolution: {integrity: sha512-aj2iCAG9ZOpMVcMxcgShifv5fbR96b7SMgdWcPXXh2QbFp7OEcAnQ5MC5YfWUDSDasmw7FU5NJEsOrXdTQOU1A==}
 
-  '@cyberuni/agent-harness@0.5.0':
-    resolution: {integrity: sha512-TyfqEHYfHiU9Uw8CE1J393+H/CyBv9Vv7+w3YrAKHmTgMqoH+cFPujFpgkU3uT5sr7xUg1RiEHICXuVao14Wbg==}
+  '@cyberuni/agent-harness@0.6.0':
+    resolution: {integrity: sha512-ELy0pcHiRb9vjaVymBIvCQTDaQTOyliVKEx3MdpiDLeaGAYkhBwgCfoIa/ov/hPFxed4gQdYLBv6O3UTNgr78A==}
     engines: {node: '>=22'}
     hasBin: true
 
@@ -3674,6 +3680,11 @@ snapshots:
       fast-wrap-ansi: 0.2.2
       sisteransi: 1.0.5
 
+  '@clibuilder/axi@0.1.0(clibuilder@11.3.0(typescript@7.0.2))':
+    dependencies:
+      '@toon-format/toon': 4.1.1
+      clibuilder: 11.3.0(typescript@7.0.2)
+
   '@clibuilder/axi@0.2.0(clibuilder@11.3.0(typescript@7.0.2))':
     dependencies:
       '@toon-format/toon': 4.1.1
@@ -3689,9 +3700,9 @@ snapshots:
 
   '@cucumber/messages@34.2.1': {}
 
-  '@cyberuni/agent-harness@0.5.0(typescript@7.0.2)':
+  '@cyberuni/agent-harness@0.6.0(typescript@7.0.2)':
     dependencies:
-      '@toon-format/toon': 4.1.1
+      '@clibuilder/axi': 0.1.0(clibuilder@11.3.0(typescript@7.0.2))
       clibuilder: 11.3.0(typescript@7.0.2)
       yaml: 2.9.0
     transitivePeerDependencies:
