@@ -41,7 +41,7 @@ That rule holds for every finding `doctor` reports today and for the ones it rep
 
 You correct what the **tooling** decides is wrong, never what the repository means.
 
-`../init/references/agents-md.md` draws the line: content that would stop being true if this tool's output were removed is **non-material**, and non-material content is all you may correct. A statement about how the repository is worked in is the user's, even when it is out of date — report it and offer no write.
+`../init-buddy-agent-harness/references/agents-md.md` draws the line: content that would stop being true if this tool's output were removed is **non-material**, and non-material content is all you may correct. A statement about how the repository is worked in is the user's, even when it is out of date — report it and offer no write.
 
 The clearest case is `unloadable-skill`. A `description` broken by an unquoted colon is a quoting fault — correct it. A `description` that is **missing** cannot be written without asserting what a skill you did not author does, and that claim holds whether or not this tool ever ran. Report it and ask.
 

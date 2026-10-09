@@ -10,7 +10,7 @@ argument-hint: '[--root <dir>]'
 
 The split matters: initialization has to run everywhere and invent nothing, so it carries no opinions. An addition is opinionated by construction, and worth having only where its subject is missing. Keeping them apart is what lets `init` stay safe to run on any repository.
 
-Every addition is **offered, never written on sight**. An addition asserts something about how the repository is worked in — it stays true whether or not this tool ever ran — so it is material under the rule in `../init/references/agents-md.md`, and material content needs approval. Nothing here goes inside the `buddy-agent-harness` managed region; that region is for the tool's own bookkeeping.
+Every addition is **offered, never written on sight**. An addition asserts something about how the repository is worked in — it stays true whether or not this tool ever ran — so it is material under the rule in `../init-buddy-agent-harness/references/agents-md.md`, and material content needs approval. Nothing here goes inside the `buddy-agent-harness` managed region; that region is for the tool's own bookkeeping.
 
 Three additions ship today: `references/delegation.md`, `references/list-identifiers.md`, and `references/session-scope.md`. Classify, offer, and report each one on its own; the owner's answer to one decides nothing about the others. Each addition's reference file carries the text to offer, a `## Covered when` criterion for the subject already being present, a `## Stale when` section naming the history file its stale check reads and what else that check needs for this addition, and a `## Where it belongs` recommendation naming which instruction file the text should go in. The retired wordings themselves are kept beside it — `references/<addition>.history.md` — and are what a present section is compared against.
 
@@ -24,7 +24,7 @@ A nested `AGENTS.md` is never a target. It governs its own subtree, and none of 
 
 ## 2. Read the merged view
 
-Read the root `AGENTS.md`. Then read any harness instruction file whose content still belongs in it — `CLAUDE.md` with a body of its own, `.cursorrules`, `.cursor/rules/**`, `.github/copilot-instructions.md`, `GEMINI.md`, `.windsurfrules`. `../init/references/detection.md` lists them.
+Read the root `AGENTS.md`. Then read any harness instruction file whose content still belongs in it — `CLAUDE.md` with a body of its own, `.cursorrules`, `.cursor/rules/**`, `.github/copilot-instructions.md`, `GEMINI.md`, `.windsurfrules`. `../init-buddy-agent-harness/references/detection.md` lists them.
 
 Judge against all of it together. That combined text is what an agent effectively reads, so guidance living in a Cursor always-on rule counts as present even though `AGENTS.md` does not carry it yet.
 

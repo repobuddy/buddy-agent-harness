@@ -4,7 +4,7 @@ One row per fault `doctor` reports here, with the correction and where it stops.
 
 **This file carries no detection.** `doctor` decides what is wrong; you decide how to correct it. If you find yourself checking whether a fault is present, you are doing the command's job — run it instead.
 
-Every correction below is non-material: it would stop being true if this tool's output were removed. That is what makes it correctable at all. Where a finding's correction would change what the repository *means*, report it and stop; `../../init/references/agents-md.md` draws the line.
+Every correction below is non-material: it would stop being true if this tool's output were removed. That is what makes it correctable at all. Where a finding's correction would change what the repository *means*, report it and stop; `../../init-buddy-agent-harness/references/agents-md.md` draws the line.
 
 ## `deprecated-harness`
 
