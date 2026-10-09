@@ -669,7 +669,7 @@ The command is read-only. It never repairs anything, so it is safe to run at any
 
 \`command\` is empty whenever no single invocation does the job, and that emptiness is the signal: act on \`instruction\` and do not assemble a command out of it. A runnable invocation quoted *inside* an \`instruction\` is not the repair either — \`diverged-both\` names \`git diff --no-index\` because the diff shows you what differs, not because running it reconciles anything. Apply the repair, then re-run \`doctor\`.
 
-Nothing in \`help\` is wrapped. An earlier version prefixed every repair with \`Run\`, which read as an instruction to paste prose into a shell.
+Nothing in \`help\` is wrapped.
 
 Do not run an \`init\` command yourself. Rebuilding a skills bridge can move skills a user wrote, and rewriting an instruction file touches prose a person authored — both are the \`init-buddy-agent-harness\` skill's judgment, so hand the repair to \`${initSkillInvocation}\` instead. Every such repair carries an empty \`command\`: a skill invocation has no shell equivalent at all.
 
