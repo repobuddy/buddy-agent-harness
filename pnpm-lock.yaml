@@ -208,13 +208,13 @@ importers:
     dependencies:
       '@clibuilder/axi':
         specifier: ^0.2.0
-        version: 0.2.0(clibuilder@11.3.0(typescript@7.0.2))
+        version: 0.2.0(clibuilder@12.0.0(js-yaml@4.3.2))
       '@cyberuni/agent-harness':
         specifier: ^0.6.0
         version: 0.6.0(typescript@7.0.2)
       clibuilder:
-        specifier: ^11.3.0
-        version: 11.3.0(typescript@7.0.2)
+        specifier: ^12.0.0
+        version: 12.0.0(js-yaml@4.3.2)
       jsonc-parser:
         specifier: ^3.3.1
         version: 3.3.1
@@ -574,12 +574,14 @@ packages:
   '@clibuilder/axi@0.1.0':
     resolution: {integrity: sha512-axduLxgCRP33iEPv8AGeFY9xDo0z6LH5JwhqpF/JqNmKo99UNI5rmSLduEjCfgIBc7TRwM1jiV0mBFNPKuLabA==}
     engines: {node: '>= 20.19'}
+    deprecated: Folded into clibuilder 12. Import the value helpers from "clibuilder/axi" and use the output, error and format support built into clibuilder. See https://clibuilder.github.io/clibuilder/guides/upgrade-to-12/
     peerDependencies:
       clibuilder: ^11.0.0
 
   '@clibuilder/axi@0.2.0':
     resolution: {integrity: sha512-OdQGC+WX7nJKV3Mu78RX7ZeLFi6OKCcokancO63HznGLEvT4Rh7YonmLya92rtXdsVHsJ9Z8AfOZC5LpM33f8A==}
     engines: {node: '>= 20.19'}
+    deprecated: Folded into clibuilder 12. Import the value helpers from "clibuilder/axi" and use the output, error and format support built into clibuilder. See https://clibuilder.github.io/clibuilder/guides/upgrade-to-12/
     peerDependencies:
       clibuilder: ^11.3.3
 
@@ -1701,6 +1703,10 @@ packages:
   argparse@2.0.1:
     resolution: {integrity: sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q==}
 
+  args-minus@0.2.0:
+    resolution: {integrity: sha512-WnIUyzhO4me3xx841rxfCU2C/PMpD+M1MraKb8hF2aGY4xS67bSV2EhpmegLlFM0UV11+hV9uHPbNHnH7ypL0w==}
+    engines: {node: '>=20'}
+
   aria-query@5.3.2:
     resolution: {integrity: sha512-COROpnaoap1E2F000S62r6A60uHZnmlvomhfyT2DlTcrY1OrBKn2UhH7qn5wTC9zMvD0AY7csdPSNwKP+7WiQw==}
     engines: {node: '>= 0.4'}
@@ -1790,6 +1796,15 @@ packages:
   clibuilder@11.3.0:
     resolution: {integrity: sha512-ESckfItcCYPNnYSb66XRQ831q9N4CA3MvXumH3q8OWk8ExI2zVcZpFbwIdJPMOWjQhQfJtsV0qX+7zTPtN0QsQ==}
     engines: {node: '>= 20.19'}
+
+  clibuilder@12.0.0:
+    resolution: {integrity: sha512-k4scud2B6EFqzVmxmTVQMiW4xu9KzxV9+KVIPQVJeJFqg735a0H2iDMGFMIsHQVNdxwLqPjmNiK4CEUU5ZxNfA==}
+    engines: {node: '>= 20.19'}
+    peerDependencies:
+      js-yaml: ^4.1.0
+    peerDependenciesMeta:
+      js-yaml:
+        optional: true
 
   clsx@2.1.1:
     resolution: {integrity: sha512-eYm0QWBtUrBWZWG0d386OGAw16Z995PiOVo2B7bjWSbHedGl5e0ZWaq65kOGgUSNesEIDkB9ISbTg/JK9dhCZA==}
@@ -3659,10 +3674,10 @@ snapshots:
       '@toon-format/toon': 4.1.1
       clibuilder: 11.3.0(typescript@7.0.2)
 
-  '@clibuilder/axi@0.2.0(clibuilder@11.3.0(typescript@7.0.2))':
+  '@clibuilder/axi@0.2.0(clibuilder@12.0.0(js-yaml@4.3.2))':
     dependencies:
       '@toon-format/toon': 4.1.1
-      clibuilder: 11.3.0(typescript@7.0.2)
+      clibuilder: 12.0.0(js-yaml@4.3.2)
 
   '@ctrl/tinycolor@4.2.0': {}
 
@@ -4465,6 +4480,8 @@ snapshots:
 
   argparse@2.0.1: {}
 
+  args-minus@0.2.0: {}
+
   aria-query@5.3.2: {}
 
   array-iterate@2.0.1: {}
@@ -4633,6 +4650,13 @@ snapshots:
       zod: 3.25.76
     transitivePeerDependencies:
       - typescript
+
+  clibuilder@12.0.0(js-yaml@4.3.2):
+    dependencies:
+      '@toon-format/toon': 4.1.1
+      args-minus: 0.2.0
+    optionalDependencies:
+      js-yaml: 4.3.2
 
   clsx@2.1.1: {}
 
