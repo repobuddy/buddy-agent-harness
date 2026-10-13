@@ -207,8 +207,8 @@ importers:
   packages/buddy-agent-harness:
     dependencies:
       '@clibuilder/axi':
-        specifier: ^0.2.0
-        version: 0.2.0(clibuilder@11.3.0(typescript@7.0.2))
+        specifier: ^0.3.0
+        version: 0.3.0(clibuilder@11.3.0(typescript@7.0.2))
       '@cyberuni/agent-harness':
         specifier: ^0.6.0
         version: 0.6.0(typescript@7.0.2)
@@ -577,11 +577,12 @@ packages:
     peerDependencies:
       clibuilder: ^11.0.0
 
-  '@clibuilder/axi@0.2.0':
-    resolution: {integrity: sha512-OdQGC+WX7nJKV3Mu78RX7ZeLFi6OKCcokancO63HznGLEvT4Rh7YonmLya92rtXdsVHsJ9Z8AfOZC5LpM33f8A==}
+  '@clibuilder/axi@0.3.0':
+    resolution: {integrity: sha512-Fit1A7N+5mavK0V2GrerpS6e1C6gxSEB1wirbSV3u+PMLLOIgj1tpiIYZB0Pr+R8N1oJv0JuaMRudLSF7QmVDQ==}
     engines: {node: '>= 20.19'}
+    deprecated: Folded into clibuilder 12. Import the value helpers from "clibuilder/axi" and use the output, error and format support built into clibuilder. See https://clibuilder.github.io/clibuilder/guides/upgrade-to-12/
     peerDependencies:
-      clibuilder: ^11.3.3
+      clibuilder: ^12.0.0
 
   '@ctrl/tinycolor@4.2.0':
     resolution: {integrity: sha512-kzyuwOAQnXJNLS9PSyrk0CWk35nWJW/zl/6KvnTBMFK65gm7U1/Z5BqjxeapjZCIhQcM/DsrEmcbRwDyXyXK4A==}
@@ -3659,7 +3660,7 @@ snapshots:
       '@toon-format/toon': 4.1.1
       clibuilder: 11.3.0(typescript@7.0.2)
 
-  '@clibuilder/axi@0.2.0(clibuilder@11.3.0(typescript@7.0.2))':
+  '@clibuilder/axi@0.3.0(clibuilder@11.3.0(typescript@7.0.2))':
     dependencies:
       '@toon-format/toon': 4.1.1
       clibuilder: 11.3.0(typescript@7.0.2)
