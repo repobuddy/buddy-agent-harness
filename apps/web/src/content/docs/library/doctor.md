@@ -230,9 +230,9 @@ One reference row: its name, the tier holding it, the file's path, and the statu
 const doctorCommand: cli.Command
 ```
 
-The [`doctor`](/cli/doctor/) command as a `clibuilder` command object, with the `--root`, `--harness`, and `--format` options. Its `run` calls `diagnoseBridges`, adds the configuration, MCP, and non-standard findings and the references outside the plugin tier, and writes `buildDoctorReport`'s result in the requested format.
+The [`doctor`](/cli/doctor/) command as a `clibuilder` command object, with the `--root` and `--harness` options. Its `run` calls `diagnoseBridges`, adds the configuration, MCP, and non-standard findings and the references outside the plugin tier, and returns `buildDoctorReport`'s result, which `clibuilder` prints in the requested `--format`.
 
-It returns `0` whether or not there are findings. It returns `1` when the diagnosis fails, such as on an unknown harness name, and writes the failure to stderr. An unknown `--format` never reaches `run`: `clibuilder` rejects it as a usage error, exit code `2`.
+It exits `0` whether or not there are findings. It exits `1` when the diagnosis fails, such as on an unknown harness name, and writes the failure to stderr. An unknown `--format` never reaches `run`: `clibuilder` rejects it as a usage error, exit code `2`, reported on stdout.
 
 ## The repair tables
 

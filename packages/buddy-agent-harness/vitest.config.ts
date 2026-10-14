@@ -13,6 +13,7 @@ export default defineConfig({
 			// packed copy).
 			exclude: [
 				'src/**/*.test.ts',
+				'src/**/*.test-helper.ts',
 				'src/skill-scripts/doctor.ts',
 				'src/skill-scripts/init.ts',
 				'src/skill-scripts/mcp.ts',

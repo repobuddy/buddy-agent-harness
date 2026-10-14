@@ -2,6 +2,7 @@ import { existsSync, mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { runCommandSync } from '../command-output/run-command.test-helper.ts'
 import { depPluginsCommand } from './dep-plugins.command.ts'
 import { CATALOG_PATH } from './generate.ts'
 import type { PluginRuntime } from './harness-plugins.ts'
@@ -36,8 +37,15 @@ vi.mock('./harness-plugins.ts', async (importOriginal) => {
 let stdout: ReturnType<typeof vi.spyOn>
 let stderr: ReturnType<typeof vi.spyOn>
 
-function run(args: { root?: string; check?: boolean; format?: string }): number {
-	return (depPluginsCommand as { run(value: typeof args): number }).run({ format: 'json', ...args })
+function run({
+	format = 'json',
+	...args
+}: {
+	root?: string
+	check?: boolean
+	format?: 'json' | 'toon' | 'text'
+}): number {
+	return runCommandSync(depPluginsCommand, args, format)
 }
 
 /** The JSON report the last run wrote, parsed. */

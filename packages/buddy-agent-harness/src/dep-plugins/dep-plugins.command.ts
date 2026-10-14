@@ -1,8 +1,9 @@
 import { homedir } from 'node:os'
 import { resolve } from 'node:path'
-import { createOutput, formatOption } from '@clibuilder/axi'
 import type { cli } from 'clibuilder'
-import { command, exitCodes, z } from 'clibuilder'
+import { command, t } from 'clibuilder'
+import { result } from 'clibuilder/axi'
+import { answerThenFail, fail } from '../command-output/command-output.ts'
 import { CATALOG_DIR, CATALOG_PATH, catalogStatus, deriveCatalog, type WriteOutcome, writeCatalog } from './generate.ts'
 import { COPILOT_LIMITATION, type PluginRuntime, runtimes } from './harness-plugins.ts'
 import { type Action, reconcile } from './reconcile.ts'
@@ -66,17 +67,15 @@ export const depPluginsCommand: cli.Command = command({
 	options: {
 		root: {
 			description: 'Repository directory. Defaults to the current directory.',
-			type: z.optional(z.string()),
+			type: t.string().optional(),
 		},
 		check: {
 			description: 'Report whether the catalog is current without writing it. For CI and postinstall.',
-			type: z.optional(z.boolean()),
+			type: t.boolean().optional(),
 		},
-		format: formatOption,
 	},
 	run(args) {
 		try {
-			const output = createOutput(args.format)
 			const root = args.root ?? process.cwd()
 			const derived = deriveCatalog(root)
 
@@ -135,14 +134,13 @@ export const depPluginsCommand: cli.Command = command({
 				actions: actions.length ? actions : '0 actions — every detected harness matches the catalog',
 				...(notes.length ? { notes } : {}),
 			}
-			output.result(report)
+			const answer = result(report)
 
 			// Exit code reflects staleness under --check only; everything else is in the report, not
 			// the exit code.
-			return outcome === 'would-change' ? exitCodes.error : exitCodes.success
+			return outcome === 'would-change' ? answerThenFail(answer, this.format) : answer
 		} catch (error) {
-			process.stderr.write(`error: ${error instanceof Error ? error.message : 'Catalog generation failed.'}\n`)
-			return exitCodes.error
+			return fail(error, 'Catalog generation failed.')
 		}
 	},
 })

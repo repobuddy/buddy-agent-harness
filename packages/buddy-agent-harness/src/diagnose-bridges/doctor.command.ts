@@ -1,9 +1,9 @@
 import { homedir } from 'node:os'
-import { createOutput, formatOption } from '@clibuilder/axi'
 import { listReferences, type ReferenceRow } from '@cyberuni/agent-harness'
 import type { cli } from 'clibuilder'
-import { command, exitCodes, z } from 'clibuilder'
-import { collapseHome, displayBinPath } from '../command-output/command-output.ts'
+import { command, t } from 'clibuilder'
+import { result } from 'clibuilder/axi'
+import { collapseHome, displayBinPath, fail } from '../command-output/command-output.ts'
 import { type ConfigurationFinding, diagnoseConfiguration } from '../diagnose-configuration/diagnose-configuration.ts'
 import { diagnoseMcp } from '../diagnose-mcp/diagnose-mcp.ts'
 import { diagnoseNonstandard } from '../diagnose-nonstandard/diagnose-nonstandard.ts'
@@ -89,21 +89,19 @@ export const doctorCommand: cli.Command = command({
 	options: {
 		root: {
 			description: 'Repository or package directory. Defaults to the current directory.',
-			type: z.optional(z.string()),
+			type: t.string().optional(),
 		},
 		harness: {
 			description: 'Comma-separated harnesses to check in addition to Claude Code and Cursor, e.g. codex,gemini-cli.',
-			type: z.optional(z.string()),
+			type: t.string().optional(),
 		},
-		format: formatOption,
 	},
 	async run(args) {
 		try {
-			const output = createOutput(args.format)
 			const harnesses = parseHarnesses(args.harness)
 			const root = args.root ?? process.cwd()
 			const home = homedir()
-			const result = diagnoseBridges({
+			const diagnosis = diagnoseBridges({
 				root,
 				...(harnesses.length ? { harnesses } : {}),
 				cli: commandInvocation,
@@ -132,13 +130,9 @@ export const doctorCommand: cli.Command = command({
 				.map(({ name, tier, path, status }) => ({ name, tier, path: collapseHome(home, path), status }))
 			// Exit stays 0 even with findings: a non-zero code reads to an agent as "this command
 			// is broken".
-			output.result(buildDoctorReport(displayBinPath(home, process.argv[1]), result, configuration, held))
-			return exitCodes.success
+			return result(buildDoctorReport(displayBinPath(home, process.argv[1]), diagnosis, configuration, held))
 		} catch (error) {
-			process.stderr.write(`error: ${error instanceof Error ? error.message : 'Harness diagnosis failed.'}\n`)
-			// Returned, not written: a caller that is not the process has no other way to learn of
-			// the failure.
-			return exitCodes.error
+			return fail(error, 'Harness diagnosis failed.')
 		}
 	},
 })

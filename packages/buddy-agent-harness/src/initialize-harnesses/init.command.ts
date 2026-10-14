@@ -1,6 +1,7 @@
-import { createOutput, formatOption } from '@clibuilder/axi'
 import type { cli } from 'clibuilder'
-import { command, exitCodes, z } from 'clibuilder'
+import { command, t } from 'clibuilder'
+import { result } from 'clibuilder/axi'
+import { fail } from '../command-output/command-output.ts'
 import { doctorCommand } from '../diagnose-bridges/doctor.command.ts'
 import { governanceCommand } from '../governance-overrides/governance.command.ts'
 import { parseHarnesses } from '../harness-registry/harness-registry.ts'
@@ -14,28 +15,26 @@ export const initCommand: cli.Command = command({
 	options: {
 		root: {
 			description: 'Repository or package directory. Defaults to the current directory.',
-			type: z.optional(z.string()),
+			type: t.string().optional(),
 		},
 		harness: {
 			description: 'Comma-separated harnesses to enable in addition to Claude Code and Cursor, e.g. codex,gemini-cli.',
-			type: z.optional(z.string()),
+			type: t.string().optional(),
 		},
 		copy: {
 			description: 'Copy skills instead of linking them.',
-			type: z.optional(z.boolean()),
+			type: t.boolean().optional(),
 		},
 		force: {
 			description:
 				'Replace conflicting target skill directories. Names the targets to replace, comma-separated (e.g. .claude/skills); given alone it replaces every conflicting target.',
-			type: z.optional(z.string()),
+			type: t.string().optional(),
 		},
-		format: formatOption,
 	},
 	run(args) {
 		try {
-			const output = createOutput(args.format)
 			const harnesses = parseHarnesses(args.harness)
-			output.result(
+			return result(
 				initializeHarnesses({
 					root: args.root ?? process.cwd(),
 					...(harnesses.length ? { harnesses } : {}),
@@ -43,12 +42,8 @@ export const initCommand: cli.Command = command({
 					...(args.force === undefined ? {} : { force: parseForce(args.force) }),
 				}),
 			)
-			return exitCodes.success
 		} catch (error) {
-			process.stderr.write(`error: ${error instanceof Error ? error.message : 'Harness initialization failed.'}\n`)
-			// Returned, not written — writing it here reports failure past `run`, not to it, so a
-			// non-process caller never learns of it.
-			return exitCodes.error
+			return fail(error, 'Harness initialization failed.')
 		}
 	},
 })

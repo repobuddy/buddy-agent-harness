@@ -1,4 +1,6 @@
+import type { Format } from 'clibuilder/axi'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { runCommandSync } from '../command-output/run-command.test-helper.ts'
 import { doctorCommand } from '../diagnose-bridges/doctor.command.ts'
 import { governanceCommand } from '../governance-overrides/governance.command.ts'
 import { referenceCommand } from '../references/references.ts'
@@ -11,8 +13,17 @@ const mockedInitializeHarnesses = vi.mocked(initializeHarnesses)
 const stderr = vi.spyOn(process.stderr, 'write').mockImplementation(() => true)
 const stdout = vi.spyOn(process.stdout, 'write').mockImplementation(() => true)
 
-function run(args: { copy?: boolean; force?: string; format?: string; harness?: string; root?: string }): number {
-	return (initCommand as { run(value: typeof args): number }).run(args)
+function run({
+	format = 'toon',
+	...args
+}: {
+	copy?: boolean
+	force?: string
+	format?: Format
+	harness?: string
+	root?: string
+}): number {
+	return runCommandSync(initCommand, args, format)
 }
 
 beforeEach(() => {

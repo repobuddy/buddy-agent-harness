@@ -1,8 +1,8 @@
 import { homedir } from 'node:os'
-import { createOutput, defineFormatOption, formatOption, type OutputFormat } from '@clibuilder/axi'
 import type { cli } from 'clibuilder'
-import { command, exitCodes, z } from 'clibuilder'
-import { collapseHome } from '../command-output/command-output.ts'
+import { command, t } from 'clibuilder'
+import { CliError, document, exitCodes, result } from 'clibuilder/axi'
+import { collapseHome, fail } from '../command-output/command-output.ts'
 import {
 	type GovernanceLayer,
 	type GovernanceScope,
@@ -32,7 +32,7 @@ export type GovernanceShowReport = {
 	content: string
 }
 
-type Args = { root: string | undefined; format: OutputFormat | undefined; 'overrides-only': boolean | undefined }
+type Args = { root: string | undefined; 'overrides-only': boolean | undefined }
 
 function layersFor(args: Args): GovernanceLayer[] {
 	const layers = governanceLayers({
@@ -51,13 +51,13 @@ export const DEPRECATED_MANAGED = 'deprecated — move these documents to the ma
 
 const rootOption = {
 	description: 'Repository or package directory. Defaults to the current directory.',
-	type: z.optional(z.string()),
+	type: t.string().optional(),
 }
 
 const overridesOnlyOption = {
 	description:
 		'Resolve only the project, user, and machine-wide layers. Never returns a governance this package ships, and exits non-zero when no layer has one.',
-	type: z.optional(z.boolean()),
+	type: t.boolean().optional(),
 }
 
 export const governanceListCommand: cli.Command = command({
@@ -66,12 +66,10 @@ export const governanceListCommand: cli.Command = command({
 	options: {
 		root: rootOption,
 		'overrides-only': overridesOnlyOption,
-		format: formatOption,
 	},
 	run(args: Args) {
 		process.stderr.write(GOVERNANCE_DEPRECATED)
 		try {
-			const output = createOutput(args.format)
 			const home = homedir()
 			const layers = layersFor(args)
 			const entries = listGovernances(layers)
@@ -85,11 +83,9 @@ export const governanceListCommand: cli.Command = command({
 					? entries.map(({ name, scope, path }) => ({ name, scope, path: collapseHome(home, path) }))
 					: '0 governances — no layer holds one',
 			}
-			output.result(report)
-			return exitCodes.success
+			return result(report)
 		} catch (error) {
-			process.stderr.write(`error: ${error instanceof Error ? error.message : 'Governance listing failed.'}\n`)
-			return exitCodes.error
+			return fail(error, 'Governance listing failed.')
 		}
 	},
 })
@@ -97,20 +93,15 @@ export const governanceListCommand: cli.Command = command({
 export const governanceShowCommand: cli.Command = command({
 	name: 'show',
 	description: 'Print one governance document, resolved through the layers in order.',
-	arguments: [{ name: 'name', description: 'The governance name, without the `.md` extension.', type: z.string() }],
+	arguments: [{ name: 'name', description: 'The governance name, without the `.md` extension.', type: t.string() }],
 	options: {
 		root: rootOption,
 		'overrides-only': overridesOnlyOption,
-		format: defineFormatOption({
-			default: 'text',
-			description:
-				'Output format: text (default) writes the document itself; toon and json wrap it with the layer it came from.',
-		}),
 	},
 	run(args: Args & { name: string }) {
+		const format = this.format
 		process.stderr.write(GOVERNANCE_DEPRECATED)
 		try {
-			const output = createOutput(args.format)
 			const name = parseGovernanceName(args.name)
 			const found = resolveGovernance(name, layersFor(args))
 			if (!found) {
@@ -122,7 +113,7 @@ export const governanceShowCommand: cli.Command = command({
 						? `error: no override for governance "${name}" in the project, user, or machine-wide layer.\n`
 						: `error: no governance named "${name}" in any layer.\n`,
 				)
-				return exitCodes.error
+				throw CliError.reported(exitCodes.error)
 			}
 			const report: GovernanceShowReport = {
 				name: found.name,
@@ -131,11 +122,9 @@ export const governanceShowCommand: cli.Command = command({
 				content: found.content,
 			}
 			// text is the document itself: run through the text renderer, Markdown comes back as one escaped line.
-			output.result(report, { text: ({ content }) => content })
-			return exitCodes.success
+			return format === 'text' ? document(report.content) : result(report)
 		} catch (error) {
-			process.stderr.write(`error: ${error instanceof Error ? error.message : 'Governance lookup failed.'}\n`)
-			return exitCodes.error
+			return fail(error, 'Governance lookup failed.')
 		}
 	},
 })

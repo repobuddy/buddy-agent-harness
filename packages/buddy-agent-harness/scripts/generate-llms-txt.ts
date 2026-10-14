@@ -13,10 +13,10 @@
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { dirname, join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { formats } from '@clibuilder/axi'
 import type { cli } from 'clibuilder'
+import { formats } from 'clibuilder/axi'
 import { parse as parseYaml } from 'yaml'
-import { rootCommand } from '../src/cli.ts'
+import { defaultFormat, rootCommand } from '../src/cli.ts'
 
 const packageRoot = dirname(dirname(fileURLToPath(import.meta.url)))
 const repoRoot = dirname(dirname(packageRoot))
@@ -172,18 +172,17 @@ const gaps: Gap[] = []
 
 // --- CLI ---
 
-type CommandRow = { path: string; description: string; slug: string | null; formatDefault: unknown; leaf: boolean }
+type CommandRow = { path: string; description: string; slug: string | null; formatDefault: string; leaf: boolean }
 
 function walk(commands: readonly cli.Command[], prefix: string): CommandRow[] {
 	return commands.flatMap((command) => {
 		const path = prefix ? `${prefix} ${command.name}` : command.name
 		const children = command.commands ?? []
-		const format = (command.options as Record<string, { default?: unknown }> | undefined)?.['format']
 		const row: CommandRow = {
 			path,
 			description: text(command.description, `the description of \`${path}\``),
 			slug: lookup(commandPages, path, 'commandPages'),
-			formatDefault: format ? (format.default ?? null) : undefined,
+			formatDefault: defaultFormat(['node', rootCommand.name, ...path.split(' ')]),
 			leaf: children.length === 0,
 		}
 		return [row, ...walk(children, path)]
@@ -315,17 +314,15 @@ function conventions(): string[] {
 		)
 	}
 	const leaves = commandRows.filter((row) => row.leaf)
-	if (leaves.every((row) => typeof row.formatDefault === 'string')) {
-		const byDefault = groupBy(leaves, (row) => row.formatDefault as string)
-		const common = [...byDefault.entries()].sort((a, b) => b[1].length - a[1].length)
-		const [main, ...others] = common
-		const exceptions = others
-			.map(([value, rows]) => `${listed(rows.map((row) => row.path))} default to \`${value}\``)
-			.join('; ')
-		lines.push(
-			`Every runnable command takes \`--format\` with ${listed(formats, 'or')}; the default is \`${main?.[0]}\`${exceptions ? `, except that ${exceptions}` : ''}.`,
-		)
-	}
+	const byDefault = groupBy(leaves, (row) => row.formatDefault)
+	const common = [...byDefault.entries()].sort((a, b) => b[1].length - a[1].length)
+	const [main, ...others] = common
+	const exceptions = others
+		.map(([value, rows]) => `${listed(rows.map((row) => row.path))} default to \`${value}\``)
+		.join('; ')
+	lines.push(
+		`Every runnable command takes \`--format\` with ${listed(formats, 'or')}; the default is \`${main?.[0]}\`${exceptions ? `, except that ${exceptions}` : ''}.`,
+	)
 	return lines
 }
 

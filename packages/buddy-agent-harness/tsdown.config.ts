@@ -48,9 +48,6 @@ export default defineConfig([
 	{
 		// Every runtime dependency is inlined so `dist/cli.mjs` runs with no `node_modules`
 		// present — the state an installed agent plugin is actually in.
-		//
-		// Two build warnings about unanalyzable dynamic imports are expected: clibuilder loads
-		// third-party plugins and config files by runtime-computed specifier, and must stay dynamic.
 		...shared,
 		entry: { cli: 'src/cli.ts' },
 		dts: false,
