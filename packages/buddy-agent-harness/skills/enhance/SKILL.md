@@ -10,7 +10,7 @@ argument-hint: '[--root <dir>]'
 
 The split matters: initialization has to run everywhere and invent nothing, so it carries no opinions. An addition is opinionated by construction, and worth having only where its subject is missing. Keeping them apart is what lets `init` stay safe to run on any repository.
 
-Every addition is **offered, never written on sight**. An addition asserts something about how the repository is worked in — it stays true whether or not this tool ever ran — so it is material under the rule in `../init-buddy-agent-harness/references/agents-md.md`, and material content needs approval. Nothing here goes inside the `buddy-agent-harness` managed region; that region is for the tool's own bookkeeping.
+Every addition is **offered, never written on sight**. An addition asserts something about how the repository is worked in — it stays true whether or not this tool ever ran — so it is material under the rule in `references/agents-md.md`, and material content needs approval. Nothing here goes inside the `buddy-agent-harness` managed region; that region is for the tool's own bookkeeping.
 
 Three additions ship today: `references/delegation.md`, `references/list-identifiers.md`, and `references/session-scope.md`. Classify, offer, and report each one on its own; the owner's answer to one decides nothing about the others. Each addition's reference file carries the text to offer, a `## Covered when` criterion for the subject already being present, a `## Stale when` section naming the history file its stale check reads and what else that check needs for this addition, and a `## Where it belongs` recommendation naming which instruction file the text should go in. The retired wordings themselves are kept beside it — `references/<addition>.history.md` — and are what a present section is compared against.
 
@@ -24,7 +24,7 @@ A nested `AGENTS.md` is never a target. It governs its own subtree, and none of 
 
 ## 2. Read the merged view
 
-Read the root `AGENTS.md`. Then read any harness instruction file whose content still belongs in it — `CLAUDE.md` with a body of its own, `.cursorrules`, `.cursor/rules/**`, `.github/copilot-instructions.md`, `GEMINI.md`, `.windsurfrules`. `../init-buddy-agent-harness/references/detection.md` lists them.
+Read the root `AGENTS.md`. Then read any harness instruction file whose content still belongs in it — `CLAUDE.md` with a body of its own, `.cursorrules`, `.cursor/rules/**`, `.github/copilot-instructions.md`, `GEMINI.md`, `.windsurfrules`. `references/detection.md` lists them.
 
 Judge against all of it together. That combined text is what an agent effectively reads, so guidance living in a Cursor always-on rule counts as present even though `AGENTS.md` does not carry it yet.
 
@@ -105,11 +105,11 @@ The global file is `~/.agents/AGENTS.md`, the user-scope counterpart of the root
 node scripts/doctor.mjs
 ```
 
-That path is relative to this skill's own directory; fall back to `npx -y buddy-agent-harness@^0.21.0 doctor` when it is missing or cannot be run. Read the `globalInstructions` row for the harness you are running in:
+That path is relative to this skill's own directory; fall back to `npx -y buddy-agent-harness@0.21.0 doctor` when it is missing or cannot be run. Read the `globalInstructions` row for the harness you are running in:
 
 - **`ok`** — say that this harness loads `~/.agents/AGENTS.md`, through the file the row names.
-- **`missing` or `unbridged`** — say that it does not yet, so the text would reach no session of this harness until it does. Name the file the row gives, and hand over the step that bridges it beside the text: `../doctor-buddy-agent-harness/references/global-instructions.md` names it per harness, and where `doctor` reported a finding for that file, its `help` row carries the same step. Where the row is `unbridged` and the step is a symlink, say that what the file holds moves into `~/.agents/AGENTS.md` first.
-- **`overridden`** — say that it does not, because the harness reads another file in place of the one the row names, and hand over beside the text: move what that file says into `~/.agents/AGENTS.md` and remove it. The file is the `suppresses AGENTS.md` entry of `../doctor-buddy-agent-harness/references/harnesses/<name>.md`, under the same directory as the row's path, and once `~/.agents/AGENTS.md` exists, `doctor`'s `global-instructions-overridden` finding names it.
+- **`missing` or `unbridged`** — say that it does not yet, so the text would reach no session of this harness until it does. Name the file the row gives, and hand over the step that bridges it beside the text: `references/global-instructions.md` names it per harness, and where `doctor` reported a finding for that file, its `help` row carries the same step. Where the row is `unbridged` and the step is a symlink, say that what the file holds moves into `~/.agents/AGENTS.md` first.
+- **`overridden`** — say that it does not, because the harness reads another file in place of the one the row names, and hand over beside the text: move what that file says into `~/.agents/AGENTS.md` and remove it. The file is the `suppresses AGENTS.md` entry of `references/harnesses/<name>.md` in the `/buddy-agent-harness:doctor-buddy-agent-harness` (pnpm install: `pnpm-buddy-agent-harness-doctor-buddy-agent-harness`) skill, under the same directory as the row's path, and once `~/.agents/AGENTS.md` exists, `doctor`'s `global-instructions-overridden` finding names it.
 - **A path starting with `./`** — whatever the status, the harness is reading an empty variable as the directory it starts in, so its user-scope file changes with each directory. Say that, and hand over unsetting the variable beside the text rather than any step for that file; once `~/.agents/AGENTS.md` exists, `doctor`'s `global-instructions-emptied` finding names the variable.
 - **No row** — say that this harness keeps no user-scope instruction file `doctor` can check, so whether it loads the global file is not something you can confirm.
 

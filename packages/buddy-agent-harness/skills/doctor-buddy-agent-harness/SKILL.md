@@ -17,7 +17,7 @@ Diagnose it:
 node scripts/doctor.mjs
 ```
 
-That path is relative to this skill's own directory: `scripts/doctor.mjs` is a self-contained bundle built from this package's source and shipped inside the skill folder through the npm package, so it runs against the current working directory with nothing downloaded and no `node_modules` needed. Fall back to `npx -y buddy-agent-harness@^0.21.0 doctor` when `scripts/doctor.mjs` is missing or cannot be run — the case for a skill installed from git rather than from the npm package, which does not carry the bundle.
+That path is relative to this skill's own directory: `scripts/doctor.mjs` is a self-contained bundle built from this package's source and shipped inside the skill folder through the npm package, so it runs against the current working directory with nothing downloaded and no `node_modules` needed. Fall back to `npx -y buddy-agent-harness@0.21.0 doctor` when `scripts/doctor.mjs` is missing or cannot be run — the case for a skill installed from git rather than from the npm package, which does not carry the bundle.
 
 The command is read-only. It never repairs anything, so it is safe to run at any point, including from a session-start hook.
 
@@ -38,7 +38,7 @@ The command is read-only. It never repairs anything, so it is safe to run at any
 
 Nothing in `help` is wrapped.
 
-Do not run an `init` command yourself. Rebuilding a skills bridge can move skills a user wrote, and rewriting an instruction file touches prose a person authored — both are the `init-buddy-agent-harness` skill's judgment, so hand the repair to `/buddy-agent-harness:init-buddy-agent-harness` instead. Every such repair carries an empty `command`: a skill invocation has no shell equivalent at all.
+Do not run an `init` command yourself. Rebuilding a skills bridge can move skills a user wrote, and rewriting an instruction file touches prose a person authored — both are the `init-buddy-agent-harness` skill's judgment, so hand the repair to `/buddy-agent-harness:init-buddy-agent-harness` (pnpm install: `pnpm-buddy-agent-harness-init-buddy-agent-harness`) instead. Every such repair carries an empty `command`: a skill invocation has no shell equivalent at all.
 
 When every bridge resolves, `findings` says so outright rather than being empty.
 

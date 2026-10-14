@@ -62,6 +62,30 @@ for (const doc of renderDoctorReferences(initHarnessReferences())) {
 	targets.push({ path: skillPath(doctorSkill.name, ...doc.path.split('/')), expected: doc.content })
 }
 
+// A skill may be linked or copied out of the package alone, so it cannot read a sibling skill's
+// references. Each page one skill reads from another is copied in whole; the copy is checked against
+// its source like any other generated file.
+const mirrors: { from: string[]; to: string[] }[] = [
+	{ from: [initSkillName, 'references', 'agents-md.md'], to: ['repair', 'references', 'agents-md.md'] },
+	{ from: [initSkillName, 'references', 'agents-md.md'], to: ['enhance', 'references', 'agents-md.md'] },
+	{ from: [initSkillName, 'references', 'detection.md'], to: ['enhance', 'references', 'detection.md'] },
+	{
+		from: [doctorSkill.name, 'references', 'global-instructions.md'],
+		to: ['enhance', 'references', 'global-instructions.md'],
+	},
+	...[...initHarnessReferences()].sort().map((name) => ({
+		from: [initSkillName, 'references', 'harnesses', `${name}.md`],
+		to: [doctorSkill.name, 'references', 'judgment', `${name}.md`],
+	})),
+]
+for (const { from, to } of mirrors) {
+	const generated = targets.find((target) => target.path === skillPath(from[0] as string, ...from.slice(1)))
+	targets.push({
+		path: skillPath(to[0] as string, ...to.slice(1)),
+		expected: generated?.expected ?? read(skillPath(from[0] as string, ...from.slice(1))),
+	})
+}
+
 // Every hand-written SKILL.md with an `npx` fallback: only the pin is regenerated, so edited prose
 // survives.
 targets.push(...handWrittenPinTargets(skillPath(''), version))

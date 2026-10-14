@@ -131,7 +131,7 @@ describe('doctor guidance', () => {
 	// the table above it does not list.
 	it('pins the npx fallback to the version that generated the skill', () => {
 		expect(renderDoctorSkill(version)).toContain(skillInvocation(version))
-		expect(skillInvocation('1.2.3')).toBe('npx -y buddy-agent-harness@^1.2.3')
+		expect(skillInvocation('1.2.3')).toBe('npx -y buddy-agent-harness@1.2.3')
 	})
 
 	// The build step that keeps them in step is `pnpm skill:gen:check`; this catches the drift
@@ -195,9 +195,10 @@ describe('hand-written skill pins', () => {
 	it('targets every shipped SKILL.md that names an npx invocation of this package, doctor excepted', () => {
 		const skillsRoot = join(packageRoot, 'skills')
 		const onDisk = readdirSync(skillsRoot, { withFileTypes: true })
-			.filter((entry) => entry.isDirectory() && entry.name !== doctorSkill.name)
-			.map((entry) => join(skillsRoot, entry.name, 'SKILL.md'))
+			.filter((entry) => entry.isDirectory())
+			.flatMap((entry) => ['SKILL.md', 'README.md'].map((file) => join(skillsRoot, entry.name, file)))
 			.filter((path) => existsSync(path) && readFileSync(path, 'utf8').includes(`npx -y ${commandInvocation}`))
+			.filter((path) => path !== join(skillsRoot, doctorSkill.name, 'SKILL.md'))
 
 		expect(onDisk.length).toBeGreaterThan(0)
 		expect(
@@ -225,7 +226,7 @@ describe('hand-written skill pins', () => {
 		expect(targets).toEqual([
 			{
 				path: join(skillsRoot, 'repair', 'SKILL.md'),
-				expected: 'Fall back to `npx -y buddy-agent-harness@^9.9.9 doctor`.\n',
+				expected: 'Fall back to `npx -y buddy-agent-harness@9.9.9 doctor`.\n',
 			},
 		])
 		// What `--check` reports as stale: the rewritten target's expected content differs from what

@@ -4,8 +4,8 @@
 
 | Finding | What it means | Repair |
 | --- | --- | --- |
-| `no-canonical` | the canonical skill directory does not exist, so no bridge can resolve | run `/buddy-agent-harness:init-buddy-agent-harness`, which creates `.agents/skills` and the bridges |
-| `missing` | no bridge at this path — the harness sees zero project skills | run `/buddy-agent-harness:init-buddy-agent-harness` |
+| `no-canonical` | the canonical skill directory does not exist, so no bridge can resolve | run `/buddy-agent-harness:init-buddy-agent-harness` (pnpm install: `pnpm-buddy-agent-harness-init-buddy-agent-harness`), which creates `.agents/skills` and the bridges |
+| `missing` | no bridge at this path — the harness sees zero project skills | run `/buddy-agent-harness:init-buddy-agent-harness` (pnpm install: `pnpm-buddy-agent-harness-init-buddy-agent-harness`) |
 | `degraded` | expected a directory but found a regular file — checkout without core.symlinks | run `/buddy-agent-harness:init-buddy-agent-harness --copy --force <path>` |
 | `stale` | symlink does not resolve to .agents/skills | run `/buddy-agent-harness:init-buddy-agent-harness --force <path>` |
 | `diverged-bridge` | only the bridge changed since the two last agreed — an agent wrote through the copy | replace .agents/skills with <path> to keep the newer edit, then run `/buddy-agent-harness:init-buddy-agent-harness --force <path>` |

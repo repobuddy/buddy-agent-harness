@@ -122,7 +122,7 @@ function repairsOf<Problem extends DoctorProblem>(table: Record<Problem, RepairR
 }
 
 export const commandInvocation = 'buddy-agent-harness'
-export const skillInvocation = (version: string) => `npx -y ${commandInvocation}@^${version}`
+export const skillInvocation = (version: string) => `npx -y ${commandInvocation}@${version}`
 
 /** Any `npx` invocation of this CLI, pinned or not, so a stale pin is rewritten rather than doubled. */
 export const anyNpxInvocation: RegExp = /npx -y buddy-agent-harness(@[^\s`]+)?/g
@@ -147,18 +147,19 @@ export function handWrittenPinTargets(skillsRoot: string, version: string): PinT
 
 	const targets: PinTarget[] = []
 	for (const skill of [...skillNames].sort()) {
-		if (skill === doctorSkill.name) continue
-		let content: string
-		try {
-			content = readFileSync(join(skillsRoot, skill, 'SKILL.md'), 'utf8')
-		} catch {
-			continue
+		for (const file of skill === doctorSkill.name ? ['README.md'] : ['SKILL.md', 'README.md']) {
+			let content: string
+			try {
+				content = readFileSync(join(skillsRoot, skill, file), 'utf8')
+			} catch {
+				continue
+			}
+			if (!content.includes(`npx -y ${commandInvocation}`)) continue
+			targets.push({
+				path: join(skillsRoot, skill, file),
+				expected: content.replaceAll(anyNpxInvocation, skillInvocation(version)),
+			})
 		}
-		if (!content.includes(`npx -y ${commandInvocation}`)) continue
-		targets.push({
-			path: join(skillsRoot, skill, 'SKILL.md'),
-			expected: content.replaceAll(anyNpxInvocation, skillInvocation(version)),
-		})
 	}
 	return targets
 }
@@ -182,6 +183,17 @@ export const initSkillName = 'init-buddy-agent-harness'
 
 export const initSkillInvocation: string = `/buddy-agent-harness:${initSkillName}`
 
+/**
+ * A skill reference as the CLI prints it and the generated skill carries it: pnpm links a skill as
+ * `pnpm-<package>-<skill>`, where the plugin form resolves to nothing. This is the form
+ * `universal-plugin plugin build` writes, so a build over generated text changes nothing.
+ */
+export const pnpmSkillRef = (invocation: string): string =>
+	`\`${invocation}\` (pnpm install: \`pnpm-${commandInvocation}-${invocation.slice(invocation.indexOf(':') + 1)}\`)`
+
+export const initSkillRef: string = pnpmSkillRef(initSkillInvocation)
+export const repairSkillRef: string = pnpmSkillRef(repairSkillInvocation)
+
 /** Where the user authors the golden MCP server set, named in every MCP repair that points at it. */
 const goldenSet = '.agents/buddy-agent-harness/mcp.toml'
 
@@ -192,7 +204,7 @@ const bridgeTable: Record<BridgeProblem, RepairRow> = {
 			command: `${cli} init`,
 			instruction: `run \`${cli} init\` to create .agents/skills and the bridges into it`,
 		}),
-		skillRepair: () => `run \`${initSkillInvocation}\`, which creates \`.agents/skills\` and the bridges`,
+		skillRepair: () => `run ${initSkillRef}, which creates \`.agents/skills\` and the bridges`,
 	},
 	missing: {
 		detail: 'no bridge at this path — the harness sees zero project skills',
@@ -200,7 +212,7 @@ const bridgeTable: Record<BridgeProblem, RepairRow> = {
 			command: `${cli} init`,
 			instruction: `run \`${cli} init\` to create the bridge at ${file}`,
 		}),
-		skillRepair: () => `run \`${initSkillInvocation}\``,
+		skillRepair: () => `run ${initSkillRef}`,
 	},
 	degraded: {
 		detail: 'expected a directory but found a regular file — checkout without core.symlinks',
@@ -276,51 +288,49 @@ const instructionTable: Record<InstructionProblem, RepairRow> = {
 		detail: 'no AGENTS.md at the repository root, so the instructions this repository has reach one harness at most',
 		repair: () => ({
 			command: '',
-			instruction: `hand this to \`${initSkillInvocation}\`, which consolidates what the repository has into AGENTS.md, or derives it`,
+			instruction: `hand this to ${initSkillRef}, which consolidates what the repository has into AGENTS.md, or derives it`,
 		}),
-		skillRepair: () => `run \`${initSkillInvocation}\`, which consolidates or derives AGENTS.md`,
+		skillRepair: () => `run ${initSkillRef}, which consolidates or derives AGENTS.md`,
 	},
 	'instructions-missing': {
 		detail: 'no instruction bridge at this path — the harness reads none of AGENTS.md',
 		repair: ({ file }) => ({
 			command: '',
-			instruction: `hand ${file} to \`${initSkillInvocation}\`, which writes the bridge into it`,
+			instruction: `hand ${file} to ${initSkillRef}, which writes the bridge into it`,
 		}),
-		skillRepair: () => `run \`${initSkillInvocation}\``,
+		skillRepair: () => `run ${initSkillRef}`,
 	},
 	'instructions-unbridged': {
 		detail: 'the file is present but names AGENTS.md nowhere — the harness reads none of it',
 		repair: ({ file }) => ({
 			command: '',
-			instruction: `hand ${file} to \`${initSkillInvocation}\`, which adds the bridge without discarding what the file already says`,
+			instruction: `hand ${file} to ${initSkillRef}, which adds the bridge without discarding what the file already says`,
 		}),
-		skillRepair: () =>
-			`run \`${initSkillInvocation}\`, which adds the bridge without discarding what the file already says`,
+		skillRepair: () => `run ${initSkillRef}, which adds the bridge without discarding what the file already says`,
 	},
 	'instructions-shadowing': {
 		detail: 'this file suppresses the AGENTS.md beside it — the harness reads this instead, and none of AGENTS.md',
 		repair: ({ file }) => ({
 			command: '',
-			instruction: `hand ${file} to \`${initSkillInvocation}\`, which consolidates what it says into AGENTS.md, or adds an @AGENTS.md import above it where the file has to stay`,
+			instruction: `hand ${file} to ${initSkillRef}, which consolidates what it says into AGENTS.md, or adds an @AGENTS.md import above it where the file has to stay`,
 		}),
-		skillRepair: () =>
-			`run \`${initSkillInvocation}\`, which consolidates the file into AGENTS.md or imports AGENTS.md from it`,
+		skillRepair: () => `run ${initSkillRef}, which consolidates the file into AGENTS.md or imports AGENTS.md from it`,
 	},
 	'instructions-superseded': {
 		detail: 'a bridge from before the harness read AGENTS.md itself — it still works, and nothing needs it',
 		repair: ({ file }) => ({
 			command: '',
-			instruction: `remove ${file}, or keep it for sessions that cannot read AGENTS.md directly — \`${initSkillInvocation}\` offers the choice`,
+			instruction: `remove ${file}, or keep it for sessions that cannot read AGENTS.md directly — ${initSkillRef} offers the choice`,
 		}),
-		skillRepair: () => `run \`${initSkillInvocation}\`, which offers to remove it`,
+		skillRepair: () => `run ${initSkillRef}, which offers to remove it`,
 	},
 	'instructions-unreadable': {
 		detail: 'the settings file does not parse, so the harness reads none of it',
 		repair: ({ file }) => ({
 			command: '',
-			instruction: `fix the JSON in ${file} by hand, then hand it to \`${initSkillInvocation}\``,
+			instruction: `fix the JSON in ${file} by hand, then hand it to ${initSkillRef}`,
 		}),
-		skillRepair: () => `fix the JSON by hand, then run \`${initSkillInvocation}\``,
+		skillRepair: () => `fix the JSON by hand, then run ${initSkillRef}`,
 	},
 }
 
@@ -406,33 +416,33 @@ const configurationTable: Record<ConfigurationFault, RepairRow> = {
 			'a projection under a harness name that has been superseded — the replacement reads .agents/skills natively and needs no projection at all',
 		repair: ({ file }) => ({
 			command: '',
-			instruction: `remove ${file} and enable the harness that replaced it — \`${repairSkillInvocation}\` offers the correction`,
+			instruction: `remove ${file} and enable the harness that replaced it — ${repairSkillRef} offers the correction`,
 		}),
-		skillRepair: () => `run \`${repairSkillInvocation}\``,
+		skillRepair: () => `run ${repairSkillRef}`,
 	},
 	'ignored-bridge': {
 		detail: 'a .gitignore rule matches this bridge — an untracked bridge swallows a real edit silently',
 		repair: ({ file }) => ({
 			command: '',
-			instruction: `narrow or remove the .gitignore rule matching ${file} — \`${repairSkillInvocation}\` offers the correction`,
+			instruction: `narrow or remove the .gitignore rule matching ${file} — ${repairSkillRef} offers the correction`,
 		}),
-		skillRepair: () => `run \`${repairSkillInvocation}\``,
+		skillRepair: () => `run ${repairSkillRef}`,
 	},
 	'unread-local-override': {
 		detail: 'no harness reads this filename, so everything in it is invisible to every agent',
 		repair: ({ file }) => ({
 			command: '',
-			instruction: `move ${file} to CLAUDE.local.md, or consolidate it into AGENTS.md — \`${repairSkillInvocation}\` offers the correction`,
+			instruction: `move ${file} to CLAUDE.local.md, or consolidate it into AGENTS.md — ${repairSkillRef} offers the correction`,
 		}),
-		skillRepair: () => `run \`${repairSkillInvocation}\``,
+		skillRepair: () => `run ${repairSkillRef}`,
 	},
 	'unloadable-skill': {
 		detail: 'frontmatter that does not parse, or no description — either one makes a harness skip the skill outright',
 		repair: ({ file }) => ({
 			command: '',
-			instruction: `quote the description in ${file}, or add one — \`${repairSkillInvocation}\` offers the correction`,
+			instruction: `quote the description in ${file}, or add one — ${repairSkillRef} offers the correction`,
 		}),
-		skillRepair: () => `run \`${repairSkillInvocation}\``,
+		skillRepair: () => `run ${repairSkillRef}`,
 	},
 }
 
@@ -460,37 +470,37 @@ const mcpTable: Record<McpProblem, RepairRow> = {
 		detail: 'the golden set declares this server and the harness config does not carry it',
 		repair: ({ file, server }) => ({
 			command: '',
-			instruction: `add the server ${server} to ${file}, or drop it from the golden set — \`${repairSkillInvocation}\` offers the correction`,
+			instruction: `add the server ${server} to ${file}, or drop it from the golden set — ${repairSkillRef} offers the correction`,
 		}),
 		skillRepair: (at) =>
-			`hand ${locatorText(at)} to \`${repairSkillInvocation}\`, which projects it from its golden entry with \`mcp project\` — or drop it from the golden set`,
+			`hand ${locatorText(at)} to ${repairSkillRef}, which projects it from its golden entry with \`mcp project\` — or drop it from the golden set`,
 	},
 	'mcp-undeclared': {
 		detail: 'the harness config carries this server and the golden set does not declare it',
 		repair: ({ file, server }) => ({
 			command: '',
-			instruction: `add the server ${server} to ${goldenSet}, or drop it from ${file} — \`${repairSkillInvocation}\` offers the import`,
+			instruction: `add the server ${server} to ${goldenSet}, or drop it from ${file} — ${repairSkillRef} offers the import`,
 		}),
 		skillRepair: (at) =>
-			`hand ${locatorText(at)} to \`${repairSkillInvocation}\`, which imports it field by field with \`mcp reconcile\`, refusing any literal credential — or drop it from ${at.file}`,
+			`hand ${locatorText(at)} to ${repairSkillRef}, which imports it field by field with \`mcp reconcile\`, refusing any literal credential — or drop it from ${at.file}`,
 	},
 	'mcp-diverged-target': {
 		detail: 'only the harness config changed since the two last agreed — the edit was made through the copy',
 		repair: (at) => ({
 			command: '',
-			instruction: `reconcile the value at ${locatorText(at)} back into ${goldenSet} — \`${repairSkillInvocation}\` offers the import`,
+			instruction: `reconcile the value at ${locatorText(at)} back into ${goldenSet} — ${repairSkillRef} offers the import`,
 		}),
 		skillRepair: (at) =>
-			`hand ${locatorText(at)} to \`${repairSkillInvocation}\`, which imports the field into ${goldenSet} with \`mcp reconcile\` once approved`,
+			`hand ${locatorText(at)} to ${repairSkillRef}, which imports the field into ${goldenSet} with \`mcp reconcile\` once approved`,
 	},
 	'mcp-diverged-golden': {
 		detail: 'only the golden set changed since the two last agreed — the harness copy is stale',
 		repair: (at) => ({
 			command: '',
-			instruction: `update ${locatorText(at)} from the golden entry — \`${repairSkillInvocation}\` offers the correction`,
+			instruction: `update ${locatorText(at)} from the golden entry — ${repairSkillRef} offers the correction`,
 		}),
 		skillRepair: (at) =>
-			`hand ${locatorText(at)} to \`${repairSkillInvocation}\`, which updates it from the golden entry with \`mcp project\``,
+			`hand ${locatorText(at)} to ${repairSkillRef}, which updates it from the golden entry with \`mcp project\``,
 	},
 	'mcp-diverged-both': {
 		detail: 'both sides changed since they last agreed — merging either way would discard the other',
@@ -536,34 +546,34 @@ const nonstandardTable: Record<NonstandardProblem, RepairRow> = {
 		detail: 'instruction content only one harness reads — AGENTS.md carries the same prose to all of them',
 		repair: ({ file }) => ({
 			command: '',
-			instruction: `consolidate ${file} into AGENTS.md — \`${initSkillInvocation}\` offers the consolidation, and keeps the content reachable where this harness needs it`,
+			instruction: `consolidate ${file} into AGENTS.md — ${initSkillRef} offers the consolidation, and keeps the content reachable where this harness needs it`,
 		}),
-		skillRepair: ({ file }) => `hand ${file} to \`${initSkillInvocation}\`, which consolidates it into AGENTS.md`,
+		skillRepair: ({ file }) => `hand ${file} to ${initSkillRef}, which consolidates it into AGENTS.md`,
 	},
 	'nonstandard-rule': {
 		detail: 'a path-scoped rule only one harness reads — a skill reaches every harness where the scoping is incidental',
 		repair: ({ file }) => ({
 			command: '',
-			instruction: `convert ${file} into a skill under .agents/skills where its guidance is not tied to the paths it names — \`${initSkillInvocation}\` offers the conversion; keep it where the path scoping is the point`,
+			instruction: `convert ${file} into a skill under .agents/skills where its guidance is not tied to the paths it names — ${initSkillRef} offers the conversion; keep it where the path scoping is the point`,
 		}),
 		skillRepair: ({ file }) =>
-			`hand ${file} to \`${initSkillInvocation}\` to convert into a skill, unless the path scoping is load-bearing`,
+			`hand ${file} to ${initSkillRef} to convert into a skill, unless the path scoping is load-bearing`,
 	},
 	'nonstandard-command': {
 		detail: 'a harness command file — a skill is the portable form, and this harness reads skills too',
 		repair: ({ file }) => ({
 			command: '',
-			instruction: `move ${file} to .agents/skills/<name>/SKILL.md — \`${initSkillInvocation}\` offers the move`,
+			instruction: `move ${file} to .agents/skills/<name>/SKILL.md — ${initSkillRef} offers the move`,
 		}),
-		skillRepair: ({ file }) => `hand ${file} to \`${initSkillInvocation}\`, which moves it to .agents/skills`,
+		skillRepair: ({ file }) => `hand ${file} to ${initSkillRef}, which moves it to .agents/skills`,
 	},
 	'nonstandard-skill': {
 		detail: 'a skill under a harness directory rather than the canonical one, where only that harness finds it',
 		repair: ({ file }) => ({
 			command: '',
-			instruction: `move ${file} to .agents/skills and project it back where the harness needs one — \`${initSkillInvocation}\` offers the move`,
+			instruction: `move ${file} to .agents/skills and project it back where the harness needs one — ${initSkillRef} offers the move`,
 		}),
-		skillRepair: ({ file }) => `hand ${file} to \`${initSkillInvocation}\`, which moves it to .agents/skills`,
+		skillRepair: ({ file }) => `hand ${file} to ${initSkillRef}, which moves it to .agents/skills`,
 	},
 	'nonstandard-subagent': {
 		detail:
@@ -671,7 +681,7 @@ The command is read-only. It never repairs anything, so it is safe to run at any
 
 Nothing in \`help\` is wrapped.
 
-Do not run an \`init\` command yourself. Rebuilding a skills bridge can move skills a user wrote, and rewriting an instruction file touches prose a person authored — both are the \`init-buddy-agent-harness\` skill's judgment, so hand the repair to \`${initSkillInvocation}\` instead. Every such repair carries an empty \`command\`: a skill invocation has no shell equivalent at all.
+Do not run an \`init\` command yourself. Rebuilding a skills bridge can move skills a user wrote, and rewriting an instruction file touches prose a person authored — both are the \`init-buddy-agent-harness\` skill's judgment, so hand the repair to ${initSkillRef} instead. Every such repair carries an empty \`command\`: a skill invocation has no shell equivalent at all.
 
 When every bridge resolves, \`findings\` says so outright rather than being empty.
 

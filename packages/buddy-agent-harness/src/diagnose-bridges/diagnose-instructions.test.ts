@@ -67,7 +67,7 @@ describe('the AGENTS.md shadow', () => {
 				repair: {
 					command: '',
 					instruction:
-						'hand CLAUDE.md to `/buddy-agent-harness:init-buddy-agent-harness`, which consolidates what it says into AGENTS.md, or adds an @AGENTS.md import above it where the file has to stay',
+						'hand CLAUDE.md to `/buddy-agent-harness:init-buddy-agent-harness` (pnpm install: `pnpm-buddy-agent-harness-init-buddy-agent-harness`), which consolidates what it says into AGENTS.md, or adds an @AGENTS.md import above it where the file has to stay',
 				},
 			},
 		])
@@ -88,7 +88,7 @@ describe('the AGENTS.md shadow', () => {
 				repair: {
 					command: '',
 					instruction:
-						'remove CLAUDE.md, or keep it for sessions that cannot read AGENTS.md directly — `/buddy-agent-harness:init-buddy-agent-harness` offers the choice',
+						'remove CLAUDE.md, or keep it for sessions that cannot read AGENTS.md directly — `/buddy-agent-harness:init-buddy-agent-harness` (pnpm install: `pnpm-buddy-agent-harness-init-buddy-agent-harness`) offers the choice',
 				},
 			},
 		])
@@ -182,7 +182,7 @@ describe('the AGENTS.md shadow', () => {
 				repair: {
 					command: '',
 					instruction:
-						'hand this to `/buddy-agent-harness:init-buddy-agent-harness`, which consolidates what the repository has into AGENTS.md, or derives it',
+						'hand this to `/buddy-agent-harness:init-buddy-agent-harness` (pnpm install: `pnpm-buddy-agent-harness-init-buddy-agent-harness`), which consolidates what the repository has into AGENTS.md, or derives it',
 				},
 			},
 		])
