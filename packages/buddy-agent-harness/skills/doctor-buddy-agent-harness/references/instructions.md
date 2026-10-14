@@ -6,12 +6,12 @@ Two shapes, one section. A **bridge** is what a harness needs before it can read
 
 | Finding | What it means | Repair |
 | --- | --- | --- |
-| `no-instructions` | no AGENTS.md at the repository root, so the instructions this repository has reach one harness at most | run `/buddy-agent-harness:init-buddy-agent-harness`, which consolidates or derives AGENTS.md |
-| `instructions-missing` | no instruction bridge at this path — the harness reads none of AGENTS.md | run `/buddy-agent-harness:init-buddy-agent-harness` |
-| `instructions-unbridged` | the file is present but names AGENTS.md nowhere — the harness reads none of it | run `/buddy-agent-harness:init-buddy-agent-harness`, which adds the bridge without discarding what the file already says |
-| `instructions-shadowing` | this file suppresses the AGENTS.md beside it — the harness reads this instead, and none of AGENTS.md | run `/buddy-agent-harness:init-buddy-agent-harness`, which consolidates the file into AGENTS.md or imports AGENTS.md from it |
-| `instructions-superseded` | a bridge from before the harness read AGENTS.md itself — it still works, and nothing needs it | run `/buddy-agent-harness:init-buddy-agent-harness`, which offers to remove it |
-| `instructions-unreadable` | the settings file does not parse, so the harness reads none of it | fix the JSON by hand, then run `/buddy-agent-harness:init-buddy-agent-harness` |
+| `no-instructions` | no AGENTS.md at the repository root, so the instructions this repository has reach one harness at most | run `/buddy-agent-harness:init-buddy-agent-harness` (pnpm install: `pnpm-buddy-agent-harness-init-buddy-agent-harness`), which consolidates or derives AGENTS.md |
+| `instructions-missing` | no instruction bridge at this path — the harness reads none of AGENTS.md | run `/buddy-agent-harness:init-buddy-agent-harness` (pnpm install: `pnpm-buddy-agent-harness-init-buddy-agent-harness`) |
+| `instructions-unbridged` | the file is present but names AGENTS.md nowhere — the harness reads none of it | run `/buddy-agent-harness:init-buddy-agent-harness` (pnpm install: `pnpm-buddy-agent-harness-init-buddy-agent-harness`), which adds the bridge without discarding what the file already says |
+| `instructions-shadowing` | this file suppresses the AGENTS.md beside it — the harness reads this instead, and none of AGENTS.md | run `/buddy-agent-harness:init-buddy-agent-harness` (pnpm install: `pnpm-buddy-agent-harness-init-buddy-agent-harness`), which consolidates the file into AGENTS.md or imports AGENTS.md from it |
+| `instructions-superseded` | a bridge from before the harness read AGENTS.md itself — it still works, and nothing needs it | run `/buddy-agent-harness:init-buddy-agent-harness` (pnpm install: `pnpm-buddy-agent-harness-init-buddy-agent-harness`), which offers to remove it |
+| `instructions-unreadable` | the settings file does not parse, so the harness reads none of it | fix the JSON by hand, then run `/buddy-agent-harness:init-buddy-agent-harness` (pnpm install: `pnpm-buddy-agent-harness-init-buddy-agent-harness`) |
 
 `unbridged` is the one to read carefully. The file is there and looks fine, and it names `AGENTS.md` nowhere — a `.gemini/settings.json` another tool rewrote without `AGENTS.md` in `context.fileName`. Never fix it by replacing the file: the content that displaced the bridge may be the only copy of something.
 

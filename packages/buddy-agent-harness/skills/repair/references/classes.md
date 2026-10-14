@@ -4,7 +4,7 @@ One row per fault `doctor` reports here, with the correction and where it stops.
 
 **This file carries no detection.** `doctor` decides what is wrong; you decide how to correct it. If you find yourself checking whether a fault is present, you are doing the command's job — run it instead.
 
-Every correction below is non-material: it would stop being true if this tool's output were removed. That is what makes it correctable at all. Where a finding's correction would change what the repository *means*, report it and stop; `../../init-buddy-agent-harness/references/agents-md.md` draws the line.
+Every correction below is non-material: it would stop being true if this tool's output were removed. That is what makes it correctable at all. Where a finding's correction would change what the repository *means*, report it and stop; `agents-md.md` draws the line.
 
 ## `deprecated-harness`
 
@@ -93,6 +93,6 @@ These are the two MCP findings where the harness side is plainly ahead: only the
 
 `doctor` reports far more than this file covers: skills bridges that no longer resolve, instruction bridges that were never completed, and MCP drift the golden set is not plainly ahead on. None of them has a section here, and that is what says they are not yours.
 
-**Who to hand one to is read off the repair `doctor` gave it, and the question is whether it names `init`.** It names it one of two ways — the `/buddy-agent-harness:init-buddy-agent-harness` skill, or a `buddy-agent-harness init` command line — and both mean the finding is `init`'s, which is what writes a bridge and what consolidates an instruction file in the first place. Hand it to the skill; never run the command. A repair naming `init` in **neither** form is work for a person: `doctor` states it in full, and passing it on is the whole of what you do with it. Every MCP finding without a section above is that second case, as is every bridge finding a rebuild would not fix.
+**Who to hand one to is read off the repair `doctor` gave it, and the question is whether it names `init`.** It names it one of two ways — the `/buddy-agent-harness:init-buddy-agent-harness` (pnpm install: `pnpm-buddy-agent-harness-init-buddy-agent-harness`) skill, or a `buddy-agent-harness init` command line — and both mean the finding is `init`'s, which is what writes a bridge and what consolidates an instruction file in the first place. Hand it to the skill; never run the command. A repair naming `init` in **neither** form is work for a person: `doctor` states it in full, and passing it on is the whole of what you do with it. Every MCP finding without a section above is that second case, as is every bridge finding a rebuild would not fix.
 
 Never infer an owner for a finding that names none. The wrong guess is always `init`, and on a two-sided divergence rebuilding is precisely what discards whichever side holds the newer edit.

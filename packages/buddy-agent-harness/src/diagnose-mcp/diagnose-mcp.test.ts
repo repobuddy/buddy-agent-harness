@@ -160,7 +160,7 @@ describe('diagnoseMcp', () => {
 
 			expect(finding?.path).toBe(`${cursor}#servers.io.github.foo`)
 			expect(finding?.repair.instruction).toBe(
-				`add the server io.github.foo to ${cursor}, or drop it from the golden set — \`/buddy-agent-harness:repair\` offers the correction`,
+				`add the server io.github.foo to ${cursor}, or drop it from the golden set — \`/buddy-agent-harness:repair\` (pnpm install: \`pnpm-buddy-agent-harness-repair\`) offers the correction`,
 			)
 		})
 
@@ -173,7 +173,7 @@ describe('diagnoseMcp', () => {
 
 			expect(finding?.path).toBe(`${cursor}#servers.io.github.foo`)
 			expect(finding?.repair.instruction).toBe(
-				`add the server io.github.foo to ${golden}, or drop it from ${cursor} — \`/buddy-agent-harness:repair\` offers the import`,
+				`add the server io.github.foo to ${golden}, or drop it from ${cursor} — \`/buddy-agent-harness:repair\` (pnpm install: \`pnpm-buddy-agent-harness-repair\`) offers the import`,
 			)
 		})
 	})

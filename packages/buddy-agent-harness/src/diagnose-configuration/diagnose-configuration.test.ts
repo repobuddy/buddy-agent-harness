@@ -214,7 +214,7 @@ describe('diagnoseConfiguration', () => {
 		const [finding] = diagnose(root)
 
 		expect(finding?.repair.instruction).toBe(
-			'move AGENTS.local.md to CLAUDE.local.md, or consolidate it into AGENTS.md — `/buddy-agent-harness:repair` offers the correction',
+			'move AGENTS.local.md to CLAUDE.local.md, or consolidate it into AGENTS.md — `/buddy-agent-harness:repair` (pnpm install: `pnpm-buddy-agent-harness-repair`) offers the correction',
 		)
 	})
 
