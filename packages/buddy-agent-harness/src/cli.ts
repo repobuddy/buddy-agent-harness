@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs'
-import { cli, exitCodes } from 'clibuilder'
+import { cli } from 'clibuilder'
+import { exitCodes } from 'clibuilder/axi'
 import { depPluginsCommand } from './dep-plugins/dep-plugins.command.ts'
 import { doctorCommand } from './diagnose-bridges/doctor.command.ts'
 import { governanceCommand } from './governance-overrides/governance.command.ts'
@@ -28,12 +29,29 @@ export const rootCommand: { name: string; description: string; commands: readonl
 
 // A factory, not a module-level constant: `cli()` builds state, and state built at import time
 // would be shared by every later call in the process.
-function app() {
+function app(format: 'toon' | 'text') {
 	const [first, ...rest] = rootCommand.commands
 	return rest.reduce(
 		(builder, command) => builder.command(command),
-		cli({ name: rootCommand.name, version, description: rootCommand.description }).command(first),
+		cli({ name: rootCommand.name, version, description: rootCommand.description, format }).command(first),
 	)
+}
+
+const textByDefault: Record<string, readonly string[]> = {
+	reference: ['show', 'create', 'delete'],
+	governance: ['show'],
+}
+
+/**
+ * `reference show|create|delete` and `governance show` answer in `text` unless `--format` says
+ * otherwise; every other command answers in `toon`. clibuilder has one global `--format` default,
+ * so it is chosen from the command the argv names.
+ */
+export function defaultFormat(argv: string[]): 'toon' | 'text' {
+	const args = argv.slice(2)
+	if (args.some((arg) => arg === '--format' || arg.startsWith('--format='))) return 'toon'
+	const [group, subcommand] = args
+	return group !== undefined && subcommand !== undefined && textByDefault[group]?.includes(subcommand) ? 'text' : 'toon'
 }
 
 /**
@@ -42,7 +60,7 @@ function app() {
  */
 export async function run(argv: string[]): Promise<number> {
 	try {
-		const code = await app().parse<number | undefined>(argv)
+		const code = await app(defaultFormat(argv)).parse<number | undefined>(argv)
 		return typeof code === 'number' ? code : exitCodes.success
 	} catch (error) {
 		// stderr, not stdout — stdout carries TOON an agent parses; an error there would land

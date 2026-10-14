@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { runCommandSync } from '../command-output/run-command.test-helper.ts'
 import { mcpProjectCommand } from './mcp.command.ts'
 import { type ProjectionPlan, projectMcp } from './project-mcp.ts'
 
@@ -8,8 +9,15 @@ const mockedProjectMcp = vi.mocked(projectMcp)
 const stderr = vi.spyOn(process.stderr, 'write').mockImplementation(() => true)
 const stdout = vi.spyOn(process.stdout, 'write').mockImplementation(() => true)
 
-function run(args: { format?: string; write?: boolean; root?: string }): number {
-	return (mcpProjectCommand as { run(value: typeof args): number }).run(args)
+function run({
+	format = 'json',
+	...args
+}: {
+	format?: 'json' | 'toon' | 'text'
+	write?: boolean
+	root?: string
+}): number {
+	return runCommandSync(mcpProjectCommand, args, format)
 }
 
 const stdoutText = () => stdout.mock.calls.map(([value]) => String(value)).join('')

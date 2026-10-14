@@ -1,6 +1,7 @@
-import { createOutput, formatOption } from '@clibuilder/axi'
 import type { cli } from 'clibuilder'
-import { command, exitCodes, z } from 'clibuilder'
+import { command, t } from 'clibuilder'
+import { CliError, exitCodes, result } from 'clibuilder/axi'
+import { fail } from '../command-output/command-output.ts'
 import { GitBridgeState } from '../diagnose-bridges/git-bridge-state.ts'
 import { projectionRecordPath } from '../diagnose-mcp/mcp-baseline.ts'
 import { goldenSetPath } from '../diagnose-mcp/mcp-sources.ts'
@@ -24,17 +25,15 @@ export const mcpProjectCommand: cli.Command = command({
 	options: {
 		root: {
 			description: 'Repository or package directory. Defaults to the current directory.',
-			type: z.optional(z.string()),
+			type: t.string().optional(),
 		},
 		write: {
 			description: 'Apply the plan and record what was projected. Without it nothing on disk changes.',
-			type: z.optional(z.boolean()),
+			type: t.boolean().optional(),
 		},
-		format: formatOption,
 	},
 	run(args) {
 		try {
-			const output = createOutput(args.format)
 			const root = args.root ?? process.cwd()
 			const write = args.write === true
 			const plan = projectMcp({ root, git: new GitBridgeState(root), write })
@@ -42,16 +41,15 @@ export const mcpProjectCommand: cli.Command = command({
 				// Position only: the parser's message quotes the line, and that line may hold a credential.
 				const at = plan.position ? ` at line ${plan.position.line}, column ${plan.position.column}` : ''
 				process.stderr.write(`error: ${goldenSetPath} does not parse${at}.\n`)
-				return exitCodes.error
+				throw CliError.reported(exitCodes.error)
 			}
 			if (plan.kind === 'absent') {
-				output.result({
+				return result({
 					golden: `0 servers — no golden set at ${goldenSetPath}`,
 					mode: 'nothing to project',
 					actions: '0 changes',
 					record: 'not written',
 				} satisfies ProjectionReport)
-				return exitCodes.success
 			}
 			const report: ProjectionReport = {
 				golden: goldenSetPath,
@@ -60,11 +58,9 @@ export const mcpProjectCommand: cli.Command = command({
 				...(plan.entries.length ? { entries: plan.entries } : {}),
 				record: write ? projectionRecordPath : 'not written — dry run',
 			}
-			output.result(report)
-			return exitCodes.success
+			return result(report)
 		} catch (error) {
-			process.stderr.write(`error: ${error instanceof Error ? error.message : 'MCP projection failed.'}\n`)
-			return exitCodes.error
+			return fail(error, 'MCP projection failed.')
 		}
 	},
 })

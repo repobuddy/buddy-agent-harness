@@ -1,9 +1,10 @@
 import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
 import { homedir, tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { encodeResult, renderText } from '@clibuilder/axi'
+import { encode, type Format } from 'clibuilder/axi'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { collapseHome, displayBinPath } from '../command-output/command-output.ts'
+import { runCommand } from '../command-output/run-command.test-helper.ts'
 import { type DiagnoseResult, diagnoseBridges } from './diagnose-bridges.ts'
 import { buildDoctorReport, doctorCommand } from './doctor.command.ts'
 
@@ -13,8 +14,8 @@ const mockedDiagnoseBridges = vi.mocked(diagnoseBridges)
 const stderr = vi.spyOn(process.stderr, 'write').mockImplementation(() => true)
 const stdout = vi.spyOn(process.stdout, 'write').mockImplementation(() => true)
 
-function run(args: { format?: string; harness?: string; root?: string }): Promise<number> {
-	return (doctorCommand as { run(value: typeof args): Promise<number> }).run(args)
+function run({ format = 'json', ...args }: { format?: Format; harness?: string; root?: string }): Promise<number> {
+	return runCommand(doctorCommand, args, format)
 }
 
 const healthy: DiagnoseResult = {
@@ -316,7 +317,7 @@ describe('buildDoctorReport', () => {
 	// The person's view of the same two-field repair: an aligned table, and a judgment repair simply
 	// leaves the command column blank rather than saying anything untrue in it.
 	it('renders help as a two-column table for a person, blank where there is no command', async () => {
-		const text = renderText(
+		const text = encode(
 			buildDoctorReport('~/bin/bah', {
 				bridges: [],
 				instructions: [],
@@ -337,6 +338,7 @@ describe('buildDoctorReport', () => {
 					},
 				],
 			}),
+			'text',
 		)
 
 		expect(text).toContain('  command   instruction')
@@ -363,7 +365,7 @@ describe('buildDoctorReport', () => {
 		})
 
 		expect(report.help).toEqual([{ command: '', instruction: 'move AGENTS.local.md to CLAUDE.local.md' }])
-		expect(encodeResult(report, 'toon')).toContain('help[1]{command,instruction}:')
+		expect(encode(report, 'toon')).toContain('help[1]{command,instruction}:')
 	})
 
 	it('adds a divergence section only when a bridge has diverged', async () => {

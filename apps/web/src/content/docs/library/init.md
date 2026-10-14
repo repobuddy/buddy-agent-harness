@@ -83,7 +83,7 @@ Where a link fails and nothing occupies the target, the directory is copied inst
 const initCommand: cli.Command
 ```
 
-The [`init`](/cli/init/) command as a `clibuilder` command object. Its `run` calls `initializeHarnesses` with the parsed options and writes the result in the requested format. It returns `0` on success and `1` on failure, writing the failure to stderr.
+The [`init`](/cli/init/) command as a `clibuilder` command object. Its `run` calls `initializeHarnesses` with the parsed options and returns the result, which `clibuilder` prints in the requested format. It exits `0` on success and `1` on failure, writing the failure to stderr.
 
 ## harnessCommand
 

@@ -3,7 +3,7 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { cli } from 'clibuilder'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { run } from './cli.ts'
+import { defaultFormat, run } from './cli.ts'
 import { buildDoctorReport, doctorCommand } from './diagnose-bridges/doctor.command.ts'
 import { governanceCommand } from './governance-overrides/governance.command.ts'
 import * as publicApi from './index.ts'
@@ -122,6 +122,32 @@ describe('run', () => {
 		expect(code).not.toContain('process.exitCode')
 	})
 
+	it.each([
+		['reference', 'show'],
+		['reference', 'create'],
+		['reference', 'delete'],
+		['governance', 'show'],
+	])('answers `%s %s` in text unless --format says otherwise', async (group, subcommand) => {
+		stubApp(vi.fn(async () => undefined))
+
+		await run(['node', 'buddy-agent-harness', group, subcommand])
+		expect(mockedCli).toHaveBeenLastCalledWith(expect.objectContaining({ format: 'text' }))
+
+		await run(['node', 'buddy-agent-harness', group, subcommand, '--format', 'json'])
+		expect(mockedCli).toHaveBeenLastCalledWith(expect.objectContaining({ format: 'toon' }))
+	})
+
+	it('answers every other command in TOON', async () => {
+		stubApp(vi.fn(async () => undefined))
+
+		await run(['node', 'buddy-agent-harness', 'doctor'])
+		expect(mockedCli).toHaveBeenLastCalledWith(expect.objectContaining({ format: 'toon' }))
+		await run(['node', 'buddy-agent-harness', 'reference', 'list'])
+		expect(mockedCli).toHaveBeenLastCalledWith(expect.objectContaining({ format: 'toon' }))
+		await run(['node', 'buddy-agent-harness'])
+		expect(mockedCli).toHaveBeenLastCalledWith(expect.objectContaining({ format: 'toon' }))
+	})
+
 	it('reports the version the package manifest carries', async () => {
 		stubApp(vi.fn(async () => undefined))
 
@@ -149,6 +175,12 @@ describe('run', () => {
 			delete (globalThis as Record<string, unknown>)['__PACKAGE_VERSION__']
 			vi.resetModules()
 		}
+	})
+})
+
+describe('defaultFormat', () => {
+	it('reads --format given as `--format=json` as already chosen', () => {
+		expect(defaultFormat(['node', 'bah', 'reference', 'show', '--format=json'])).toBe('toon')
 	})
 })
 

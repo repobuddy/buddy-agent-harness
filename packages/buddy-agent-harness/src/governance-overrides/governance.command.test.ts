@@ -3,6 +3,7 @@ import { homedir, tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { collapseHome } from '../command-output/command-output.ts'
+import { runCommandSync } from '../command-output/run-command.test-helper.ts'
 import {
 	DEPRECATED_MANAGED,
 	GOVERNANCE_DEPRECATED,
@@ -37,18 +38,15 @@ vi.mock('./governance-overrides.ts', async (importOriginal) => {
 const stdout = vi.spyOn(process.stdout, 'write').mockImplementation(() => true)
 const stderr = vi.spyOn(process.stderr, 'write').mockImplementation(() => true)
 
-type Args = { root?: string; format?: string; 'overrides-only'?: boolean }
+type Args = { root?: string; 'overrides-only'?: boolean }
 
 function list(args: Args): number {
-	return (governanceListCommand as unknown as { run(value: Args): number }).run({ format: 'json', ...args })
+	return runCommandSync(governanceListCommand, args, 'json')
 }
 
-function show(name: string, args: Args = {}): number {
-	return (governanceShowCommand as unknown as { run(value: Args & { name: string }): number }).run({
-		format: 'text',
-		name,
-		...args,
-	})
+function show(name: string, args: Args & { format?: 'json' | 'toon' | 'text' } = {}): number {
+	const { format = 'text', ...rest } = args
+	return runCommandSync(governanceShowCommand, { name, ...rest }, format)
 }
 
 /** Everything the last run put on stdout. */
@@ -149,10 +147,8 @@ describe('governance list', () => {
 
 	// The default an invocation actually gets is the one the option declares; a direct call to `run`
 	// never passes through the parser that applies it.
-	it('defaults to TOON, the format the agent reading it parses', () => {
-		expect((governanceListCommand.options as unknown as { format: { default: string } }).format.default).toBe('toon')
-
-		expect(list({ root: repository(), format: 'toon' })).toBe(0)
+	it('answers in TOON, the format the agent reading it parses, when asked for it', () => {
+		expect(runCommandSync(governanceListCommand, { root: repository() }, 'toon')).toBe(0)
 		expect(written()).toContain('layers')
 	})
 
@@ -184,10 +180,6 @@ describe('governance list', () => {
 })
 
 describe('governance show', () => {
-	it('defaults to the document itself rather than to a wire format', () => {
-		expect((governanceShowCommand.options as unknown as { format: { default: string } }).format.default).toBe('text')
-	})
-
 	it('writes the document itself, and nothing else, by default', () => {
 		const root = repository({ 'agent-tool-output': '# Agent tool output\n\nState the zero.\n' })
 

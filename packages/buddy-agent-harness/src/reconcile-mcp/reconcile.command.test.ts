@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { runCommandSync } from '../command-output/run-command.test-helper.ts'
 import { mcpReconcileCommand } from './reconcile.command.ts'
 import { reconcileMcp } from './reconcile-mcp.ts'
 
@@ -8,8 +9,15 @@ const mockedReconcileMcp = vi.mocked(reconcileMcp)
 const stderr = vi.spyOn(process.stderr, 'write').mockImplementation(() => true)
 const stdout = vi.spyOn(process.stdout, 'write').mockImplementation(() => true)
 
-function run(args: { format?: string; accept?: string[]; root?: string }): number {
-	return (mcpReconcileCommand as { run(value: typeof args): number }).run(args)
+function run({
+	format = 'json',
+	...args
+}: {
+	format?: 'json' | 'toon' | 'text'
+	accept?: string[]
+	root?: string
+}): number {
+	return runCommandSync(mcpReconcileCommand, args, format)
 }
 
 const report = () => JSON.parse(stdout.mock.calls.map(([value]) => String(value)).join(''))

@@ -35,6 +35,7 @@
 		"dist",
 		"src",
 		"!**/*.{test,spec}.ts",
+		"!**/*.test-helper.ts",
 		"skills",
 		"plugin.json",
 		"llms.txt",
@@ -60,9 +61,8 @@
 		"node": ">=22"
 	},
 	"dependencies": {
-		"@clibuilder/axi": "^0.2.0",
-		"@cyberuni/agent-harness": "^0.6.0",
-		"clibuilder": "^11.3.0",
+		"@cyberuni/agent-harness": "^0.7.0",
+		"clibuilder": "^12.0.0",
 		"jsonc-parser": "^3.3.1",
 		"smol-toml": "^1.8.0",
 		"toml-eslint-parser": "^1.0.3",

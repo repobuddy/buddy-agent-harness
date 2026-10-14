@@ -91,7 +91,7 @@ No option, argument, or flag is added, removed, or renamed. Every existing invoc
 - **The command reports a failure.** It returns a non-zero code rather than writing one, so the code reaches the caller through the return.
 - **The command found problems.** Exit code stays `0`: the diagnosis succeeded. A non-zero code reads to an agent as "this command is broken, try something else".
 - **`--version` or `--help`.** Answered by the application; exit code `0`. Asking for help is not a usage error.
-- **The invocation itself is wrong.** `clibuilder` answers an unknown option or unknown command by printing help and returning the usage code, which `run` returns like any other. `bin` and the launchers apply the returned code unconditionally.
+- **The invocation itself is wrong.** `clibuilder` answers an unknown option or unknown command with a coded usage report on stdout and the usage code, which `run` returns like any other. `bin` and the launchers apply the returned code unconditionally.
 - **The report is fetched as a value rather than printed.** The builder returns it unchanged — the same union in `findings`, the same sections absent rather than empty. Passing through the export is not an opportunity to normalize it.
 
 ## Control Flow
