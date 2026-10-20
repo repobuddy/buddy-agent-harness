@@ -14,7 +14,7 @@ This skill is narrow on purpose — one section, one backlog, one scoring key. G
 ## When to run it
 
 - Any edit to the shipped section, including a "small" one.
-- Adding a second addition to `enhance` that gives an agent instructions about its own work.
+- Adding another section to `enhance` that gives an agent instructions about its own work.
 - A report that the section is being misread in practice. A misread is a failing case; add it to the backlog first.
 
 ## Run it
