@@ -193,9 +193,7 @@ describe('initializeHarnesses', () => {
 		expect(existsSync(join(root, '.agents', 'governances'))).toBe(false)
 
 		writeFileSync(join(root, '.agents', 'references', 'testing.md'), '# Testing')
-		mkdirSync(join(root, '.agents', 'governances'))
-		writeFileSync(join(root, '.agents', 'governances', 'agent-tool-output.md'), '# Rules')
-		writeFileSync(join(root, '.agents', 'governances', 'testing.md'), '# Testing')
+		writeFileSync(join(root, '.agents', 'references', 'agent-tool-output.md'), '# Rules')
 
 		expect(initializeHarnesses({ root }).references).toBe(2)
 	})

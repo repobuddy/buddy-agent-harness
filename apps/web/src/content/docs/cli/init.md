@@ -21,7 +21,7 @@ The CLI performs the linking step only. Consolidating existing configuration and
 
 ## Output
 
-The result reports the selected root, the canonical skill count, the count of [references](/agent-configuration/references/) the project tier holds (`<root>/.agents/references/`, created when absent, and the legacy `<root>/.agents/governances/`), whether copying was requested, and three harness lists:
+The result reports the selected root, the canonical skill count, the count of [references](/agent-configuration/references/) the project tier holds (`<root>/.agents/references/`, created when absent), whether copying was requested, and three harness lists:
 
 | Field | Meaning |
 | --- | --- |

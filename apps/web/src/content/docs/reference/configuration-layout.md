@@ -18,8 +18,6 @@ repository/
     │   └── <skill>/SKILL.md  # reusable capabilities
     ├── references/
     │   └── <name>.md         # on-demand reference documents
-    ├── governances/
-    │   └── <name>.md         # legacy references, still read
     └── <tool-setting>        # separately named tool configuration
 ```
 
@@ -27,7 +25,7 @@ Each immediate directory under `.agents/skills/` is a canonical skill. Files at 
 
 `.agents/references/` is the project tier of [references](/agent-configuration/references/): documents an agent reads by name with [`reference show`](/cli/reference/). `init` creates the directory when it is absent, and [`reference list`](/cli/reference/) and [`doctor`](/cli/doctor/) both report what is in it. In a monorepo, a package can hold its own `.agents/references/`; it is read before the one at the repository root.
 
-`.agents/governances/` is where the older [`governance`](/cli/governance/) command read project overrides. `init` no longer creates it. `reference` still reads it, one layer below `.agents/references/`, so documents already there keep resolving.
+`.agents/governances/` is where the older [`governance`](/cli/governance/) command read project overrides. `init` no longer creates it. `reference` no longer reads it, so move documents there to `.agents/references/`.
 
 Tool settings stay in separately named files rather than being merged into one, because each setting has its own schema and compatibility rules.
 

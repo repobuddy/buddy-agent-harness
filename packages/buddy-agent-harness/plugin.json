@@ -13,7 +13,7 @@
 	"extensions": {
 		"org.cyberuni.universal-plugin": {
 			"skills": "./skills/",
-			"dependencies": ["cyber-agent-harness"],
+			"dependencies": ["cyber-agentkit"],
 			"harnesses": {
 				"claude-code": {},
 				"cursor": {

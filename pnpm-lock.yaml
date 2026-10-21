@@ -206,12 +206,12 @@ importers:
 
   packages/buddy-agent-harness:
     dependencies:
-      '@cyberuni/agent-harness':
-        specifier: ^0.7.0
-        version: 0.7.0(clibuilder@12.0.0(js-yaml@4.3.2))
       clibuilder:
         specifier: ^12.0.0
         version: 12.0.0(js-yaml@4.3.2)
+      cyber-agentkit:
+        specifier: ^1.0.0
+        version: 1.0.0(clibuilder@12.0.0(js-yaml@4.3.2))
       jsonc-parser:
         specifier: ^3.3.1
         version: 3.3.1
@@ -590,16 +590,6 @@ packages:
 
   '@cucumber/messages@34.2.1':
     resolution: {integrity: sha512-aj2iCAG9ZOpMVcMxcgShifv5fbR96b7SMgdWcPXXh2QbFp7OEcAnQ5MC5YfWUDSDasmw7FU5NJEsOrXdTQOU1A==}
-
-  '@cyberuni/agent-harness@0.7.0':
-    resolution: {integrity: sha512-d3I2Z2sg3JeRcOM6LGO2oPA7dGGxAeRzjEihx8SDkAWzXjOLtMf3umApsu7iej5FxsHkXJpiag7+UubbJdDHsA==}
-    engines: {node: '>=22'}
-    hasBin: true
-    peerDependencies:
-      clibuilder: ^12.0.0
-    peerDependenciesMeta:
-      clibuilder:
-        optional: true
 
   '@emnapi/core@1.11.1':
     resolution: {integrity: sha512-RSvbQmHzdKzNsLYa/wHrbc3KN4sYLKAdPZxqiM2HATqv/SBk2/ENSHpvXGaLOMcsAyz0poEGqkmmKYG3OWiJEQ==}
@@ -1854,6 +1844,16 @@ packages:
   csso@5.0.5:
     resolution: {integrity: sha512-0LrrStPOdJj+SPCCrGhzryycLjwcgUSHBtxNA8aIDxf0GLsRh1cKYhB00Gd1lDOS4yGH69+SNn13+TWbVHETFQ==}
     engines: {node: ^10 || ^12.20.0 || ^14.13.0 || >=15.0.0, npm: '>=7.0.0'}
+
+  cyber-agentkit@1.0.0:
+    resolution: {integrity: sha512-95fpujPJiR4hvt6klML0tEUwrlmHZ4s4XDaSZHnmyyGsZgWiHARpfr+RSWX2oiVwQtJRbELRsuIL0k/z51kWjw==}
+    engines: {node: '>=22'}
+    hasBin: true
+    peerDependencies:
+      clibuilder: ^12.0.0
+    peerDependenciesMeta:
+      clibuilder:
+        optional: true
 
   cyber-sdd@0.6.1:
     resolution: {integrity: sha512-81PiEhP+IcljdCzGU9eP9WOdIaDPtZKq7vAJll1CtDPKWs62/JYUfb0lzyXY9umDpy0cPJ3KWh05zBBu1XHXoQ==}
@@ -3601,10 +3601,6 @@ snapshots:
 
   '@cucumber/messages@34.2.1': {}
 
-  '@cyberuni/agent-harness@0.7.0(clibuilder@12.0.0(js-yaml@4.3.2))':
-    optionalDependencies:
-      clibuilder: 12.0.0(js-yaml@4.3.2)
-
   '@emnapi/core@1.11.1':
     dependencies:
       '@emnapi/wasi-threads': 1.2.2
@@ -4584,6 +4580,10 @@ snapshots:
   csso@5.0.5:
     dependencies:
       css-tree: 2.2.1
+
+  cyber-agentkit@1.0.0(clibuilder@12.0.0(js-yaml@4.3.2)):
+    optionalDependencies:
+      clibuilder: 12.0.0(js-yaml@4.3.2)
 
   cyber-sdd@0.6.1:
     dependencies:

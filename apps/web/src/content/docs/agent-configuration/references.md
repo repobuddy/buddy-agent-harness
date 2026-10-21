@@ -25,7 +25,7 @@ A reference pays nothing up front. The price is that nothing loads it by itself:
 - **The agent should decide, from the task, that it needs this.** Make it a skill. Its description is the trigger.
 - **Something else already knows it is needed.** Make it a reference, and name it there: `Read the testing reference before writing tests`, or a skill step that loads `release-checklist`.
 
-A skill loads a reference through the [`reference` skill](https://github.com/cyberuni/agent-harness/tree/main/packages/agent-harness/skills/reference) in the `cyber-agent-harness` plugin, with one line naming it and the plugin it comes from. To write, update, or find one yourself, run the same skill.
+A skill loads a reference through the [`reference` skill](https://github.com/cyber-uni/cyber-agentkit/tree/main/packages/cyber-agentkit/skills/reference) in the `cyber-agentkit` plugin, with one line naming it and the plugin it comes from. To write, update, or find one yourself, run the same skill.
 
 A governance, the bar a skill holds its own output to, is the second case. The skill knows which bar it needs, so the bar does not need a description in every session.
 
@@ -35,14 +35,14 @@ References resolve through tiers, highest precedence first:
 
 | Tier | Where |
 | --- | --- |
-| `managed` | the machine-wide folder, and a folder beside the managed settings of the harness you run, for a machine owner |
+| `managed` | a folder beside the managed settings of the harness you run, for a machine owner |
 | `project` | `.agents/references/`, committed with the repository |
 | `user` | `~/.agents/references/` |
 | `plugin` | a `references/` folder shipped by this package, by a plugin your harness has enabled, or by a declared dependency |
 
 In a monorepo, the project tier is read in the folder you work in and each folder above it up to the repository root, nearest first, so a package can override a reference the whole repository shares. The [CLI page](/cli/reference/#tiers) has the details.
 
-Documents written for the older [`governance`](/cli/governance/) command, in `governances/` folders, are still read, one layer below `references/` in the same tier.
+Documents written for the older [`governance`](/cli/governance/) command, in `governances/` folders, are no longer read. Move them to the `references/` folder of the same tier.
 
 ## Naming a reference a plugin ships
 

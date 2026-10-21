@@ -144,13 +144,11 @@ describe('the references section', () => {
 		expect(typeof report().findings).toBe('string')
 	})
 
-	it('gives each row the status reference list gives, legacy governances folders included', async () => {
+	it('gives each row the status reference list gives', async () => {
 		const root = mkdtempSync(join(tmpdir(), 'doctor-references-'))
 		mkdirSync(join(root, '.agents', 'references'), { recursive: true })
-		mkdirSync(join(root, '.agents', 'governances'), { recursive: true })
 		writeFileSync(join(root, '.agents', 'references', 'testing.md'), '# Testing')
-		writeFileSync(join(root, '.agents', 'governances', 'testing.md'), '# Old testing')
-		writeFileSync(join(root, '.agents', 'governances', 'agent-tool-output.md'), '# Rules')
+		writeFileSync(join(root, '.agents', 'references', 'agent-tool-output.md'), '# Rules')
 
 		await run({ format: 'json', root })
 
@@ -159,7 +157,6 @@ describe('the references section', () => {
 		expect(project.map(({ name, status }) => ({ name, status }))).toEqual([
 			{ name: 'agent-tool-output', status: 'used' },
 			{ name: 'testing', status: 'used' },
-			{ name: 'testing', status: 'shadowed by project (first-wins)' },
 		])
 	})
 

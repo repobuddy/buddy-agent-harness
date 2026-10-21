@@ -229,9 +229,9 @@ Where the bridge is a symlink, the file it replaces may hold content of its own.
 
 ## References
 
-`doctor` also reports the [references](/agent-configuration/references/) the managed, project, and user tiers hold: one row per name per layer, `{ name, tier, path, status }`. `status` is the one [`reference list`](/cli/reference/#reference-list) gives, such as `used` or `shadowed by project (first-wins)`. The legacy `governances/` folders are included, since `reference` still reads them. What a plugin ships is left out; that is the plugin's own business. The section is never a finding: a reference is a choice someone made, not a fault, and it never changes `doctor`'s exit code.
+`doctor` also reports the [references](/agent-configuration/references/) the managed, project, and user tiers hold: one row per name per layer, `{ name, tier, path, status }`. `status` is the one [`reference list`](/cli/reference/#reference-list) gives, such as `used` or `shadowed by project (first-wins)`. What a plugin ships is left out; that is the plugin's own business. The section is never a finding: a reference is a choice someone made, not a fault, and it never changes `doctor`'s exit code.
 
-When no layer holds a reference, the section is the sentence `0 references — no layer outside the plugin tier holds one` rather than an empty list, the same "state the zero" convention the rest of this report follows. The path is on the row because the tier does not settle it: a tier can hold a `references/` folder and a legacy `governances/` folder, and the managed tier also reads the folder `universal-plugin` wrote. The home directory is collapsed to `~`, as in `bin`.
+When no layer holds a reference, the section is the sentence `0 references — no layer outside the plugin tier holds one` rather than an empty list, the same "state the zero" convention the rest of this report follows. The path is on the row because the tier does not settle it: the managed tier holds a `references/` folder beside each detected harness's managed files. The home directory is collapsed to `~`, as in `bin`.
 
 ## Divergence
 

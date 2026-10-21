@@ -16,7 +16,7 @@ A **reference** is a Markdown document an agent reads on demand. [References and
 
 `--root` is the directory the project tier is read from, walking up to the repository root. It defaults to the current directory.
 
-A skill does not run this command itself. It names the [`reference` skill](https://github.com/cyberuni/agent-harness/tree/main/packages/agent-harness/skills/reference) in the `cyber-agent-harness` plugin, which runs `show` from a launcher bundled in its own folder.
+A skill does not run this command itself. It names the [`reference` skill](https://github.com/cyber-uni/cyber-agentkit/tree/main/packages/cyber-agentkit/skills/reference) in the `cyber-agentkit` plugin, which runs `show` from a launcher bundled in its own folder.
 
 ## Tiers
 
@@ -24,20 +24,14 @@ A name resolves through these tiers, highest precedence first. Each tier holds o
 
 | Tier | Layers, in order |
 | --- | --- |
-| `managed` | the machine-wide `references/`, then a `references/` beside each detected harness's managed files, then the machine-wide `governances/`, then the folder `universal-plugin` wrote |
-| `project` | `<dir>/.agents/references/`, then `<dir>/.agents/governances/`, for each folder of the walk, nearest first |
-| `user` | `~/.agents/references/`, then `~/.agents/governances/` |
+| `managed` | a `references/` beside each detected harness's managed files |
+| `project` | `<dir>/.agents/references/` for each folder of the walk, nearest first |
+| `user` | `~/.agents/references/` |
 | `plugin` | this package's `references/` as the plugin `buddy-agent-harness`, the `references/` folder of each plugin the detected harness has enabled, and the `references/` folder of each dependency in the nearest `package.json` |
-
-The machine-wide folders:
-
-| | Linux | macOS | Windows |
-| --- | --- | --- | --- |
-| `references/` | `/etc/buddy-agent-harness/references` | `/Library/Application Support/BuddyAgentHarness/references` | `%ProgramData%\BuddyAgentHarness\references` |
 
 **Harness-managed folders.** The command detects the harness it runs under from its environment, and reads a `references/` folder beside the managed policy files that harness keeps on disk: `/etc/claude-code/references` for Claude Code on Linux, `/etc/codex/references` for Codex. A drop-in folder such as `managed-settings.d` is part of the folder above it, not a folder of its own. No harness documents a managed references folder; the name is this package's own. Policy a harness keeps in MDM, the Windows registry, or its vendor's servers cannot be read locally. It is listed as a layer marked `not read`, with the reason, so `--trace` and `list` show what was skipped. With no harness detected, one `not read` layer says so. Nested harnesses, where one was started from the other's shell, are each read.
 
-The `governances/` folders are the ones [`governance`](/cli/governance/) reads, kept so existing documents keep resolving. `list` marks each of them as legacy.
+The `governances/` folders are no longer read. Move a document there to the `references/` folder of the same tier.
 
 **The walk.** The project tier is read at `--root` and at each folder above it, up to and including the repository root: the first folder holding `.git`, `pnpm-workspace.yaml`, or a `package.json` with `workspaces`. In a monorepo, a package's own `.agents/references/` answers before the one at the repository root. With no repository root above `--root`, only `--root` is read.
 
@@ -217,3 +211,7 @@ buddy-agent-harness reference delete release-policy --dry-run
 | a scope other than `project` or `user` | |
 
 `text` prints the path, `deleted` (or `would delete`) with what answers the name next, and then the name's trace without the file. `--format json` and `toon` return one object: `name`, `scope`, `path`, `dryRun`, `next`, and `trace`.
+
+## `reference select`, `reference check`, and `reference implementations`
+
+`select` writes an `extends` into the project or user file of a name, choosing what the name builds on. `check` checks interface documents and their implementations, and exits `1` on any failure. `implementations` lists what implements an interface. They come from `cyber-agentkit`, which documents their arguments and output at [cyber-uni.github.io/cyber-agentkit](https://cyber-uni.github.io/cyber-agentkit/).

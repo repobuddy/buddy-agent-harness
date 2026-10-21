@@ -1,30 +1,27 @@
 export type {
 	MatchKind,
-	MergeMode,
 	ReferenceLayer,
 	ReferenceListing,
+	ReferenceListLayerRow,
+	ReferenceListRow,
 	ReferenceName,
-	ReferenceRow,
 	ReferenceStatus,
 	ReferenceTier,
 	ResolvedReference,
 	ResolveOptions,
 	SearchMatch,
-	TraceEntry,
-	UsedLayer,
-} from '@cyberuni/agent-harness'
+} from 'cyber-agentkit'
 export {
 	listReferences,
-	managedReferencesDir,
 	parseReferenceName,
 	resolveReference,
 	searchReferences,
-} from '@cyberuni/agent-harness'
+} from 'cyber-agentkit'
 export type {
 	ReferenceListReport,
 	ReferenceSearchReport,
 	ReferenceShowEntry,
-} from '@cyberuni/agent-harness/commands'
+} from 'cyber-agentkit/commands'
 export { run } from './cli.ts'
 export type {
 	BridgeFinding,
