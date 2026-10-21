@@ -16,10 +16,10 @@
 			"keywords": ["agent", "skills", "harness", "claude-code", "codex"]
 		},
 		{
-			"name": "cyber-agent-harness",
+			"name": "cyber-agentkit",
 			"source": {
 				"source": "npm",
-				"package": "@cyberuni/agent-harness"
+				"package": "cyber-agentkit"
 			}
 		}
 	]

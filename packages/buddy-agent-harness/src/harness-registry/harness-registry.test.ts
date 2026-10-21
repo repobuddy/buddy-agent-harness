@@ -62,7 +62,7 @@ describe('skillsProjection', () => {
 		expect(skillsProjection('cursor', 'project', ['.cursor/skills', '.agents/skills'])).toEqual({})
 	})
 
-	it('throws when @cyberuni/agent-harness does not confirm the directories', () => {
+	it('throws when cyber-agentkit does not confirm the directories', () => {
 		expect(() => skillsProjection('crush', 'user')).toThrow('records no user skills directories for crush')
 	})
 })

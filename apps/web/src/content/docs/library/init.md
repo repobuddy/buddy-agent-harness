@@ -74,7 +74,7 @@ Where a link fails and nothing occupies the target, the directory is copied inst
 | `skipped` | `HarnessName[]` | Enabled harnesses left untouched because their target conflicts and `force` did not name it |
 | `deprecated` | `{ name: HarnessName; replacedBy: HarnessName }[]` | Enabled harnesses whose name has been superseded, with the name that replaces each |
 | `skills` | `number` | The number of canonical skills |
-| `references` | `number` | The number of [references](/agent-configuration/references/) the project tier holds, legacy `.agents/governances/` included |
+| `references` | `number` | The number of [references](/agent-configuration/references/) the project tier holds |
 | `copied` | `boolean` | Whether copying was requested |
 
 ## initCommand

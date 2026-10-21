@@ -1,6 +1,6 @@
 import { lstatSync } from 'node:fs'
 import { join } from 'node:path'
-import { type HarnessId, skillsDirectories } from '@cyberuni/agent-harness'
+import { type HarnessId, skillsDirectories } from 'cyber-agentkit'
 import type { InstructionBridge } from './instruction-bridge.ts'
 import type { McpConfig } from './mcp-config.ts'
 import type { NonstandardArtifact } from './nonstandard-artifact.ts'
@@ -77,8 +77,7 @@ export function skillsProjection(
 ): Pick<HarnessScope, 'skillsDirectory'> {
 	const listed = directories ?? []
 	const [first] = listed
-	if (first === undefined)
-		throw new Error(`@cyberuni/agent-harness records no ${scope} skills directories for ${harness}.`)
+	if (first === undefined) throw new Error(`cyber-agentkit records no ${scope} skills directories for ${harness}.`)
 	return listed.includes('.agents/skills') ? {} : { skillsDirectory: first }
 }
 
@@ -90,7 +89,7 @@ export function skillsProjection(
 export const globalInstructions = '.agents/AGENTS.md'
 
 /**
- * Skills directories come from `@cyberuni/agent-harness`, except for the harnesses it does not know
+ * Skills directories come from `cyber-agentkit`, except for the harnesses it does not know
  * (`devin-desktop`, `windsurf`); see `.research/agentic-configuration-standards/` for the rest.
  */
 export const harnessRegistry: readonly Harness[] = [

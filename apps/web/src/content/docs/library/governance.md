@@ -4,7 +4,7 @@ description: 'Library reference for the deprecated governance exports: the overr
 ---
 
 :::caution[Deprecated]
-Use the [`reference` exports](/library/references/) instead. Every export on this page keeps its behavior until the next major version, and each carries a `@deprecated` tag naming its replacement. The `reference` layers read the same `governances/` folders, below the `references/` folder in each tier.
+Use the [`reference` exports](/library/references/) instead. Every export on this page keeps its behavior until the next major version, and each carries a `@deprecated` tag naming its replacement. The `reference` layers no longer read the `governances/` folders, so move documents there to the `references/` folder of the same tier.
 :::
 
 These exports perform the work behind the deprecated [`governance`](/cli/governance/) command. They locate governance documents in the override layers, resolve one name to the layer that wins, and list every name the layers hold. They only read: no export writes a governance document.
@@ -40,11 +40,11 @@ import type {
 | `resolveGovernance` | `resolveReference` |
 | `listGovernances` | `listReferences` |
 | `parseGovernanceName` | `parseReferenceName` |
-| `managedGovernancesDir`, `deprecatedManagedGovernancesDir` | `managedReferencesDir` |
+| `managedGovernancesDir`, `deprecatedManagedGovernancesDir` | none: `referenceLayers` reads the managed tier beside each detected harness's managed files |
 | `GovernanceScope` | `ReferenceTier` |
 | `GovernanceLayer` | `ReferenceLayer` |
 | `LayerOptions` | `ReferenceLayerOptions` |
-| `GovernanceEntry` | `ReferenceRow` |
+| `GovernanceEntry` | `ReferenceListLayerRow` |
 | `GovernanceDocument` | `ResolvedReference` |
 | `GovernanceListReport` | `ReferenceListReport` |
 | `GovernanceShowReport` | `ReferenceShowEntry` |
@@ -100,7 +100,7 @@ const found = resolveGovernance('skill-design', overrideLayers(layers))
 
 ## managedGovernancesDir
 
-**Deprecated:** use `managedReferencesDir`.
+**Deprecated:** no replacement; the managed tier of `referenceLayers` is read beside each detected harness's managed files.
 
 ```ts
 function managedGovernancesDir(platform: NodeJS.Platform, programData?: string | undefined): string
@@ -118,7 +118,7 @@ On Windows, an empty or absent `programData` falls back to `C:\ProgramData`.
 
 ## deprecatedManagedGovernancesDir
 
-**Deprecated:** use `managedReferencesDir`.
+**Deprecated:** no replacement; the managed tier of `referenceLayers` is read beside each detected harness's managed files.
 
 ```ts
 function deprecatedManagedGovernancesDir(platform: NodeJS.Platform, programData?: string | undefined): string
@@ -214,7 +214,7 @@ The order is the lookup order. `package` is the only scope that is not an overri
 
 ## GovernanceEntry
 
-**Deprecated:** use `ReferenceRow`.
+**Deprecated:** use `ReferenceListLayerRow`.
 
 A governance located but not read, as `listGovernances` returns it.
 

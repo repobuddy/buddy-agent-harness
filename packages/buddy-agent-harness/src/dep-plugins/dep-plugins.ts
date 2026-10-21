@@ -50,7 +50,7 @@ export function marketplaceName(packageName: string): string {
 	return cleaned || 'agent-plugins'
 }
 
-export { declaredDependencies } from '@cyberuni/agent-harness'
+export { declaredDependencies } from 'cyber-agentkit'
 
 export type BuildCatalogOptions = {
 	name: string
