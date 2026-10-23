@@ -1,4 +1,4 @@
-import { mkdirSync } from 'node:fs'
+import { mkdirSync, readdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { projectReferencesDir, referenceNames } from 'cyber-agentkit'
 import { type HarnessName, selectHarnesses } from '../harness-registry/harness-registry.ts'
@@ -32,6 +32,11 @@ export type InitializeResult = {
 	copied: boolean
 }
 
+/** Git does not track an empty directory, so an empty one gets a `.gitkeep` to survive a commit and clone. */
+function keepWhenEmpty(directory: string): void {
+	if (readdirSync(directory).length === 0) writeFileSync(join(directory, '.gitkeep'), '')
+}
+
 export function initializeHarnesses({
 	root,
 	harnesses: preferred = [],
@@ -42,6 +47,8 @@ export function initializeHarnesses({
 	const skills = countSkills(canonicalSkills)
 	mkdirSync(projectReferencesDir(root), { recursive: true })
 	const references = referenceNames([{ tier: 'project', dir: projectReferencesDir(root) }]).length
+	keepWhenEmpty(canonicalSkills)
+	keepWhenEmpty(projectReferencesDir(root))
 	const harnesses = selectHarnesses(root, preferred)
 	const { linked, skipped } = projectSkills({ root, canonicalSkills, harnesses, copy, force })
 

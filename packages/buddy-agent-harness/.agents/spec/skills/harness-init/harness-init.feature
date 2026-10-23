@@ -9,6 +9,18 @@ Feature: Initialize local agent skills across coding harnesses
     Then the repository contains `.agents/skills`
 
   @behavior
+  Scenario: keeps an empty canonical directory tracked by git
+    Given a consumer repository has no `.agents/skills` and no `.agents/references` directory
+    When the agent runs `buddy-agent-harness init` from that repository
+    Then each of the two directories holds an empty `.gitkeep`, and neither counts as a skill or a reference
+
+  @behavior
+  Scenario: writes no `.gitkeep` into a directory that already has content
+    Given a consumer repository has a canonical skill `review` and a reference `style`
+    When the agent runs `buddy-agent-harness init` from that repository
+    Then neither `.agents/skills` nor `.agents/references` gains a `.gitkeep`
+
+  @behavior
   Scenario: initializes the repository root when invoked from a nested package
     Given a monorepo command is invoked from one of its packages
     When the agent runs `buddy-agent-harness init`
