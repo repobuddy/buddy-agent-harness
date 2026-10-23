@@ -53,11 +53,11 @@ already sits below it.
 **Non-goals**
 
 - **Harness facts.** Which harness runs, where it keeps managed policy, which plugins it has enabled
-  and where each is installed all come from `@cyberuni/agent-harness`. This node decides only what
+  and where each is installed all come from `cyber-agentkit`. This node decides only what
   to read from them.
 - **Scanning for plugins.** Nothing under `node_modules` is globbed, and a plugin a harness has
   installed but not enabled is never read: installing a plugin does not activate it.
-- **Loading a reference from inside a skill.** That is the Load mode of the `reference` skill in the `cyber-agent-harness`
+- **Loading a reference from inside a skill.** That is the Load mode of the `reference` skill in the `cyber-agentkit`
   plugin, which builds on the
   `show` contract below.
 - **Recording each fetch.** `show` is the single read path so a record can be added there later.
@@ -76,7 +76,7 @@ already sits below it.
 
 - **an agent following instructions** — told to read `testing` and `release-checklist` before it
   starts; wants the documents on stdout, in the order asked, and a clear signal when one is missing.
-- **a skill** — the `cyber-agent-harness` plugin's `reference` skill, in Load mode, runs `show` on behalf of every skill that needs a
+- **a skill** — the `cyber-agentkit` plugin's `reference` skill, in Load mode, runs `show` on behalf of every skill that needs a
   reference; it reads the exit code first and the documents second.
 - **an agent that cannot name what it needs** — knows the subject, not the file; runs `search`.
 - **person at a shell** — writes a project or user override and wants to see that it took effect,
@@ -569,12 +569,12 @@ flowchart TD
 
 ## References
 
-- `@cyberuni/agent-harness` is the implementation: layers, documents and merge, resolution, and
-  search at its root, and the command at `@cyberuni/agent-harness/commands`, so a tool can bundle the
+- `cyber-agentkit` is the implementation: layers, documents and merge, resolution, and
+  search at its root, and the command at `cyber-agentkit/commands`, so a tool can bundle the
   resolver without depending on `buddy-agent-harness`.
 - `../../../../src/references/` names `buddy-agent-harness` as the plugin whose own references come
   first.
 - `../governance-overrides/` is the deprecated command this replaces as the read path.
 - `../command-output/` owns the encoder and the verbatim document write.
 - Issue #153 is the source proposal; #152 the epic; #122 and its comment the decisions it revises.
-- `@cyberuni/agent-harness` (cyberuni/agent-harness#1, #38) holds every per-harness fact read here.
+- `cyber-agentkit` (cyber-uni/cyber-agentkit#1, #38) holds every per-harness fact read here.

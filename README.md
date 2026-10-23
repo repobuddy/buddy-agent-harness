@@ -16,7 +16,7 @@ In Claude Code, add the [cyberplace](https://github.com/cyberuni/cyberplace) mar
 /plugin install buddy-agent-harness@cyberplace
 ```
 
-The plugin depends on the `cyber-agent-harness` plugin, whose `reference` skill loads the references these skills name. Claude Code installs it with this one. Cursor, Codex, and GitHub Copilot CLI read no plugin dependencies, so install `cyber-agent-harness` there yourself.
+The plugin depends on the `cyber-agentkit` plugin, whose `reference` skill loads the references these skills name. Claude Code installs it with this one. Cursor, Codex, and GitHub Copilot CLI read no plugin dependencies, so install `cyber-agentkit` there yourself.
 
 ## CLI
 

@@ -4,7 +4,7 @@ description: 'CLI reference for buddy-agent-harness governance: listing and show
 ---
 
 :::caution[Deprecated]
-Use [`reference`](/cli/reference/) instead. `governance` keeps its behavior until the next major version, and writes one line on stderr saying so. `reference` reads the same `governances/` folders, below the `references/` folder in each tier.
+Use [`reference`](/cli/reference/) instead. `governance` keeps its behavior until the next major version, and writes one line on stderr saying so. `reference` no longer reads the `governances/` folders, so move documents there to the `references/` folder of the same tier.
 :::
 
 ```sh

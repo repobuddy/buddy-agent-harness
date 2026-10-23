@@ -1,6 +1,6 @@
 {
 	"name": "buddy-agent-harness",
-	"version": "0.21.0",
+	"version": "0.22.0",
 	"description": "Initialize standards-based agent configuration across agent harnesses",
 	"author": {
 		"name": "repobuddy"
@@ -10,5 +10,5 @@
 	"license": "MIT",
 	"keywords": ["agent", "skills", "harness", "claude-code", "codex"],
 	"skills": "./skills/",
-	"dependencies": ["cyber-agent-harness"]
+	"dependencies": ["cyber-agentkit"]
 }

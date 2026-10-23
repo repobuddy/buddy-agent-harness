@@ -1,8 +1,8 @@
 import { homedir } from 'node:os'
-import { listReferences, type ReferenceRow } from '@cyberuni/agent-harness'
 import type { cli } from 'clibuilder'
 import { command, t } from 'clibuilder'
 import { result } from 'clibuilder/axi'
+import { listReferences, type ReferenceListLayerRow } from 'cyber-agentkit'
 import { collapseHome, displayBinPath, fail } from '../command-output/command-output.ts'
 import { type ConfigurationFinding, diagnoseConfiguration } from '../diagnose-configuration/diagnose-configuration.ts'
 import { diagnoseMcp } from '../diagnose-mcp/diagnose-mcp.ts'
@@ -13,7 +13,7 @@ import { type DiagnoseResult, diagnoseBridges } from './diagnose-bridges.ts'
 import { commandInvocation, type DoctorProblem, type RepairAction } from './doctor-guidance.ts'
 import { GitBridgeState } from './git-bridge-state.ts'
 
-export type DoctorReference = Pick<ReferenceRow, 'name' | 'tier' | 'path' | 'status'>
+export type DoctorReference = Pick<ReferenceListLayerRow, 'name' | 'tier' | 'path'> & { status: string }
 
 export type DoctorReport = {
 	bin: string
@@ -114,12 +114,11 @@ export const doctorCommand: cli.Command = command({
 				...diagnoseMcp({ root, git, cli: commandInvocation }),
 				...diagnoseNonstandard({ root, cli: commandInvocation }),
 			]
-			const { rows } = listReferences(
+			const { layers: rows } = listReferences(
 				await referenceLayers({
 					root,
 					home,
 					platform: process.platform,
-					programData: process.env['ProgramData'],
 					env: process.env,
 				}),
 			)
@@ -127,7 +126,7 @@ export const doctorCommand: cli.Command = command({
 			// left out: what a plugin ships is its own business, not a repository setting.
 			const held = rows
 				.filter(({ tier }) => tier !== 'plugin')
-				.map(({ name, tier, path, status }) => ({ name, tier, path: collapseHome(home, path), status }))
+				.map(({ name, tier, path, outcome }) => ({ name, tier, path: collapseHome(home, path), status: outcome }))
 			// Exit stays 0 even with findings: a non-zero code reads to an agent as "this command
 			// is broken".
 			return result(buildDoctorReport(displayBinPath(home, process.argv[1]), diagnosis, configuration, held))

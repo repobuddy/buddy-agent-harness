@@ -19,7 +19,7 @@ const harnessRegistry: readonly Harness[]
 
 Every harness the package knows, one entry each. The order is `claude-code`, `cursor`, `codex`, `copilot-cli`, `gemini-cli`, `devin-desktop`, `windsurf`.
 
-Skills directories come from `@cyberuni/agent-harness`. The two harnesses it does not know, `devin-desktop` and `windsurf`, are filled in by hand.
+Skills directories come from `cyber-agentkit`. The two harnesses it does not know, `devin-desktop` and `windsurf`, are filled in by hand.
 
 ```ts
 import { harnessRegistry } from 'buddy-agent-harness'

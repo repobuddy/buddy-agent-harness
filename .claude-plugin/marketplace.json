@@ -9,17 +9,17 @@
 			"name": "buddy-agent-harness",
 			"source": "./packages/buddy-agent-harness",
 			"description": "Initialize standards-based agent configuration across agent harnesses",
-			"version": "0.21.0",
+			"version": "0.22.0",
 			"homepage": "https://github.com/repobuddy/buddy-agent-harness",
 			"repository": "https://github.com/repobuddy/buddy-agent-harness",
 			"license": "MIT",
 			"keywords": ["agent", "skills", "harness", "claude-code", "codex"]
 		},
 		{
-			"name": "cyber-agent-harness",
+			"name": "cyber-agentkit",
 			"source": {
 				"source": "npm",
-				"package": "@cyberuni/agent-harness"
+				"package": "cyber-agentkit"
 			}
 		}
 	]

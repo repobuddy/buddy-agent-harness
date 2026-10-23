@@ -1,10 +1,6 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import {
-	deprecatedManagedGovernancesDir as referenceDeprecatedManagedGovernancesDir,
-	managedGovernancesDir as referenceManagedGovernancesDir,
-} from '@cyberuni/agent-harness'
 
 /**
  * Order here is search order. `package` is the only member that isn't an override —
@@ -40,19 +36,33 @@ export type LayerOptions = {
 	programData?: string | undefined
 }
 
-/** @deprecated Use `managedReferencesDir`. Removed in the next major version. */
+function machineWideDir(
+	platform: NodeJS.Platform,
+	programData: string | undefined,
+	names: { posix: string; macos: string; windows: string },
+): string {
+	if (platform === 'darwin') return join('/Library/Application Support', names.macos, 'governances')
+	if (platform === 'win32') return join(programData || 'C:\\ProgramData', names.windows, 'governances')
+	return join('/etc', names.posix, 'governances')
+}
+
+/** @deprecated Use the `reference` command's layers. Removed in the next major version. */
 export function managedGovernancesDir(platform: NodeJS.Platform, programData?: string | undefined): string {
-	return referenceManagedGovernancesDir(platform, programData)
+	return machineWideDir(platform, programData, {
+		posix: 'buddy-agent-harness',
+		macos: 'BuddyAgentHarness',
+		windows: 'BuddyAgentHarness',
+	})
 }
 
 /**
  * Still read below the layer above, so a machine already using it keeps working; reported as
  * deprecated so an admin knows to move it.
  *
- * @deprecated Use `managedReferencesDir`. Removed in the next major version.
+ * @deprecated Use the `reference` command's layers. Removed in the next major version.
  */
 export function deprecatedManagedGovernancesDir(platform: NodeJS.Platform, programData?: string | undefined): string {
-	return referenceDeprecatedManagedGovernancesDir(platform, programData)
+	return machineWideDir(platform, programData, { posix: 'universal-plugin', macos: 'UniPlugin', windows: 'UniPlugin' })
 }
 
 export function projectGovernancesDir(root: string): string {
