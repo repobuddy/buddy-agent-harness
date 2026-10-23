@@ -21,6 +21,27 @@ function repository(): string {
 }
 
 describe('initializeHarnesses', () => {
+	it('writes an empty .gitkeep into the skills and references directories it creates empty', () => {
+		const root = mkdtempSync(join(tmpdir(), 'buddy-agent-harness-'))
+
+		const result = initializeHarnesses({ root })
+
+		expect(readFileSync(join(root, '.agents', 'skills', '.gitkeep'), 'utf8')).toBe('')
+		expect(readFileSync(join(root, '.agents', 'references', '.gitkeep'), 'utf8')).toBe('')
+		expect(result).toMatchObject({ skills: 0, references: 0 })
+	})
+
+	it('writes no .gitkeep into a directory that already has content', () => {
+		const root = repository()
+		mkdirSync(join(root, '.agents', 'references'), { recursive: true })
+		writeFileSync(join(root, '.agents', 'references', 'style.md'), 'Style')
+
+		initializeHarnesses({ root })
+
+		expect(existsSync(join(root, '.agents', 'skills', '.gitkeep'))).toBe(false)
+		expect(existsSync(join(root, '.agents', 'references', '.gitkeep'))).toBe(false)
+	})
+
 	it('links the canonical directory for Claude Code and leaves Cursor to read it natively', () => {
 		const root = repository()
 

@@ -66,6 +66,8 @@ The consumer root is always the repository root, including in a monorepo. The ac
 | Edge                       | Path (Given)                                             | Scenario                                                                 |
 | -------------------------- | -------------------------------------------------------- | ------------------------------------------------------------------------ |
 | Ensure canonical directory | default consumer root                                    | `creates the canonical directory at the consumer root`                   |
+| Keep empty directories | `.agents/skills` and `.agents/references` created empty | `keeps an empty canonical directory tracked by git` |
+| Keep empty directories | a directory that already has content | `writes no \`.gitkeep\` into a directory that already has content` |
 | Locate repository root     | command is invoked from a package in a monorepo          | `initializes the repository root when invoked from a nested package`     |
 | Preserve canonical instructions | user-authored `AGENTS.md` files exist | `preserves user-authored canonical instructions` |
 | Select compatible artifacts | a canonical tool setting has no harness mapping | `leaves unsupported tool settings canonical only` |
