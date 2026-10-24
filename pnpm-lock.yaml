@@ -210,8 +210,8 @@ importers:
         specifier: ^12.0.0
         version: 12.0.0(js-yaml@4.3.2)
       cyber-agentkit:
-        specifier: ^1.0.0
-        version: 1.0.0(clibuilder@12.0.0(js-yaml@4.3.2))
+        specifier: ^1.2.0
+        version: 1.2.0(clibuilder@12.0.0(js-yaml@4.3.2))
       jsonc-parser:
         specifier: ^3.3.1
         version: 3.3.1
@@ -1840,8 +1840,8 @@ packages:
     resolution: {integrity: sha512-0LrrStPOdJj+SPCCrGhzryycLjwcgUSHBtxNA8aIDxf0GLsRh1cKYhB00Gd1lDOS4yGH69+SNn13+TWbVHETFQ==}
     engines: {node: ^10 || ^12.20.0 || ^14.13.0 || >=15.0.0, npm: '>=7.0.0'}
 
-  cyber-agentkit@1.0.0:
-    resolution: {integrity: sha512-95fpujPJiR4hvt6klML0tEUwrlmHZ4s4XDaSZHnmyyGsZgWiHARpfr+RSWX2oiVwQtJRbELRsuIL0k/z51kWjw==}
+  cyber-agentkit@1.2.0:
+    resolution: {integrity: sha512-5BhU8aCwdPRWs0JS8ZffwWIYI5Q0+v/hXWLS+OVlfD9NiQxneq3hmdGZihD1QJTbf4j5WkKCEA9+sffqm5jQtg==}
     engines: {node: '>=22'}
     hasBin: true
     peerDependencies:
@@ -4574,7 +4574,7 @@ snapshots:
     dependencies:
       css-tree: 2.2.1
 
-  cyber-agentkit@1.0.0(clibuilder@12.0.0(js-yaml@4.3.2)):
+  cyber-agentkit@1.2.0(clibuilder@12.0.0(js-yaml@4.3.2)):
     optionalDependencies:
       clibuilder: 12.0.0(js-yaml@4.3.2)
 

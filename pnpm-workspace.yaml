@@ -24,5 +24,5 @@ minimumReleaseAge: 1440 # 1 day
 minimumReleaseAgeStrict: true
 
 minimumReleaseAgeExclude:
-  # min-release-age: lift cyber-agentkit@1.0.0 until 2026-10-22T08:00:00Z
-  - 'cyber-agentkit@1.0.0'
+  # min-release-age: lift cyber-agentkit@1.2.0 until 2026-10-25T06:00:00Z
+  - 'cyber-agentkit@1.2.0'

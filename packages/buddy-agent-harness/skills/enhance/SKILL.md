@@ -48,6 +48,17 @@ Then ask the second question **of text that read as covered, and only of that te
 
 Answer it against the addition's own texts: the one its reference offers now, and the ones it has retired, in the history file its `## Stale when` names. That section also carries what is specific to the addition; apply it with the procedure below.
 
+**Let `prose-update` do the sentence-level reading.** `cyber-agentkit` ships it as a skill, and this plugin depends on that package. Hand it the three texts as files: the text the addition offers now (the fenced block under `## Offer this text verbatim`), the section as found in the file, and the addition's history file. Its script compares them sentence by sentence and returns an outcome per part. Run the script the skill names, or `pnpm exec cyber-agentkit prose-update` / `npx -y cyber-agentkit@1.2.0 prose-update` with the same arguments when it cannot be reached. It writes nothing and asks nothing; this skill still does both.
+
+| `prose-update` outcome | State below |
+| --- | --- |
+| `up-to-date` | **already current** |
+| `owners` | **the owner's own** |
+| `update` | **from a retired wording** |
+| `conflict`, `undetermined` | **you cannot tell**, unless the skill's own reading of meaning settles the part |
+
+For `update`, `prose-update` also returns the merged text, which keeps the owner's sentences and takes the offered ones. Offer the current text as the replacement, as below, and put the merged text beside it as the answer that keeps what the owner added. Where `prose-update` cannot be run at all, apply the two questions that follow by hand; they decide the same cases.
+
 **First, is the section already current?** It is when it carries the current text; then it is **already current**, and you compare it against no retired wording. A section that does not carry it goes on to the two questions.
 
 **Otherwise, compare the section against each retired wording, and never weigh it against the current text to decide it is stale** — differing from the current wording is what a rewrite produces. The one exception: an addition whose history holds no retired wording yet has its current text stand in for one, and its reference says so.
