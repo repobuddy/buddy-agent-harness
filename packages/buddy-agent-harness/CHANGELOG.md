@@ -1,5 +1,12 @@
 # buddy-agent-harness
 
+## 0.23.0
+
+### Minor Changes
+
+- b792140: `enhance` now reads a present section against an addition's retired wordings with `cyber-agentkit`'s `prose-update`, and for an outdated section offers the merged text that keeps the owner's own sentences beside the current wording. The `cyber-agentkit` dependency moves to ^1.2.0.
+- e7efd5c: `init` writes an empty `.gitkeep` into `.agents/skills/` and `.agents/references/` when it leaves them empty, so a commit and clone keep the directories and `.claude/skills` does not dangle.
+
 ## 0.22.0
 
 ### Minor Changes
