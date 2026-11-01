@@ -39,8 +39,8 @@ const inlineDeps = {
 
 export default defineConfig([
 	{
-		// Dependencies stay EXTERNAL: `activate`/`*Command` must compose into the host CLI's own
-		// `clibuilder` instance, not a private inlined copy that breaks command-registry identity.
+		// Dependencies stay EXTERNAL: `activate`/`*Command` plug into the host CLI, so the host's own
+		// `clibuilder` (an optional peer) is the copy they run on.
 		...shared,
 		entry: { index: 'src/index.ts' },
 		dts: { sourcemap: true },

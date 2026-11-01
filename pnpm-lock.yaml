@@ -206,9 +206,6 @@ importers:
 
   packages/buddy-agent-harness:
     dependencies:
-      clibuilder:
-        specifier: ^12.0.0
-        version: 12.0.0(js-yaml@4.3.2)
       cyber-agentkit:
         specifier: ^1.2.0
         version: 1.2.0(clibuilder@12.0.0(js-yaml@4.3.2))
@@ -231,6 +228,9 @@ importers:
       '@vitest/coverage-v8':
         specifier: ^5.0.0
         version: 5.0.0(vitest@5.0.0)
+      clibuilder:
+        specifier: ^12.0.0
+        version: 12.0.0(js-yaml@4.3.2)
       tsdown:
         specifier: ^0.23.0
         version: 0.23.0(tsx@4.23.11)(typescript@7.0.2)
