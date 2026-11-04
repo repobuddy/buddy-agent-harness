@@ -4,34 +4,25 @@ on:
   push:
     branches: [main]
 
-permissions:
-  contents: write
-  pull-requests: write
-  id-token: write
-
-concurrency:
-  group: release-${{ github.ref }}
-  cancel-in-progress: false
-
 jobs:
+  code:
+    uses: repobuddy/.github/.github/workflows/pnpm-verify.yml@v2
+    with:
+      os: '["ubuntu-latest"]'
+      codecov-flags: unit
+
+  publish-gate:
+    uses: repobuddy/.github/.github/workflows/pnpm-publish-gate.yml@v2
+    permissions:
+      contents: read
+
   release:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
-      - uses: pnpm/action-setup@v6
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 24
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm verify
-      - name: Create version pull request or publish packages
-        uses: changesets/action@v2.1.2
-        with:
-          commit-message: "chore: version packages"
-          version-script: pnpm run version
-          publish-script: pnpm run release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    uses: repobuddy/.github/.github/workflows/pnpm-release-changeset-oidc.yml@v2
+    needs: [code, publish-gate]
+    # Declaring `permissions:` drops every unlisted scope to `none`, and the
+    # callee cannot ask for more than this job grants.
+    permissions:
+      id-token: write
+      contents: write
+      pull-requests: write
+      actions: write # approves the Version Packages PR's parked runs
