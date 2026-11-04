@@ -250,6 +250,6 @@ describe('the deprecation', () => {
 		expect(written()).toBe('# project\n')
 		expect(list({ root })).toBe(0)
 		expect(stderr.mock.calls.map(([value]: unknown[]) => value)).toEqual([GOVERNANCE_DEPRECATED, GOVERNANCE_DEPRECATED])
-		expect(GOVERNANCE_DEPRECATED).toContain('use "reference show|list"')
+		expect(GOVERNANCE_DEPRECATED).toContain('use "reference load|list"')
 	})
 })

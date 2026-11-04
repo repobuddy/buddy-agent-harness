@@ -42,7 +42,7 @@ Checks a name and splits off its plugin qualifier. A name is letters, digits, hy
 
 ## `resolveReference`
 
-Resolves one name through the layers, the way `reference show` does. It never throws: a name no layer holds has `status: 'missing'`, and an unqualified name two plugins hold has `status: 'ambiguous'`.
+Resolves one name through the layers, the way `reference load` does. It never throws: a name no layer holds has `status: 'missing'`, and an unqualified name two plugins hold has `status: 'ambiguous'`.
 
 ## `listReferences` and `searchReferences`
 
@@ -56,7 +56,7 @@ const referenceCommand: cli.Command
 
 The `reference` command and its subcommands, as a [clibuilder](https://www.npmjs.com/package/clibuilder) command. Mount it in your own command tree to offer the same CLI. [`reference`](/cli/reference/) covers its flags and output.
 
-The report types `ReferenceListReport`, `ReferenceSearchReport`, and `ReferenceShowEntry` are the shapes the subcommands write with `--format json` or `toon`.
+The report types `ReferenceListReport`, `ReferenceSearchReport`, and `ReferenceLoadEntry` are the shapes the subcommands write with `--format json` or `toon`.
 
 ## The `cyber-agentkit` package
 

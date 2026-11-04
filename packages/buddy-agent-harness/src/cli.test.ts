@@ -123,7 +123,7 @@ describe('run', () => {
 	})
 
 	it.each([
-		['reference', 'show'],
+		['reference', 'load'],
 		['reference', 'create'],
 		['reference', 'delete'],
 		['governance', 'show'],
@@ -180,7 +180,7 @@ describe('run', () => {
 
 describe('defaultFormat', () => {
 	it('reads --format given as `--format=json` as already chosen', () => {
-		expect(defaultFormat(['node', 'bah', 'reference', 'show', '--format=json'])).toBe('toon')
+		expect(defaultFormat(['node', 'bah', 'reference', 'load', '--format=json'])).toBe('toon')
 	})
 })
 

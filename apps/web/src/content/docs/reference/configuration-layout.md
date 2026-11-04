@@ -23,7 +23,7 @@ repository/
 
 Each immediate directory under `.agents/skills/` is a canonical skill. Files at that level are ignored.
 
-`.agents/references/` is the project tier of [references](/agent-configuration/references/): documents an agent reads by name with [`reference show`](/cli/reference/). `init` creates the directory when it is absent, and [`reference list`](/cli/reference/) and [`doctor`](/cli/doctor/) both report what is in it. In a monorepo, a package can hold its own `.agents/references/`; it is read before the one at the repository root.
+`.agents/references/` is the project tier of [references](/agent-configuration/references/): documents an agent reads by name with [`reference load`](/cli/reference/). `init` creates the directory when it is absent, and [`reference list`](/cli/reference/) and [`doctor`](/cli/doctor/) both report what is in it. In a monorepo, a package can hold its own `.agents/references/`; it is read before the one at the repository root.
 
 `.agents/governances/` is where the older [`governance`](/cli/governance/) command read project overrides. `init` no longer creates it. `reference` no longer reads it, so move documents there to `.agents/references/`.
 

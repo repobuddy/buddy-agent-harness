@@ -61,7 +61,7 @@
 		"node": ">=22"
 	},
 	"dependencies": {
-		"cyber-agentkit": "^1.2.0",
+		"cyber-agentkit": "^2.0.0",
 		"jsonc-parser": "^3.3.1",
 		"smol-toml": "^1.8.0",
 		"toml-eslint-parser": "^1.0.3",

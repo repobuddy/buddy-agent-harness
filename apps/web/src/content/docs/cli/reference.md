@@ -1,10 +1,10 @@
 ---
 title: 'CLI: reference'
-description: 'CLI reference for buddy-agent-harness reference: show, list, search, where, create, and delete on-demand reference documents across layered tiers.'
+description: 'CLI reference for buddy-agent-harness reference: load, list, search, where, create, and delete on-demand reference documents across layered tiers.'
 ---
 
 ```sh
-buddy-agent-harness reference show <name>... [--root <directory>] [--trace] [--format text|toon|json]
+buddy-agent-harness reference load <name>... [--root <directory>] [--trace] [--format text|toon|json]
 buddy-agent-harness reference list [--root <directory>] [--format toon|json|text]
 buddy-agent-harness reference search <query> [--root <directory>] [--format toon|json|text]
 buddy-agent-harness reference where <name> [--root <directory>] [--caller <skill folder>] [--format toon|json|text]
@@ -14,9 +14,9 @@ buddy-agent-harness reference delete <name> [--scope project|user] [--root <dire
 
 A **reference** is a Markdown document an agent reads on demand. [References and Skills](/agent-configuration/references/) covers when to write one instead of a skill. Every subcommand but `create` and `delete` is read-only. `create` writes one new file in the project or user tier and never changes a file that exists. `delete` removes one file from the project or user tier and never touches a plugin-shipped or managed copy.
 
-`--root` is the directory the project tier is read from, walking up to the repository root. It defaults to the current directory.
+`--root` is the directory the repository root is found from: the nearest folder at or above it that holds `.git`. It defaults to the current directory.
 
-A skill does not run this command itself. It names the [`reference` skill](https://github.com/cyber-uni/cyber-agentkit/tree/main/packages/cyber-agentkit/skills/reference) in the `cyber-agentkit` plugin, which runs `show` from a launcher bundled in its own folder.
+A skill does not run this command itself. It names the [`reference` skill](https://github.com/cyber-uni/cyber-agentkit/tree/main/packages/cyber-agentkit/skills/reference) in the `cyber-agentkit` plugin, which runs `load` from a launcher bundled in its own folder.
 
 ## Tiers
 
@@ -25,17 +25,17 @@ A name resolves through these tiers, highest precedence first. Each tier holds o
 | Tier | Layers, in order |
 | --- | --- |
 | `managed` | a `references/` beside each detected harness's managed files |
-| `project` | `<dir>/.agents/references/` for each folder of the walk, nearest first |
+| `repo` | `<repository root>/.agents/references/` |
 | `user` | `~/.agents/references/` |
-| `plugin` | this package's `references/` as the plugin `buddy-agent-harness`, the `references/` folder of each plugin the detected harness has enabled, and the `references/` folder of each dependency in the nearest `package.json` |
+| `plugin` | this package's `references/` as the plugin `buddy-agent-harness`, the `references/` folder of each plugin the detected harness has enabled, and the `references/` folder of each dependency in the repository root's `package.json` |
 
 **Harness-managed folders.** The command detects the harness it runs under from its environment, and reads a `references/` folder beside the managed policy files that harness keeps on disk: `/etc/claude-code/references` for Claude Code on Linux, `/etc/codex/references` for Codex. A drop-in folder such as `managed-settings.d` is part of the folder above it, not a folder of its own. No harness documents a managed references folder; the name is this package's own. Policy a harness keeps in MDM, the Windows registry, or its vendor's servers cannot be read locally. It is listed as a layer marked `not read`, with the reason, so `--trace` and `list` show what was skipped. With no harness detected, one `not read` layer says so. Nested harnesses, where one was started from the other's shell, are each read.
 
 The `governances/` folders are no longer read. Move a document there to the `references/` folder of the same tier.
 
-**The walk.** The project tier is read at `--root` and at each folder above it, up to and including the repository root: the first folder holding `.git`, `pnpm-workspace.yaml`, or a `package.json` with `workspaces`. In a monorepo, a package's own `.agents/references/` answers before the one at the repository root. With no repository root above `--root`, only `--root` is read.
+**The repository root.** The `repo` tier is the `.agents/references/` folder of the nearest folder at or above `--root` that holds `.git`. A folder below the root can hold its own `.agents/references/<name>.md`; `load` delivers each one after the main document as a project section.
 
-**Plugins.** Only packages listed in `dependencies` or `devDependencies` are read, never a transitive dependency. Two plugins holding the same name is an error that names both; ask for one as `<plugin>/<name>`. A qualified name picks that plugin's copy, and a project, user, or managed copy of `<name>` still overrides it. A plugin avoids that silent override by [prefixing the names it ships](/agent-configuration/references/#naming-a-reference-a-plugin-ships).
+**Plugins.** Only packages listed in `dependencies` or `devDependencies` are read, never a transitive dependency. Two plugins holding the same name is an error that names both; ask for one as `<plugin>/<name>`. A qualified name picks that plugin's copy, and a repo, user, or managed copy of `<name>` still overrides it. A plugin avoids that silent override by [prefixing the names it ships](/agent-configuration/references/#naming-a-reference-a-plugin-ships).
 
 **Enabled plugins.** A plugin the detected harness has enabled, in its settings files, is read from the folder the harness installed it in. A plugin that is installed but not enabled is never read: installing a plugin does not activate it. A Claude Code plugin installed for one project is read only inside that project. An enabled plugin with no recorded install folder, a harness that keeps no readable record of enabled plugins (Cursor), and policy that can enable plugins but cannot be read locally each appear as a `not read` layer with the reason. `node_modules` is never searched for plugins.
 
@@ -72,21 +72,21 @@ A section is a heading and the headings above it, such as `Testing > Fixtures`. 
 
 A `combine` or `remove` that matches nothing, and a heading path that appears twice, each produce a warning. Layers apply from the bottom up: plugin, user, project farthest first, managed.
 
-## `reference show`
+## `reference load`
 
 ```sh
-buddy-agent-harness reference show testing release-checklist
+buddy-agent-harness reference load testing release-checklist
 ```
 
 | Result | stdout | stderr | Exit |
 | --- | --- | --- | --- |
 | one name, found | the document | warnings, if any | `0` |
 | several names, all found | each document as `<reference name="…" tier="…">` … `</reference>`, in the order asked | warnings, if any | `0` |
-| some missing or ambiguous | the found ones, and `<reference name="…" status="missing" />` in place of each miss | one `error:` line per miss, with up to three close names | `1` |
-| one name, missing | nothing | the `error:` line | `1` |
+| some missing or ambiguous | the found ones, and `<reference name="…" status="missing" />` in place of each miss | one `error:` line per miss, with up to three close names | `0` |
+| one name, missing | a status and a code | the `error:` line | `0` |
 | a name that is a path, or an unknown format | nothing | the reason | `1` |
 
-`show` never answers with a close match. It only suggests one.
+A command that answered exits `0`, including `load` on a name it did not find. Exit `1` means it could not complete, and `2` means it was called wrongly. `load` never answers with a close match. It only suggests one.
 
 `--format json` and `--format toon` return an array, one entry per name in the order asked:
 
@@ -95,14 +95,14 @@ buddy-agent-harness reference show testing release-checklist
   {
     "name": "testing",
     "status": "found",
-    "tier": "project",
+    "tier": "repo",
     "plugin": "",
     "path": "~/code/acme/.agents/references/testing.md",
     "merge": "merge-sections",
     "metadata": { "merge": "merge-sections", "description": "How we test" },
     "content": "…",
     "layers": [
-      { "tier": "project", "plugin": "", "path": "~/code/acme/.agents/references/testing.md", "merge": "merge-sections" },
+      { "tier": "repo", "plugin": "", "path": "~/code/acme/.agents/references/testing.md", "merge": "merge-sections" },
       { "tier": "user", "plugin": "", "path": "~/.agents/references/testing.md", "merge": "first-wins" }
     ],
     "warnings": []
@@ -128,8 +128,8 @@ buddy-agent-harness reference list --format text
 ```
 references:
   name     tier     plugin  path                                          status                        description
-  testing  project          ~/code/acme/.agents/references/testing.md        used                          How we test
-  testing  user             ~/.agents/references/testing.md                  shadowed by project (first-wins)
+  testing  repo             ~/code/acme/.agents/references/testing.md        used                          How we test
+  testing  user             ~/.agents/references/testing.md                  shadowed by repo (first-wins)
 ```
 
 With nothing in any layer, `references` is a sentence stating the zero.
@@ -144,17 +144,17 @@ buddy-agent-harness reference search fixtures
 
 ## `reference where`
 
-Answers where a copy of a name can live, so you know the file to write to override it. `show --trace` answers the other way: why a name resolved to the copy it did.
+Answers where a copy of a name can live, so you know the file to write to override it. `load --trace` answers the other way: why a name resolved to the copy it did.
 
 ```sh
 buddy-agent-harness reference where testing --format text
 ```
 
-It resolves the name exactly as `show` does, and reports the slots you can act on, highest precedence first: the project file, the user file, the plugin copy it overrides when a plugin ships the name, and with `--caller <skill folder>`, the loading skill's own copy. `root` states the folder a project path is relative to.
+It resolves the name exactly as `load` does, and reports the slots you can act on, highest precedence first: the repo file, the user file, the plugin copy it overrides when a plugin ships the name, and with `--caller <skill folder>`, the loading skill's own copy. `root` states the folder a project path is relative to.
 
 | Field | Meaning |
 | --- | --- |
-| `layer` | `project`, `user`, `plugin <name>` for the plugin that ships the copy, or `caller` for the loading skill's own copy |
+| `layer` | `repo`, `user`, `plugin <name>` for the plugin that ships the copy, or `caller` for the loading skill's own copy |
 | `path` | the file to write, or the file that holds the name. A project path is relative to `root` |
 | `status` | `used`, `shadowed`, or `empty`. It follows each copy's `merge` metadata, so a copy under a merging override stays `used`. The caller's copy is `used` only when no layer holds the name |
 | `scope` | who the slot applies to: everyone working in this repository (project), only you (user), or read-only for a plugin's or the caller's copy, which you override with the project or user file |
@@ -173,7 +173,7 @@ buddy-agent-harness reference create release-policy --template ./references/acme
 
 | Option | Meaning |
 | --- | --- |
-| `--scope` | `project` (default) writes `<root>/.agents/references/<name>.md`; `user` writes `~/.agents/references/<name>.md`. It never writes a plugin's or the managed folder |
+| `--scope` | `repo` (default) writes `<root>/.agents/references/<name>.md`; `user` writes `~/.agents/references/<name>.md`. It never writes a plugin's or the managed folder |
 | `--template` | a file written as it is, frontmatter included. Without it, a built-in template: a `description` and `tags` placeholder, then top-level `##` sections, with no `#` title |
 | `--dry-run` | prints the target path, a blank line, and the exact content; writes nothing |
 
@@ -185,9 +185,9 @@ The file is written as top-level `##` sections because `merge-sections` matches 
 | --- | --- |
 | the target file exists | change it with the `reference` skill's Update mode; there is no `--force` |
 | a `first-wins` copy in a layer above the target | nothing would read the new file |
-| a template path with no readable file, or frontmatter that is not a YAML mapping | `show` would drop that frontmatter |
+| a template path with no readable file, or frontmatter that is not a YAML mapping | `load` would drop that frontmatter |
 | a name that is a path, or `<plugin>/<name>` | an override is written under the bare name |
-| a scope other than `project` or `user` | |
+| a scope other than `repo` or `user` | |
 
 After a write, `text` prints the path and then the name's trace, in which the new file is `used`. `--format json` and `toon` return one object: `name`, `scope`, `path`, `dryRun`, `content`, `warnings`, and after a write `trace`.
 
@@ -201,17 +201,17 @@ buddy-agent-harness reference delete release-policy --dry-run
 
 | Option | Meaning |
 | --- | --- |
-| `--scope` | `project` (default) deletes from `<root>/.agents/references/`; `user` deletes from `~/.agents/references/`. It never deletes a plugin's or the managed copy |
+| `--scope` | `repo` (default) deletes from `<root>/.agents/references/`; `user` deletes from `~/.agents/references/`. It never deletes a plugin's or the managed copy |
 | `--dry-run` | prints the file that would be deleted and what would answer the name then; deletes nothing |
 
 | Refused, exit `1`, nothing deleted | Why |
 | --- | --- |
 | no copy of the name in the target tier | the message says which copy answers the name instead |
 | a name that is a path, or `<plugin>/<name>` | a project or user copy is held under the bare name |
-| a scope other than `project` or `user` | |
+| a scope other than `repo` or `user` | |
 
 `text` prints the path, `deleted` (or `would delete`) with what answers the name next, and then the name's trace without the file. `--format json` and `toon` return one object: `name`, `scope`, `path`, `dryRun`, `next`, and `trace`.
 
-## `reference select`, `reference check`, and `reference implementations`
+## `reference customize`, `reference check`, and `reference implementations`
 
-`select` writes an `extends` into the project or user file of a name, choosing what the name builds on. `check` checks interface documents and their implementations, and exits `1` on any failure. `implementations` lists what implements an interface. They come from `cyber-agentkit`, which documents their arguments and output at [cyber-uni.github.io/cyber-agentkit](https://cyber-uni.github.io/cyber-agentkit/).
+`customize` picks what a name builds on, and can write a generated body with its picks and sources recorded. It runs no model. `check` checks interface documents and their implementations, and exits `1` on any failure. `implementations` lists what implements an interface. They come from `cyber-agentkit`, which documents their arguments and output at [cyber-uni.github.io/cyber-agentkit](https://cyber-uni.github.io/cyber-agentkit/).

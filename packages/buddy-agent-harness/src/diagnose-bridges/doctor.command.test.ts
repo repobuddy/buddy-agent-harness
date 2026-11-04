@@ -137,7 +137,7 @@ describe('the references section', () => {
 
 		expect(report().references).toContainEqual({
 			name: 'testing',
-			tier: 'project',
+			tier: 'repo',
 			path: collapseHome(homedir(), join(root, '.agents', 'references', 'testing.md')),
 			status: 'used',
 		})
