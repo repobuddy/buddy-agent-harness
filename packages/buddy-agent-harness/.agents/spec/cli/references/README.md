@@ -52,9 +52,7 @@ only what this package adds to it.
 | `referenceLayers` | a library caller reads layers | the layers `cyber-agentkit` builds, with this package as the plugin |
 
 **Surface.** `load`, `create`, and `delete` answer in `text` unless `--format` says otherwise; every
-other subcommand answers in `toon`. Nothing in this package names `reference show`, `reference select`,
-`--scope project`, or `merge-sections`: they are `reference load`, `reference customize --extends`,
-`--in <folder>`, and `patch`.
+other subcommand answers in `toon`. Per-folder instructions are written with `--in <folder>`, a stack is built with `customize --extends`, and a merge is `replace`, `patch`, `combine`, or `remove`.
 
 ## Scenarios
 

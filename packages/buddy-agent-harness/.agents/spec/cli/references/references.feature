@@ -34,6 +34,6 @@ Feature: Offer the reference command with this package as a plugin
     Then the first plugin layer is this package's `references/` folder, named `buddy-agent-harness`
 
   @behavior
-  Scenario: names no retired spelling
+  Scenario: names only the current spelling
     When the docs, the spec, and `llms.txt` are read
-    Then none names `reference show`, `reference select`, `--scope project`, or `merge-sections`
+    Then each names the current spelling: `reference load`, `reference customize --extends`, `--in <folder>`, and `patch`
