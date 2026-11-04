@@ -1,5 +1,22 @@
 # buddy-agent-harness
 
+## 1.0.0
+
+### Major Changes
+
+- d8ef1eb: Moves to `cyber-agentkit` 2.0. `reference show` is now `reference load` and `reference select` is now `reference customize`. The `--scope project` option is now `--scope repo`, and references are read from the repository root. `reference load` exits 0 for a name it did not find. `list --trace` rows carry `kind: selection` where they had `selection: true`.
+
+### Minor Changes
+
+- b792140: `enhance` now reads a present section against an addition's retired wordings with `cyber-agentkit`'s `prose-update`, and for an outdated section offers the merged text that keeps the owner's own sentences beside the current wording. The `cyber-agentkit` dependency moves to ^1.2.0.
+- e7efd5c: `init` writes an empty `.gitkeep` into `.agents/skills/` and `.agents/references/` when it leaves them empty, so a commit and clone keep the directories and `.claude/skills` does not dangle.
+
+### Patch Changes
+
+- a461f45: `clibuilder` moves from `dependencies` to an optional peer dependency at `^12.1.0`. The `buddy-agent-harness` bin bundles its own copy and needs nothing installed; a host CLI that imports `activate` or a `*Command` export supplies its own `clibuilder`, at 12.1.0 or later so its copy and this package's work together.
+- 5a5b61b: Documents the `reference` command as `cyber-agentkit` 2.0 defines it: `reference load`, `reference customize --extends`, `--in <folder>` for a folder's project section, `--scope repo|user`, and the merge operations `replace`, `patch`, `combine`, and `remove`. The docs, the spec, and `llms.txt` no longer name `reference show`, `reference select`, `--scope project`, or `merge-sections`, and the library page lists only the reference exports the package has.
+- ef03223: Include `CHANGELOG.md` in the published package.
+
 ## 0.22.0
 
 ### Minor Changes
