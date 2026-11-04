@@ -8,6 +8,7 @@ permissions:
   contents: write
   pull-requests: write
   id-token: write
+  actions: write # approves the Version Packages PR's parked runs
 
 concurrency:
   group: release-${{ github.ref }}
@@ -28,6 +29,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm verify
       - name: Create version pull request or publish packages
+        id: changesets
         uses: changesets/action@v2.1.2
         with:
           commit-message: "chore: version packages"
@@ -35,3 +37,46 @@ jobs:
           publish-script: pnpm run release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # github-actions[bot] opens the version PR, so GitHub parks its pull_request runs
+      # as action_required, and the merge queue's required check never reports.
+      # Copied from repobuddy/.github pnpm-release-changeset-oidc.yml.
+      - name: Approve the version packages PR's pending runs
+        if: steps.changesets.outputs.pr-number != '' && steps.changesets.outputs.published != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION_BRANCH: changeset-release/${{ github.ref_name }}
+        run: |
+          if ! sha=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/$VERSION_BRANCH" --jq .object.sha 2>&1); then
+            echo "$sha"
+            echo "::warning::Could not read the head of $VERSION_BRANCH, so the version packages PR's runs stay pending approval."
+            exit 0
+          fi
+          list() {
+            gh api "repos/$GITHUB_REPOSITORY/actions/runs?branch=$VERSION_BRANCH&head_sha=$sha&per_page=100" \
+              --jq '.workflow_runs[] | select(.conclusion == "action_required" or .status == "action_required" or .status == "waiting") | .id'
+          }
+          ids=""
+          for _ in $(seq 1 12); do
+            if ! ids=$(list 2>&1); then
+              echo "$ids"
+              echo "::warning::Could not list the runs on $VERSION_BRANCH, so the version packages PR's runs stay pending approval."
+              exit 0
+            fi
+            [ -n "$ids" ] && break
+            sleep 5
+          done
+          sleep 5
+          if more=$(list 2>/dev/null); then ids=$more; fi
+          if [ -z "$ids" ]; then
+            echo "::warning::No runs on $VERSION_BRANCH at $sha were waiting for approval after 60s. If the version packages PR is still blocked, approve its runs from the Actions tab."
+            exit 0
+          fi
+          for id in $ids; do
+            if out=$(gh api -X POST "repos/$GITHUB_REPOSITORY/actions/runs/$id/approve" 2>&1); then
+              echo "Approved run $id"
+            else
+              echo "$out"
+              echo "::warning::Could not approve run $id on $VERSION_BRANCH, so the version packages PR stays blocked."
+            fi
+          done
