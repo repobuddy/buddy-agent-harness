@@ -3,7 +3,7 @@ title: References and Skills
 description: When supplementary instructions belong in a reference fetched by name rather than in a skill, and how layered references combine.
 ---
 
-A **reference** is a Markdown document an agent reads on demand: a style guide, a playbook, a checklist, domain notes, a governance. It is fetched by name with [`reference show`](/cli/reference/), and it costs nothing until it is fetched.
+A **reference** is a Markdown document an agent reads on demand: a style guide, a playbook, a checklist, domain notes, a governance. It is fetched by name with [`reference load`](/cli/reference/), and it costs nothing until it is fetched.
 
 "Reference" is the [Agent Skills specification](https://agentskills.io/specification)'s term for material an agent reads on demand. It is deliberately not a vendor term for context that is always loaded: Cursor rules, Copilot instructions, and `AGENTS.md` are all read whether or not the task needs them.
 
@@ -79,4 +79,4 @@ Write a reference as top-level `##` sections with no `#` title. `merge-sections`
 
 The resolver never compares prose. If two layers contradict each other, the merge mode decides which text survives; deciding which is *right* is left to whoever reads the result.
 
-[`reference show --trace`](/cli/reference/#--trace) shows which layer answered and why the others did not, and [`reference list`](/cli/reference/#reference-list) marks every shadowed layer. To see where to put an override, run [`reference where <name>`](/cli/reference/#reference-where).
+[`reference load --trace`](/cli/reference/#--trace) shows which layer answered and why the others did not, and [`reference list`](/cli/reference/#reference-list) marks every shadowed layer. To see where to put an override, run [`reference where <name>`](/cli/reference/#reference-where).

@@ -45,7 +45,7 @@ function layersFor(args: Args): GovernanceLayer[] {
 }
 
 export const GOVERNANCE_DEPRECATED =
-	'warning: "governance" is deprecated and will be removed in the next major version; use "reference show|list" instead.\n'
+	'warning: "governance" is deprecated and will be removed in the next major version; use "reference load|list" instead.\n'
 
 export const DEPRECATED_MANAGED = 'deprecated — move these documents to the managed layer above'
 

@@ -38,12 +38,12 @@ function app(format: 'toon' | 'text') {
 }
 
 const textByDefault: Record<string, readonly string[]> = {
-	reference: ['show', 'create', 'delete'],
+	reference: ['load', 'create', 'delete'],
 	governance: ['show'],
 }
 
 /**
- * `reference show|create|delete` and `governance show` answer in `text` unless `--format` says
+ * `reference load|create|delete` and `governance show` answer in `text` unless `--format` says
  * otherwise; every other command answers in `toon`. clibuilder has one global `--format` default,
  * so it is chosen from the command the argv names.
  */
