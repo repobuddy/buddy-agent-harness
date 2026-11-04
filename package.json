@@ -7,7 +7,7 @@
 		"bah": "pnpm --filter ./packages/buddy-agent-harness",
 		"check": "biome check",
 		"check:fix": "biome check --write",
-		"check:spec-refs": "tsx node_modules/cyber-sdd/skills/check-spec-references/scripts/check-spec-references.mts --spec-dir packages/buddy-agent-harness/.agents/spec",
+		"check:spec-refs": "tsx node_modules/cyber-sdd/skills/check-spec-references/scripts/check-spec-references.mjs --spec-dir packages/buddy-agent-harness/.agents/spec",
 		"coverage": "turbo run coverage",
 		"prepare": "husky",
 		"release": "changeset publish",
