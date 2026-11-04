@@ -1,6 +1,6 @@
 import { mkdirSync, readdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { projectReferencesDir, referenceNames } from 'cyber-agentkit'
+import { referenceNames, repoReferencesDir } from 'cyber-agentkit'
 import { type HarnessName, selectHarnesses } from '../harness-registry/harness-registry.ts'
 import { countSkills, type ForceSelection, projectSkills } from '../skill-projection/skill-projection.ts'
 
@@ -45,10 +45,10 @@ export function initializeHarnesses({
 }: InitializeOptions): InitializeResult {
 	const canonicalSkills = join(root, '.agents', 'skills')
 	const skills = countSkills(canonicalSkills)
-	mkdirSync(projectReferencesDir(root), { recursive: true })
-	const references = referenceNames([{ tier: 'project', dir: projectReferencesDir(root) }]).length
+	mkdirSync(repoReferencesDir(root), { recursive: true })
+	const references = referenceNames([{ tier: 'repo', dir: repoReferencesDir(root) }]).length
 	keepWhenEmpty(canonicalSkills)
-	keepWhenEmpty(projectReferencesDir(root))
+	keepWhenEmpty(repoReferencesDir(root))
 	const harnesses = selectHarnesses(root, preferred)
 	const { linked, skipped } = projectSkills({ root, canonicalSkills, harnesses, copy, force })
 

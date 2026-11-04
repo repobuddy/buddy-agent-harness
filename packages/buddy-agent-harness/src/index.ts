@@ -19,8 +19,8 @@ export {
 } from 'cyber-agentkit'
 export type {
 	ReferenceListReport,
+	ReferenceLoadEntry,
 	ReferenceSearchReport,
-	ReferenceShowEntry,
 } from 'cyber-agentkit/commands'
 export { run } from './cli.ts'
 export type {
