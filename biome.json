@@ -3,7 +3,7 @@
 	"extends": ["@repobuddy/biome/recommended"],
 	"files": {
 		"includes": [
-			"!renovate.json",
+			"!.github/renovate.json",
 			"!**/.claude/settings.json",
 			"!**/.claude/settings.local.json",
 			"!**/coverage",
