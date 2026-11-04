@@ -15,7 +15,7 @@ A skill and a reference differ in when they cost context.
 | --- | --- | --- |
 | Loaded at session start | its `name` and `description`, for every installed skill | nothing |
 | Loaded when used | the `SKILL.md` body, when the agent activates it | the whole document, when something asks for it by name |
-| Found by | the harness matching the `description` to the task | a name someone wrote down, or [`reference search`](/cli/reference/#reference-search) |
+| Found by | the harness matching the `description` to the task | a name someone wrote down, or [`reference search`](/cli/reference/#reference-list-and-reference-search) |
 | Good for | a capability the agent should reach for unprompted | instructions another instruction points to |
 
 The Agent Skills specification puts the startup cost at roughly 100 tokens of metadata per skill, with the body loaded on activation and a skill's own resources on demand. That is cheap per skill and adds up per session: every installed skill pays it in every conversation, used or not.
@@ -36,11 +36,11 @@ References resolve through tiers, highest precedence first:
 | Tier | Where |
 | --- | --- |
 | `managed` | a folder beside the managed settings of the harness you run, for a machine owner |
-| `project` | `.agents/references/`, committed with the repository |
+| `repo` | `.agents/references/`, committed with the repository |
 | `user` | `~/.agents/references/` |
 | `plugin` | a `references/` folder shipped by this package, by a plugin your harness has enabled, or by a declared dependency |
 
-In a monorepo, the project tier is read in the folder you work in and each folder above it up to the repository root, nearest first, so a package can override a reference the whole repository shares. The [CLI page](/cli/reference/#tiers) has the details.
+In a monorepo, a folder below the repository root can hold its own `.agents/references/`, a project section that `reference load` delivers after the main document. Write one with `--in <folder>`. The [CLI page](/cli/reference/#tiers) has the details.
 
 Documents written for the older [`governance`](/cli/governance/) command, in `governances/` folders, are no longer read. Move them to the `references/` folder of the same tier.
 
@@ -59,11 +59,11 @@ Renaming a reference that has already shipped breaks every caller that names it.
 
 ## How layers combine
 
-When more than one layer holds a name, the higher document decides how it combines with the ones below, in its frontmatter:
+When more than one layer holds a name, the higher document says how it applies over the ones below, in its frontmatter:
 
 ```md
 ---
-merge: merge-sections
+merge: patch
 ---
 
 ## Testing
@@ -71,12 +71,13 @@ merge: merge-sections
 Use the fixtures in `test/fixtures`.
 ```
 
-- **`first-wins`**, the default: the higher document replaces everything below it.
-- **`combine`**: every layer is returned whole, highest first, each labeled.
-- **`merge-sections`**: the higher document replaces the lower one heading by heading, so a project can override one section of a shared reference and keep the rest. A `<!-- merge: combine -->` line under a heading keeps both versions of that section, and `<!-- merge: remove -->` drops it.
+- **`replace`**: the higher document replaces everything below it.
+- **`patch`**, the default: the higher document replaces the matching sections below it, heading by heading, so a project can override one section of a shared reference and keep the rest.
+- **`combine`**: both bodies are kept.
+- **`remove`**: the contribution is dropped.
 
-Write a reference as top-level `##` sections with no `#` title. `merge-sections` matches a section by its full heading path, so under a `#` title every section's path starts with that title: an override that repeats it replaces the whole document, and one that leaves it out has its sections added as duplicates. [`reference create`](/cli/reference/#reference-create) writes this shape, marks an override `merge-sections`, and warns on a `#` heading.
+To build on another reference, run [`reference customize <name> --extends <step>...`](/cli/reference/#reference-create-customize-and-delete).
 
-The resolver never compares prose. If two layers contradict each other, the merge mode decides which text survives; deciding which is *right* is left to whoever reads the result.
+The resolver never compares prose. If two layers contradict each other, the merge operation decides which text survives; deciding which is *right* is left to whoever reads the result.
 
-[`reference load --trace`](/cli/reference/#--trace) shows which layer answered and why the others did not, and [`reference list`](/cli/reference/#reference-list) marks every shadowed layer. To see where to put an override, run [`reference where <name>`](/cli/reference/#reference-where).
+[`reference load --trace`](/cli/reference/#reference-load) shows which layer answered and why the others did not, and `reference list` marks every hidden layer. To see where to put an override, run [`reference where <name>`](/cli/reference/#reference-where).

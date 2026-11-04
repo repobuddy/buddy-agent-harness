@@ -222,7 +222,7 @@ When there are findings, each repair moves into `help`, one entry per distinct p
 type DoctorReference = { name: string; tier: ReferenceTier; path: string; status: string }
 ```
 
-One reference row: its name, the tier holding it, the file's path, and the status [`reference list`](/cli/reference/#reference-list) gives it, such as `used`.
+One reference row: its name, the tier holding it, the file's path, and the status [`reference list`](/cli/reference/#reference-list-and-reference-search) gives it, such as `used`.
 
 ## doctorCommand
 

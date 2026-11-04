@@ -17,7 +17,7 @@ The package publishes one binary. `init` writes a repository's canonical configu
 | [`mcp-reconcile/`](./mcp-reconcile/README.md) | Importing a harness-side MCP change back into the golden set, one approved field at a time |
 | [`diagnosis-report/`](./diagnosis-report/README.md) | The one output shape every family is reported through |
 | [`governance-overrides/`](./governance-overrides/README.md) | Where a governance comes from when someone has overridden it |
-| [`references/`](./references/README.md) | How a reference is read by name, found by search, and layered across tiers |
+| [`references/`](./references/README.md) | How this package offers the `reference` command from `cyber-agentkit` |
 | [`entry-point/`](./entry-point/README.md) | How the package is called, and what it answers with |
 | [`command-output/`](./command-output/README.md) | How a result becomes the bytes on stdout, for every command |
 
