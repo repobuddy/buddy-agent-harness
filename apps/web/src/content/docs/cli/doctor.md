@@ -50,8 +50,8 @@ instructions[2]{harness,path,kind,status}:
 globalInstructions[1]{harness,path,kind,status}:
   claude-code,~/.claude/CLAUDE.md,import,ok
 references[2]{name,tier,path,status}:
-  testing,project,~/code/acme/.agents/references/testing.md,used
-  testing,user,~/.agents/references/testing.md,shadowed by project (first-wins)
+  testing,repo,~/code/acme/.agents/references/testing.md,used
+  testing,user,~/.agents/references/testing.md,shadowed by repo (replace)
 findings[4]{path,problem,detail}:
   .claude/skills,degraded,expected a directory but found a regular file — checkout without core.symlinks
   .windsurf/skills,missing,no bridge at this path — the harness sees zero project skills
@@ -113,8 +113,8 @@ instructions:
 
 references:
   name     tier     path                                      status
-  testing  project  ~/code/acme/.agents/references/testing.md  used
-  testing  user     ~/.agents/references/testing.md            shadowed by project (first-wins)
+  testing  repo     ~/code/acme/.agents/references/testing.md  used
+  testing  user     ~/.agents/references/testing.md            shadowed by repo (replace)
 
 findings:
   path                   problem                 detail
@@ -229,7 +229,7 @@ Where the bridge is a symlink, the file it replaces may hold content of its own.
 
 ## References
 
-`doctor` also reports the [references](/agent-configuration/references/) the managed, project, and user tiers hold: one row per name per layer, `{ name, tier, path, status }`. `status` is the one [`reference list`](/cli/reference/#reference-list) gives, such as `used` or `shadowed by project (first-wins)`. What a plugin ships is left out; that is the plugin's own business. The section is never a finding: a reference is a choice someone made, not a fault, and it never changes `doctor`'s exit code.
+`doctor` also reports the [references](/agent-configuration/references/) the managed, repo, and user tiers hold: one row per name per layer, `{ name, tier, path, status }`. `status` is the one [`reference list`](/cli/reference/#reference-list-and-reference-search) gives, such as `used` or `shadowed by repo (replace)`. What a plugin ships is left out; that is the plugin's own business. The section is never a finding: a reference is a choice someone made, not a fault, and it never changes `doctor`'s exit code.
 
 When no layer holds a reference, the section is the sentence `0 references — no layer outside the plugin tier holds one` rather than an empty list, the same "state the zero" convention the rest of this report follows. The path is on the row because the tier does not settle it: the managed tier holds a `references/` folder beside each detected harness's managed files. The home directory is collapsed to `~`, as in `bin`.
 
