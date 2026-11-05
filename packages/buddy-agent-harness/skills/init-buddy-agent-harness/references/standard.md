@@ -14,7 +14,7 @@ Optional, only when the repository already has content for them: `.agents/AGENTS
 
 ## Constraints
 
-- **Do not create `.agents/rules/`, `.agents/commands/`, or `.agents/agents/`.** Only `.agents/skills/` is read by any harness. Creating the others and calling them standard is invention.
+- **Scaffold only the paths above.** `.agents/skills/` is the one `.agents/` folder harnesses read. Other folders, such as `.agents/rules/`, `.agents/commands/`, or `.agents/agents/`, are the project's choice: `init` creates none of them, leaves any that exist, and never calls them standard.
 - **Do not invent policy for `AGENTS.md`.** Write only content the user authored or approved. Deriving facts from the repository is not invention; asserting rules nobody agreed to is. See `agents-md.md`.
 - Call `.agents/` a convention, not a standard, in any user-facing output.
 - `AGENTS.md` has no schema and no required sections. Do not impose one.

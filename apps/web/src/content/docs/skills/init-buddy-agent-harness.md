@@ -83,7 +83,7 @@ These hold regardless of what you ask for mid-run:
 - Never convert tool settings between formats without a documented mapping. Unmapped settings stay canonical.
 - A user-authored settings file is amended in place, never round-tripped through `JSON.parse`. Key order, indentation, and comments survive the edit, because [harnesses disagree about whether comments are allowed](/agent-configuration/harness-differences/#json-configuration-disagrees-about-comments).
 - Symlinks belong in version control. They stay tracked and are not added to `.gitignore`.
-- Only `.agents/skills/` is an established convention. `.agents/rules/`, `.agents/commands/`, and `.agents/agents/` are not invented and presented as standard.
+- `init` writes `AGENTS.md` and `.agents/skills/`, and treats only those as standard. Other folders under `.agents/`, such as `.agents/agents/` or `.agents/commands/`, are your project's choice: `init` does not create them, leaves any you have, and does not call them standard.
 - Local agent configuration only: no workflows, Actions, repository settings, security scanning, branch rules, or unrelated project files.
 
 ## Which harnesses get enabled
