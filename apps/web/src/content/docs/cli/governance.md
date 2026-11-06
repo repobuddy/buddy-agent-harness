@@ -59,7 +59,7 @@ time: `buddy-agent-harness governance show <name> --overrides-only`, run only fr
 copy, so a skill's own tested copy is never silently replaced by whatever this package happens to
 ship.
 
-With `--overrides-only`, `governance show` exits non-zero and writes nothing when no override layer
+With `--overrides-only`, `governance show` exits `1` with a `governance-not-found` error when no override layer
 holds the name — including when the package layer would have.
 
 ## `governance list`
@@ -109,8 +109,7 @@ buddy-agent-harness governance show agent-tool-output --format json
 {"name":"agent-tool-output","scope":"project","path":"~/code/acme/.agents/governances/agent-tool-output.md","content":"# Agent tool output\n\n..."}
 ```
 
-Exits `1` when no layer holds the name, writing the reason to stderr and nothing to stdout — a
-caller reading the document off stdout must never receive prose about not finding one.
+Exits `1` when no layer holds the name, with a coded `governance-not-found` error on stdout (`error`, `code`, `name`, and a `help` line pointing at `reference list`) instead of the document.
 
 ### Governance names
 

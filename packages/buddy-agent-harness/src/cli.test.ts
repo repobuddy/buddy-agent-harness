@@ -3,7 +3,7 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { cli } from 'clibuilder'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { defaultFormat, run } from './cli.ts'
+import { defaultFormat, rootCommand, run } from './cli.ts'
 import { buildDoctorReport, doctorCommand } from './diagnose-bridges/doctor.command.ts'
 import { governanceCommand } from './governance-overrides/governance.command.ts'
 import * as publicApi from './index.ts'
@@ -24,8 +24,9 @@ const stderr = vi.spyOn(process.stderr, 'write').mockImplementation(() => true)
 /** A stand-in for the built application, resolving `parse` to whatever the command would return. */
 function stubApp(parse: ReturnType<typeof vi.fn>) {
 	const command: ReturnType<typeof vi.fn> = vi.fn(() => ({ command, parse }))
-	mockedCli.mockReturnValue({ command } as never)
-	return command
+	const defaultRoute: ReturnType<typeof vi.fn> = vi.fn(() => ({ command }))
+	mockedCli.mockReturnValue({ command, default: defaultRoute } as never)
+	return Object.assign(command, { defaultRoute })
 }
 
 beforeEach(() => {
@@ -54,6 +55,27 @@ describe('run', () => {
 		expect(command).toHaveBeenCalledWith(governanceCommand)
 		expect(parse).toHaveBeenCalledWith(argv)
 		expect(process.argv).toEqual(before)
+	})
+
+	it('routes a bare invocation to the doctor report under the home header', async () => {
+		const command = stubApp(vi.fn(async () => undefined))
+
+		await run(['node', 'buddy-agent-harness'])
+
+		expect(command.defaultRoute).toHaveBeenCalledWith(
+			expect.objectContaining({ options: doctorCommand.options, run: expect.any(Function) }),
+		)
+	})
+
+	it('answers a bare invocation with the home header followed by the report, without the bin path twice', async () => {
+		const command = stubApp(vi.fn(async () => undefined))
+		await run(['node', 'buddy-agent-harness'])
+		const [{ run: bare }] = command.defaultRoute.mock.calls[0] as [{ run(args: object): Promise<unknown> }]
+
+		const answer = JSON.stringify(await bare({ root: process.cwd() }))
+
+		expect(answer).toContain('"description":"Initialize agent harness')
+		expect(answer).toContain('"findings"')
 	})
 
 	it('builds the application per call, so one invocation cannot leak into the next', async () => {
@@ -175,6 +197,20 @@ describe('run', () => {
 			delete (globalThis as Record<string, unknown>)['__PACKAGE_VERSION__']
 			vi.resetModules()
 		}
+	})
+})
+
+describe('the commands', () => {
+	type Node = { name: string; examples?: readonly unknown[]; commands?: readonly Node[] }
+	const leaves = (node: Node): Node[] => (node.commands?.length ? node.commands.flatMap(leaves) : [node])
+
+	// The `reference` subcommands are built by cyber-agentkit and carry no examples there, so the
+	// commands this package defines are checked, not that group.
+	it('gives every command in rootCommand this package defines at least one example', () => {
+		const owned = (rootCommand.commands as readonly Node[]).filter(({ name }) => name !== referenceCommand.name)
+		const missing = owned.flatMap(leaves).filter(({ examples }) => !examples?.length)
+
+		expect(missing.map(({ name }) => name)).toEqual([])
 	})
 })
 

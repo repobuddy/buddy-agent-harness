@@ -13,6 +13,8 @@ const mockedInitializeHarnesses = vi.mocked(initializeHarnesses)
 const stderr = vi.spyOn(process.stderr, 'write').mockImplementation(() => true)
 const stdout = vi.spyOn(process.stdout, 'write').mockImplementation(() => true)
 
+const stdoutText = () => stdout.mock.calls.map(([value]) => String(value)).join('')
+
 function run({
 	format = 'toon',
 	...args
@@ -88,7 +90,8 @@ describe('init command', () => {
 			throw 'unavailable'
 		})
 		expect(run({ format: 'json', root: '/workspace' })).toBe(1)
-		expect(stderr).toHaveBeenCalledWith('error: Harness initialization failed.\n')
+		expect(JSON.parse(stdoutText())).toMatchObject({ error: 'Harness initialization failed.', code: 'command-failed' })
+		expect(stderr).not.toHaveBeenCalled()
 		expect(process.exitCode).toBeUndefined()
 	})
 
@@ -112,8 +115,12 @@ describe('init command', () => {
 			harnesses: ['windsurf', 'codex'],
 		})
 
-		expect(run({ format: 'json', harness: 'aider', root: '/workspace' })).toBe(1)
-		expect(stderr).toHaveBeenCalledWith(expect.stringContaining('Unsupported harness: aider'))
+		stdout.mockClear()
+		expect(run({ format: 'json', harness: 'aider', root: '/workspace' })).toBe(2)
+		expect(JSON.parse(stdoutText())).toMatchObject({
+			error: expect.stringContaining('Unsupported harness: aider'),
+			code: 'unsupported-harness',
+		})
 	})
 
 	it('registers its command group', () => {

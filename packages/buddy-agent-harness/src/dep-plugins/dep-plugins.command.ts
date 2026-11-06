@@ -74,6 +74,10 @@ export const depPluginsCommand: cli.Command = command({
 			type: t.boolean().optional(),
 		},
 	},
+	examples: [
+		{ command: 'buddy-agent-harness dep-plugins', description: 'Write the marketplace catalog for dependency plugins' },
+		{ command: 'buddy-agent-harness dep-plugins --check', description: 'Fail when the catalog is stale (CI)' },
+	],
 	run(args) {
 		try {
 			const root = args.root ?? process.cwd()

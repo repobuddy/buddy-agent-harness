@@ -1,6 +1,6 @@
 import type { cli } from 'clibuilder'
 import { command, t } from 'clibuilder'
-import { CliError, exitCodes, result } from 'clibuilder/axi'
+import { CliError, empty, result } from 'clibuilder/axi'
 import { fail } from '../command-output/command-output.ts'
 import { GitBridgeState } from '../diagnose-bridges/git-bridge-state.ts'
 import { projectionRecordPath } from '../diagnose-mcp/mcp-baseline.ts'
@@ -32,6 +32,10 @@ export const mcpProjectCommand: cli.Command = command({
 			type: t.boolean().optional(),
 		},
 	},
+	examples: [
+		{ command: 'buddy-agent-harness mcp project', description: 'Preview what would be projected' },
+		{ command: 'buddy-agent-harness mcp project --write', description: 'Project the golden set into each harness' },
+	],
 	run(args) {
 		try {
 			const root = args.root ?? process.cwd()
@@ -40,16 +44,15 @@ export const mcpProjectCommand: cli.Command = command({
 			if (plan.kind === 'unreadable') {
 				// Position only: the parser's message quotes the line, and that line may hold a credential.
 				const at = plan.position ? ` at line ${plan.position.line}, column ${plan.position.column}` : ''
-				process.stderr.write(`error: ${goldenSetPath} does not parse${at}.\n`)
-				throw CliError.reported(exitCodes.error)
+				throw new CliError(`${goldenSetPath} does not parse${at}.`, {
+					code: 'golden-set-unreadable',
+					help: `Fix the TOML syntax in ${goldenSetPath}, then re-run.`,
+				})
 			}
 			if (plan.kind === 'absent') {
-				return result({
-					golden: `0 servers — no golden set at ${goldenSetPath}`,
-					mode: 'nothing to project',
-					actions: '0 changes',
-					record: 'not written',
-				} satisfies ProjectionReport)
+				return empty(`0 servers — no golden set at ${goldenSetPath}`, {
+					help: `Create ${goldenSetPath} with the MCP servers to project, then run \`buddy-agent-harness mcp project\`.`,
+				})
 			}
 			const report: ProjectionReport = {
 				golden: goldenSetPath,

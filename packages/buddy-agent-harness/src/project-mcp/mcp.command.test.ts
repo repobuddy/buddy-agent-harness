@@ -38,9 +38,10 @@ describe('mcp project command', () => {
 
 		expect(run({ format: 'json' })).toBe(0)
 
-		const report = JSON.parse(stdoutText())
-		expect(report.mode).toBe('nothing to project')
-		expect(report.record).toBe('not written')
+		expect(JSON.parse(stdoutText())).toEqual({
+			empty: '0 servers — no golden set at .agents/buddy-agent-harness/mcp.toml',
+			help: [expect.stringContaining('buddy-agent-harness mcp project')],
+		})
 	})
 
 	it('fails with the line and column when the golden set does not parse at a known position', () => {
@@ -48,9 +49,12 @@ describe('mcp project command', () => {
 
 		expect(run({ format: 'json' })).toBe(1)
 
-		expect(stderr).toHaveBeenCalledWith(
-			'error: .agents/buddy-agent-harness/mcp.toml does not parse at line 4, column 9.\n',
-		)
+		expect(JSON.parse(stdoutText())).toMatchObject({
+			error: '.agents/buddy-agent-harness/mcp.toml does not parse at line 4, column 9.',
+			code: 'golden-set-unreadable',
+			help: [expect.stringContaining('Fix the TOML syntax')],
+		})
+		expect(stderr).not.toHaveBeenCalled()
 	})
 
 	it('fails with no position when the golden set does not parse at a position it cannot name', () => {
@@ -58,7 +62,10 @@ describe('mcp project command', () => {
 
 		expect(run({ format: 'json' })).toBe(1)
 
-		expect(stderr).toHaveBeenCalledWith('error: .agents/buddy-agent-harness/mcp.toml does not parse.\n')
+		expect(JSON.parse(stdoutText())).toMatchObject({
+			error: '.agents/buddy-agent-harness/mcp.toml does not parse.',
+			code: 'golden-set-unreadable',
+		})
 	})
 
 	it('reports a dry run by default, naming the record as not written', () => {
@@ -118,12 +125,12 @@ describe('mcp project command', () => {
 		mockedProjectMcp.mockReturnValue({ kind: 'absent' })
 
 		run({ format: 'json' })
-		expect(stdoutText()).toContain('"golden":')
+		expect(stdoutText()).toContain('"empty":')
 
 		stdout.mockClear()
 		run({ format: 'text' })
-		expect(stdoutText()).toContain('golden:')
-		expect(stdoutText()).not.toContain('"golden":')
+		expect(stdoutText()).toContain('empty:')
+		expect(stdoutText()).not.toContain('"empty":')
 	})
 
 	it('reports a thrown Error message and a generic one for a non-Error throw', () => {
@@ -131,13 +138,14 @@ describe('mcp project command', () => {
 			throw new Error('git failed')
 		})
 		expect(run({ format: 'json' })).toBe(1)
-		expect(stderr).toHaveBeenCalledWith('error: git failed\n')
+		expect(JSON.parse(stdoutText())).toMatchObject({ error: 'git failed', code: 'command-failed' })
 
-		stderr.mockClear()
+		stdout.mockClear()
 		mockedProjectMcp.mockImplementationOnce(() => {
 			throw 'unavailable'
 		})
 		expect(run({ format: 'json' })).toBe(1)
-		expect(stderr).toHaveBeenCalledWith('error: MCP projection failed.\n')
+		expect(JSON.parse(stdoutText())).toMatchObject({ error: 'MCP projection failed.', code: 'command-failed' })
+		expect(stderr).not.toHaveBeenCalled()
 	})
 })

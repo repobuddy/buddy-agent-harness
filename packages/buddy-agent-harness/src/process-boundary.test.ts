@@ -25,10 +25,22 @@ describe('the process boundary', () => {
 	it('applies a reported failure to the process', () => {
 		const { status, stderr, stdout } = bah('doctor', '--harness', 'aider')
 
-		expect(status).toBe(1)
-		expect(stderr).toContain('Unsupported harness: aider')
-		// The failure belongs on stderr alone: the report is what stdout carries.
-		expect(stdout).toBe('')
+		expect(status).toBe(2)
+		// AXI rule 6: the coded error is on stdout, where the report would be; stderr stays empty.
+		expect(stdout).toContain('Unsupported harness: aider')
+		expect(stdout).toContain('code: unsupported-harness')
+		expect(stdout).toContain('help')
+		expect(stderr).toBe('')
+	})
+
+	it('answers a bare invocation with the home header and the doctor report', () => {
+		const { status, stdout } = bah('--format', 'json')
+
+		expect(status).toBe(0)
+		const home = JSON.parse(stdout)
+		expect(home).toHaveProperty('bin')
+		expect(home.description).toContain('agent harness')
+		expect(home).toHaveProperty('findings')
 	})
 
 	it("applies a rejected invocation's usage code to the process", () => {
@@ -58,10 +70,11 @@ describe('a generated launcher', () => {
 	}
 
 	it('applies a reported failure to the process', () => {
-		const { status, stdout } = launcher('repair', 'doctor.mjs', '--harness', 'aider')
+		const { status, stdout, stderr } = launcher('repair', 'doctor.mjs', '--harness', 'aider')
 
-		expect(status).toBe(1)
-		expect(stdout).toBe('')
+		expect(status).toBe(2)
+		expect(stdout).toContain('code: unsupported-harness')
+		expect(stderr).toBe('')
 	})
 
 	it("applies a rejected invocation's usage code to the process", () => {

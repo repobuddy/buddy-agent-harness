@@ -5,7 +5,7 @@ description: The buddy-agent-harness command line, and when to use it instead of
 
 `buddy-agent-harness` provides six commands. `init` links the canonical `.agents/skills` directory into the harnesses that cannot read it directly; `doctor` reports whether those links still resolve, along with the instruction bridges into `AGENTS.md` that the `init-buddy-agent-harness` skill writes, and any drift between a [golden MCP server set](/agent-configuration/mcp-servers/) and each harness's copy of it; [`mcp project`](/cli/mcp/) writes that golden set into each harness's own MCP file, and [`mcp reconcile`](/cli/mcp/#mcp-reconcile) imports a harness-side change back into it; [`dep-plugins`](/cli/dep-plugins/) derives a marketplace catalog for plugins shipped by the repository's own dependencies, so a harness can install them; [`reference`](/cli/reference/) reads on-demand [reference documents](/agent-configuration/references/) by name through layered tiers; [`governance`](/cli/governance/), which `reference` replaces, is deprecated.
 
-`doctor` is the one you run on its own:
+Run bare, `buddy-agent-harness` answers with the `doctor` report under a `bin:` and `description:` header. `doctor` is the one you run on its own:
 
 ```sh
 npx -y buddy-agent-harness doctor
@@ -27,4 +27,4 @@ Both commands print TOON by default and accept `--format text` for a report a pe
 npx -y buddy-agent-harness doctor --format text
 ```
 
-Full flags, output shape, and conflict behavior: [`init`](/cli/init/), [`doctor`](/cli/doctor/), [`mcp project` and `mcp reconcile`](/cli/mcp/), [`dep-plugins`](/cli/dep-plugins/), [`reference`](/cli/reference/), and [`governance`](/cli/governance/).
+Every command carries `examples` in its `--help`. A failure is a coded error on stdout, with a `help` line, never prose on stderr. Full flags, output shape, and conflict behavior: [`init`](/cli/init/), [`doctor`](/cli/doctor/), [`mcp project` and `mcp reconcile`](/cli/mcp/), [`dep-plugins`](/cli/dep-plugins/), [`reference`](/cli/reference/), and [`governance`](/cli/governance/).

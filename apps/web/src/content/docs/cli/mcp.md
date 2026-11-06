@@ -90,6 +90,8 @@ record: .agents/buddy-agent-harness/mcp.projected.json
 
 A server already in agreement produces no row at all, so a run with nothing to do states its zero rather than printing an empty section.
 
+With no golden set, both `mcp project` and `mcp reconcile` answer `empty: 0 servers — no golden set at …` with a `help` line saying what to create, and exit `0`. A golden set that does not parse is a coded `golden-set-unreadable` error on stdout, exit `1`, naming the line and column but never quoting the line. `mcp reconcile` refuses a bad `--accept` with an `accept-rejected` error whose `reasons` list every refusal, having written nothing.
+
 ## What it keeps
 
 Every byte outside the entry being written stays as it was, comments included. That holds in the shared files too: `.gemini/settings.json` also carries Gemini CLI's other settings, and `.codex/config.toml` all of Codex's project configuration.

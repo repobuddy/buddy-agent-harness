@@ -108,15 +108,22 @@ describe('doctor command', () => {
 
 	// Returned rather than written: a caller that is not the process learns of the failure too.
 	it('reports an unsupported harness and a failed diagnosis', async () => {
-		expect(await run({ format: 'json', harness: 'aider' })).toBe(1)
-		expect(stderr).toHaveBeenCalledWith(expect.stringContaining('Unsupported harness: aider'))
+		expect(await run({ format: 'json', harness: 'aider' })).toBe(2)
+		expect(JSON.parse(stdout.mock.calls.map(([value]) => String(value)).join(''))).toMatchObject({
+			error: expect.stringContaining('Unsupported harness: aider'),
+			code: 'unsupported-harness',
+		})
 
-		stderr.mockClear()
+		stdout.mockClear()
 		mockedDiagnoseBridges.mockImplementationOnce(() => {
 			throw 'unavailable'
 		})
 		expect(await run({ format: 'json' })).toBe(1)
-		expect(stderr).toHaveBeenCalledWith('error: Harness diagnosis failed.\n')
+		expect(JSON.parse(stdout.mock.calls.map(([value]) => String(value)).join(''))).toMatchObject({
+			error: 'Harness diagnosis failed.',
+			code: 'command-failed',
+		})
+		expect(stderr).not.toHaveBeenCalled()
 		expect(process.exitCode).toBeUndefined()
 	})
 })

@@ -1,5 +1,5 @@
 import type { cli } from 'clibuilder'
-import { type Format, isCliError, printAnswer } from 'clibuilder/axi'
+import { type CliError, type Format, isCliError, printAnswer, result } from 'clibuilder/axi'
 
 type Run = (this: { format: Format }, args: never) => unknown
 
@@ -13,21 +13,35 @@ function finish(answer: unknown, format: Format): number {
 	return 0
 }
 
-function reported(error: unknown): number {
-	if (isCliError(error)) return error.exitCode
-	throw error
+/** What the cli prints on stdout for a thrown `CliError`: `error`, `code`, the details, then `help`. */
+function printError(error: CliError, format: Format): void {
+	const report = {
+		error: error.message,
+		code: error.code,
+		...error.details,
+		...(error.help.length ? { help: error.help } : {}),
+	}
+	const text = printAnswer(result(report), format)
+	if (text !== undefined) process.stdout.write(text)
+}
+
+function reported(error: unknown, format: Format): number {
+	if (!isCliError(error)) throw error
+	// `CliError.reported()` carries the default code and renders nothing: its answer was already printed.
+	if (error.code !== 'error') printError(error, format)
+	return error.exitCode
 }
 
 /**
  * Runs a command's `run()` the way the cli does: with `this.format`, printing the answer it returns,
- * and resolving to the exit code a thrown `CliError` carries. Tests that call `run` directly would
+ * printing a thrown `CliError` as the cli does, and resolving to the exit code it carries. Tests that call `run` directly would
  * otherwise see neither.
  */
 export async function runCommand(command: cli.Command, args: object, format: Format = 'json'): Promise<number> {
 	try {
 		return finish(await runOf(command).call({ format }, args as never), format)
 	} catch (error) {
-		return reported(error)
+		return reported(error, format)
 	}
 }
 
@@ -36,6 +50,6 @@ export function runCommandSync(command: cli.Command, args: object, format: Forma
 	try {
 		return finish(runOf(command).call({ format }, args as never), format)
 	} catch (error) {
-		return reported(error)
+		return reported(error, format)
 	}
 }

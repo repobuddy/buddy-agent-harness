@@ -1,6 +1,6 @@
 import type { cli } from 'clibuilder'
 import { command, t } from 'clibuilder'
-import { CliError, exitCodes, result } from 'clibuilder/axi'
+import { CliError, empty, result } from 'clibuilder/axi'
 import { fail } from '../command-output/command-output.ts'
 import { GitBridgeState } from '../diagnose-bridges/git-bridge-state.ts'
 import { projectionRecordPath } from '../diagnose-mcp/mcp-baseline.ts'
@@ -30,6 +30,10 @@ export const mcpReconcileCommand: cli.Command = command({
 			type: t.array(t.string()).optional(),
 		},
 	},
+	examples: [
+		{ command: 'buddy-agent-harness mcp reconcile', description: 'List harness-side changes the golden set lacks' },
+		{ command: 'buddy-agent-harness mcp reconcile --accept <path>', description: 'Import one approved field' },
+	],
 	run(args) {
 		try {
 			const root = args.root ?? process.cwd()
@@ -38,20 +42,22 @@ export const mcpReconcileCommand: cli.Command = command({
 			if (plan.kind === 'unreadable') {
 				// Position only: the parser's message quotes the line, and that line may hold a credential.
 				const at = plan.position ? ` at line ${plan.position.line}, column ${plan.position.column}` : ''
-				process.stderr.write(`error: ${goldenSetPath} does not parse${at}.\n`)
-				throw CliError.reported(exitCodes.error)
+				throw new CliError(`${goldenSetPath} does not parse${at}.`, {
+					code: 'golden-set-unreadable',
+					help: `Fix the TOML syntax in ${goldenSetPath}, then re-run.`,
+				})
 			}
 			if (plan.kind === 'rejected') {
-				process.stderr.write(`error: nothing written.\n${plan.reasons.map((reason) => `- ${reason}\n`).join('')}`)
-				throw CliError.reported(exitCodes.error)
+				throw new CliError('nothing written.', {
+					code: 'accept-rejected',
+					details: { reasons: plan.reasons },
+					help: 'Run `buddy-agent-harness mcp reconcile` without --accept to list the fields that can be approved.',
+				})
 			}
 			if (plan.kind === 'absent') {
-				return result({
-					golden: `0 servers — no golden set at ${goldenSetPath}`,
-					mode: 'nothing to reconcile into',
-					fields: '0 fields',
-					record: 'not written',
-				} satisfies ReconcileReport)
+				return empty(`0 servers — no golden set at ${goldenSetPath}`, {
+					help: `Create ${goldenSetPath} first; there is nothing to reconcile into.`,
+				})
 			}
 			const report: ReconcileReport = {
 				golden: goldenSetPath,

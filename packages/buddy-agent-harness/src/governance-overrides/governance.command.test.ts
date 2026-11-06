@@ -168,14 +168,14 @@ describe('governance list', () => {
 		failure.value = 'unavailable'
 
 		expect(list({ root: repository() })).toBe(1)
-		expect(stderr).toHaveBeenCalledWith('error: Governance listing failed.\n')
+		expect(JSON.parse(written())).toMatchObject({ error: 'Governance listing failed.', code: 'command-failed' })
 	})
 
 	it('reports the message of a failure that carries one', () => {
 		failure.value = new Error('layer unreadable')
 
 		expect(list({ root: repository() })).toBe(1)
-		expect(stderr).toHaveBeenCalledWith('error: layer unreadable\n')
+		expect(JSON.parse(written())).toMatchObject({ error: 'layer unreadable', code: 'command-failed' })
 	})
 })
 
@@ -211,34 +211,38 @@ describe('governance show', () => {
 
 	// The whole point of step 2 of the lookup order: the answer is an override or it is nothing, and
 	// the exit code is what the caller reads.
-	it('exits non-zero, writing nothing to stdout, when no override layer holds the name', () => {
+	it('exits non-zero, with the coded error on stdout, when no override layer holds the name', () => {
 		expect(show('skill-design', { root: repository(), 'overrides-only': true })).toBe(1)
 
-		expect(stdout).not.toHaveBeenCalled()
-		expect(stderr).toHaveBeenCalledWith(
-			'error: no override for governance "skill-design" in the project, user, or machine-wide layer.\n',
+		expect(written()).toContain(
+			'error: no override for governance "skill-design" in the project, user, or machine-wide layer.',
 		)
+		expect(written()).toContain('code: governance-not-found')
+		expect(written()).toContain('name: skill-design')
+		expect(written()).toContain('Run `buddy-agent-harness reference list` to see what is available.')
+		expect(stderr).not.toHaveBeenCalledWith(expect.stringContaining('error:'))
 	})
 
 	it('exits non-zero when no layer at all holds the name', () => {
 		expect(show('skill-design', { root: repository() })).toBe(1)
 
-		expect(stdout).not.toHaveBeenCalled()
-		expect(stderr).toHaveBeenCalledWith('error: no governance named "skill-design" in any layer.\n')
+		expect(written()).toContain('error: no governance named "skill-design" in any layer.')
+		expect(written()).toContain('code: governance-not-found')
 	})
 
 	it('rejects a name that is a path rather than reading outside the layer', () => {
 		expect(show('../../../etc/passwd', { root: repository() })).toBe(1)
 
-		expect(stdout).not.toHaveBeenCalled()
-		expect(stderr).toHaveBeenCalledWith(expect.stringContaining('is not a governance name'))
+		expect(written()).toContain('is not a governance name')
+		expect(written()).toContain('code: command-failed')
 	})
 
 	it('reports a failure it cannot read a message from', () => {
 		failure.value = 'unavailable'
 
 		expect(show('agent-tool-output', { root: repository() })).toBe(1)
-		expect(stderr).toHaveBeenCalledWith('error: Governance lookup failed.\n')
+		expect(written()).toContain('error: Governance lookup failed.')
+		expect(written()).toContain('code: command-failed')
 	})
 })
 

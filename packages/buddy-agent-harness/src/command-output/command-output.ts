@@ -1,14 +1,20 @@
 import { sep } from 'node:path'
 import { type Answer, CliError, exitCodes, type Format, isCliError, printAnswer } from 'clibuilder/axi'
+import { type HarnessName, parseHarnesses } from '../harness-registry/harness-registry.ts'
 
 /**
- * Reports a failure on stderr, not stdout — stdout carries what an agent parses — and fails the cli
- * with the exit code. A `CliError` the cli already reports is rethrown untouched.
+ * AXI §6: a failure is a coded error on stdout, in the caller's format, with a `help` line saying
+ * what to do next. A `CliError` the command already built is rethrown untouched; anything else
+ * becomes `command-failed`, exit code 1.
  */
-export function fail(error: unknown, fallback: string): never {
+export function fail(error: unknown, fallback: string, help?: string): never {
 	if (isCliError(error)) throw error
-	process.stderr.write(`error: ${error instanceof Error ? error.message : fallback}\n`)
-	throw CliError.reported(exitCodes.error)
+	throw new CliError(error instanceof Error ? error.message : fallback, {
+		code: 'command-failed',
+		exitCode: exitCodes.error,
+		...(help ? { help } : {}),
+		cause: error,
+	})
 }
 
 /**
@@ -31,4 +37,21 @@ export function collapseHome(home: string, path: string): string {
 
 export function displayBinPath(home: string, executable: string | undefined): string {
 	return executable ? collapseHome(home, executable) : 'buddy-agent-harness'
+}
+
+/**
+ * `parseHarnesses` for a command's `--harness`: an unsupported name is a usage error, exit code 2.
+ * The registry stays free of clibuilder, which the library entry treats as an optional peer.
+ */
+export function parseHarnessOption(value: string | undefined): HarnessName[] {
+	try {
+		return parseHarnesses(value)
+	} catch (error) {
+		throw new CliError((error as Error).message, {
+			code: 'unsupported-harness',
+			exitCode: exitCodes.usage,
+			help: 'Pass --harness as a comma-separated list of the supported names.',
+			cause: error,
+		})
+	}
 }

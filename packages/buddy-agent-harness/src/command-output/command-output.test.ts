@@ -1,7 +1,7 @@
 import { sep } from 'node:path'
 import { CliError, exitCodes, result } from 'clibuilder/axi'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { answerThenFail, collapseHome, displayBinPath, fail } from './command-output.ts'
+import { answerThenFail, collapseHome, displayBinPath, fail, parseHarnessOption } from './command-output.ts'
 
 const stdout = vi.spyOn(process.stdout, 'write').mockImplementation(() => true)
 const stderr = vi.spyOn(process.stderr, 'write').mockImplementation(() => true)
@@ -12,19 +12,24 @@ beforeEach(() => {
 })
 
 describe('fail', () => {
-	it('writes the message to stderr and fails the cli with the error code, already reported', () => {
-		const thrown = catchError(() => fail(new Error('boom'), 'fallback'))
+	it('throws a coded command-failed error with the error exit code, writing nothing itself', () => {
+		const thrown = catchError(() => fail(new Error('boom'), 'fallback', 'try again'))
 
-		expect(stderr).toHaveBeenCalledWith('error: boom\n')
 		expect(thrown).toBeInstanceOf(CliError)
-		expect((thrown as CliError).exitCode).toBe(exitCodes.error)
+		expect(thrown).toMatchObject({
+			message: 'boom',
+			code: 'command-failed',
+			exitCode: exitCodes.error,
+			help: ['try again'],
+		})
 		expect(stdout).not.toHaveBeenCalled()
+		expect(stderr).not.toHaveBeenCalled()
 	})
 
 	it('falls back to its own message for a throw that is not an Error', () => {
-		catchError(() => fail('boom', 'Diagnosis failed.'))
+		const thrown = catchError(() => fail('boom', 'Diagnosis failed.'))
 
-		expect(stderr).toHaveBeenCalledWith('error: Diagnosis failed.\n')
+		expect(thrown).toMatchObject({ message: 'Diagnosis failed.', code: 'command-failed', help: [] })
 	})
 
 	it('rethrows a CliError without writing it again', () => {
@@ -32,6 +37,25 @@ describe('fail', () => {
 
 		expect(catchError(() => fail(error, 'fallback'))).toBe(error)
 		expect(stderr).not.toHaveBeenCalled()
+	})
+})
+
+describe('parseHarnessOption', () => {
+	it('passes supported names through, and none for an absent option', () => {
+		expect(parseHarnessOption('codex, windsurf')).toEqual(['codex', 'windsurf'])
+		expect(parseHarnessOption(undefined)).toEqual([])
+	})
+
+	it('fails an unsupported name as a usage error with a code and help', () => {
+		const thrown = catchError(() => parseHarnessOption('aider'))
+
+		expect(thrown).toBeInstanceOf(CliError)
+		expect(thrown).toMatchObject({
+			message: expect.stringContaining('Unsupported harness: aider'),
+			code: 'unsupported-harness',
+			exitCode: exitCodes.usage,
+		})
+		expect((thrown as CliError).help).toHaveLength(1)
 	})
 })
 
