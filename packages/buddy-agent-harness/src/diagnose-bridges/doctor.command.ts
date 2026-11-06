@@ -3,11 +3,10 @@ import type { cli } from 'clibuilder'
 import { command, t } from 'clibuilder'
 import { result } from 'clibuilder/axi'
 import { listReferences, type ReferenceListLayerRow } from 'cyber-agentkit'
-import { collapseHome, displayBinPath, fail } from '../command-output/command-output.ts'
+import { collapseHome, displayBinPath, fail, parseHarnessOption } from '../command-output/command-output.ts'
 import { type ConfigurationFinding, diagnoseConfiguration } from '../diagnose-configuration/diagnose-configuration.ts'
 import { diagnoseMcp } from '../diagnose-mcp/diagnose-mcp.ts'
 import { diagnoseNonstandard } from '../diagnose-nonstandard/diagnose-nonstandard.ts'
-import { parseHarnesses } from '../harness-registry/harness-registry.ts'
 import { referenceLayers } from '../references/references.ts'
 import { type DiagnoseResult, diagnoseBridges } from './diagnose-bridges.ts'
 import { commandInvocation, type DoctorProblem, type RepairAction } from './doctor-guidance.ts'
@@ -82,56 +81,75 @@ export function buildDoctorReport(
 	}
 }
 
+const doctorOptions = {
+	root: {
+		description: 'Repository or package directory. Defaults to the current directory.',
+		type: t.string().optional(),
+	},
+	harness: {
+		description: 'Comma-separated harnesses to check in addition to Claude Code and Cursor, e.g. codex,gemini-cli.',
+		type: t.string().optional(),
+	},
+}
+
+const doctorDescription =
+	"Report whether this repository's harness bridges still resolve — skills into .agents/skills, instructions into AGENTS.md — and whether each harness's user-scope file loads ~/.agents/AGENTS.md. Read-only."
+
+/** The live report `doctor` answers with, shared with the bare invocation of the CLI. */
+export async function diagnoseReport(args: {
+	root?: string | undefined
+	harness?: string | undefined
+}): Promise<DoctorReport> {
+	try {
+		const harnesses = parseHarnessOption(args.harness)
+		const root = args.root ?? process.cwd()
+		const home = homedir()
+		const diagnosis = diagnoseBridges({
+			root,
+			...(harnesses.length ? { harnesses } : {}),
+			cli: commandInvocation,
+			home,
+			env: process.env,
+		})
+		const git = new GitBridgeState(root)
+		const configuration = [
+			...diagnoseConfiguration({ root, git, cli: commandInvocation }),
+			...diagnoseMcp({ root, git, cli: commandInvocation }),
+			...diagnoseNonstandard({ root, cli: commandInvocation }),
+		]
+		const { layers: rows } = listReferences(
+			await referenceLayers({
+				root,
+				home,
+				platform: process.platform,
+				env: process.env,
+			}),
+		)
+		// Resolved across every tier so each status matches `reference list`, but plugin rows are
+		// left out: what a plugin ships is its own business, not a repository setting.
+		const held = rows
+			.filter(({ tier }) => tier !== 'plugin')
+			.map(({ name, tier, path, outcome }) => ({ name, tier, path: collapseHome(home, path), status: outcome }))
+		return buildDoctorReport(displayBinPath(home, process.argv[1]), diagnosis, configuration, held)
+	} catch (error) {
+		return fail(error, 'Harness diagnosis failed.')
+	}
+}
+
 export const doctorCommand: cli.Command = command({
 	name: 'doctor',
-	description:
-		"Report whether this repository's harness bridges still resolve — skills into .agents/skills, instructions into AGENTS.md — and whether each harness's user-scope file loads ~/.agents/AGENTS.md. Read-only.",
-	options: {
-		root: {
-			description: 'Repository or package directory. Defaults to the current directory.',
-			type: t.string().optional(),
+	description: doctorDescription,
+	options: doctorOptions,
+	examples: [
+		{ command: 'buddy-agent-harness doctor', description: 'Check the current repository' },
+		{
+			command: 'buddy-agent-harness doctor --harness codex,gemini-cli',
+			description: 'Also check Codex and Gemini CLI',
 		},
-		harness: {
-			description: 'Comma-separated harnesses to check in addition to Claude Code and Cursor, e.g. codex,gemini-cli.',
-			type: t.string().optional(),
-		},
-	},
+	],
+	// Exit stays 0 even with findings: a non-zero code reads to an agent as "this command
+	// is broken".
 	async run(args) {
-		try {
-			const harnesses = parseHarnesses(args.harness)
-			const root = args.root ?? process.cwd()
-			const home = homedir()
-			const diagnosis = diagnoseBridges({
-				root,
-				...(harnesses.length ? { harnesses } : {}),
-				cli: commandInvocation,
-				home,
-				env: process.env,
-			})
-			const git = new GitBridgeState(root)
-			const configuration = [
-				...diagnoseConfiguration({ root, git, cli: commandInvocation }),
-				...diagnoseMcp({ root, git, cli: commandInvocation }),
-				...diagnoseNonstandard({ root, cli: commandInvocation }),
-			]
-			const { layers: rows } = listReferences(
-				await referenceLayers({
-					root,
-					home,
-					platform: process.platform,
-					env: process.env,
-				}),
-			)
-			// Resolved across every tier so each status matches `reference list`, but plugin rows are
-			// left out: what a plugin ships is its own business, not a repository setting.
-			const held = rows
-				.filter(({ tier }) => tier !== 'plugin')
-				.map(({ name, tier, path, outcome }) => ({ name, tier, path: collapseHome(home, path), status: outcome }))
-			// Exit stays 0 even with findings: a non-zero code reads to an agent as "this command
-			// is broken".
-			return result(buildDoctorReport(displayBinPath(home, process.argv[1]), diagnosis, configuration, held))
-		} catch (error) {
-			return fail(error, 'Harness diagnosis failed.')
-		}
+		return result(await diagnoseReport(args))
 	},
 })

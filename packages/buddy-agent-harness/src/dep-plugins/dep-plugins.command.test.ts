@@ -311,14 +311,15 @@ describe('dep-plugins command', () => {
 		} finally {
 			thrown.mockRestore()
 		}
-		expect(stderr).toHaveBeenCalledWith(expect.stringContaining('Catalog generation failed.'))
+		expect(report()).toMatchObject({ error: 'Catalog generation failed.', code: 'command-failed' })
 	})
 
-	it('reports a failure on stderr and returns non-zero', () => {
+	it('reports a failure as a coded error on stdout and returns non-zero', () => {
 		noRuntimes()
 		// A directory with no package.json at all: the manifest read is the first thing that can fail.
 		expect(run({ root: mkdtempSync(join(tmpdir(), 'empty-')) })).not.toBe(0)
-		expect(stderr).toHaveBeenCalledWith(expect.stringContaining('error:'))
+		expect(report()).toMatchObject({ code: 'command-failed' })
+		expect(stderr).not.toHaveBeenCalled()
 	})
 
 	it('renders a human-readable report under --format text', () => {

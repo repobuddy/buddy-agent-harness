@@ -1,8 +1,8 @@
 import { readFileSync } from 'node:fs'
 import { cli } from 'clibuilder'
-import { exitCodes } from 'clibuilder/axi'
+import { exitCodes, homeHeader, result } from 'clibuilder/axi'
 import { depPluginsCommand } from './dep-plugins/dep-plugins.command.ts'
-import { doctorCommand } from './diagnose-bridges/doctor.command.ts'
+import { diagnoseReport, doctorCommand } from './diagnose-bridges/doctor.command.ts'
 import { governanceCommand } from './governance-overrides/governance.command.ts'
 import { initCommand } from './initialize-harnesses/init.command.ts'
 import { mcpCommand } from './project-mcp/mcp.command.ts'
@@ -31,9 +31,19 @@ export const rootCommand: { name: string; description: string; commands: readonl
 // would be shared by every later call in the process.
 function app(format: 'toon' | 'text') {
 	const [first, ...rest] = rootCommand.commands
+	// AXI §8: a bare invocation shows live data, not a manual — the doctor report, under the home header.
 	return rest.reduce(
 		(builder, command) => builder.command(command),
-		cli({ name: rootCommand.name, version, description: rootCommand.description, format }).command(first),
+		cli({ name: rootCommand.name, version, description: rootCommand.description, format })
+			.default({
+				description: "Report whether this repository's harness bridges resolve (the same as `doctor`).",
+				options: doctorCommand.options as NonNullable<typeof doctorCommand.options>,
+				async run(args) {
+					const { bin: _bin, ...report } = await diagnoseReport({ root: args['root'], harness: args['harness'] })
+					return result({ ...homeHeader({ description: rootCommand.description }), ...report })
+				},
+			})
+			.command(first),
 	)
 }
 

@@ -38,19 +38,29 @@ describe('mcp reconcile command', () => {
 
 		expect(run({ format: 'json' })).toBe(0)
 
-		expect(report()).toMatchObject({ mode: 'nothing to reconcile into', fields: '0 fields', record: 'not written' })
+		expect(report()).toEqual({
+			empty: '0 servers — no golden set at .agents/buddy-agent-harness/mcp.toml',
+			help: [expect.stringContaining('nothing to reconcile into')],
+		})
 	})
 
 	it('fails on an unreadable golden set by position, or without one it cannot name', () => {
 		mockedReconcileMcp.mockReturnValue({ kind: 'unreadable', position: { line: 4, column: 9 } })
 		expect(run({ format: 'json' })).toBe(1)
-		expect(stderr).toHaveBeenCalledWith(
-			'error: .agents/buddy-agent-harness/mcp.toml does not parse at line 4, column 9.\n',
-		)
+		expect(report()).toMatchObject({
+			error: '.agents/buddy-agent-harness/mcp.toml does not parse at line 4, column 9.',
+			code: 'golden-set-unreadable',
+			help: [expect.stringContaining('Fix the TOML syntax')],
+		})
 
+		stdout.mockClear()
 		mockedReconcileMcp.mockReturnValue({ kind: 'unreadable' })
 		expect(run({ format: 'json' })).toBe(1)
-		expect(stderr).toHaveBeenCalledWith('error: .agents/buddy-agent-harness/mcp.toml does not parse.\n')
+		expect(report()).toMatchObject({
+			error: '.agents/buddy-agent-harness/mcp.toml does not parse.',
+			code: 'golden-set-unreadable',
+		})
+		expect(stderr).not.toHaveBeenCalled()
 	})
 
 	it('fails naming every rejected approval, having written nothing', () => {
@@ -58,7 +68,13 @@ describe('mcp reconcile command', () => {
 
 		expect(run({ format: 'json', accept: ['a', 'b'] })).toBe(1)
 
-		expect(stderr).toHaveBeenCalledWith('error: nothing written.\n- a is skip\n- b names no importable field\n')
+		expect(report()).toMatchObject({
+			error: 'nothing written.',
+			code: 'accept-rejected',
+			reasons: ['a is skip', 'b names no importable field'],
+			help: [expect.stringContaining('mcp reconcile')],
+		})
+		expect(stderr).not.toHaveBeenCalled()
 	})
 
 	it('reports a dry run, passing no approval through', () => {
@@ -92,12 +108,13 @@ describe('mcp reconcile command', () => {
 			throw 'unavailable'
 		})
 		expect(run({ format: 'json' })).toBe(1)
-		expect(stderr).toHaveBeenCalledWith('error: MCP reconcile failed.\n')
+		expect(report()).toMatchObject({ error: 'MCP reconcile failed.', code: 'command-failed' })
+		stdout.mockClear()
 
 		mockedReconcileMcp.mockImplementationOnce(() => {
 			throw new Error('golden set locked')
 		})
 		expect(run({ format: 'json' })).toBe(1)
-		expect(stderr).toHaveBeenCalledWith('error: golden set locked\n')
+		expect(report()).toMatchObject({ error: 'golden set locked', code: 'command-failed' })
 	})
 })

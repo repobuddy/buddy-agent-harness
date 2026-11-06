@@ -1,7 +1,7 @@
 import { homedir } from 'node:os'
 import type { cli } from 'clibuilder'
 import { command, t } from 'clibuilder'
-import { CliError, document, exitCodes, result } from 'clibuilder/axi'
+import { CliError, document, result } from 'clibuilder/axi'
 import { collapseHome, fail } from '../command-output/command-output.ts'
 import {
 	type GovernanceLayer,
@@ -67,6 +67,7 @@ export const governanceListCommand: cli.Command = command({
 		root: rootOption,
 		'overrides-only': overridesOnlyOption,
 	},
+	examples: [{ command: 'buddy-agent-harness governance list', description: 'List the governances the layers hold' }],
 	run(args: Args) {
 		process.stderr.write(GOVERNANCE_DEPRECATED)
 		try {
@@ -98,6 +99,9 @@ export const governanceShowCommand: cli.Command = command({
 		root: rootOption,
 		'overrides-only': overridesOnlyOption,
 	},
+	examples: [
+		{ command: 'buddy-agent-harness governance show skill-design', description: 'Print one governance document' },
+	],
 	run(args: Args & { name: string }) {
 		const format = this.format
 		process.stderr.write(GOVERNANCE_DEPRECATED)
@@ -105,15 +109,16 @@ export const governanceShowCommand: cli.Command = command({
 			const name = parseGovernanceName(args.name)
 			const found = resolveGovernance(name, layersFor(args))
 			if (!found) {
-				// stderr, not stdout — a caller piping the document off stdout must never see this
-				// prose
-				// mixed in.
-				process.stderr.write(
+				throw new CliError(
 					args['overrides-only']
-						? `error: no override for governance "${name}" in the project, user, or machine-wide layer.\n`
-						: `error: no governance named "${name}" in any layer.\n`,
+						? `no override for governance "${name}" in the project, user, or machine-wide layer.`
+						: `no governance named "${name}" in any layer.`,
+					{
+						code: 'governance-not-found',
+						details: { name },
+						help: 'Run `buddy-agent-harness reference list` to see what is available.',
+					},
 				)
-				throw CliError.reported(exitCodes.error)
 			}
 			const report: GovernanceShowReport = {
 				name: found.name,

@@ -1,10 +1,9 @@
 import type { cli } from 'clibuilder'
 import { command, t } from 'clibuilder'
 import { result } from 'clibuilder/axi'
-import { fail } from '../command-output/command-output.ts'
+import { fail, parseHarnessOption } from '../command-output/command-output.ts'
 import { doctorCommand } from '../diagnose-bridges/doctor.command.ts'
 import { governanceCommand } from '../governance-overrides/governance.command.ts'
-import { parseHarnesses } from '../harness-registry/harness-registry.ts'
 import { referenceCommand } from '../references/references.ts'
 import { parseForce } from '../skill-projection/skill-projection.ts'
 import { initializeHarnesses } from './initialize-harnesses.ts'
@@ -31,9 +30,16 @@ export const initCommand: cli.Command = command({
 			type: t.string().optional(),
 		},
 	},
+	examples: [
+		{ command: 'buddy-agent-harness init', description: 'Set up skills for Claude Code and Cursor' },
+		{
+			command: 'buddy-agent-harness init --harness codex --copy',
+			description: 'Also enable Codex, copying skills instead of linking',
+		},
+	],
 	run(args) {
 		try {
-			const harnesses = parseHarnesses(args.harness)
+			const harnesses = parseHarnessOption(args.harness)
 			return result(
 				initializeHarnesses({
 					root: args.root ?? process.cwd(),
