@@ -24,7 +24,5 @@ minimumReleaseAge: 1440 # 1 day
 minimumReleaseAgeStrict: true
 
 minimumReleaseAgeExclude:
-  # min-release-age: lift cyber-agentkit@2.0.0 until 2026-11-05T04:01:03Z
-  - 'cyber-agentkit@2.0.0'
   # Renovate security update: smol-toml@1.9.0
   - smol-toml@1.9.0
