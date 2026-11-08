@@ -182,8 +182,8 @@ importers:
         specifier: ^2.3.1
         version: 2.3.1(@biomejs/biome@2.5.7)
       cyber-sdd:
-        specifier: 0.7.2
-        version: 0.7.2
+        specifier: 0.7.3
+        version: 0.7.3
       husky:
         specifier: ^9.1.7
         version: 9.1.7
@@ -1940,8 +1940,8 @@ packages:
       clibuilder:
         optional: true
 
-  cyber-sdd@0.7.2:
-    resolution: {integrity: sha512-r3PLKBz8zdlvcdHM+ICu6dT6yQx8KPpEwqhZ4ouQsf4xzqm8SMNdZa83o52tx1B5Yl6bndvGAM0RB+t3j1SRDQ==}
+  cyber-sdd@0.7.3:
+    resolution: {integrity: sha512-6xHg3GNMMT8dZ2d8XF+BMfKGAUjLwXmebHZ0QDWb8seXlWUWFvyU0o7yoXYq4XnRXbOM3khEv0nVSfAi0UJlhg==}
     engines: {node: '>=22.11'}
     hasBin: true
 
@@ -4859,7 +4859,7 @@ snapshots:
     optionalDependencies:
       clibuilder: 12.2.0(js-yaml@4.3.2)
 
-  cyber-sdd@0.7.2: {}
+  cyber-sdd@0.7.3: {}
 
   debug@4.4.3(supports-color@8.1.1):
     dependencies:
