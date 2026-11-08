@@ -72,7 +72,7 @@ describe('mcp reconcile command', () => {
 			error: 'nothing written.',
 			code: 'accept-rejected',
 			reasons: ['a is skip', 'b names no importable field'],
-			help: [expect.stringContaining('mcp reconcile')],
+			help: ['Run `mcp reconcile` to list the fields that can be approved'],
 		})
 		expect(stderr).not.toHaveBeenCalled()
 	})

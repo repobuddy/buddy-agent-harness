@@ -1,6 +1,6 @@
 import type { cli } from 'clibuilder'
 import { command, t } from 'clibuilder'
-import { CliError, empty, result } from 'clibuilder/axi'
+import { CliError, empty, ref, result } from 'clibuilder/axi'
 import { fail } from '../command-output/command-output.ts'
 import { GitBridgeState } from '../diagnose-bridges/git-bridge-state.ts'
 import { projectionRecordPath } from '../diagnose-mcp/mcp-baseline.ts'
@@ -51,7 +51,10 @@ export const mcpProjectCommand: cli.Command = command({
 			}
 			if (plan.kind === 'absent') {
 				return empty(`0 servers — no golden set at ${goldenSetPath}`, {
-					help: `Create ${goldenSetPath} with the MCP servers to project, then run \`buddy-agent-harness mcp project\`.`,
+					help: [
+						`Create ${goldenSetPath} with the MCP servers to project.`,
+						ref('mcp project', {}, 'preview the projection'),
+					],
 				})
 			}
 			const report: ProjectionReport = {

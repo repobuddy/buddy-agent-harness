@@ -56,6 +56,9 @@ export const initCommand: cli.Command = command({
 
 // Named `agent-harness`, not `harness` — `repobuddy` mounts every plugin into one namespace, and
 // `harness` is generic enough to collide.
+// A host mounts this group below its own root, so the commands in it give next steps as plain
+// strings, not `ref()`: clibuilder resolves a ref's path from the root, and throws on `doctor` when the
+// host calls it `agent-harness doctor`.
 export const harnessCommand: cli.Command = command({
 	name: 'agent-harness',
 	description: 'Commands for configuring agent harness compatibility.',
