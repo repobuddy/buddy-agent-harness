@@ -591,11 +591,10 @@ Feature: Offer the current wording of a vetted section to a repository that alre
     And `AGENTS.md` is unchanged
 
   @behavior
-  Scenario: judges a List identifiers section it did not write as the owner's own while the addition has no retired wording
+  Scenario: judges a List identifiers section it did not write as the owner's own
     Given a root `AGENTS.md` holding a `## List identifiers` section that tells the agent to label list items
-    And no sentence of it appears verbatim in the text `references/list-identifiers.md` offers
-    And its sentences do not follow the order of that text
-    And `references/list-identifiers.history.md` names no retired wording
+    And no sentence of it appears verbatim in the text `references/list-identifiers.md` offers or in any wording in `references/list-identifiers.history.md`
+    And its sentences follow the order of neither
     And the root `AGENTS.md` also holds the `## Delegation` section exactly as `references/delegation.md` offers it
     When the agent runs the `enhance` skill
     Then no replacement is offered
@@ -603,23 +602,23 @@ Feature: Offer the current wording of a vetted section to a repository that alre
     And `AGENTS.md` is unchanged
 
   @behavior
-  Scenario: offers the current List identifiers text where that text was edited in place
-    Given a root `AGENTS.md` holding a `## List identifiers` section carrying two sentences of the text `references/list-identifiers.md` offers verbatim
+  Scenario: offers the current Session scope text where that text was edited in place while the addition has no retired wording
+    Given a root `AGENTS.md` holding a `## Session scope` section carrying two sentences of the text `references/session-scope.md` offers verbatim
     And that section keeps the sentence order of that text
     And its remaining sentences are that text's, reworded
-    And `references/list-identifiers.history.md` names no retired wording
+    And `references/session-scope.history.md` names no retired wording
     And the root `AGENTS.md` also holds the `## Delegation` section exactly as `references/delegation.md` offers it
+    And the root `AGENTS.md` also holds the `## List identifiers` section exactly as `references/list-identifiers.md` offers it
     When the agent runs the `enhance` skill
-    Then the report does not describe the `## List identifiers` section as the owner's own words
-    And the current `## List identifiers` text is offered as a replacement for the `## List identifiers` section
+    Then the report does not describe the `## Session scope` section as the owner's own words
+    And the current `## Session scope` text is offered as a replacement for the `## Session scope` section
     And `AGENTS.md` is unchanged until the owner answers
 
   @behavior
   Scenario: puts a reworded List identifiers text to the owner without offering measurement
     Given a root `AGENTS.md` holding a `## List identifiers` section of five sentences
-    And each does the job of the sentence at that position in the text `references/list-identifiers.md` offers
-    And no sentence of that text appears in it verbatim
-    And `references/list-identifiers.history.md` names no retired wording
+    And each does the job of the sentence at that position in a wording in `references/list-identifiers.history.md`
+    And no sentence of that wording, or of the text `references/list-identifiers.md` offers, appears in it verbatim
     And the repository has the `eval-delegation` harness for scoring `## Delegation` wordings
     And the root `AGENTS.md` also holds the `## Delegation` section exactly as `references/delegation.md` offers it
     When the agent runs the `enhance` skill
@@ -629,6 +628,36 @@ Feature: Offer the current wording of a vetted section to a repository that alre
     And the report says settling it by measurement would need a harness this repository does not have
     And no replacement is offered ahead of that answer
     And `AGENTS.md` is unchanged
+
+  @behavior
+  Scenario: offers the current List identifiers text where the file carries the retired one verbatim
+    Given a root `AGENTS.md` holding a `## List identifiers` section identical to a wording in `references/list-identifiers.history.md`
+    And the root `AGENTS.md` also holds the `## Delegation` section exactly as `references/delegation.md` offers it
+    When the agent runs the `enhance` skill
+    Then the report does not describe the `## List identifiers` section as the owner's own words
+    And the current `## List identifiers` text is offered as a replacement for that section
+    And `AGENTS.md` is unchanged until the owner answers
+
+  @behavior
+  Scenario: offers the current List identifiers text where the retired wording was edited in place
+    Given a root `AGENTS.md` holding a `## List identifiers` section carrying two sentences of a wording in `references/list-identifiers.history.md` verbatim
+    And that section keeps the sentence order of that wording
+    And its remaining sentences are that wording's, reworded
+    And no sentence of the text `references/list-identifiers.md` offers appears in it
+    And the root `AGENTS.md` also holds the `## Delegation` section exactly as `references/delegation.md` offers it
+    When the agent runs the `enhance` skill
+    Then the report does not describe the `## List identifiers` section as the owner's own words
+    And the current `## List identifiers` text is offered as a replacement for that section
+    And `AGENTS.md` is unchanged until the owner answers
+
+  @behavior
+  Scenario: does not call a List identifiers section current while it still asserts a retired sentence
+    Given a root `AGENTS.md` holding a `## List identifiers` section carrying the text `references/list-identifiers.md` offers whole
+    And the same section also asserts a sentence of a wording in `references/list-identifiers.history.md`, a sentence the current text does not carry
+    And the root `AGENTS.md` also holds the `## Delegation` section exactly as `references/delegation.md` offers it
+    When the agent runs the `enhance` skill
+    Then the report does not say the section is already current
+    And the report does not describe the `## List identifiers` section as the owner's own words
 
   @behavior
   Scenario: offers the List identifiers replacement when the owner says the section came from this package
@@ -705,11 +734,11 @@ Feature: Offer the current wording of a vetted section to a repository that alre
     Then it carries a `## Stale when` section directing the comparison at `references/list-identifiers.history.md`
 
   @behavior
-  Scenario: offers List identifiers text that says what the issue asked for
+  Scenario: offers List identifiers text that labels what the user answers and leaves explanations out
     Given the shipped `references/list-identifiers.md`
     When the text inside its fence is read
-    Then it directs the agent to label every list it presents to the user
-    And it directs a letter or number sequence for a plain list
-    And it directs a prefix naming the kind for a list whose items are all one kind
+    Then it directs the agent to label each option, question, finding, and proposal it puts to the user
+    And it directs a label made of a letter naming the item's kind and a number
+    And it says the points of a plain explanation need no label
     And it directs that a revised list keeps each item's label, reuses no removed label, and gives a new item the next label
     And it names no model, vendor, or version

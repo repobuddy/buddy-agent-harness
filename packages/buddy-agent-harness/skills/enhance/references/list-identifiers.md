@@ -15,13 +15,12 @@ rule that appears only in a skill body — this addition is for the always-loade
 
 ## Stale when
 
-Compare the `## List identifiers` section already in the file against `list-identifiers.history.md`
-by the procedure in step 3 of the skill, with the text below as the current text.
+Compare the `## List identifiers` section already in the file against each wording in
+`list-identifiers.history.md`, the exact texts this addition used to offer, by the procedure in
+step 3 of the skill, with the text below as the current text.
 
-`list-identifiers.history.md` holds no retired wording yet. Until it does, a section that is not
-already current is compared against the text below, standing in for a retired wording: both answers
-yes is this text edited, and gets the replacement offer; both no is the owner's own; a disagreement
-you cannot tell. The paragraphs a replacement would remove are the ones the text below does not contain.
+The text below shares no sentence with the wording it replaced. A section carrying none of its
+sentences is not thereby the owner's own: compare it against the retired wording before judging it.
 
 Where you cannot tell, the third answer needs a harness that scores this addition's wording, not
 any harness: `eval-delegation` scores Delegation's only. In this package's own repository that
@@ -33,9 +32,7 @@ say settling it by measurement would need a harness this repository does not hav
 ```markdown
 ## List identifiers
 
-Label every list you present so the user can answer each item by its label. Letter a plain list (A, B, C) or number it (1, 2, 3). Where every item is one kind of thing, prefix the number with a letter naming the kind: P1 for a proposal, Q1 for a question, S1 for a scenario.
-
-Keep a label once you have given it. When you revise the list, each item keeps its label, a removed item's label is not reused, and a new item takes the next one in the sequence.
+Give each option, question, finding, or proposal you put to the user a label they can answer by, a letter for its kind and a number (O1, Q1, F1, P1); the points of a plain explanation need none. Keep each label through every revision: never renumber, never reuse a removed item's label, and give a new item the next number.
 ```
 
 ## Where it belongs

@@ -42,7 +42,7 @@ These properties make it a node rather than a paragraph inside `../init-buddy-ag
 **Non-goals**
 
 - **Consolidating harness instruction files.** This skill reads them into the merged view and moves none of them; consolidation has one home, `../init-buddy-agent-harness/`. Where a run finds content that should be consolidated it says so and recommends that skill.
-- **The wording of `## Delegation`.** What it says was settled by blind A/B evaluation and is fixed; the repo-private `eval-delegation` skill owns it. This node specifies **when that text is surfaced**, never what it says. The `## List identifiers` text is scored by the repo-private `eval-list-identifiers` skill, so this node owns what it must direct — the rules issue #146 asked for — and not its exact wording.
+- **The wording of `## Delegation`.** What it says was settled by blind A/B evaluation and is fixed; the repo-private `eval-delegation` skill owns it. This node specifies **when that text is surfaced**, never what it says. The `## List identifiers` text is scored by the repo-private `eval-list-identifiers` skill, so this node owns what it must direct, and not its exact wording: the rules issue #146 asked for, narrowed by the eval's round 5 to the lists that ask the user to answer.
 - **Correcting agent configuration that is present and wrong.** `../repair/`. A stale addition is not a fault in the repository — it is this package's wording having moved.
 - **Creating an `AGENTS.md`.** `../init-buddy-agent-harness/`'s. A repository without one is reported and left alone.
 - **Anything outside local agent configuration.** Workflows, repository settings, and project source are out of reach whatever a run finds in them — a bar the suite asserts as a barred scenario rather than a path, since no decision in the graph can reach them.
@@ -308,9 +308,12 @@ flowchart TD
 | E→F | an `AGENTS.md` whose only list guidance numbers the steps in documentation | `does not count a numbered-list style rule for documents as covering list identifiers` |
 | G→H | an `AGENTS.md` covering list identifiers under the owner's own heading | `withholds List identifiers where the owner's own words cover it` |
 | GC→HC | an `AGENTS.md` carrying the List identifiers text | `offers nothing where the file already carries the current List identifiers text` |
-| G→H | a List identifiers section not carrying the current text, and an empty history | `judges a List identifiers section it did not write as the owner's own while the addition has no retired wording` |
-| G1→I | the current List identifiers text edited in place, and an empty history | `offers the current List identifiers text where that text was edited in place` |
-| P0→P1N | a reworded List identifiers text, an empty history, and a harness scoring Delegation only | `puts a reworded List identifiers text to the owner without offering measurement` |
+| G→H | a List identifiers section sharing no sentence with the current or the retired wording | `judges a List identifiers section it did not write as the owner's own` |
+| G1→I | the current Session scope text edited in place, and an empty history | `offers the current Session scope text where that text was edited in place while the addition has no retired wording` |
+| P0→P1N | a reword of the retired List identifiers wording, and a harness scoring Delegation only | `puts a reworded List identifiers text to the owner without offering measurement` |
+| G1→I | the retired List identifiers wording verbatim, which shares no sentence with the current text | `offers the current List identifiers text where the file carries the retired one verbatim` |
+| G1→I | the retired List identifiers wording edited in place | `offers the current List identifiers text where the retired wording was edited in place` |
+| GC→G1 | the current List identifiers text plus a sentence of the retired wording | `does not call a List identifiers section current while it still asserts a retired sentence` |
 | P2→I | the owner answers that a List identifiers section came from this package | `offers the List identifiers replacement when the owner says the section came from this package` |
 | F | the List identifiers addition absent | `recommends the owner's global file for List identifiers` |
 | Z | a run over both additions | `reports a verdict for every addition` |
@@ -338,7 +341,7 @@ A run following a **declined** offer gets no row of its own. The repository it l
 | U→X | a new addition shipping its first wording | `leaves an addition that has never been revised with an empty history` |
 | T | the shipped List identifiers reference | `states what already covers the List identifiers subject` |
 | U | the shipped List identifiers reference | `points the List identifiers stale check at its own history file` |
-| R→T | the shipped List identifiers reference | `offers List identifiers text that says what the issue asked for` |
+| R→T | the shipped List identifiers reference | `offers List identifiers text that labels what the user answers and leaves explanations out` |
 
 ## References
 
