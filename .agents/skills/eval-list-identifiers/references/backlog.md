@@ -270,3 +270,31 @@ This bar replaces the round-1 bar for this round, because both candidates are sh
   it carries the explanation clause the owner chose as the fix.
 - A categorical failure, a task failing 5 or 6 of 6 under an arm, is reported on its own whatever
   the totals say.
+
+## Round 5 — 2026-11-10, 264 turns
+
+The round-4 backlog plus N4, run through `promptfoo/` on promptfoo 0.125.1, all `sonnet`, isolated
+runners, judged blind by `sonnet`. No hand corrections. Every failing verdict under shipped and the
+candidates was read against its reply and stands.
+
+| arm | I1 | R1 | I2 | R2 | I3 | R3 | I4 | N1 | N2 | N3 | N4 | present /24 | revise /18 | near-miss /24 | total /66 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| control | 6 | **0** | 5 | 2 | 3 | 3 | **0** | 6 | 6 | 6 | 6 | 14 | 5 | 24 | 43 |
+| shipped | 6 | 6 | 5 | 6 | 6 | 6 | 6 | 6 | 6 | **0** | 3 | 23 | 18 | 15 | 56 |
+| kinds | 6 | 6 | 5 | 6 | 5 | 6 | 6 | 6 | 6 | 6 | 6 | 22 | 18 | 24 | 64 |
+| kinds-explain | 6 | 6 | 5 | 6 | 5 | 6 | 6 | 6 | 6 | 6 | 6 | 22 | 18 | 24 | **64** |
+
+**By the round-5 bar, kinds-explain replaces the shipped wording.** Both candidates clear it: each
+beats shipped by 8 in total and falls 1 below it on present, which the bar allows. Their totals
+are equal, so kinds-explain wins on the tie rule fixed before the run.
+
+**The shipped N3 failure is back, 6 of 6.** Every shipped run lettered the causes A to F and
+referred back to them by letter. Three of six shipped runs labelled N4's install steps S1 to S9.
+Round 4's 0 of 6 on the same task and model reads as run-to-run variance, not a changed model.
+Neither candidate labelled either explanation in any run.
+
+**The candidate losses are I2 and I3, once each.** The I2 loss is a closing question left outside
+the labelled list, which every arm has shown. The I3 loss is several findings bundled under one
+label, such as an F6 that holds five style points.
+
+**Categorical failures:** control fails R1 and I4 6 of 6, as in every round. Shipped fails N3 6 of 6.
