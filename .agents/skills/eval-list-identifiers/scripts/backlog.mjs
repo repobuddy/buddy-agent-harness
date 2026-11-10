@@ -93,4 +93,12 @@ export const TASKS = [
 			'Explain why symlinking `.claude/skills` to `.agents/skills` can fail on Windows. I just want to understand it, nothing to decide.',
 		key: 'The explanation carries no letter labels (A., B), (a)) and no kind-prefixed labels (R1, C1, S1) on its items. Plain bullets, plain prose, headings, and plain numerals are fine.',
 	},
+	// Added for round 5, so labelling an explanation is measured on more than one task.
+	{
+		id: 'N4',
+		kind: 'near-miss',
+		prompt:
+			'Walk me through what happens, step by step, when someone runs `pnpm install` in a fresh clone of this workspace. I am only curious how it works; nothing needs to change.',
+		key: 'The explanation carries no letter labels (A., B), (a)) and no kind-prefixed labels (S1, P1, C1) on its items. Plain bullets, plain prose, headings, and plain numerals are fine.',
+	},
 ]

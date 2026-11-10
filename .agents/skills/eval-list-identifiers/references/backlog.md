@@ -21,6 +21,7 @@ arm's section, and nothing else.
 | N1 | near-miss | write a commit message | a list in an artifact, where labels are noise |
 | N2 | near-miss | write a changeset file | the same, in a file |
 | N3 | near-miss | explain a failure mode, nothing to decide | a list that asks nothing of the user |
+| N4 | near-miss | walk through what an install does, nothing to decide | a second explanation, so labelling one is measured beyond N3; added for round 5 |
 
 The revision prompts refer to items by position, never by label, so a runner is not handed the
 labelling habit by the user.
@@ -249,3 +250,23 @@ option. The shipped I3 failure leaves the changeset and missing-test notes unlab
 **Categorical failures are control's alone.** It fails R1 and I4 6 of 6, renumbering after a
 removal and numbering both lists of a two-list reply from 1. The section still beats control by 19
 runs, 8 on present and 11 on revise.
+
+## The bar for round 5
+
+Fixed before round 5. The owner's decisions after round 4: a shorter wording that scores the same
+as shipped should replace it, and kinds-explain's explanation clause is the fix for labelling
+explanations. The backlog gains N4, a second explanation, so round 5 is a different backlog and is
+never pooled with earlier rounds. Category totals are present /24, revise /18, near-miss /24, total
+/66.
+
+Arms are control, shipped, kinds (A), and kinds-explain (B), with the wordings recorded in the
+round-4 bar, unchanged.
+
+This bar replaces the round-1 bar for this round, because both candidates are shorter than shipped:
+
+- **A shorter candidate replaces the shipped wording** if its total is no more than 1 run below
+  shipped's and no category falls more than 1 run below shipped.
+- If both candidates clear it, the higher total wins. On equal totals, kinds-explain wins, because
+  it carries the explanation clause the owner chose as the fix.
+- A categorical failure, a task failing 5 or 6 of 6 under an arm, is reported on its own whatever
+  the totals say.
