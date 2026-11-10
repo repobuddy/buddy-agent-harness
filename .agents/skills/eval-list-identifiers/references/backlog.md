@@ -217,3 +217,35 @@ Give each option, question, finding, or proposal you put to the user a label the
 The round-1 bar applies unchanged: a candidate replaces the shipped wording only if its total
 beats shipped's by at least 3 runs and no category falls more than 1 run below shipped. Category
 totals are present /24, revise /18, near-miss /18. Categorical failures are reported on their own.
+
+## Round 4 — 2026-11-10, 240 turns
+
+The round-2 backlog, run through `promptfoo/` on promptfoo 0.125.1 and Claude Code 2.1.322, all
+`sonnet`, isolated runners, judged blind by `sonnet`. No hand corrections. Every failing verdict
+under shipped and the candidates was read against its reply and stands.
+
+| arm | I1 | R1 | I2 | R2 | I3 | R3 | I4 | N1 | N2 | N3 | present /24 | revise /18 | near-miss /18 | total /60 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| control | 6 | **0** | 5 | 4 | 2 | 3 | **0** | 6 | 6 | 6 | 13 | 7 | 18 | 38 |
+| shipped | 6 | 6 | 4 | 6 | 5 | 6 | 6 | 6 | 6 | 6 | 21 | 18 | 18 | 57 |
+| kinds | 6 | 5 | 5 | 6 | 6 | 6 | 6 | 6 | 6 | 6 | 23 | 17 | 18 | 58 |
+| kinds-explain | 6 | 6 | 5 | 6 | 6 | 6 | 6 | 6 | 6 | 6 | 23 | 18 | 18 | **59** |
+
+**By the bar, the shipped wording holds a fourth time.** Kinds-explain beats it by 2 in total and
+kinds by 1, and the bar asks for 3. Neither falls more than 1 below shipped in any category, so
+both tie with shipped at a third of its length. A tie keeps the incumbent.
+
+**The shipped N3 failure did not reproduce.** In rounds 1 to 3 it failed 18 of 18; here all six
+shipped explanations number their causes with plain numerals, which the key allows. The runner
+model behind `sonnet` has changed since September, so round 4 is not pooled with earlier rounds,
+and the shipped wording's one categorical failure is no longer a measured reason to replace it.
+
+**The candidate losses are the shapes the earlier rounds named.** I2 fails under every arm on a
+closing question left outside the labelled list, such as asking where the `link` command lives:
+twice under shipped, once under each candidate. The kinds R1 failure is the round-1 duplicate: the
+first reply already carried an on-disk cache, and the runner revised it rather than adding a new
+option. The shipped I3 failure leaves the changeset and missing-test notes unlabelled after the list.
+
+**Categorical failures are control's alone.** It fails R1 and I4 6 of 6, renumbering after a
+removal and numbering both lists of a two-list reply from 1. The section still beats control by 19
+runs, 8 on present and 11 on revise.

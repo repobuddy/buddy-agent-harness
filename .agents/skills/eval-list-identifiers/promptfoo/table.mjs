@@ -26,7 +26,9 @@ for (const result of JSON.parse(readFileSync(file, 'utf8')).results.results) {
 	const arm = result.provider.label
 	const rep = (result.repeatIndex ?? 0) + 1
 	const parts = result.gradingResult?.componentResults ?? []
-	if (result.error || parts.length === 0) errors.push(`${arm} ${result.vars.task}-${rep}: ${result.error}`)
+	// promptfoo sets `error` on a failed assertion too; failureReason 2 is a provider error.
+	if (result.failureReason === 2 || parts.length === 0)
+		errors.push(`${arm} ${result.vars.task}-${rep}: ${result.error}`)
 	for (const part of parts) scores.push({ arm, rep, task: part.assertion.metric, pass: part.pass, reason: part.reason })
 }
 
