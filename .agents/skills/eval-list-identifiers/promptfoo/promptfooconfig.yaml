@@ -1,0 +1,25 @@
+# Blind A/B of List identifiers wordings against the backlog in ../scripts/backlog.mjs.
+# Run it as SKILL.md says: LISTID_OUT must name a directory outside any repository.
+description: List identifiers wording against the fixed backlog
+prompts:
+  - '{{task}}'
+# Every arm runs, and is judged, on the same model.
+x-run: &run { out: '{{ env.LISTID_OUT }}', model: sonnet }
+providers:
+  - id: file://provider.mjs
+    label: control
+    config: { <<: *run, arm: control, section: none }
+  - id: file://provider.mjs
+    label: shipped
+    config: { <<: *run, arm: shipped, section: shipped }
+  - id: file://provider.mjs
+    label: kinds
+    config: { <<: *run, arm: kinds, section: arms/kinds.md }
+  - id: file://provider.mjs
+    label: kinds-explain
+    config: { <<: *run, arm: kinds-explain, section: arms/kinds-explain.md }
+tests: file://tests.mjs
+evaluateOptions:
+  repeat: 6
+  cache: false
+  maxConcurrency: 8

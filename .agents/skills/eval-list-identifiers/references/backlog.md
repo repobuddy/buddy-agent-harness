@@ -21,6 +21,7 @@ arm's section, and nothing else.
 | N1 | near-miss | write a commit message | a list in an artifact, where labels are noise |
 | N2 | near-miss | write a changeset file | the same, in a file |
 | N3 | near-miss | explain a failure mode, nothing to decide | a list that asks nothing of the user |
+| N4 | near-miss | walk through what an install does, nothing to decide | a second explanation, so labelling one is measured beyond N3; added for round 5 |
 
 The revision prompts refer to items by position, never by label, so a runner is not handed the
 labelling habit by the user.
@@ -186,3 +187,114 @@ of labels on an explanation costs less than findings the user cannot answer by l
 
 A next candidate would have to keep findings inside the rule while leaving explanations out. That
 is a fourth round on this backlog, under the same bar.
+
+## The bar for round 4
+
+Fixed before round 4, on the round-2 backlog. The owner asked for a wording of one or two
+sentences, scored before and after in promptfoo. Round 4 is the first round run through
+`promptfoo/`; its runners, isolation, judge prompt, and verdict parser are the ones rounds 2 and 3
+used, so only the driver changed. Arms are control, shipped, and two candidates whose files are
+in `promptfoo/arms/`:
+
+**kinds** — one sentence. It names the four kinds of list the backlog's failures came from, so
+findings stay inside the rule (round 3's loss), and it makes the kind prefix the only scheme, so
+two lists in one reply carry different labels (round 1 minimal's loss on two-list replies):
+
+```markdown
+## List identifiers
+
+Give each option, question, finding, or proposal you put to the user a label they can answer by, a letter for its kind and a number (O1, Q1, F1, P1), and keep it through every revision: never renumber, never reuse a removed item's label, and give a new item the next number.
+```
+
+**kinds-explain** — the same rule in two sentences, with one clause added that leaves the points of
+an explanation out, so the difference between the two candidates is attributable to that clause:
+
+```markdown
+## List identifiers
+
+Give each option, question, finding, or proposal you put to the user a label they can answer by, a letter for its kind and a number (O1, Q1, F1, P1); the points of a plain explanation need none. Keep each label through every revision: never renumber, never reuse a removed item's label, and give a new item the next number.
+```
+
+The round-1 bar applies unchanged: a candidate replaces the shipped wording only if its total
+beats shipped's by at least 3 runs and no category falls more than 1 run below shipped. Category
+totals are present /24, revise /18, near-miss /18. Categorical failures are reported on their own.
+
+## Round 4 — 2026-11-10, 240 turns
+
+The round-2 backlog, run through `promptfoo/` on promptfoo 0.125.1 and Claude Code 2.1.322, all
+`sonnet`, isolated runners, judged blind by `sonnet`. No hand corrections. Every failing verdict
+under shipped and the candidates was read against its reply and stands.
+
+| arm | I1 | R1 | I2 | R2 | I3 | R3 | I4 | N1 | N2 | N3 | present /24 | revise /18 | near-miss /18 | total /60 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| control | 6 | **0** | 5 | 4 | 2 | 3 | **0** | 6 | 6 | 6 | 13 | 7 | 18 | 38 |
+| shipped | 6 | 6 | 4 | 6 | 5 | 6 | 6 | 6 | 6 | 6 | 21 | 18 | 18 | 57 |
+| kinds | 6 | 5 | 5 | 6 | 6 | 6 | 6 | 6 | 6 | 6 | 23 | 17 | 18 | 58 |
+| kinds-explain | 6 | 6 | 5 | 6 | 6 | 6 | 6 | 6 | 6 | 6 | 23 | 18 | 18 | **59** |
+
+**By the bar, the shipped wording holds a fourth time.** Kinds-explain beats it by 2 in total and
+kinds by 1, and the bar asks for 3. Neither falls more than 1 below shipped in any category, so
+both tie with shipped at a third of its length. A tie keeps the incumbent.
+
+**The shipped N3 failure did not reproduce.** In rounds 1 to 3 it failed 18 of 18; here all six
+shipped explanations number their causes with plain numerals, which the key allows. The runner
+model behind `sonnet` has changed since September, so round 4 is not pooled with earlier rounds,
+and the shipped wording's one categorical failure is no longer a measured reason to replace it.
+
+**The candidate losses are the shapes the earlier rounds named.** I2 fails under every arm on a
+closing question left outside the labelled list, such as asking where the `link` command lives:
+twice under shipped, once under each candidate. The kinds R1 failure is the round-1 duplicate: the
+first reply already carried an on-disk cache, and the runner revised it rather than adding a new
+option. The shipped I3 failure leaves the changeset and missing-test notes unlabelled after the list.
+
+**Categorical failures are control's alone.** It fails R1 and I4 6 of 6, renumbering after a
+removal and numbering both lists of a two-list reply from 1. The section still beats control by 19
+runs, 8 on present and 11 on revise.
+
+## The bar for round 5
+
+Fixed before round 5. The owner's decisions after round 4: a shorter wording that scores the same
+as shipped should replace it, and kinds-explain's explanation clause is the fix for labelling
+explanations. The backlog gains N4, a second explanation, so round 5 is a different backlog and is
+never pooled with earlier rounds. Category totals are present /24, revise /18, near-miss /24, total
+/66.
+
+Arms are control, shipped, kinds (A), and kinds-explain (B), with the wordings recorded in the
+round-4 bar, unchanged.
+
+This bar replaces the round-1 bar for this round, because both candidates are shorter than shipped:
+
+- **A shorter candidate replaces the shipped wording** if its total is no more than 1 run below
+  shipped's and no category falls more than 1 run below shipped.
+- If both candidates clear it, the higher total wins. On equal totals, kinds-explain wins, because
+  it carries the explanation clause the owner chose as the fix.
+- A categorical failure, a task failing 5 or 6 of 6 under an arm, is reported on its own whatever
+  the totals say.
+
+## Round 5 — 2026-11-10, 264 turns
+
+The round-4 backlog plus N4, run through `promptfoo/` on promptfoo 0.125.1, all `sonnet`, isolated
+runners, judged blind by `sonnet`. No hand corrections. Every failing verdict under shipped and the
+candidates was read against its reply and stands.
+
+| arm | I1 | R1 | I2 | R2 | I3 | R3 | I4 | N1 | N2 | N3 | N4 | present /24 | revise /18 | near-miss /24 | total /66 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| control | 6 | **0** | 5 | 2 | 3 | 3 | **0** | 6 | 6 | 6 | 6 | 14 | 5 | 24 | 43 |
+| shipped | 6 | 6 | 5 | 6 | 6 | 6 | 6 | 6 | 6 | **0** | 3 | 23 | 18 | 15 | 56 |
+| kinds | 6 | 6 | 5 | 6 | 5 | 6 | 6 | 6 | 6 | 6 | 6 | 22 | 18 | 24 | 64 |
+| kinds-explain | 6 | 6 | 5 | 6 | 5 | 6 | 6 | 6 | 6 | 6 | 6 | 22 | 18 | 24 | **64** |
+
+**By the round-5 bar, kinds-explain replaces the shipped wording.** Both candidates clear it: each
+beats shipped by 8 in total and falls 1 below it on present, which the bar allows. Their totals
+are equal, so kinds-explain wins on the tie rule fixed before the run.
+
+**The shipped N3 failure is back, 6 of 6.** Every shipped run lettered the causes A to F and
+referred back to them by letter. Three of six shipped runs labelled N4's install steps S1 to S9.
+Round 4's 0 of 6 on the same task and model reads as run-to-run variance, not a changed model.
+Neither candidate labelled either explanation in any run.
+
+**The candidate losses are I2 and I3, once each.** The I2 loss is a closing question left outside
+the labelled list, which every arm has shown. The I3 loss is several findings bundled under one
+label, such as an F6 that holds five style points.
+
+**Categorical failures:** control fails R1 and I4 6 of 6, as in every round. Shipped fails N3 6 of 6.

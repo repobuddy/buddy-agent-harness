@@ -11,29 +11,35 @@ This is the `eval-delegation` method applied to a second section. Read `../eval-
 
 ## Run it
 
-1. **Write each wording** to a file, section heading and all.
+The harness runs in [promptfoo](https://www.promptfoo.dev/), pinned to `0.125.1`. `promptfoo/promptfooconfig.yaml` lists the arms, one provider each. It reads the tasks and key lines from `scripts/backlog.mjs`, and the shipped arm's text from `list-identifiers.md` itself.
 
-2. **Run every arm**, the empty control included, into one output directory outside any repository:
+1. **Write each candidate wording** to a file under `promptfoo/arms/`, section heading and all, and add it to `providers` in the config. Keep the control (`section: none`) and shipped (`section: shipped`) arms in every round.
 
-   ```bash
-   node .agents/skills/eval-list-identifiers/scripts/run.mjs --no-section --arm control --out <workdir>
-   node .agents/skills/eval-list-identifiers/scripts/run.mjs --section <shipped.md> --arm shipped --out <workdir>
-   node .agents/skills/eval-list-identifiers/scripts/run.mjs --section <candidate.md> --arm <name> --out <workdir>
-   ```
-
-   Each task is a fresh `claude -p` session, six per task, launched through `../eval-delegation/scripts/blind-claude.mjs` so none of the host's user-scope instructions load, from a directory whose `CLAUDE.md` is holding the project stub and the arm's section. The revision tasks resume their parent's session for a second turn. Every arm uses the same model.
-
-3. **Score blind:**
+2. **Run and score every arm** into one output directory outside any repository:
 
    ```bash
-   node .agents/skills/eval-list-identifiers/scripts/judge.mjs --out <workdir>
+   LISTID_OUT=<workdir> PROMPTFOO_DISABLE_TELEMETRY=1 pnpm dlx promptfoo@0.125.1 eval \
+     -c .agents/skills/eval-list-identifiers/promptfoo/promptfooconfig.yaml \
+     -o <workdir>/results.json --no-cache --no-table --no-write
    ```
 
-   Each reply goes to a fresh judge with the task and its key line from `scripts/backlog.mjs`, shuffled, with nothing naming the arm. It writes `scores.json` and prints the per-arm table.
+   Each task is a fresh `claude -p` session, six per task (`repeat: 6`), launched through `../eval-delegation/scripts/blind-claude.mjs` so none of the host's user-scope instructions load. Each runs from a directory whose `CLAUDE.md` holds the project stub and the arm's section, and nothing else. The revision tasks resume their parent's session for a second turn. Every arm uses the same model. Replies are also written to `<workdir>/<arm>/<task>-<rep>.txt`.
 
-4. **Read the failing verdicts** in `scores.json` against the replies before trusting a total. A judge misreading the key is a judge error, not a run failure; correct it by hand and say so.
+   Each reply goes to a fresh blind judge with the task and its key line, and nothing naming the arm. That is the prompt `scripts/judge-prompt.mjs` builds, so `scripts/judge.mjs` can rescore the same replies.
+
+   A full round is 240 runner turns and 240 judge turns. Run it in the background.
+
+3. **Print the table and the failing verdicts:**
+
+   ```bash
+   node .agents/skills/eval-list-identifiers/promptfoo/table.mjs <workdir>/results.json --failing
+   ```
+
+4. **Read the failing verdicts** against the replies before trusting a total. A judge misreading the key is a judge error, not a run failure; correct it by hand and say so.
 
 5. **Apply the bar** in `references/backlog.md`, and record the round there: the wordings, the run count, the table.
+
+Rounds 1 to 3 ran on `scripts/run.mjs` and `scripts/judge.mjs`, which still work and share the judge prompt with promptfoo.
 
 ## Rules
 

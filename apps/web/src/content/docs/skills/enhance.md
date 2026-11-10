@@ -211,23 +211,21 @@ The backlog, the key, and the baseline are recorded in `.agents/skills/eval-dele
 
 ### List identifiers
 
-A `## List identifiers` section, telling the agent to label every list it puts to you so you can answer item by item:
+A `## List identifiers` section, telling the agent to label the options, questions, findings, and proposals it puts to you so you can answer item by item:
 
 ```markdown wrap
 ## List identifiers
 
-Label every list you present so the user can answer each item by its label. Letter a plain list (A, B, C) or number it (1, 2, 3). Where every item is one kind of thing, prefix the number with a letter naming the kind: P1 for a proposal, Q1 for a question, S1 for a scenario.
-
-Keep a label once you have given it. When you revise the list, each item keeps its label, a removed item's label is not reused, and a new item takes the next one in the sequence.
+Give each option, question, finding, or proposal you put to the user a label they can answer by, a letter for its kind and a number (O1, Q1, F1, P1); the points of a plain explanation need none. Keep each label through every revision: never renumber, never reuse a removed item's label, and give a new item the next number.
 ```
 
 Design discussions get answered item by item: "Q1: yes, Q3: design more, Q5: permanent". Without labels you have to quote or paraphrase each item, and the reply gets ambiguous. Stable labels keep a reply valid after the list is revised, because Q3 is still Q3.
 
 Like Delegation, the skill recommends your own global instruction file for it, since it holds in every repository you open, and names this repository's `AGENTS.md` as the alternative for reaching a team. A style rule that numbers the steps in your documentation does not count as covering it. That rule governs files, not the lists an agent puts to you.
 
-The section has no retired wording yet, so `references/list-identifiers.history.md` is empty, and a section already in your file is compared against the current text instead. The current text stands in for a retired wording and gets the same two questions. One that is this text with edits is offered the current text as a replacement, one sharing neither its sentences nor its shape is judged yours, and in between the skill asks. In this package's own repository the `eval-list-identifiers` skill scores this wording, so the skill can offer measurement as the third answer there; a repository without such a harness gets two answers.
+A section already in your file is compared against the wording this section used to offer, kept in `references/list-identifiers.history.md`. The current text shares no sentence with that wording, so a section carrying the old text, whole or edited, is offered the current text as a replacement rather than judged yours. One sharing neither wording's sentences nor its shape is judged yours, and in between the skill asks. In this package's own repository the `eval-list-identifiers` skill scores this wording, so the skill can offer measurement as the third answer there; a repository without such a harness gets two answers.
 
-The wording was checked by blind A/B runs after it shipped. It was run against an empty control and three alternatives over three rounds, 684 turns in all. It kept its place in every round. Without the section, the agent renumbered a list after every revision and numbered two lists in one reply both from 1. With it, labels held through revisions in 48 of 48 runs. One known cost reproduced every time: it also labels a plain explanation that asks you nothing. Both narrowings tried to remove that cost, and both lost more than they gained. The backlog, the scores, and the harness are in `.agents/skills/eval-list-identifiers/`.
+The wording was settled by blind A/B runs against an empty control. Without the section, the agent renumbered a list after every revision and numbered two lists in one reply both from 1. The first wording fixed both, and kept its place against three alternatives over three rounds, but it also labelled a plain explanation that asks you nothing. Two shorter wordings that name the kinds of list tied it in round 4. In round 5, with a second explanation task added, the current text scored 64 of 66 runs to the old wording's 56: labels held through every revision, and it labelled no explanation, where the old wording labelled 9 of 12. The backlog, the scores, and the harness are in `.agents/skills/eval-list-identifiers/`.
 
 ### Session scope
 
