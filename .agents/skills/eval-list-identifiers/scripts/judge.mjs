@@ -11,6 +11,7 @@ import { join, resolve } from 'node:path'
 import { parseArgs } from 'node:util'
 import { assertBlind, blindClaude } from '../../eval-delegation/scripts/blind-claude.mjs'
 import { TASKS } from './backlog.mjs'
+import { judgePrompt, readVerdict } from './judge-prompt.mjs'
 
 const { values } = parseArgs({
 	options: {
@@ -52,24 +53,6 @@ for (const arm of arms) {
 	}
 }
 
-function judgePrompt(user, key, reply, earlier) {
-	const history = earlier
-		? `<first_user_message>\n${earlier.user}\n</first_user_message>\n<first_reply>\n${earlier.reply}\n</first_reply>\n`
-		: ''
-	return `Score one assistant reply against one criterion. Judge only the criterion, not the quality of the reply.
-
-${history}<user_message>
-${user}
-</user_message>
-<reply>
-${reply}
-</reply>
-
-Criterion: ${key}
-
-Answer with exactly one line: PASS or FAIL, then " - ", then a reason of at most 25 words.`
-}
-
 async function claude(prompt) {
 	const { out } = await blindClaude(['-p', prompt, '--model', values.model, '--tools', ''], { cwd })
 	return out.trim()
@@ -83,11 +66,7 @@ await Promise.all(
 		while (next < items.length) {
 			const item = items[next++]
 			item.verdict = await claude(item.prompt)
-			// A judge sometimes reverses itself on a later line; its last verdict line is its answer.
-			item.pass = item.verdict
-				.match(/^(?:\w+:\s*)?(PASS|FAIL)\b/gm)
-				?.at(-1)
-				?.endsWith('PASS')
+			item.pass = readVerdict(item.verdict)
 		}
 	}),
 )

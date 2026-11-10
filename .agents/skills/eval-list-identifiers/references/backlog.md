@@ -186,3 +186,34 @@ of labels on an explanation costs less than findings the user cannot answer by l
 
 A next candidate would have to keep findings inside the rule while leaving explanations out. That
 is a fourth round on this backlog, under the same bar.
+
+## The bar for round 4
+
+Fixed before round 4, on the round-2 backlog. The owner asked for a wording of one or two
+sentences, scored before and after in promptfoo. Round 4 is the first round run through
+`promptfoo/`; its runners, isolation, judge prompt, and verdict parser are the ones rounds 2 and 3
+used, so only the driver changed. Arms are control, shipped, and two candidates whose files are
+in `promptfoo/arms/`:
+
+**kinds** — one sentence. It names the four kinds of list the backlog's failures came from, so
+findings stay inside the rule (round 3's loss), and it makes the kind prefix the only scheme, so
+two lists in one reply carry different labels (round 1 minimal's loss on two-list replies):
+
+```markdown
+## List identifiers
+
+Give each option, question, finding, or proposal you put to the user a label they can answer by, a letter for its kind and a number (O1, Q1, F1, P1), and keep it through every revision: never renumber, never reuse a removed item's label, and give a new item the next number.
+```
+
+**kinds-explain** — the same rule in two sentences, with one clause added that leaves the points of
+an explanation out, so the difference between the two candidates is attributable to that clause:
+
+```markdown
+## List identifiers
+
+Give each option, question, finding, or proposal you put to the user a label they can answer by, a letter for its kind and a number (O1, Q1, F1, P1); the points of a plain explanation need none. Keep each label through every revision: never renumber, never reuse a removed item's label, and give a new item the next number.
+```
+
+The round-1 bar applies unchanged: a candidate replaces the shipped wording only if its total
+beats shipped's by at least 3 runs and no category falls more than 1 run below shipped. Category
+totals are present /24, revise /18, near-miss /18. Categorical failures are reported on their own.
