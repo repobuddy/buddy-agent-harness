@@ -1,5 +1,6 @@
 import { spawnSync } from 'node:child_process'
-import { readFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
@@ -47,6 +48,27 @@ describe('the process boundary', () => {
 		expect(bah('doctor', '--nope').status).toBe(2)
 		expect(bah('doctor', '--format', 'yaml').status).toBe(2)
 		expect(bah('no-such-command').status).toBe(2)
+	})
+
+	it('renders a next step as the full command line, checked against the command tree', () => {
+		const root = mkdtempSync(join(tmpdir(), 'bah-ref-'))
+		try {
+			const { status, stdout } = bah('mcp', 'project', '--root', root, '--format', 'json')
+
+			expect(status).toBe(0)
+			expect(JSON.parse(stdout).help).toContain('Run `buddy-agent-harness mcp project` to preview the projection')
+
+			mkdirSync(join(root, '.agents', 'buddy-agent-harness'), { recursive: true })
+			writeFileSync(join(root, '.agents', 'buddy-agent-harness', 'mcp.toml'), '[servers.a]\ncommand = "x"\n')
+			const rejected = bah('mcp', 'reconcile', '--root', root, '--accept', 'nope', '--format', 'json')
+
+			expect(rejected.status).toBe(1)
+			expect(JSON.parse(rejected.stdout).help).toEqual([
+				'Run `buddy-agent-harness mcp reconcile` to list the fields that can be approved',
+			])
+		} finally {
+			rmSync(root, { recursive: true, force: true })
+		}
 	})
 
 	it('succeeds when the command did what was asked', () => {

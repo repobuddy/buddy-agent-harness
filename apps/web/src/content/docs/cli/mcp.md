@@ -90,7 +90,7 @@ record: .agents/buddy-agent-harness/mcp.projected.json
 
 A server already in agreement produces no row at all, so a run with nothing to do states its zero rather than printing an empty section.
 
-With no golden set, both `mcp project` and `mcp reconcile` answer `empty: 0 servers — no golden set at …` with a `help` line saying what to create, and exit `0`. A golden set that does not parse is a coded `golden-set-unreadable` error on stdout, exit `1`, naming the line and column but never quoting the line. `mcp reconcile` refuses a bad `--accept` with an `accept-rejected` error whose `reasons` list every refusal, having written nothing.
+With no golden set, both `mcp project` and `mcp reconcile` answer `empty: 0 servers — no golden set at …` with a `help` line saying what to create, and exit `0`; `mcp project` adds a second line with the command that previews the projection. A golden set that does not parse is a coded `golden-set-unreadable` error on stdout, exit `1`, naming the line and column but never quoting the line. `mcp reconcile` refuses a bad `--accept` with an `accept-rejected` error whose `reasons` list every refusal, having written nothing, and whose `help` gives the command that lists the fields it can approve.
 
 ## What it keeps
 

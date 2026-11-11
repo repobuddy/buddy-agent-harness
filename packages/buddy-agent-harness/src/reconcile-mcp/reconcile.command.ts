@@ -1,6 +1,6 @@
 import type { cli } from 'clibuilder'
 import { command, t } from 'clibuilder'
-import { CliError, empty, result } from 'clibuilder/axi'
+import { CliError, empty, ref, result } from 'clibuilder/axi'
 import { fail } from '../command-output/command-output.ts'
 import { GitBridgeState } from '../diagnose-bridges/git-bridge-state.ts'
 import { projectionRecordPath } from '../diagnose-mcp/mcp-baseline.ts'
@@ -51,7 +51,7 @@ export const mcpReconcileCommand: cli.Command = command({
 				throw new CliError('nothing written.', {
 					code: 'accept-rejected',
 					details: { reasons: plan.reasons },
-					help: 'Run `buddy-agent-harness mcp reconcile` without --accept to list the fields that can be approved.',
+					help: ref('mcp reconcile', {}, 'list the fields that can be approved'),
 				})
 			}
 			if (plan.kind === 'absent') {

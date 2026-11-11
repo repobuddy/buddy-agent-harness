@@ -40,7 +40,10 @@ describe('mcp project command', () => {
 
 		expect(JSON.parse(stdoutText())).toEqual({
 			empty: '0 servers — no golden set at .agents/buddy-agent-harness/mcp.toml',
-			help: [expect.stringContaining('buddy-agent-harness mcp project')],
+			help: [
+				'Create .agents/buddy-agent-harness/mcp.toml with the MCP servers to project.',
+				'Run `mcp project` to preview the projection',
+			],
 		})
 	})
 
