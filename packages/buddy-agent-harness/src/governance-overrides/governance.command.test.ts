@@ -219,7 +219,7 @@ describe('governance show', () => {
 		)
 		expect(written()).toContain('code: governance-not-found')
 		expect(written()).toContain('name: skill-design')
-		expect(written()).toContain('Run `buddy-agent-harness reference list` to see what is available.')
+		expect(written()).toContain('Run `reference list` to see what is available')
 		expect(stderr).not.toHaveBeenCalledWith(expect.stringContaining('error:'))
 	})
 

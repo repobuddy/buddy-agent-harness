@@ -1,7 +1,7 @@
 import { homedir } from 'node:os'
 import type { cli } from 'clibuilder'
 import { command, t } from 'clibuilder'
-import { CliError, document, result } from 'clibuilder/axi'
+import { CliError, document, ref, result } from 'clibuilder/axi'
 import { collapseHome, fail } from '../command-output/command-output.ts'
 import {
 	type GovernanceLayer,
@@ -116,7 +116,7 @@ export const governanceShowCommand: cli.Command = command({
 					{
 						code: 'governance-not-found',
 						details: { name },
-						help: 'Run `buddy-agent-harness reference list` to see what is available.',
+						help: ref('reference list', {}, 'see what is available'),
 					},
 				)
 			}

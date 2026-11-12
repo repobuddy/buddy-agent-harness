@@ -25,4 +25,5 @@ export function referenceLayers({
 
 export const referenceCommand: cli.Command = createReferenceCommand({
 	plugin: { name: PACKAGE_PLUGIN, root: dirname(packageGovernancesDir()) },
+	path: 'buddy-agent-harness reference',
 })
