@@ -1,5 +1,30 @@
 # buddy-agent-harness
 
+## 1.1.0
+
+### Minor Changes
+
+- 211a1f6: Upgrade to clibuilder 12.2 and follow its AXI conventions.
+  
+  - A failure is a coded error on stdout, in the format asked for, with a `help` line, instead of `error:` prose on stderr: `command-failed` (exit 1, any unexpected failure), `golden-set-unreadable`, `accept-rejected` (with the refusal `reasons`), `governance-not-found` and `unsupported-harness` (exit 2, a usage error). The governance deprecation warning stays on stderr.
+  - `mcp project` and `mcp reconcile` with no golden set answer with `empty: 0 servers — no golden set at …` and a `help` line, instead of a report of placeholder rows.
+  - A bare `buddy-agent-harness` answers with the `doctor` report under a `bin:` and `description:` header, instead of a usage error.
+  - Every command has `examples` in its `--help`.
+  
+  Migration: a script that read the failure message from stderr should read `error` and `code` on stdout, or use the exit code.
+- 16de22d: Upgrade to clibuilder 12.3 and cyber-agentkit 2.2.
+  
+  - Every `reference` subcommand now carries `examples` in its `--help`, each starting with `buddy-agent-harness reference`.
+  - `governance show`'s `governance-not-found` help is checked against the command tree, and names the command line the group is reached by: `buddy-agent-harness reference list` standalone, `repobuddy agent-harness reference list` when mounted under `repobuddy`. It no longer ends with a period.
+  - From cyber-agentkit 2.2, `reference search` shows the best 10 matches unless `--full` is given, and `reference customize` and `reference implementations` accept a `<prefix>.*` family. `reference migrate` is documented on the `reference` page.
+
+### Patch Changes
+
+- 30d912b: The `enhance` skill's `## List identifiers` section is now two sentences. It labels each option, question, finding, or proposal put to the user with a kind letter and a number, and it leaves the points of a plain explanation unlabelled, which the previous wording labelled. Labels still hold through a revision.
+  
+  A repository holding the previous wording is offered the new one as a replacement.
+- 05ff513: `mcp project` and `mcp reconcile` now give their next-step command through clibuilder's `ref()`, so the command line is checked against the CLI's command tree. With no golden set, `mcp project` answers two `help` lines: what to create, then ``Run `buddy-agent-harness mcp project` to preview the projection``. A rejected `mcp reconcile --accept` says ``Run `buddy-agent-harness mcp reconcile` to list the fields that can be approved``.
+
 ## 1.0.1
 
 ### Patch Changes
