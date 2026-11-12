@@ -43,6 +43,7 @@ const commandPages: Record<string, string | null> = {
 	'reference customize': 'cli/reference',
 	'reference check': 'cli/reference',
 	'reference implementations': 'cli/reference',
+	'reference migrate': 'cli/reference',
 	governance: 'cli/governance',
 	'governance list': 'cli/governance',
 	'governance show': 'cli/governance',

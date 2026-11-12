@@ -213,8 +213,8 @@ importers:
   packages/buddy-agent-harness:
     dependencies:
       cyber-agentkit:
-        specifier: ^2.0.0
-        version: 2.0.0(clibuilder@12.2.0(js-yaml@4.3.2))
+        specifier: ^2.2.0
+        version: 2.2.0(clibuilder@12.3.0(js-yaml@4.3.2))
       jsonc-parser:
         specifier: ^3.3.1
         version: 3.3.1
@@ -235,8 +235,8 @@ importers:
         specifier: ^5.0.0
         version: 5.0.0(vitest@5.0.0)
       clibuilder:
-        specifier: ^12.2.0
-        version: 12.2.0(js-yaml@4.3.2)
+        specifier: ^12.3.0
+        version: 12.3.0(js-yaml@4.3.2)
       tsdown:
         specifier: ^0.23.0
         version: 0.23.0(tsx@4.23.11)(typescript@7.0.2)
@@ -2016,8 +2016,8 @@ packages:
     resolution: {integrity: sha512-77PSwercCZU2Fc4sX94eF8k8Pxte6JAwL4/ICZLFjJLqegs7kCuAsqqj/70NQF6TvDpgFjkubQB2FW2ZZddvQg==}
     engines: {node: '>=8'}
 
-  clibuilder@12.2.0:
-    resolution: {integrity: sha512-aaKIqEEkt8b/h1TdnZdWSPLcnjooMSOKUCxHOUFqf9aEcCbq523XQf9nE2UtjC+U2VOd8P65Pzqczbw1BfBgaw==}
+  clibuilder@12.3.0:
+    resolution: {integrity: sha512-MqBZWtcWs5ihPCIbu3XNtOcMOrYTj3oITTYFGUt0fo/jvG7UA1oEXeiZ3R1JhKgunyjiX1ZOCFe0AmW7pVK4ng==}
     engines: {node: '>= 20.19'}
     peerDependencies:
       js-yaml: ^4.1.0
@@ -2106,12 +2106,12 @@ packages:
     resolution: {integrity: sha512-0LrrStPOdJj+SPCCrGhzryycLjwcgUSHBtxNA8aIDxf0GLsRh1cKYhB00Gd1lDOS4yGH69+SNn13+TWbVHETFQ==}
     engines: {node: ^10 || ^12.20.0 || ^14.13.0 || >=15.0.0, npm: '>=7.0.0'}
 
-  cyber-agentkit@2.0.0:
-    resolution: {integrity: sha512-+errwcKErS+ZJ+lImtofk8etwcobxYaNRm4Q6V+cL8GM09eN8FJtNePmJGG4xv+V+cq0ptuH3hekv20dmY7Tww==}
+  cyber-agentkit@2.2.0:
+    resolution: {integrity: sha512-bwoPZRtsTPqI6XQl0szit7l2PcNEZANE0JitNXSKaAeNahq9kf3Id30kwDZAYexZ9lxZOeLnYSug2ImwdPowmQ==}
     engines: {node: '>=22'}
     hasBin: true
     peerDependencies:
-      clibuilder: ^12.0.0
+      clibuilder: ^12.2.0
     peerDependenciesMeta:
       clibuilder:
         optional: true
@@ -5057,7 +5057,7 @@ snapshots:
 
   ci-info@4.4.0: {}
 
-  clibuilder@12.2.0(js-yaml@4.3.2):
+  clibuilder@12.3.0(js-yaml@4.3.2):
     dependencies:
       '@toon-format/toon': 4.1.1
       args-minus: 0.2.3
@@ -5138,9 +5138,9 @@ snapshots:
     dependencies:
       css-tree: 2.2.1
 
-  cyber-agentkit@2.0.0(clibuilder@12.2.0(js-yaml@4.3.2)):
+  cyber-agentkit@2.2.0(clibuilder@12.3.0(js-yaml@4.3.2)):
     optionalDependencies:
-      clibuilder: 12.2.0(js-yaml@4.3.2)
+      clibuilder: 12.3.0(js-yaml@4.3.2)
 
   cyber-sdd@0.7.3: {}
 

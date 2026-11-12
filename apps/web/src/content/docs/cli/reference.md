@@ -6,13 +6,14 @@ description: 'CLI reference for buddy-agent-harness reference: load, list, searc
 ```sh
 buddy-agent-harness reference load <name>... [--root <directory>] [--trace] [--format text|toon|json]
 buddy-agent-harness reference list [pattern] [--root <directory>] [--format toon|json|text]
-buddy-agent-harness reference search <query> [--root <directory>] [--format toon|json|text]
+buddy-agent-harness reference search <query> [--full] [--root <directory>] [--format toon|json|text]
 buddy-agent-harness reference where <name> [--in <folder>] [--root <directory>] [--format toon|json|text]
 buddy-agent-harness reference create <name> [--scope repo|user] [--in <folder>] [--merge replace|patch|combine|remove] [--template <path>] [--dry-run]
 buddy-agent-harness reference customize <name> [--extends <step>...] [--scope repo|user] [--in <folder>] [--dry-run]
 buddy-agent-harness reference delete <name> [--scope repo|user] [--in <folder>] [--dry-run]
 buddy-agent-harness reference implementations <interface>
 buddy-agent-harness reference check [name...]
+buddy-agent-harness reference migrate [name...] [--plugin <folder>] [--default <folder>] [--root <directory>] [--write]
 ```
 
 A **reference** is a Markdown document an agent reads on demand. [References and Skills](/agent-configuration/references/) covers when to write one instead of a skill.
@@ -71,7 +72,7 @@ Prints each document composed from its contributions, in the order asked. With `
 
 ## `reference list` and `reference search`
 
-`list` gives one row per name, with its description, and its status when the name is not found. A pattern keeps only the names it matches exactly. `search` finds references by name, description, tags, headings, or body, best match first. Neither writes.
+`list` gives one row per name, with its description, and its status when the name is not found. A pattern keeps only the names it matches exactly. `search` finds references by name, description, tags, headings, or body, best match first, and shows the best 10 unless `--full` asks for every match. Neither writes.
 
 ## `reference where`
 
@@ -90,3 +91,11 @@ buddy-agent-harness reference create release-policy --template ./references/acme
 buddy-agent-harness reference customize testing --extends testing-base
 buddy-agent-harness reference delete release-policy --dry-run
 ```
+
+## `reference migrate`
+
+```sh
+buddy-agent-harness reference migrate
+```
+
+Plans the rewrite of reference files still in a form version 1 wrote, and the rename of files under a name a plugin renamed, in the repo and user tiers and every project section. `--plugin` or `--default` limits it to one plugin's or skill's source folder instead. `--write` applies the plan; it never changes a managed or installed file.
