@@ -1,5 +1,11 @@
 # buddy-agent-harness
 
+## 1.1.1
+
+### Patch Changes
+
+- 8588ad8: The shipped skill descriptions (`doctor-buddy-agent-harness`, `enhance`, `init-buddy-agent-harness`, `repair`) now open by saying what the skill does instead of "Use this skill when". Every trigger phrase is kept.
+
 ## 1.1.0
 
 ### Minor Changes
