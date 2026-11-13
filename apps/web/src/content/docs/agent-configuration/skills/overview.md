@@ -11,7 +11,7 @@ That matters for portability. Some of these distinctions are expressed in the Ma
 
 A `SKILL.md` file has two parts:
 
-- **`description` frontmatter**: for most harnesses the only field loaded at startup, and the entire basis on which the model decides whether to load the body. For a situational skill it states the capability, "Use this skill when…", and at least one implicit phrasing an agent might not otherwise connect to the trigger. For a skill that should never be matched, it is kept deliberately empty of anything matchable. See [Direct Invocation Skill](/agent-configuration/skills/direct-skill/).
+- **`description` frontmatter**: for most harnesses the only field loaded at startup, and the entire basis on which the model decides whether to load the body. For a situational skill it opens by stating what the skill does and when it applies, in its first words rather than behind a fixed lead-in such as "Use this skill when…", and carries at least one implicit phrasing an agent might not otherwise connect to the trigger. For a skill that should never be matched, it is kept deliberately empty of anything matchable. See [Direct Invocation Skill](/agent-configuration/skills/direct-skill/).
 - **Body**: the workflow itself, whether numbered steps for a process skill, tool usage and guardrails for a tool-based skill, or rules and pass conditions for a standard.
 
 Skills stay narrow and composable by design: one workflow per skill.

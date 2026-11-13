@@ -1,6 +1,6 @@
 ---
 name: enhance
-description: Use this skill when a repository already has an AGENTS.md and you want to add guidance it is missing, or to refresh a vetted section it carries in an outdated form — offering each one at a time and writing only what the user approves. Runs on its own or straight after init.
+description: Adds guidance missing from a repository's existing AGENTS.md, or refreshes a vetted section it carries in an outdated form — offering each one at a time and writing only what the user approves. Runs on its own or straight after init.
 argument-hint: '[--root <dir>]'
 ---
 
