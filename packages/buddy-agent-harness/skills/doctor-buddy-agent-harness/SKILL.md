@@ -1,6 +1,6 @@
 ---
 name: doctor-buddy-agent-harness
-description: Use this skill when a repository loads no project skills, when skills are missing after a clone, when a harness appears to be ignoring AGENTS.md, or when checking whether the agent configuration bridges into .claude/skills and the other harness files still resolve.
+description: Checks whether a repository's agent configuration bridges into .claude/skills and the other harness files still resolve — when a repository loads no project skills, when skills are missing after a clone, or when a harness appears to be ignoring AGENTS.md.
 ---
 
 <!-- Generated from src/diagnose-bridges/doctor-guidance.ts by scripts/generate-skills.ts. Do not edit by hand. -->

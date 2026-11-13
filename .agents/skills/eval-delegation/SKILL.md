@@ -1,6 +1,6 @@
 ---
 name: eval-delegation
-description: Use this skill before changing the wording of the Delegation section that the enhance skill ships, or before adding a section beside it. Measures whether a candidate wording actually changes agent behavior, instead of arguing about whether it reads well.
+description: Measures whether a candidate wording of the Delegation section that the enhance skill ships actually changes agent behavior, instead of arguing about whether it reads well. Use before changing that wording, or before adding a section beside it.
 ---
 
 # Evaluate the Delegation wording

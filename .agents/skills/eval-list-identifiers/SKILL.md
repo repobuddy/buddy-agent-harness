@@ -1,6 +1,6 @@
 ---
 name: eval-list-identifiers
-description: Use this skill before changing the wording of the List identifiers section that the enhance skill ships, or when enhance needs to settle an existing List identifiers section by measurement. Measures whether a wording changes how an agent labels the lists it puts to the user, instead of arguing about whether it reads well.
+description: Measures whether a wording of the List identifiers section that the enhance skill ships changes how an agent labels the lists it puts to the user, instead of arguing about whether it reads well. Use before changing that wording, or when enhance needs to settle an existing List identifiers section by measurement.
 ---
 
 # Evaluate the List identifiers wording
