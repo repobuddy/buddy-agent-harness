@@ -66,3 +66,9 @@ Every `problem` name routes to exactly one page. Load the page for the finding i
 - Never repeat a value from a file an `mcp-literal-secret` or `mcp-committed-secret` finding points at. The report withheld it on purpose, and quoting it back puts it in the transcript anyway.
 - Never write outside the repository. A `globalInstructions` repair is a step for the user to take in their own home directory; hand it over exactly as reported.
 - Write instructions in `AGENTS.md`, never in `CLAUDE.md`. Content written there reaches one harness, drifts from the canonical file, and — because Claude Code prefers it — takes `AGENTS.md` out of that harness's context entirely.
+
+## Done when
+
+- **C1.** The reply names each problem the report found and its cause, or, when the report found none, says the configuration is healthy and calls for no change.
+- **C2.** No bridge, skill, or instruction file changed: no `init` ran, and nothing was written to `CLAUDE.md`.
+- **C3.** The reply repeats no value that a secret finding withheld.

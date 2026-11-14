@@ -37,6 +37,7 @@
 		"!**/*.{test,spec}.ts",
 		"!**/*.test-helper.ts",
 		"skills",
+		"!skills/*/evals",
 		"plugin.json",
 		"llms.txt",
 		".claude-plugin",
