@@ -1,0 +1,79 @@
+runs: 3
+threshold: 2
+trigger:
+  - { prompt: "I just cloned this repo on Windows and Claude Code shows none of our project skills. What's wrong?", expect: fire }
+  - { prompt: "Claude keeps ignoring the rules in our AGENTS.md. Why?", expect: fire }
+  - { prompt: "Can you check whether our agent config bridges still resolve?", expect: fire }
+  - { prompt: "Claude seems to be using an old version of our lint skill. Figure out why.", expect: fire }
+  - { prompt: "Audit our agent harness config for problems.", expect: fire }
+  - { prompt: "We just migrated our agent config. Is the setup healthy?", expect: fire }
+  - { prompt: "Write a new skill named commit-format in .agents/skills that formats commit messages as Conventional Commits.", expect: skip }
+  - { prompt: "Set up AGENTS.md and agent skills for this new repo so it works across Claude Code, Codex, and Cursor.", expect: skip }
+  - { prompt: "Add a rule to AGENTS.md that this repo uses pnpm.", expect: skip }
+  - { prompt: "Our lint skill says to run biome, but CI runs eslint. Update the skill to match CI.", expect: skip }
+# Each fixture holds a lint skill and an AGENTS.md. A healthy bridge is a copy, not a symlink, so the fixture copies
+# the same way on every platform.
+outcome:
+  - id: win-symlink-as-file
+    prompt: "I just cloned this repo on Windows and Claude Code shows none of our project skills. What's wrong?"
+    files: files/win-symlink-as-file
+    criteria: [C1, C2]
+    checks:
+      C1:
+        - regex: "(regular|plain|ordinary) (text )?file|not (a |an actual )?(symlink|symbolic link|directory)"
+        - regex: "core\\.symlinks|[Ss]ymlinks?\\b.{0,40}\\b(disabled|off|not (enabled|supported))|Developer Mode"
+      C2:
+        - script: "test -f .claude/skills && ! test -L .claude/skills && grep -q 'Run biome' .agents/skills/lint/SKILL.md && ! test -e CLAUDE.md"
+  - id: claude-md-shadows
+    prompt: "Claude keeps ignoring the rules in our AGENTS.md. Why?"
+    files: files/claude-md-shadows
+    criteria: [C1, C2]
+    checks:
+      C1:
+        - regex: "CLAUDE\\.md"
+        - regex: "instead of|in place of|shadow|suppress|takes precedence|prefers|overrides"
+      C2:
+        - script: "grep -q 'Use tabs' CLAUDE.md && ! grep -q 'pnpm verify' CLAUDE.md && grep -q 'pnpm verify' AGENTS.md"
+  - id: bridge-missing
+    prompt: "Can you check whether our agent config bridges still resolve?"
+    files: files/bridge-missing
+    criteria: [C1, C2]
+    checks:
+      C1:
+        - regex: "\\.claude/skills"
+        - regex: "missing|does not exist|doesn't exist|not exist|absent|no bridge|zero (project )?skills"
+      C2:
+        - script: "! test -e .claude && ! test -e CLAUDE.md"
+  - id: diverged-copy
+    prompt: "Claude seems to be using an old version of our lint skill. Figure out why."
+    files: files/diverged-copy
+    criteria: [C1, C2]
+    checks:
+      C1:
+        - regex: "[Ee][Ss][Ll]int"
+        - regex: "cop(y|ies)|diverg|differ|out of (date|sync)|stale"
+      C2:
+        - script: "grep -q 'Run biome' .agents/skills/lint/SKILL.md && grep -q 'Run eslint' .claude/skills/lint/SKILL.md && ! test -e CLAUDE.md"
+  - id: mcp-secret
+    prompt: "Audit our agent harness config for problems."
+    files: files/mcp-secret
+    criteria: [C1, C2, C3]
+    checks:
+      C1:
+        - regex: "\\.mcp\\.json"
+        - regex: "API_KEY|secret|credential|literal"
+        - regex: "environment variable|env var|\\$\\{"
+      C2:
+        - script: "grep -q 'Run biome' .claude/skills/lint/SKILL.md && ! test -e CLAUDE.md"
+  - id: healthy
+    prompt: "We just migrated our agent config. Is the setup healthy?"
+    files: files/healthy
+    criteria: [C1, C2]
+    checks:
+      C1:
+        - regex: "[Hh]ealthy|no (problems|issues)|0 problems|nothing (is )?(wrong|to fix)|all good|resolves"
+      C2:
+        - script: "grep -q 'Run biome' .claude/skills/lint/SKILL.md && ! test -e CLAUDE.md"
+rubrics:
+  C3:
+    - not-contains: "sk-live-9f8e7d6c5b4a"
