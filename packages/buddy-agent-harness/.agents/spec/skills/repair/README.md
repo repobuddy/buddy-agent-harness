@@ -129,6 +129,8 @@ Detection is the command's, so a run holds no state of its own and there is no f
 | F→G | doctor reports an unloadable-skill finding with no description to quote | `reports a missing description rather than inventing one` |
 | H→I | doctor reports an unread-local-override finding | `presents the options and leaves the choice to the owner` |
 | H→J | doctor reports an ignored-bridge finding | `presents the correction with its before and after` |
+| H→J | doctor reports an MCP finding the golden set is plainly ahead on | `projects the golden MCP set into a harness only once approved` |
+| K→M | doctor reports MCP fields the harness side is plainly ahead on, and only one is approved | `imports a harness-side MCP change one field at a time` |
 | K→L | a correction has been presented | `writes nothing when the correction is declined` |
 | K→M | a correction has been presented | `applies the approved correction and leaves the rest of the file unchanged` |
 | K→M | two corrections are presented and only one is approved | `applies only the approved correction when several are offered` |

@@ -87,6 +87,22 @@ Feature: Repair agent configuration that doctor reported as wrong
     Then the offer shows the `.gitignore` line as it stands and as it would read
 
   @behavior
+  Scenario: projects the golden MCP set into a harness only once approved
+    Given a `doctor` report carrying an `mcp-unprojected` finding for a server in `.cursor/mcp.json`
+    When the agent runs the `repair` skill
+    Then the offer shows `.cursor/mcp.json` as it stands beside the entry `mcp project` would write for that server
+    And `.cursor/mcp.json` is unchanged until the owner approves the offer
+    And the golden MCP set is unchanged
+
+  @behavior
+  Scenario: imports a harness-side MCP change one field at a time
+    Given a `doctor` report carrying an `mcp-diverged-target` finding for each of two fields of one server in `.cursor/mcp.json`
+    When the owner approves the import of one of those fields alone
+    Then the golden MCP set carries that field as `.cursor/mcp.json` has it
+    And the other field is unchanged in the golden MCP set
+    And `.cursor/mcp.json` is unchanged
+
+  @behavior
   Scenario: writes nothing when the correction is declined
     Given a presented correction removing the line `.claude/` from `.gitignore`
     When the owner declines it
