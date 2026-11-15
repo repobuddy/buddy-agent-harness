@@ -97,6 +97,11 @@ Three rules, and each closes a different failure:
 - **The command reports a conflict.** Resolve the named target and retry. `--force` is reached for only to replace that exact projection — the flag itself replaces every conflicting target, so the narrowness is the skill's discipline rather than the command's guarantee (issue #80). `--copy` is a snapshot rather than a live projection, and a run that falls back to one says so.
 - **Every enabled harness reads the canonical directory natively.** No bridge exists, so no non-material region is written: a warning about a path this repository does not have teaches the next agent to distrust the rest of the file. This is a rule the skill states rather than a state a default run reaches — Claude Code is enabled unconditionally and needs the skills projection — and it is specified as it ships rather than normalized away.
 - **The non-material region's markers are present and empty.** A deliberate opt-out; left empty. Markers that are **gone** are not an opt-out — the region is far more often lost to a rewrite or a merge than removed on purpose — so it is restored.
+- **Claude Code is in use: a `.claude/` directory exists, or the owner enabled it in this run.** The plan offers the two agent-worktree settings of `../../cli/worktree-diagnosis/`'s subject: **P1**, ignoring `.claude/worktrees/` in `.gitignore` and in each tree-scanning tool config the repository has, and **P2**, setting `worktree.baseRef` to `"head"` in `.claude/settings.json`. Each is offered on its own. Both are material: an owner who declines either keeps the repository as it was.
+- **No `.claude/` directory.** Neither setting is offered.
+- **A setting is already covered.** `.claude/worktrees/` is git-ignored, or a tool config already excludes it, or `worktree.baseRef` is set. An explicit `"fresh"` counts as covered, since it is the owner's answer. Nothing is offered for it.
+- **P2 is offered.** The trade-off is explained first: agent worktrees branch from the default branch unless the base is `"head"`, which suits unrelated tasks and surprises anyone building on a feature branch.
+- **A setting is approved.** Exactly the approved line is written into its file, in place, and every other byte is left as it was. A missing `.gitignore` or `.claude/settings.json` is created, which is still an approved write. A decline writes nothing.
 - **The repository has a formatter.** It is run over the written files and the run says so. The skill is not itself a formatter.
 
 ## Control Flow
@@ -192,11 +197,19 @@ The graph rejoins at `I` after a decline: the decline drops that one write, and 
 | R | a run that has finished reporting | `offers the enhance skill once and takes the answer` |
 | barred | a repository with no `.agents/` tree | `invents no canonical directory beyond the one convention` |
 | barred | a request to keep personal instructions out of version control | `writes no AGENTS.local.md` |
+| D→E | a `.claude/` directory, no ignore rule, no base | `offers to ignore the agent worktrees and to set their base, each on its own` |
+| C | a repository with no `.claude/` directory | `offers neither agent-worktree setting where Claude Code is not in use` |
+| C | the worktrees ignored and `worktree.baseRef` set | `offers nothing for an agent-worktree setting already covered` |
+| C | `worktree.baseRef` set to `"fresh"` | `counts an explicit "fresh" base as covered` |
+| E | the base offer | `explains the base trade-off before asking` |
+| I1 | approved lines in files carrying comments | `writes only the approved agent-worktree lines, in place` |
+| G→H | every agent-worktree offer declined | `writes nothing when an agent-worktree offer is declined` |
 | barred | a repository whose CI workflow names a harness | `changes no file outside the repository's agent configuration` |
 
 ## References
 
 - `../../../../skills/init-buddy-agent-harness/SKILL.md` is the shipped skill: the five phases, the argument rules, and the approval carve-out this node specifies.
+- `../../../../skills/init-buddy-agent-harness/references/agent-worktrees.md` holds the two agent-worktree offers: the lines, when each is covered, and the base trade-off.
 - `../../../../skills/init-buddy-agent-harness/references/agents-md.md` draws the material line, holds the non-material region's five properties, and carries the nested-`AGENTS.md` rule.
 - `../../../../skills/init-buddy-agent-harness/references/frontmatter.md` backs the frontmatter repair: a missing `description` and unparseable YAML are the only two frontmatter faults that cost a harness the skill, which is why a colon is quoted and a mismatched `name` is only aligned.
 - `../../cli/instruction-bridges/` and `../../workflows/detect-and-repair/` are the other side of the seam: they route every instruction repair here, and this node states what arriving here does.

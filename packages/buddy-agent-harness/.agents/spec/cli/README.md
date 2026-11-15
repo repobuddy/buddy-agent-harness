@@ -12,6 +12,7 @@ The package publishes one binary. `init` writes a repository's canonical configu
 | [`instruction-bridges/`](./instruction-bridges/README.md) | Whether every enabled harness can still read `AGENTS.md` |
 | [`global-instructions/`](./global-instructions/README.md) | Whether each harness installed for the user loads `~/.agents/AGENTS.md` |
 | [`configuration-diagnosis/`](./configuration-diagnosis/README.md) | Whether the configuration around those bridges is present and wrong |
+| [`worktree-diagnosis/`](./worktree-diagnosis/README.md) | Whether the repository accounts for the agent worktrees Claude Code creates inside it |
 | [`mcp-diagnosis/`](./mcp-diagnosis/README.md) | Whether the golden MCP server set and the harness copies of it have drifted |
 | [`mcp-projection/`](./mcp-projection/README.md) | Writing the golden MCP server set into each harness's own MCP file |
 | [`mcp-reconcile/`](./mcp-reconcile/README.md) | Importing a harness-side MCP change back into the golden set, one approved field at a time |

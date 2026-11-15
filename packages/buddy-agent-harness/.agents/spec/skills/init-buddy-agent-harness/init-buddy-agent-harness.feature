@@ -353,3 +353,61 @@ Feature: Consolidate a repository's agent configuration and bridge the harnesses
     When the agent runs the `init-buddy-agent-harness` skill
     Then the workflow file is unchanged
     And no repository setting, branch rule, or unrelated project file is changed
+
+  # ── agent-worktree settings ──
+
+  @behavior
+  Scenario: offers to ignore the agent worktrees and to set their base, each on its own
+    Given a repository with a `.claude/` directory a `.gitignore` with no rule for `.claude/worktrees/`, a `biome.json` that does not exclude it, and no `worktree.baseRef`
+    When the agent runs the `init-buddy-agent-harness` skill
+    Then it offers the `.gitignore` line and the `biome.json` line as separate items
+    And it offers `worktree.baseRef` set to `"head"` as its own item
+    And the owner's answer to one offer decides nothing about the others
+
+  @behavior
+  Scenario: offers neither agent-worktree setting where Claude Code is not in use
+    Given a repository with no `.claude/` directory
+    When the agent runs the `init-buddy-agent-harness` skill
+    Then it offers no `.gitignore` line for `.claude/worktrees/`
+    And it offers no `worktree.baseRef` setting
+
+  @behavior
+  Scenario: offers nothing for an agent-worktree setting already covered
+    Given a repository with a `.claude/` directory
+    And a `.gitignore` holding the line `.claude/`
+    And a `.claude/settings.json` setting `worktree.baseRef` to `"head"`
+    When the agent runs the `init-buddy-agent-harness` skill
+    Then it offers no agent-worktree setting
+    And the report says each is already covered
+
+  @behavior
+  Scenario: counts an explicit "fresh" base as covered
+    Given a repository with a `.claude/` directory
+    And a `.claude/settings.json` setting `worktree.baseRef` to `"fresh"`
+    When the agent runs the `init-buddy-agent-harness` skill
+    Then it offers no `worktree.baseRef` setting
+    And the report says the owner chose it
+
+  @behavior
+  Scenario: explains the base trade-off before asking
+    Given a repository with a `.claude/` directory and no `worktree.baseRef`
+    When the agent offers `worktree.baseRef` set to `"head"`
+    Then the explanation comes before the question
+    And it says agent worktrees branch from the default branch unless the base is `"head"`
+    And it says `"head"` branches from the current `HEAD`, unpushed commits included
+
+  @behavior
+  Scenario: writes only the approved agent-worktree lines, in place
+    Given a `.claude/settings.json` carrying comments and a `.gitignore` carrying other rules
+    And the owner approves the `.gitignore` line and declines `worktree.baseRef`
+    When the agent applies the approved offers
+    Then `.gitignore` gains the line `.claude/worktrees/` and keeps every other byte
+    And `.claude/settings.json` is byte-identical to what it was before the run
+
+  @behavior
+  Scenario: writes nothing when an agent-worktree offer is declined
+    Given a repository with a `.claude/` directory and every agent-worktree setting uncovered
+    And the owner declines every offer
+    When the agent finishes the run
+    Then no file in the repository is created or modified by an agent-worktree offer
+    And the report names each offer as declined
