@@ -50,6 +50,7 @@ where the behavior branches. Each spec stands alone, with its own IDs; an ID suc
 | --- | --- |
 | [`detect-and-repair/`](./detect-and-repair/README.md) | Each finding reaches the skill that owns its repair |
 | [`repair/`](./repair/README.md) | The `repair` skill corrects agent configuration that is present and wrong |
+| [`copy-sync/`](./copy-sync/README.md) | Each skills copy bridge and the canonical skills directory end up holding the same files, with every edit made on either side kept |
 | [`mcp-projection/`](./mcp-projection/README.md) | The golden MCP server set is written into each harness's own MCP file |
 | [`mcp-reconcile/`](./mcp-reconcile/README.md) | A harness-side MCP change is brought back into the golden set, one approved field at a time |
 

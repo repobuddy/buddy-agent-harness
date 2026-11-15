@@ -27,7 +27,7 @@ another family's finding. Each finding carries the repair this spec states for i
   [diagnosis-report](../diagnosis-report/README.md).
 - N5 **User-scope skills bridges.** `doctor` diagnoses a repository and never looks for skills bridges outside it.
 - N7 **Choosing a side for a file both sides of a copy changed.** Where the newer edit lives cannot be decided from
-  the filesystem, so the repair puts each such file to the user (R23).
+  the filesystem, so the repair puts each such file to the user (R28).
 
 ## Key terms
 
@@ -159,9 +159,9 @@ here.
 
 - R22 The repair of a missing-bridge or a stale-bridge finding rebuilds the bridge, and for each of the
   missing-bridge, degraded-bridge, and stale-bridge findings one invocation completes the repair. (UC3, E6, E7, E10)
-- R23 The repair of a diverged-copy finding, in each of the four divergence directions, is the file-by-file sync
-  [harness-init](../harness-init/README.md) R36 to R40 state, and it names no side to keep for a file both sides
-  changed. (UC3, E13, E14, E15, E16)
+- R28 The repair of a diverged-copy finding, in each of the four divergence directions, is the file-by-file sync
+  [copy-sync](../copy-sync/README.md) states, and it names no side to keep for a file both sides changed. (UC3, E13,
+  E14, E15, E16)
 - R26 The repair of an unprotected-copy finding puts both parts of copy protection in place for that copy, and
   changes no file's content and no committed file. (UC3, E18)
 
@@ -176,5 +176,6 @@ None.
 - [instruction-bridges](../instruction-bridges/README.md) and
   [configuration-diagnosis](../configuration-diagnosis/README.md): the sibling families.
 - [harness-init](../harness-init/README.md): `init` uses the same resolution test, so a bridge `init` leaves alone is
-  never one `doctor` reports, and it owns the sync a diverged-copy repair performs.
+  never one `doctor` reports.
+- [copy-sync](../copy-sync/README.md): the sync a diverged-copy repair performs.
 - `.research/agentic-configuration-standards/`: the per-harness sources for which harnesses need a bridge.

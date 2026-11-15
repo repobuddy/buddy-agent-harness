@@ -13,7 +13,8 @@ references layer exist at the repository root. It then gives each enabled harnes
 skills directory a projection of it, a link where links work and a copy where they do not. It reports what it did, so
 a person or a program can tell which harness got what. It never overwrites something already in a projection's place
 unless the caller names it. A copy that has drifted from the canonical skills directory is synced with it file by file,
-so an edit made through the copy is kept, and a file both sides changed waits for the user to pick a side.
+as [copy-sync](../copy-sync/README.md) states, so an edit made through the copy is kept, and a file both sides changed
+waits for the user to pick a side.
 
 ## Non-goals
 
@@ -177,19 +178,21 @@ so an edit made through the copy is kept, and a file both sides changed waits fo
   - Library: the program entry point.
   - Skill: the skill's apply step, and the `repair` skill's correction of a drifted copy
     ([repair](../repair/README.md)).
-- **Inputs**: the existing copy, the canonical skills directory, their last agreement where git has one, and the
-  user's pick for each file both sides changed.
-- **Success**: the copy and the canonical skills directory hold the same files with the same content, and every edit
-  made on either side since the last agreement is kept.
+- **Inputs**: the existing copy, the canonical skills directory, their last agreement where git has one, and any
+  request to replace targets. The command takes no pick of a side for a file; those go to the `sync` command
+  ([copy-sync](../copy-sync/README.md) UC2).
+- **Success**: the copy is synced with the canonical skills directory, and it is not reported as a conflict.
 - **Extensions**:
   - UC7.1 The copy holds the same files with the same content: it is kept as it is.
-  - UC7.2 A file changed on both sides since the last agreement: it is put to the user, who picks the side.
-  - UC7.3 No last agreement can be found: every differing file is put to the user.
-  - UC7.4 The user gives no answer for a file: nothing is written for that file, and the rest are synced.
+  - UC7.5 The copy differs from the canonical skills directory: it is synced file by file, and a file both sides
+    changed is left for the user, as [copy-sync](../copy-sync/README.md) UC1 states.
+  - UC7.6 A request to replace targets covers the copy's path: the copy is replaced with a projection instead of
+    synced.
 
 ### UC9 — Keep a copy out of uncommitted changes (A2.5)
 
-- **Trigger**: a run writes a copy, syncs files into one, or keeps an in-sync one, at a projection path git tracks.
+- **Trigger**: a run writes a copy, or keeps an in-sync one, at a projection path git tracks. Protection after a sync
+  writes into a copy is [copy-sync](../copy-sync/README.md) UC3's.
 - **Entry node**: `tracked`
 - **Entry points**:
   - Command line (primary): `buddy-agent-harness init`.
@@ -256,26 +259,20 @@ so an edit made through the copy is kept, and a file both sides changed waits fo
 
 ### Syncing an existing copy (UC7)
 
-- R35 (UC7, E19, E20, E34) An existing copy that holds the same files with the same content as the canonical skills
-  directory is kept as it is and is not reported as a conflict, whether or not a copy was requested.
-- R36 (UC7, E21, E22) In a drifted copy, a file added, changed, or removed since the last agreement on one side only
-  holds that side's version on both sides after the run, whichever side it was, so an edit made through the copy is
-  in the canonical skills directory after the run.
-- R37 (UC7, E23, E24) In a drifted copy, a file changed on both sides since the last agreement is put to the user,
-  who picks the side, and after the answer both sides hold the picked side's version.
-- R38 (UC7, E25) A file the sync put to the user and got no answer for is unchanged on both sides after the run,
-  and every other differing file is still synced.
-- R39 (UC7, E23) When no last agreement can be found for a drifted copy, every file that differs between the copy and
-  the canonical skills directory is put to the user as in R37, and none takes either side's version without an
-  answer.
-- R40 (UC7, E26, E27) The result names, for each drifted copy, each file the sync wrote and the side it took,
-  and each file left unchanged for want of an answer.
+- R52 (UC7.1, E19, E20, E34) An existing copy that holds the same files with the same content as the canonical
+  skills directory, at a projection path no request to replace targets covers, is kept as it is and is not reported
+  as a conflict, whether or not a copy was requested.
+- R49 (UC7.5, E21, E35) A drifted copy at a projection path no request to replace targets covers is synced with the
+  canonical skills directory as [copy-sync](../copy-sync/README.md) R2 to R20 state, whether or not a copy was
+  requested, and is not reported as a conflict.
+- R51 (UC7.6, E36) A request to replace targets that names an existing copy's projection path, or that names no
+  target, replaces that copy with a projection of the canonical skills directory, as R2 and R18 state, instead of
+  syncing it, and leaves the canonical skills directory unchanged on the copy's account.
 
 ### Protecting a copy (UC9)
 
-- R43 (UC9, E29, E26, E31, E32) After a run writes a copy, or syncs files into one, at a projection path git tracks,
-  that copy has copy protection, so git shows no uncommitted change for the copy and would add none of its files to a
-  commit.
+- R50 (UC9, E29, E31, E32) After a run writes a copy at a projection path git tracks, that copy has copy protection,
+  so git shows no uncommitted change for the copy and would add none of its files to a commit.
 - R44 (UC9.2, E34, E31, E32) After a run keeps an existing in-sync copy at a projection path git tracks, that copy has
   copy protection, though the run wrote no file into it.
 - R45 (UC9.1, E33) A run puts copy protection on no copy other than one it wrote, synced, or kept at a tracked
@@ -321,7 +318,8 @@ None.
 - [entry-point](../entry-point/README.md): owns how a program reaches the command without a process.
 - [bridge-resolution](../bridge-resolution/README.md): owns what a copy, its divergence, and its protection mean, as
   `doctor` reports them.
-- [repair](../repair/README.md): performs the sync of UC7 for a drifted-copy finding, after the owner approves, and
-  restores copy protection.
+- [copy-sync](../copy-sync/README.md): the home of the file-by-file sync UC7 runs on an existing copy.
+- [repair](../repair/README.md): offers that sync for a drifted-copy finding, after the owner approves, and restores
+  copy protection.
 - [glossary](../glossary.md): the shared terms.
 - [AGENTS.md](https://agents.md/): the open instruction format the canonical instructions follow.

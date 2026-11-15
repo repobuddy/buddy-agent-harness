@@ -62,7 +62,7 @@ names, or to a person.
   to `init-buddy-agent-harness`, needs your decision (no skill owns it, and someone must judge it), or for you to do
   outside the repo (a step in the user's home directory). Each is told apart from the others.
 - **K11 sync**: the file-by-file merge of a drifted skills copy with the canonical skills directory, as
-  [harness-init](../harness-init/README.md) R36 to R40 state it.
+  [copy-sync](../copy-sync/README.md) states it.
 - **K14 copy protection**: see [bridge-resolution](../bridge-resolution/README.md) K9.
 
 ## Actors and goals
@@ -199,7 +199,7 @@ R28 is checked by trigger evals whose near misses include each request UC1.2 nam
   one imports that field alone into the golden MCP set, leaves the other fields there unchanged, and leaves the harness
   file unchanged.
 
-- **R26** (UC3, E10, E11, E12) For a skills copy drifted from the canonical skills directory, in any divergence
+- **R36** (UC3, E10, E11, E12) For a skills copy drifted from the canonical skills directory, in any divergence
   direction, the correction is offered, not reported as material or handed to `init-buddy-agent-harness`; the offer
   shows each file the sync would write and the side it takes, and the approved correction performs the sync.
 - **R35** (UC3.7, E12, E14) For a tracked, in-sync skills copy that lacks copy protection, the offer names the
@@ -251,6 +251,6 @@ None.
   out an MCP correction.
 - [init-buddy-agent-harness](../init-buddy-agent-harness/README.md): the material discriminator this skill shares, and
   the owner of bridges and instructions.
-- [harness-init](../harness-init/README.md): the home of the sync this skill performs for a drifted skills copy.
+- [copy-sync](../copy-sync/README.md): the home of the sync this skill performs for a drifted skills copy.
 - [bridge-resolution](../bridge-resolution/README.md): what each skills-bridge fault in remit means, and its repair.
 - [enhance](../enhance/README.md): the same offer-and-approve shape, for guidance that is missing.

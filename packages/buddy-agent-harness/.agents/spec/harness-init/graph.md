@@ -1,7 +1,7 @@
 # harness-init decision graph
 
 The decisions one run of the `init` command makes, as a caller can observe them. The branch from `scaffold` is taken
-once for each enabled harness, and the branch from `sync` once for each differing file.
+once for each enabled harness.
 
 ```mermaid
 flowchart TD
@@ -13,7 +13,8 @@ flowchart TD
   conflicts -->|E4 yes, and no replacement was requested| reported([Every conflict reported, no projection path changed])
   conflicts -->|E5 yes, and a named target matches no projection| nomatch([No match reported, no projection path changed])
   conflicts -->|E30 no, or a link already resolves to the canonical skills directory| copy
-  conflicts -->|E19 an existing copy is there| drift{Does the copy differ from the canonical skills directory?}
+  conflicts -->|E36 an existing copy is there, and a replacement request covers it| copy
+  conflicts -->|E19 an existing copy is there, and no replacement request covers it| drift{Does the copy differ from the canonical skills directory?}
   conflicts -->|E7 yes, and every conflict is to be replaced| copy
   conflicts -->|E8 yes, and only some targets are named| skipped[Unnamed conflicts kept and marked skipped]
   skipped -->|E9| copy{Was a copy requested?}
@@ -26,19 +27,15 @@ flowchart TD
   copied -->|E29| tracked{Does git track the projection path?}
   drift -->|E20 no| kept[Copy kept as it is]
   kept -->|E34| tracked
-  drift -->|E21 yes| sync{For each differing file, which side changed since the last agreement?}
-  sync -->|E22 one side only| synced[That side's version written to the other side]
-  sync -->|E23 both sides, or no last agreement can be found| ask{Did the user pick a side?}
-  ask -->|E24 yes| synced
-  ask -->|E25 no| left[Nothing written for that file]
-  synced -->|E26| tracked
-  left -->|E27| result
+  drift -->|E21 yes| synced[Copy synced file by file, as copy-sync states]
+  synced -->|E35| result
   tracked -->|E31 yes| protected[Copy protection in place for the copy]
   tracked -->|E33 no, or no git repository| result
   protected -->|E32| result
   native -->|E16| result
 ```
 
-- E1 to E5, E7 to E14, E16 to E27, and E29 to E34 are the edges above. E6, E15, and E28 are retired. A retired edge
+- E1 to E5, E7 to E14, E16 to E21, and E29 to E36 are the edges above. E6, E15, and E22 to E28 are retired: the sync's
+  own decisions moved to [copy-sync](../copy-sync/graph.md). A retired edge
   ID is never reused.
 - Outcomes: `rejected`, `reported`, `nomatch`, `failed`, and `result`.
