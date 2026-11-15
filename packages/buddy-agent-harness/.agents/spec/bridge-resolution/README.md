@@ -13,7 +13,7 @@ fine in a file listing.
 The `doctor` command looks at every bridge the checked harnesses need and reports each one that does not resolve,
 or resolves and is still unsafe, in a form its caller can act on without opening the bridge. Resolution is a question
 about the path, not about what the skills say: a bridge can resolve into skills no harness will load, and that is
-another family's finding.
+another family's finding. Each finding carries the repair this spec states for its cause.
 
 ## Non-goals
 
@@ -26,8 +26,8 @@ another family's finding.
 - N4 **The shape of the report.** Which sections exist and what a finding carries is
   [diagnosis-report](../diagnosis-report/README.md).
 - N5 **User-scope skills bridges.** `doctor` diagnoses a repository and never looks for skills bridges outside it.
-- N6 **Choosing between two good repairs.** Where the newer edit lives when both sides of a copy moved cannot be
-  decided from the filesystem, so the command declines to pick.
+- N7 **Choosing a side for a file both sides of a copy changed.** Where the newer edit lives cannot be decided from
+  the filesystem, so the repair puts each such file to the user (R23).
 
 ## Key terms
 
@@ -50,10 +50,10 @@ another family's finding.
 
 | ID | Actor | Goal |
 | --- | --- | --- |
-| A1.1 | `doctor-buddy-agent-harness` skill | learn which bridges do not resolve, and hand each to its rebuilding skill |
+| A1.2 | `doctor-buddy-agent-harness` skill | learn which bridges do not resolve, and hand each to the skill that repairs it |
 | A2.1 | person at a shell | find out why a freshly cloned repository loads no skills |
 | A3.1 | session-start hook | learn of a broken bridge at every session start with no risk of a write |
-| A4.1 | `repair` skill | tell a bridge finding from one it owns, without inspecting the bridge |
+| A4.2 | `repair` skill | tell a bridge finding it repairs from one it hands on, without inspecting the bridge |
 | A5.1 | `init-buddy-agent-harness` skill | receive every bridge repair that rebuilding the bridge fixes |
 | A6.1 | downstream agent session (never runs the command) | load the repository's project skills |
 
@@ -148,18 +148,22 @@ another family's finding.
   as [detect-and-repair](../detect-and-repair/README.md) K4 defines it. (UC3, E1, E6, E7, E10, E13, E14, E15, E16,
   E18)
 
+### Repairs
+
+Which surface each repair goes to is [detect-and-repair](../detect-and-repair/README.md)'s; what it does is stated
+here.
+
+- R22 The repair of a missing-bridge or a stale-bridge finding rebuilds the bridge, and for each of the
+  missing-bridge, degraded-bridge, and stale-bridge findings one invocation completes the repair. (UC3, E6, E7, E10)
+- R23 The repair of a diverged-copy finding, in each of the four divergence directions, is the file-by-file sync
+  [harness-init](../harness-init/README.md) R36 to R40 state, and it names no side to keep for a file both sides
+  changed. (UC3, E13, E14, E15, E16)
+- R24 The repair of an unprotected-copy finding sets skip-worktree protection on the copy's tracked paths and changes
+  no file's content. (UC3, E18)
+
 ## Open questions
 
-- Q1 The unprotected-copy finding (R17) is filed in the bridge family while the bridge it names resolves: it describes
-  the git index, not resolution (ledger, change record 58). Options: (a) keep it here, as now; (b) move it to
-  [configuration-diagnosis](../configuration-diagnosis/README.md); (c) give it a family of its own. Recommendation:
-  (a), since the copy it protects is a bridge and the finding names the bridge path.
-- Q2 R8 states what one repair does (rebuild the bridge as a copy), while
-  [detect-and-repair](../detect-and-repair/README.md) owns which surface each repair goes to, and its R16 already
-  says a both-moved or unknown-direction copy is reconciled by hand. Options: (a) each family spec states what its
-  repairs do, and detect-and-repair only who owns them; (b) detect-and-repair states both, and R8 drops its repair
-  clause. Recommendation: (a), since a repair follows from the cause the family diagnoses. The same choice covers
-  `global-instructions` R13 and `worktree-diagnosis` R12.
+None.
 
 ## References
 
@@ -168,5 +172,5 @@ another family's finding.
 - [instruction-bridges](../instruction-bridges/README.md) and
   [configuration-diagnosis](../configuration-diagnosis/README.md): the sibling families.
 - [harness-init](../harness-init/README.md): `init` uses the same resolution test, so a bridge `init` leaves alone is
-  never one `doctor` reports.
+  never one `doctor` reports, and it owns the sync a diverged-copy repair performs.
 - `.research/agentic-configuration-standards/`: the per-harness sources for which harnesses need a bridge.

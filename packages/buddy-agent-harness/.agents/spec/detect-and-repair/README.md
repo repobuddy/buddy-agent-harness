@@ -15,8 +15,8 @@ which surface owns each kind of finding's repair, and the properties that keep t
 one place, so the set of findings can grow without editing a skill. The finder stays read-only, so it is safe to run
 from a session-start hook. Every finding carries its own repair, so no consumer has to invent one.
 
-What each finding means belongs to the spec that detects it. What a repairing skill does once it holds a finding
-belongs to that skill's spec.
+What each finding means, and what its repair does, belong to the spec that detects it. What a repairing skill does
+once it holds a finding belongs to that skill's spec.
 
 ## Non-goals
 
@@ -30,6 +30,9 @@ belongs to that skill's spec.
 - **N4 Choosing between corrections.** The detector states one repair per fault. Where several corrections are valid,
   the options are the owning skill's.
 - **N5 Activation.** Which skill a user's request reaches is decided by the skills' descriptions, not here.
+- **N6 What a repair does.** The correction each fault's repair states, and whether one invocation completes it, is
+  the detecting spec's, such as [bridge-resolution](../bridge-resolution/README.md). This spec states only who owns
+  it.
 
 ## Key terms
 
@@ -140,7 +143,7 @@ belongs to that skill's spec.
 - **R6** (UC2, E3) Every fault the detector can report has exactly one repair, never a set of alternatives.
 - **R7** (UC2, UC4, E3) No fault can be reported without a repair: a fault with no repair is refused before the
   package ships.
-- **R8** (UC2, E11, E12) A repair that no single invocation completes is stated in full as an instruction and carries no
+- **R8** (UC2, E12) A repair that no single invocation completes is stated in full as an instruction and carries no
   runnable invocation, and a consumer can tell it has none from the report's data alone.
 - **R9** (UC2, E4) Where more than one correction is valid for a fault, the report states one repair, and the
   options are offered by the owning skill from its own reference, not by the report.
@@ -149,9 +152,7 @@ belongs to that skill's spec.
 
 - **R10** (UC1, E4) For every fault, the command rendering and the skill rendering of its repair address the same
   fault, because both come from one statement of it.
-- **R11** (UC1, E6) For a skills-bridge fault a rebuild fixes, the command rendering gives a runnable invocation and
-  names no skill, and the skill rendering sends the agent to the `init-buddy-agent-harness` skill.
-- **R12** (UC1, E5, E6, E7) No skill rendering tells the agent to run the `init` command; where `init` would satisfy
+- **R12** (UC1, E5, E7, E15) No skill rendering tells the agent to run the `init` command; where `init` would satisfy
   the repair, it sends the agent to the `init-buddy-agent-harness` skill.
 - **R13** (UC1, E4) A skill rendering that invokes the package's own command reaches it through a fallback pinned to
   the package version that generated the skill, never through a bare invocation of the binary.
@@ -159,11 +160,11 @@ belongs to that skill's spec.
 ### Who owns each repair
 
 - **R14** (UC1, E5) The skill rendering of every instruction-bridge fault names the `init-buddy-agent-harness` skill.
-- **R15** (UC1, E6) The skill rendering of every skills-bridge fault that rebuilding the bridge repairs names the
-  `init-buddy-agent-harness` skill.
-- **R16** (UC1, E11) The skill rendering of a skills-bridge fault where a rebuild would discard whichever side holds
-  the newer edit, or where the bridge resolves and only the git index is wrong, names no skill and states the work to
-  be done by hand.
+- **R27** (UC1, E15) For every skills-bridge fault whose repair rebuilds the bridge, as
+  [bridge-resolution](../bridge-resolution/README.md) states it, the command rendering names no skill and the skill
+  rendering names the `init-buddy-agent-harness` skill.
+- **R28** (UC1, E16) The skill rendering of every diverged-copy fault, in each of the four divergence directions, and
+  of the unprotected-copy fault names the `repair` skill and no other skill.
 - **R17** (UC1, E7) The skill rendering of every non-standard configuration fault that has a portable form to convert
   to names the `init-buddy-agent-harness` skill.
 - **R18** (UC1, E13) The skill rendering of a non-standard configuration fault with no portable form to convert to
@@ -172,14 +173,12 @@ belongs to that skill's spec.
 - **R20** (UC1, E9) Both renderings of an MCP drift fault where one side is plainly the one to copy from name the
   `repair` skill: a harness lacks a server the golden set declares, a harness carries a server the golden set lacks,
   or only one side changed a field.
-- **R21** (UC1, E12) Neither rendering of any other MCP fault names a skill: a field both sides changed, a change no
-  baseline can place, a file that does not parse, or a credential written literally or committed. Each states what
-  the user must decide.
-- **R22** (UC1, E10) Both renderings of every agent-worktree fault name the `init-buddy-agent-harness` skill and the
-  `enhance` skill, neither names the `repair` skill, and neither carries a runnable invocation.
-- **R23** (UC1, E14) No rendering of a global-instructions fault names a skill; each states the step the user takes in
-  their home directory.
-- **R24** (UC1, E11, E12, E13, E14) A consumer reports a finding whose skill rendering names no skill for a
+- **R29** (UC1, E12) Neither rendering of any other MCP fault names a skill: a field both sides changed, a change no
+  baseline can place, a file that does not parse, or a credential written literally or committed.
+- **R30** (UC1, E10) Both renderings of every agent-worktree fault name the `init-buddy-agent-harness` skill and the
+  `enhance` skill, and neither names the `repair` skill.
+- **R31** (UC1, E14) No rendering of a global-instructions fault names a skill.
+- **R24** (UC1, E12, E13, E14) A consumer reports a finding whose skill rendering names no skill for a
   person and hands it to no repairing skill.
 
 ### The partition

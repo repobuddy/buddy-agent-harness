@@ -12,7 +12,8 @@ The `init` command fixes that for one repository. It makes sure the canonical sk
 references layer exist at the repository root. It then gives each enabled harness that cannot read the canonical
 skills directory a projection of it, a link where links work and a copy where they do not. It reports what it did, so
 a person or a program can tell which harness got what. It never overwrites something already in a projection's place
-unless the caller names it, and it leaves every file a person wrote as it was.
+unless the caller names it. A copy that has drifted from the canonical skills directory is synced with it file by file,
+so an edit made through the copy is kept, and a file both sides changed waits for the user to pick a side.
 
 ## Non-goals
 
@@ -45,12 +46,18 @@ unless the caller names it, and it leaves every file a person wrote as it was.
 - **K8 native harness**: an enabled harness that reads the canonical skills directory itself and needs no projection.
 - **K9 projection**: the path where a non-native harness looks for skills, holding either a link that resolves to the
   canonical skills directory or a copy of it.
-- **K10 conflicting target**: a projection path that already holds something other than a link resolving to the
-  canonical skills directory.
 - **K11 tool setting**: a separately named configuration artifact that declares an external tool.
 - **K12 project references layer**: `.agents/references/` at the consumer root. The project tier it belongs to also
   holds the legacy `.agents/governances/` layer. [references](../references/README.md) owns what the tier means.
 - **K13 default harness**: see [glossary](../glossary.md#default-harness).
+- **K14 conflicting target**: a projection path that already holds something other than a link resolving to the
+  canonical skills directory or an existing copy.
+- **K15 existing copy**: a directory, not a link, already at a projection path. It counts as a copy of the canonical
+  skills directory, as [bridge-resolution](../bridge-resolution/README.md) counts it.
+- **K16 drifted copy**: an existing copy whose files differ from the canonical skills directory in names, in number,
+  or in content. [bridge-resolution](../bridge-resolution/README.md) calls it diverged.
+- **K17 last agreement**: see [bridge-resolution](../bridge-resolution/README.md) K6.
+- **K18 skip-worktree protection**: see [bridge-resolution](../bridge-resolution/README.md) K8.
 
 ## Actors and goals
 
@@ -61,6 +68,8 @@ unless the caller names it, and it leaves every file a person wrote as it was.
 | A1.3 | person or agent setting up the repository | the skills reach the harnesses even where links cannot be made |
 | A2.1 | repository owner | nothing they wrote is replaced unless they named it |
 | A2.2 | repository owner | a fresh repository has one obvious place for skills and for references, kept across a commit and clone |
+| A2.3 | repository owner | an edit they made through a copy is kept, and no side wins a file both sides changed without their answer |
+| A2.4 | repository owner | a copy the command writes never shows as uncommitted changes |
 | A3.1 | program caller (the `init-buddy-agent-harness` skill, a `doctor` repair, a script) | reads the result and tells each outcome apart without parsing prose |
 | A4.1 | later agent session in an enabled harness, which never runs the command | loads the same skills as every other enabled harness |
 
@@ -82,6 +91,7 @@ unless the caller names it, and it leaves every file a person wrote as it was.
   - UC1.2 The projection already resolves to the canonical skills directory: it is kept and is not a conflict.
   - UC1.3 A tool setting has no supported mapping to an enabled harness: it stays canonical only.
   - UC1.4 The request is malformed: it is rejected before anything is written.
+  - UC1.5 A projection path holds an existing copy: see UC7.
 
 ### UC2 — Enable more harnesses (A1.2)
 
@@ -127,6 +137,8 @@ unless the caller names it, and it leaves every file a person wrote as it was.
 - **Success**: each non-native enabled harness's projection is a copy of the canonical skills directory.
 - **Extensions**:
   - UC4.1 Something appears at the target between the failed link and the copy: the run fails and keeps it.
+  - UC4.2 An existing copy is already at the target: see UC7.
+  - UC4.3 The target is tracked by git: see UC8.
 
 ### UC5 — Scaffold a fresh repository (A2.2)
 
@@ -156,6 +168,38 @@ unless the caller names it, and it leaves every file a person wrote as it was.
   - UC6.1 The requested output form is not supported: the request is rejected before anything is written.
   - UC6.2 The run fails: the failure is reported in the result, told apart from every other outcome.
 
+### UC7 — Sync a drifted copy (A2.3, A4.1)
+
+- **Trigger**: a run finds an existing copy at a projection path.
+- **Entry node**: `drift`
+- **Entry points**:
+  - Command line (primary): `buddy-agent-harness init`.
+  - Library: the program entry point.
+  - Skill: the skill's apply step, and the `repair` skill's correction of a drifted copy
+    ([repair](../repair/README.md)).
+- **Inputs**: the existing copy, the canonical skills directory, their last agreement where git has one, and the
+  user's pick for each file both sides changed.
+- **Success**: the copy and the canonical skills directory hold the same files with the same content, and every edit
+  made on either side since the last agreement is kept.
+- **Extensions**:
+  - UC7.1 The copy holds the same files with the same content: it is kept as it is.
+  - UC7.2 A file changed on both sides since the last agreement: it is put to the user, who picks the side.
+  - UC7.3 No last agreement can be found: every differing file is put to the user.
+  - UC7.4 The user gives no answer for a file: nothing is written for that file, and the rest are synced.
+
+### UC8 — Keep a copy out of uncommitted changes (A2.4)
+
+- **Trigger**: a run writes a copy, or syncs files into one, at a projection path git tracks.
+- **Entry node**: `tracked`
+- **Entry points**:
+  - Command line (primary): `buddy-agent-harness init`.
+  - Library: the program entry point.
+  - Skill: the skill's apply step.
+- **Inputs**: the copy's paths, and which of them git tracks.
+- **Success**: git shows no uncommitted change for the copy.
+- **Extensions**:
+  - UC8.1 The projection path is untracked, or the repository has no git: nothing is protected, and the run succeeds.
+
 ## Criteria
 
 ### Projecting (UC1)
@@ -167,7 +211,7 @@ unless the caller names it, and it leaves every file a person wrote as it was.
 - R3 (UC1, E3) A native enabled harness gets nothing written for it.
 - R4 (UC1, E11) A link projection names its target relative to its own location, except on a platform whose only
   available link form takes an absolute target.
-- R5 (UC1, E6) A projection that already resolves to the canonical skills directory, however its target is spelled,
+- R5 (UC1, E30) A projection that already resolves to the canonical skills directory, however its target is spelled,
   is kept as it is and is not reported as a conflict.
 - R6 (UC1, E2) A run leaves both canonical instruction files byte-identical.
 - R7 (UC1, E2) A tool setting with no supported mapping to an enabled harness is left as it is, and no file in that
@@ -189,14 +233,14 @@ unless the caller names it, and it leaves every file a person wrote as it was.
 
 ### Conflicts (UC3)
 
-- R14 (UC3, E4) With no replacement requested, a run that finds any conflicting target reports every conflicting
+- R31 (UC3, E4) With no replacement requested, a run that finds any conflicting target reports every conflicting
   target of every enabled harness at once and changes no projection path.
-- R15 (UC3, E7) A request to replace every conflicting target, naming none, leaves a projection at every conflicting
+- R32 (UC3, E7) A request to replace every conflicting target, naming none, leaves a projection at every conflicting
   target.
-- R16 (UC3, E8) A request naming some conflicting targets, each by its repository-relative or its absolute path,
+- R33 (UC3, E8) A request naming some conflicting targets, each by its repository-relative or its absolute path,
   replaces exactly those; every other conflicting target keeps its content, the result reports those harnesses as
   skipped, and the run succeeds.
-- R17 (UC3, E5) A request naming a target that no enabled harness projects to makes the run fail, reports that no
+- R34 (UC3, E5) A request naming a target that no enabled harness projects to makes the run fail, reports that no
   target matches, and changes no projection path.
 
 ### Copying (UC4)
@@ -207,6 +251,30 @@ unless the caller names it, and it leaves every file a person wrote as it was.
   canonical skills directory, without the caller having asked for one.
 - R20 (UC4, E13) When something appears at a target after its link attempt failed, the run fails and leaves what
   appeared unchanged.
+
+### Syncing an existing copy (UC7)
+
+- R35 (UC7, E19, E20, E28) An existing copy that holds the same files with the same content as the canonical skills
+  directory is kept as it is and is not reported as a conflict, whether or not a copy was requested.
+- R36 (UC7, E21, E22) In a drifted copy, a file added, changed, or removed since the last agreement on one side only
+  holds that side's version on both sides after the run, whichever side it was, so an edit made through the copy is
+  in the canonical skills directory after the run.
+- R37 (UC7, E23, E24) In a drifted copy, a file changed on both sides since the last agreement is put to the user,
+  who picks the side, and after the answer both sides hold the picked side's version.
+- R38 (UC7, E25) A file the sync put to the user and got no answer for is unchanged on both sides after the run,
+  and every other differing file is still synced.
+- R39 (UC7, E23) When no last agreement can be found for a drifted copy, every file that differs between the copy and
+  the canonical skills directory is put to the user as in R37, and none takes either side's version without an
+  answer.
+- R40 (UC7, E26, E27) The result names, for each drifted copy, each file the sync wrote and the side it took,
+  and each file left unchanged for want of an answer.
+
+### Protecting a copy (UC8)
+
+- R41 (UC8, E29, E31, E32) After a run writes a copy, or syncs files into one, at a projection path git tracks,
+  every tracked path of that copy has skip-worktree protection, so git shows no uncommitted change for the copy.
+- R42 (UC8, E33) A run sets skip-worktree protection on no path other than the tracked paths of a copy it wrote or
+  synced, and on none at an untracked projection path or outside a git repository.
 
 ### Scaffolding (UC5)
 
@@ -240,6 +308,10 @@ unless the caller names it, and it leaves every file a person wrote as it was.
   The local tier is documented as personal and ignored, and nothing writes the ignore entry. Options: (a) the
   command writes it, as a non-material scaffold step; (b) the skill offers it; (c) leave it to the owner.
   Recommendation: (a), if writing outside the agent configuration (R8) is widened for that one entry.
+- Q3 Should a run set skip-worktree protection on an existing in-sync copy that git tracks and that lacks it, though
+  the run writes nothing into that copy? R41 covers only copies the run writes or syncs, so `doctor` can still report
+  such a copy after `init` kept it, and only `repair` restores the protection. Options: (a) the run sets it too;
+  (b) leave it to `repair`. Recommendation: (a), so a copy `init` leaves alone is never one `doctor` reports.
 
 ## References
 
@@ -248,5 +320,8 @@ unless the caller names it, and it leaves every file a person wrote as it was.
 - [references](../references/README.md): owns the project tier this command creates a layer in.
 - [command-output](../command-output/README.md): owns how a result becomes output, its forms, and the default.
 - [entry-point](../entry-point/README.md): owns how a program reaches the command without a process.
+- [bridge-resolution](../bridge-resolution/README.md): owns what a copy, its divergence, and its protection mean, as
+  `doctor` reports them.
+- [repair](../repair/README.md): performs the sync of UC7 for a drifted-copy finding, after the owner approves.
 - [glossary](../glossary.md): the shared terms.
 - [AGENTS.md](https://agents.md/): the open instruction format the canonical instructions follow.

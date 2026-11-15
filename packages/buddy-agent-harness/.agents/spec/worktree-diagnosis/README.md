@@ -102,9 +102,10 @@ detect anything themselves. Each fix is a line in a file the owner wrote, so it 
 
 - R12 Each worktree finding's repair names the line to add: the ignore rule for `.claude/worktrees/`, the Biome
   exclusion of the worktrees, or the base setting. (UC1, E5, E10, E13)
-- R14 Each of the three worktree causes in R3, R6, and R9 is reported under a fault name of its own, as
-  [detect-and-repair](../detect-and-repair/README.md) K4 defines it. Which skills each repair names, and that none
-  carries a runnable command, is detect-and-repair R22. (UC1, E5, E10, E13)
+- R15 No worktree finding's repair carries a runnable invocation. (UC1, E5, E10, E13)
+- R16 Each of the three worktree causes in R3, R6, and R9 is reported under a fault name of its own, as
+  [detect-and-repair](../detect-and-repair/README.md) K4 defines it. Which skills each repair names is
+  detect-and-repair R30. (UC1, E5, E10, E13)
 
 ## Open questions
 

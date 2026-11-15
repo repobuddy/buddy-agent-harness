@@ -20,8 +20,8 @@ flowchart TD
   D5 -->|E12: no| D6{Which side moved since the last agreement?}
   D6 -->|E13: only the bridge| O6[Bridge-moved finding]
   D6 -->|E14: only the canonical directory| O7[Canonical-moved finding]
-  D6 -->|E15: both| O8[Both-moved finding, reconcile by hand]
-  D6 -->|E16: no last agreement| O9[Unknown-direction finding, reconcile by hand]
+  D6 -->|E15: both| O8[Both-moved finding]
+  D6 -->|E16: no last agreement| O9[Unknown-direction finding]
   D5 -->|E17: yes| D7{Tracked in git without skip-worktree protection?}
   D7 -->|E18: yes| O10[Listed resolving, unprotected-copy finding]
   D7 -->|E19: no, untracked, or no git| OK

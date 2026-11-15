@@ -7,7 +7,8 @@ owner approves.
 
 A repository's agent configuration can be present and still wrong: a harness name the registry retired, a
 `.gitignore` rule that swallows a bridge, an `AGENTS.local.md` no harness reads, a skill a harness refuses to load,
-or an MCP server that differs between the golden set and a harness copy. The other shipped skills refuse this work on
+a skills copy that drifted from `.agents/skills` or lost the protection that keeps it out of commits, or an MCP server
+that differs between the golden set and a harness copy. The other shipped skills refuse this work on
 purpose. `init-buddy-agent-harness` consolidates what is there and invents nothing, so it never rewrites a file the
 user wrote. `enhance` offers only what is missing. `doctor` never writes. Without `repair`, such a fault is reported
 and stays. The session that suffers it is often a later one: a git-ignored bridge loses edits silently.
@@ -21,12 +22,12 @@ names, or to a person.
 ## Non-goals
 
 - **N1 Detecting.** Every check lives in the `doctor` command. A check written here would be a second home for it.
-- **N2 Findings it holds no correction for.** Skills bridges, instruction bridges, global instructions, agent
-  worktrees, non-standard configuration, and MCP drift that needs the user's judgment are handed on. Which surface
-  owns each is [detect-and-repair](../detect-and-repair/README.md)'s.
-- **N3 Rebuilding a bridge or consolidating instructions into `AGENTS.md`.** Both are the
+- **N11 Findings it holds no correction for.** Skills bridges other than a drifted or an unprotected copy,
+  instruction bridges, global instructions, agent worktrees, non-standard configuration, and MCP drift that needs the
+  user's judgment are handed on. Which surface owns each is [detect-and-repair](../detect-and-repair/README.md)'s.
+- **N12 Rebuilding a bridge or consolidating instructions into `AGENTS.md`.** Both are the
   [init-buddy-agent-harness](../init-buddy-agent-harness/README.md) skill's, even when a request says "repair the
-  bridge".
+  bridge". Syncing a drifted skills copy and restoring a copy's protection rebuild nothing, and are this skill's.
 - **N4 Adding what is absent.** A repository with no canonical configuration is `init-buddy-agent-harness`'s; guidance
   the repository lacks is [enhance](../enhance/README.md)'s.
 - **N5 Correcting project policy.** A statement about how the repository is worked in is the owner's, even when it is
@@ -49,7 +50,8 @@ names, or to a person.
 - **K5 bridge**: see [detect-and-repair](../detect-and-repair/README.md) K9.
 - **K6 correction reference**: the reference the skill ships that holds one correction, with where it stops, per fault
   the skill corrects. A fault with an entry there is in remit; a fault without one is not. The remit is exactly that
-  set, and it matches the faults [detect-and-repair](../detect-and-repair/README.md) R19 and R20 send to `repair`.
+  set, and it matches the faults [detect-and-repair](../detect-and-repair/README.md) R19, R20, and R28 send to
+  `repair`.
 - **K7 material**: content that stays true whether or not this tool ever ran. Material content is the owner's. Content
   that would stop being true if the tool's output were removed is non-material, and only non-material content is
   corrected.
@@ -58,6 +60,9 @@ names, or to a person.
   from; see [mcp-projection](../mcp-projection/README.md).
 - **K10 outcome**: what became of one finding in a run: corrected, declined, still open, reported as material, handed
   to `init-buddy-agent-harness`, work for a person, or a step for the user. Each is told apart from the others.
+- **K11 sync**: the file-by-file merge of a drifted skills copy with the canonical skills directory, as
+  [harness-init](../harness-init/README.md) R36 to R40 state it.
+- **K12 skip-worktree protection**: see [bridge-resolution](../bridge-resolution/README.md) K8.
 
 ## Actors and goals
 
@@ -83,7 +88,7 @@ names, or to a person.
 - **Success**: the agent loads this skill.
 - **Extensions**:
   - UC1.1 The request is to set the repository up, add missing guidance, only report what is wrong, or rebuild a
-    bridge: it belongs to another skill (N3, N4, N6), and this skill does not load.
+    bridge: it belongs to another skill (N12, N4, N6), and this skill does not load.
 
 ### UC2 — Correct what `doctor` reports (A2, A4)
 
@@ -120,6 +125,9 @@ names, or to a person.
   - UC3.2 The owner declines: nothing is written for that finding, and the run goes on with the rest.
   - UC3.3 Several corrections are offered and only some approved: only those are written.
   - UC3.4 A harness-side MCP change touches several fields: each field is offered and approved on its own.
+  - UC3.5 A skills copy drifted from the canonical skills directory: the sync is offered, and each file it puts to
+    the user is the owner's to pick a side for.
+  - UC3.6 A tracked skills copy lost its skip-worktree protection: setting it again is offered.
 
 ### UC4 — Learn what became of every finding (A3)
 
@@ -159,8 +167,6 @@ Every criterion here belongs to a skill-instruction use case and is checked by a
   instruction file it names is unchanged.
 - **R7** (UC2, E6) For an out-of-remit finding whose repair names no skill, the report states it as work for a person
   and names no skill as its owner.
-- **R8** (UC2, E6) For a skills bridge that diverged on both sides, the report names no side to keep, and both the
-  bridge and the canonical skills directory are unchanged.
 - **R9** (UC2, E7) For a global-instructions finding, the report gives the user the step `doctor` stated, unchanged,
   and the user-scope file it names is unchanged, whatever the owner answers.
 
@@ -184,6 +190,13 @@ Every criterion here belongs to a skill-instruction use case and is checked by a
 - **R16** (UC3, E11) For a harness-side MCP change across several fields, each field is offered on its own; approving
   one imports that field alone into the golden MCP set, leaves the other fields there unchanged, and leaves the harness
   file unchanged.
+
+- **R26** (UC3, E10, E11, E12) For a skills copy drifted from the canonical skills directory, in any divergence
+  direction, the correction is offered, not reported as material or handed to `init-buddy-agent-harness`; the offer
+  shows each file the sync would write and the side it takes, and the approved correction performs the sync.
+- **R27** (UC3, E12, E14) For a tracked, in-sync skills copy that lost its skip-worktree protection, the offer names
+  the paths the protection would be set on, and the approved correction sets it on exactly those paths and changes no
+  file's content.
 
 ### Applying
 
@@ -211,7 +224,7 @@ Every criterion here belongs to a skill-instruction use case and is checked by a
 
 ## Open questions
 
-- **Q1** The shipped `SKILL.md` has no `## Done when` list, so R1 to R25 have no counterpart in the skill for an eval
+- **Q1** The shipped `SKILL.md` has no `## Done when` list, so R1 to R27 have no counterpart in the skill for an eval
   run to agree with.
   - Options: (a) add a Done when list to the shipped skill drawn from these criteria; (b) leave the skill as is and
     run evals from this spec alone.
@@ -242,4 +255,6 @@ Every criterion here belongs to a skill-instruction use case and is checked by a
   out an MCP correction.
 - [init-buddy-agent-harness](../init-buddy-agent-harness/README.md): the material discriminator this skill shares, and
   the owner of bridges and instructions.
+- [harness-init](../harness-init/README.md): the home of the sync this skill performs for a drifted skills copy.
+- [bridge-resolution](../bridge-resolution/README.md): what each skills-bridge fault in remit means, and its repair.
 - [enhance](../enhance/README.md): the same offer-and-approve shape, for guidance that is missing.

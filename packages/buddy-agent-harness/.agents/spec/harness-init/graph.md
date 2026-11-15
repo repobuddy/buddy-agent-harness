@@ -1,7 +1,7 @@
 # harness-init decision graph
 
 The decisions one run of the `init` command makes, as a caller can observe them. The branch from `scaffold` is taken
-once for each enabled harness.
+once for each enabled harness, and the branch from `sync` once for each differing file.
 
 ```mermaid
 flowchart TD
@@ -12,7 +12,8 @@ flowchart TD
   scaffold -->|E17 the harness needs a projection| conflicts{Does its projection path hold something else?}
   conflicts -->|E4 yes, and no replacement was requested| reported([Every conflict reported, no projection path changed])
   conflicts -->|E5 yes, and a named target matches no projection| nomatch([No match reported, no projection path changed])
-  conflicts -->|E6 no, or it already resolves to the canonical skills directory| copy
+  conflicts -->|E30 no, or a link already resolves to the canonical skills directory| copy
+  conflicts -->|E19 an existing copy is there| drift{Does the copy differ from the canonical skills directory?}
   conflicts -->|E7 yes, and every conflict is to be replaced| copy
   conflicts -->|E8 yes, and only some targets are named| skipped[Unnamed conflicts kept and marked skipped]
   skipped -->|E9| copy{Was a copy requested?}
@@ -22,9 +23,21 @@ flowchart TD
   link -->|E12 no, and the target is still empty| copied
   link -->|E13 no, and something appeared at the target| failed([Run fails, what appeared is kept])
   linked -->|E14| result([Result reported])
-  copied -->|E15| result
+  copied -->|E29| tracked{Does git track the projection path?}
+  drift -->|E20 no| kept[Copy kept as it is]
+  kept -->|E28| result
+  drift -->|E21 yes| sync{For each differing file, which side changed since the last agreement?}
+  sync -->|E22 one side only| synced[That side's version written to the other side]
+  sync -->|E23 both sides, or no last agreement can be found| ask{Did the user pick a side?}
+  ask -->|E24 yes| synced
+  ask -->|E25 no| left[Nothing written for that file]
+  synced -->|E26| tracked
+  left -->|E27| result
+  tracked -->|E31 yes| protected[Skip-worktree protection set on the copy's tracked paths]
+  tracked -->|E33 no, or no git repository| result
+  protected -->|E32| result
   native -->|E16| result
 ```
 
-- E1 to E18 are the edges above. A retired edge ID is never reused.
+- E1 to E5, E7 to E14, E16 to E33 are the edges above. E6 and E15 are retired. A retired edge ID is never reused.
 - Outcomes: `rejected`, `reported`, `nomatch`, `failed`, and `result`.
