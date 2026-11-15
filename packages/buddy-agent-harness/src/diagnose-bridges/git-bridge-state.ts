@@ -37,6 +37,11 @@ export class GitBridgeState {
 		this.repoRootPrefix = git(root, ['rev-parse', '--show-prefix'])?.trim()
 	}
 
+	/** Whether `root` is inside a git work tree at all; a check that needs git's answer skips when not. */
+	isRepository(): boolean {
+		return this.repoRootPrefix !== undefined
+	}
+
 	/** The skip-worktree bit is a hint some checkouts clear, so it is verified rather than assumed. */
 	trackingOf(path: string): TrackingState {
 		if (this.repoRootPrefix === undefined) return 'untracked'

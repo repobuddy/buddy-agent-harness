@@ -7,6 +7,7 @@ import { collapseHome, displayBinPath, fail, parseHarnessOption } from '../comma
 import { type ConfigurationFinding, diagnoseConfiguration } from '../diagnose-configuration/diagnose-configuration.ts'
 import { diagnoseMcp } from '../diagnose-mcp/diagnose-mcp.ts'
 import { diagnoseNonstandard } from '../diagnose-nonstandard/diagnose-nonstandard.ts'
+import { diagnoseWorktrees } from '../diagnose-worktrees/diagnose-worktrees.ts'
 import { referenceLayers } from '../references/references.ts'
 import { type DiagnoseResult, diagnoseBridges } from './diagnose-bridges.ts'
 import { commandInvocation, type DoctorProblem, type RepairAction } from './doctor-guidance.ts'
@@ -116,6 +117,7 @@ export async function diagnoseReport(args: {
 			...diagnoseConfiguration({ root, git, cli: commandInvocation }),
 			...diagnoseMcp({ root, git, cli: commandInvocation }),
 			...diagnoseNonstandard({ root, cli: commandInvocation }),
+			...diagnoseWorktrees({ root, git, cli: commandInvocation }),
 		]
 		const { layers: rows } = listReferences(
 			await referenceLayers({

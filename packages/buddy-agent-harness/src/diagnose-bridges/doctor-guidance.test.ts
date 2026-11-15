@@ -19,6 +19,7 @@ import {
 	launcherFor,
 	mcpRepairs,
 	nonstandardRepairs,
+	worktreeRepairs,
 	type RepairRow,
 	renderDoctorReferences,
 	renderDoctorSkill,
@@ -353,6 +354,19 @@ describe('the detect-and-repair seam', () => {
 			expect(entry.skillRepair({ file: '<path>' })).toContain(repairSkillInvocation)
 	})
 
+	it('sends every worktree finding to init, and to enhance for a repository that has an AGENTS.md', () => {
+		expect(worktreeRepairs.length).toBe(3)
+		for (const entry of worktreeRepairs) {
+			const { command, instruction } = entry.repair({ file: '<path>' }, commandInvocation)
+			expect(command).toBe('')
+			for (const text of [entry.skillRepair({ file: '<path>' }), instruction]) {
+				expect(text).toContain(initSkillInvocation)
+				expect(text).toContain('/buddy-agent-harness:enhance')
+				expect(text).not.toContain(repairSkillInvocation)
+			}
+		}
+	})
+
 	// A side that is plainly ahead has a writer: `mcp project` for the golden side, `mcp reconcile`
 	// for the harness side. A three-way conflict, an unknown direction, or a file that does not parse
 	// is the user's judgment, so no skill is named in either rendering.
@@ -389,6 +403,7 @@ describe('the detect-and-repair seam', () => {
 			configurationRepairs,
 			mcpRepairs,
 			nonstandardRepairs,
+			worktreeRepairs,
 		]
 		const counted = families.flatMap((family) => family.map((entry) => entry.problem))
 
@@ -511,6 +526,9 @@ const initOwned: DoctorProblem[] = [
 	'nonstandard-rule',
 	'nonstandard-command',
 	'nonstandard-skill',
+	'worktrees-untracked',
+	'worktrees-scanned',
+	'worktree-base-unset',
 ]
 
 // The `repair` skill decides who to hand a finding to by asking whether its repair names `init` at
