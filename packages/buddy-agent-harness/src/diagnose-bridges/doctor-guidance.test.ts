@@ -19,13 +19,13 @@ import {
 	launcherFor,
 	mcpRepairs,
 	nonstandardRepairs,
-	worktreeRepairs,
 	type RepairRow,
 	renderDoctorReferences,
 	renderDoctorSkill,
 	repairFor,
 	repairSkillInvocation,
 	skillInvocation,
+	worktreeRepairs,
 } from './doctor-guidance.ts'
 
 const packageRoot = dirname(dirname(dirname(fileURLToPath(import.meta.url))))
