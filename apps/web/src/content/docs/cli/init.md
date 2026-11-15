@@ -13,7 +13,7 @@ The CLI performs the linking step only. Consolidating existing configuration and
 
 | Option | Meaning |
 | --- | --- |
-| `--root <directory>` | Selects the directory to initialize. The product direction is repository-root-only configuration. |
+| `--root <directory>` | Directory to set up. Inside a Git repository, `init` sets up that repository's root, also when run from a nested package of a monorepo; use `--root` for a folder outside Git. Defaults to the current directory. |
 | `--harness <names>` | Comma-separated harnesses to enable in addition to Claude Code and Cursor, such as `codex,gemini-cli`. |
 | `--copy` | Copy the canonical skills directory when links are unavailable. |
 | `--force` | Replace a conflicting target after the command has identified it, or an existing copy instead of syncing it. Name the targets, comma-separated, such as `--force .claude/skills`; given alone it replaces every one. |

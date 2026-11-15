@@ -2,6 +2,7 @@ import type { cli } from 'clibuilder'
 import { command, t } from 'clibuilder'
 import { result } from 'clibuilder/axi'
 import { parseHarnessOption } from '../command-output/command-output.ts'
+import { repositoryRoot } from '../copy-sync/copy-sync.ts'
 import { syncCommand, syncFailure } from '../copy-sync/sync.command.ts'
 import { doctorCommand } from '../diagnose-bridges/doctor.command.ts'
 import { governanceCommand } from '../governance-overrides/governance.command.ts'
@@ -14,7 +15,8 @@ export const initCommand: cli.Command = command({
 	description: 'Set up canonical agent skills for the harnesses already enabled in a repository.',
 	options: {
 		root: {
-			description: 'Repository or package directory. Defaults to the current directory.',
+			description:
+				'Directory to set up; inside a Git repository, its repository root is used. Defaults to the current directory.',
 			type: t.string().optional(),
 		},
 		harness: {
@@ -43,7 +45,7 @@ export const initCommand: cli.Command = command({
 			const harnesses = parseHarnessOption(args.harness)
 			return result(
 				initializeHarnesses({
-					root: args.root ?? process.cwd(),
+					root: repositoryRoot(args.root ?? process.cwd()),
 					...(harnesses.length ? { harnesses } : {}),
 					...(args.copy === undefined ? {} : { copy: args.copy }),
 					...(args.force === undefined ? {} : { force: parseForce(args.force) }),

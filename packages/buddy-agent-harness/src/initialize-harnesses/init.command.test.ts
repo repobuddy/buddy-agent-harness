@@ -1,6 +1,11 @@
+import { execFileSync } from 'node:child_process'
+import { mkdirSync, mkdtempSync, realpathSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import type { Format } from 'clibuilder/axi'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { runCommandSync } from '../command-output/run-command.test-helper.ts'
+import { repositoryRoot } from '../copy-sync/copy-sync.ts'
 import { syncCommand } from '../copy-sync/sync.command.ts'
 import { doctorCommand } from '../diagnose-bridges/doctor.command.ts'
 import { governanceCommand } from '../governance-overrides/governance.command.ts'
@@ -84,9 +89,34 @@ describe('init command', () => {
 		run({ format: 'toon' })
 
 		expect(mockedInitializeHarnesses).toHaveBeenCalledWith({
-			root: process.cwd(),
+			root: repositoryRoot(process.cwd()),
 		})
 		expect(stdout).toHaveBeenCalledWith(expect.stringContaining('copied'))
+	})
+
+	describe('the root it sets up', () => {
+		const temp = () => realpathSync(mkdtempSync(join(tmpdir(), 'init-root-')))
+
+		it('is the repository root when run from a nested directory of a Git repository', () => {
+			const repository = temp()
+			execFileSync('git', ['init', '-q'], { cwd: repository })
+			const nested = join(repository, 'packages', 'app')
+			mkdirSync(nested, { recursive: true })
+			mockedInitializeHarnesses.mockReturnValue({} as ReturnType<typeof initializeHarnesses>)
+
+			run({ root: nested })
+
+			expect(mockedInitializeHarnesses).toHaveBeenCalledWith({ root: repository })
+		})
+
+		it('is a --root outside Git as given', () => {
+			const folder = temp()
+			mockedInitializeHarnesses.mockReturnValue({} as ReturnType<typeof initializeHarnesses>)
+
+			run({ root: folder })
+
+			expect(mockedInitializeHarnesses).toHaveBeenCalledWith({ root: folder })
+		})
 	})
 
 	// Returned rather than written: a caller that is not the process learns of the failure too.

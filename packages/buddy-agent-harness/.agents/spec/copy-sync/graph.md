@@ -7,7 +7,7 @@ skills directory.
 ```mermaid
 flowchart TD
   request{Is the request valid?}
-  request -->|E1 no: an unsupported output form, or a resolution with no recognized side or for a file not left for the user| rejected([Request rejected, nothing written])
+  request -->|E1 no: an unsupported output form, a resolution with no recognized side, for a file not left for the user, or that would leave the copies holding different versions| rejected([Request rejected, nothing written])
   request -->|E2 yes| canon{Does the canonical skills directory exist?}
   canon -->|E3 no, and a copy bridge exists| missing([Sync fails: the canonical skills directory is missing, nothing written])
   canon -->|E4 no, and no skills bridge is a copy| result
@@ -16,7 +16,7 @@ flowchart TD
   bridge -->|E7 a copy| same{Does the copy hold the same files with the same content?}
   same -->|E8 yes| kept[Copy kept as it is]
   same -->|E9 no| side{For each differing file, which side changed since the last agreement?}
-  side -->|E10 one side only, and no other copy bridge changed it differently| onesided[That side's version written to the other side]
+  side -->|E10 one side only, and no other copy bridge changed it differently or has it left for the user| onesided[That side's version written to the other side]
   side -->|E11 both sides, no last agreement can be found, or two copy bridges changed it differently| resolved{Does a resolution name the file?}
   resolved -->|E12 yes| picked[The picked side's version written to the other side]
   resolved -->|E13 no| left[Nothing written for that file, which is left for the user]

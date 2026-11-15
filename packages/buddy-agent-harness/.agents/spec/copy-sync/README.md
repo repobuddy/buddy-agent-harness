@@ -90,6 +90,8 @@ says what was written, which side each file took, and which files wait for the o
     user unless a resolution names it.
   - UC1.9 The sync runs outside a Git repository: no last agreement exists, so every differing file is left for the
     user unless a resolution names it.
+  - UC1.10 One copy bridge changed a file on its side only while another copy bridge has the same file left for the
+    user: the file is left in both, and nothing is written for it.
 
 ### UC2 — Apply the owner's picks (A1.2)
 
@@ -106,6 +108,9 @@ says what was written, which side each file took, and which files wait for the o
   - UC2.1 A file left for the user has no resolution: it stays unchanged on both sides, and the rest are still synced.
   - UC2.2 A resolution names a file that is not left for the user (one the same on both sides, one only one side
     changed, or one in neither side): the request is rejected before anything is written.
+  - UC2.3 The resolutions for a file would leave two copy bridges holding different versions of it, or would change
+    the canonical skills directory under a copy bridge whose file is still left for the user: the request is
+    rejected before anything is written.
 
 ### UC3 — Keep a synced copy out of commits (A1.3)
 
@@ -175,6 +180,12 @@ through either.
 - R20 (UC1.7, E3) When the canonical skills directory is missing and at least one copy bridge exists, the sync
   writes nothing, removes no file of any copy bridge, and fails with a failure distinct from every other failure that
   says the canonical skills directory is missing.
+- R21 (UC2.3, E1) A set of resolutions that would leave two copy bridges holding different versions of the same
+  file, or that would change the canonical skills directory under a copy bridge whose file is still left for the
+  user, makes the run fail before anything is written, and the report names the resolutions for that file.
+- R22 (UC1.10, E11, E13) When one copy bridge changed a file on its side only and another copy bridge has the same
+  file left for the user, the file is unchanged in both and in the canonical skills directory after the run, so R5
+  never overrides R6, R7, or R19 for another copy bridge.
 - R11 (UC1, E2) A sync writes no file outside the copy bridges and the canonical skills directory, except the bridge
   path it lists in the clone's own exclude file as part of copy protection.
 
