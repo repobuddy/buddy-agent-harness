@@ -1,5 +1,24 @@
 # buddy-agent-harness
 
+## 1.2.0
+
+### Minor Changes
+
+- 3d86bc2: Account for the git worktrees Claude Code creates under `.claude/worktrees/`, inside the repository.
+  
+  The `init-buddy-agent-harness` and `enhance` skills now offer two settings, each on its own and written only on approval: ignoring `.claude/worktrees/` in `.gitignore` and in each tree-scanning tool's config the repository has (Biome, ESLint, Prettier, knip, tsconfig), and setting `worktree.baseRef` to `"head"` in `.claude/settings.json`, with the trade-off explained first. Each worktree is a whole checkout, so Biome in the main checkout stops on its nested root configuration, and without `"head"` an agent asked to build on a feature branch starts from the default branch.
+  
+  `doctor` reports what is missing in a repository with a `.claude/` directory: `worktrees-untracked` for the `.gitignore` rule, `worktrees-scanned` for a `biome.json` that does not exclude the directory, and `worktree-base-unset` for a `.claude/settings.json` that leaves `worktree.baseRef` unset. An explicit `"fresh"` is the owner's choice and is not reported.
+- 8373121: The `enhance` skill now offers a fourth addition, `## References as links`. It tells the agent to write each issue, pull request, or commit it mentions as a Markdown link to its page rather than a bare `#222`, which is a link only on GitHub itself and names the wrong repository when the agent works across several.
+  
+  It is gated like the other three. The skill offers it only where the merged instructions do not already cover the subject, recommends the owner's global instruction file over the repository's `AGENTS.md`, and writes nothing without approval. Its history file starts empty, so a section already in a file is compared against the current text, and no harness scores this wording yet, so where the skill cannot tell whose a section is, it offers two answers rather than three.
+
+### Patch Changes
+
+- ce2b780: The `doctor-buddy-agent-harness` skill now lists the outcomes it is done when, so its evals can check them.
+- 8588ad8: The shipped skill descriptions (`doctor-buddy-agent-harness`, `enhance`, `init-buddy-agent-harness`, `repair`) now open by saying what the skill does instead of "Use this skill when". Every trigger phrase is kept.
+- 4c76524: The `repair` skill no longer says that only the instruction, configuration, non-standard, and agent-worktree families name a skill in `help`. Four MCP findings name `repair` too: `mcp-unprojected`, `mcp-undeclared`, `mcp-diverged-target`, and `mcp-diverged-golden`. Its README now lists the MCP drift it corrects.
+
 ## 1.1.0
 
 ### Minor Changes
