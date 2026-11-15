@@ -14,11 +14,11 @@ Every addition is **offered, never written on sight**. An addition asserts somet
 
 Four additions ship today: `references/delegation.md`, `references/list-identifiers.md`, `references/session-scope.md`, and `references/references-as-links.md`. Classify, offer, and report each one on its own; the owner's answer to one decides nothing about the others. Each addition's reference file carries the text to offer, a `## Covered when` criterion for the subject already being present, a `## Stale when` section naming the history file its stale check reads and what else that check needs for this addition, and a `## Where it belongs` recommendation naming which instruction file the text should go in. The retired wordings themselves are kept beside it — `references/<addition>.history.md` — and are what a present section is compared against.
 
-Beside the additions, it offers the two **agent-worktree settings** in `references/agent-worktrees.md`: lines in `.gitignore`, a tool config, and `.claude/settings.json` rather than prose in `AGENTS.md`. Step 6 is theirs, and they are the only writes this skill makes outside the root `AGENTS.md`.
+Beside the additions, it offers the two **agent-worktree settings** in `references/agent-worktrees.md`: lines in `.gitignore`, a tool config, and `.claude/settings.json` rather than prose in `AGENTS.md`. Step 6 is theirs. Beside the owner's global file, `~/.agents/AGENTS.md`, written only where the owner picks it (step 5), they are the only writes this skill makes outside the root `AGENTS.md`.
 
 ## 1. Find the instruction file
 
-Where the invocation names `--root <dir>`, that directory is the repository: read and write inside it only. Otherwise locate the Git repository root. The target is the root `AGENTS.md`.
+Where the invocation names `--root <dir>`, that directory is the repository: read and write inside it only, apart from `~/.agents/AGENTS.md` as step 5 allows. Otherwise locate the Git repository root. The target is the root `AGENTS.md`.
 
 If there is no root `AGENTS.md`, stop and say so. This skill adds to an existing file; creating one is `init`'s job, so point there and write nothing. Still report in full as step 7 says — what you read, that nothing was written — with **not judged** as each addition's verdict.
 
@@ -91,7 +91,7 @@ Once both answers are yes, offer the replacement. Do **not** then read the secti
 
 **Where your instructions from outside the repository cover the subject in another form, classify that copy.** An uncovered addition whose subject they cover — judged by meaning, as above — is not absent. Ask the second question of that **global copy**, against the same texts and in the same way as of a repository section, and offer nothing for the repository whatever it answers. Its verdict is the one a repository section would get, placed **in your instructions from outside the repository**: from a retired wording, the owner's own, or you cannot tell. Say, as for already global, that a copy in the root `AGENTS.md` would add the team and nothing else, that the owner would then read the subject twice, and that they can ask for it.
 
-Classify a global copy the same way whatever the repository holds — a covered or already-current section included — and hand over the current text for one from a retired wording (step 4).
+Classify a global copy the same way whatever the repository holds — a covered or already-current section included — and offer the current text in place of one from a retired wording (step 4).
 
 Each addition ends this step in one of six states:
 
@@ -128,7 +128,7 @@ That path is relative to this skill's own directory; fall back to `npx -y buddy-
 
 Name both destinations and what each buys — the global file reaches every repository the owner opens and nobody else; the project file reaches everyone who clones it, at a copy per repository.
 
-**A global placement is handed over, not written.** This skill writes the root `AGENTS.md` and nothing else, so give the text and the path and stop there. Do not offer to write outside the repository, and do not treat the hand-off as a decline — report it as what it is.
+**Ask which destination the owner wants, and write the one they pick.** Put the recommended destination first and the other as the alternative, and ask for one or neither. Either is written on that yes and neither without it: the root `AGENTS.md`, or the end of `~/.agents/AGENTS.md` (step 5). The owner's choice of the other destination is an approval of that one, not a decline. A bridging step from the `doctor` row above stays handed over: it changes a harness's own user-scope file, which this skill does not write.
 
 Where an addition came from a **retired wording**, show the section as it stands in `AGENTS.md`, then the current text **verbatim**, say that it would replace that section and nothing else, and ask.
 
@@ -136,7 +136,7 @@ Where an addition came from a **retired wording**, show the section as it stands
 
 **Where your instructions from outside the repository carry the current text, put removal beside the replacement.** Offer the replacement as above, and say that it would have the owner read the text twice, once from each place. Then offer removing the section as the other answer: name every paragraph of the owner's it would take, and say the team's agents would no longer read it. This holds however the section was placed — by the comparison, by the owner's answer, or by measurement.
 
-Where a **global copy** came from a retired wording — whatever the repository holds, a current section included — show it as it stands, then the current text **verbatim**, name the file that holds it where you can see it, and say the current text would replace that section there. Name the owner's paragraphs it would take, as for a replacement. This skill writes nothing outside the repository, so this is handed over, as a global placement is; say so. Where a global copy cannot be placed, put it to the owner exactly as below; an answer that it came from here, or a measurement that puts the current text ahead, hands the current text over.
+Where a **global copy** came from a retired wording — whatever the repository holds, a current section included — show it as it stands, then the current text **verbatim**, name the file that holds it where you can see it, and say the current text would replace that section there. Name the owner's paragraphs it would take, as for a replacement. Where that file is `~/.agents/AGENTS.md`, offer the replacement and ask, as for one in the root `AGENTS.md`; it is written only on a yes (step 5). Where it is any other file — a harness's own user-scope file — or one you cannot see, hand the current text over for it instead and say so: this skill writes no other file outside the repository. Where a global copy cannot be placed, put it to the owner exactly as below; an answer that it came from here, or a measurement that puts the current text ahead, offers the current text as that replacement.
 
 Where you **cannot tell**, say that first, in those words. Then show three texts — the section as it stands, the retired wording it partly tracks, and the current text — and put three answers to the owner:
 
@@ -161,9 +161,9 @@ Do not argue for any of it past one sentence. The user is reading the actual tex
 
 On approval of an **addition** for the repository, or a request for the team copy of an **already global** one, write the section into the root `AGENTS.md` at the end of the owner's prose, outside the managed region, preserving the surrounding file exactly.
 
-On approval of a **global placement**, write nothing. Give the text and `~/.agents/AGENTS.md`, and say it belongs at the end of that file. Where the harness in use does not load that file yet, give the step that bridges it too. Nothing outside the repository is written, the bridge included, and the run still reports.
+On approval of the **global destination**, write the section at the end of `~/.agents/AGENTS.md`, creating the file where it does not exist, and leave every other byte of it as it was. The repository's `AGENTS.md` is left as it stands. Where the harness in use does not load that file yet, hand over the step that bridges it; that step is never written here.
 
-On approval of a **replacement**, replace that one section in place — from its heading through to the next heading of the same or higher level — and leave every other byte of the file as it was. Do not relocate it, do not reformat around it, and do not touch the managed region.
+On approval of a **replacement** — in the root `AGENTS.md`, or of a global copy in `~/.agents/AGENTS.md` — replace that one section in place — from its heading through to the next heading of the same or higher level — and leave every other byte of the file as it was. Do not relocate it, do not reformat around it, and do not touch the managed region.
 
 Strip the fence when you write. The ``` markers around the addition in its reference file are there so you can see where the text begins and ends; the section goes into `AGENTS.md` as prose, not as a code block.
 
@@ -179,7 +179,7 @@ These are settings, not additions. They have no history file, no global destinat
 
 ## 7. Report
 
-Report every run, whichever way it went: what you read, the verdict for each addition and why — already global, already current, absent, the owner's own, from a retired wording, undecidable, or not judged — what you offered, which destination you recommended, and what was written. For an already-current addition your instructions from outside the repository also carry, say the owner reads it twice. Wherever those instructions cover an addition's subject, name that copy and its verdict. A hand-off for the owner to place globally is an outcome, not a decline; say so. Report each agent-worktree offer as written, declined, or already covered, naming the file. A run that offers nothing still reports — that is the only way the user can tell "already covered" from "did not look".
+Report every run, whichever way it went: what you read, the verdict for each addition and why — already global, already current, absent, the owner's own, from a retired wording, undecidable, or not judged — what you offered, which destination you recommended, and what was written, naming the file each write went to. For an already-current addition your instructions from outside the repository also carry, say the owner reads it twice. Wherever those instructions cover an addition's subject, name that copy and its verdict. A hand-over — a bridging step, or the current text for a global copy in a file this skill does not write — is an outcome, not a decline; say so. Report each agent-worktree offer as written, declined, or already covered, naming the file. A run that offers nothing still reports — that is the only way the user can tell "already covered" from "did not look".
 
 ## Rules
 
@@ -190,5 +190,6 @@ Report every run, whichever way it went: what you read, the verdict for each add
 - **Never run an evaluation unasked.** It costs the owner many model runs. Offer it; wait.
 - **Never edit an addition to fit a repository.** The wording is fixed. Offer it as written or not at all.
 - **Name `~/.agents/AGENTS.md` as the global file.** Name a harness's own user-scope file only where that harness documents it.
-- **Never touch the managed region**, a nested `AGENTS.md`, or any file other than the root `AGENTS.md` — except the agent-worktree lines in step 6, as approved.
+- **Never touch the managed region**, a nested `AGENTS.md`, or any file other than the root `AGENTS.md` — except `~/.agents/AGENTS.md` in step 5 and the agent-worktree lines in step 6, each as approved.
+- **Never write a harness's own user-scope file**, such as `~/.claude/CLAUDE.md`. A step for it is handed over.
 - Local agent configuration only. Do not change workflows, repository settings, or unrelated project files; the agent-worktree lines are the one exception.

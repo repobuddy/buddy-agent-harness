@@ -59,8 +59,8 @@ Offer this repository's `AGENTS.md` as the alternative, and name what each one b
 | the owner's global file | every repository they open, themselves only | one copy, and nothing to keep in step |
 | this repository's `AGENTS.md` | everyone who clones it, and any agent CI runs | a copy per repository, and a second copy in context for anyone who already has it globally |
 
-A global placement is **handed over, not made**: give the text and the path, say it goes at the end
-of that file, and stop there.
+Ask which of the two the owner wants, leading with the global file. Where they pick it, write the
+text at the end of `~/.agents/AGENTS.md` on that yes, as step 5 of the skill says; never without it.
 
 ## Do not edit it
 

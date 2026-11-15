@@ -180,7 +180,7 @@ Which harnesses are checked is the same question as for skills: the registry rec
 
 ## Reaching ~/.agents/AGENTS.md
 
-`~/.agents/AGENTS.md` is the user-scope counterpart of the root `AGENTS.md`: instructions that hold in every repository you open. The [`enhance` skill](/skills/enhance/) hands text over for it, and other tools do too. No harness reads it by itself. Each harness reads a user-scope file of its own, and that file has to load the global one. Where none does, text placed in the global file does nothing in that harness, and nothing says so.
+`~/.agents/AGENTS.md` is the user-scope counterpart of the root `AGENTS.md`: instructions that hold in every repository you open. The [`enhance` skill](/skills/enhance/) writes text into it when you pick it, and other tools hand text over for it. No harness reads it by itself. Each harness reads a user-scope file of its own, and that file has to load the global one. Where none does, text placed in the global file does nothing in that harness, and nothing says so.
 
 `globalInstructions` reports, for each harness installed for you, whether its user-scope file loads the global one. A harness counts as installed where its user-scope directory exists in your home directory, such as `~/.claude`, or where `--harness` names it.
 
@@ -218,7 +218,7 @@ Codex also reads `AGENTS.override.md` before `AGENTS.md`, and uses whichever fir
 
 The rows are reported whether or not `~/.agents/AGENTS.md` exists, so a skill handing text over for it can say which harnesses will load it. A finding, `global-instructions-missing`, `global-instructions-unbridged`, `global-instructions-overridden`, or `global-instructions-emptied`, is raised only where the file exists and a harness is not loading it.
 
-**The repair is handed to you, never made.** The file is in your home directory, and nothing this package ships writes outside the repository. Each repair has an empty `command`, and its `instruction` names the exact line or symlink to add yourself:
+**The repair is handed to you, never made.** The file belongs to the harness, in your home directory, and nothing this package ships writes a harness's user-scope file. Each repair has an empty `command`, and its `instruction` names the exact line or symlink to add yourself:
 
 ```
 help[1]{command,instruction}:
