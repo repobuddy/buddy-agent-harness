@@ -99,21 +99,51 @@ describe('run', () => {
 		await expect(run(['node', 'buddy-agent-harness', 'doctor'])).resolves.toBe(1)
 	})
 
-	it('writes the failure to stderr, not to the stream the report is parsed from', async () => {
+	it('answers a throw clibuilder did not handle with a coded error on stdout, and nothing on stderr', async () => {
 		stubApp(vi.fn(async () => Promise.reject(new Error('bad options'))))
 
-		await run(['node', 'buddy-agent-harness', 'doctor'])
+		await expect(run(['node', 'buddy-agent-harness', 'doctor'])).resolves.toBe(1)
 
-		expect(stderr).toHaveBeenCalledWith('error: bad options\n')
-		expect(stdout).not.toHaveBeenCalled()
+		const written = stdout.mock.calls.map(([chunk]) => String(chunk)).join('')
+		expect(written).toContain('error: bad options')
+		expect(written).toContain('code: command-failed')
+		expect(written).toContain('help')
+		expect(stderr).not.toHaveBeenCalled()
 	})
 
-	it('still reports a failure it cannot read a message from', async () => {
-		stubApp(vi.fn(async () => Promise.reject('bad options')))
+	it.each([['--format', 'json'], ['--format=json']])(
+		'writes that error in the format the caller asked for (%s)',
+		async (...format) => {
+			stubApp(vi.fn(async () => Promise.reject(new Error('bad options'))))
 
-		await run(['node', 'buddy-agent-harness', 'doctor'])
+			await run(['node', 'buddy-agent-harness', 'doctor', ...format])
 
-		expect(stderr).toHaveBeenCalledWith('error: Invalid command.\n')
+			const answer = JSON.parse(stdout.mock.calls.map(([chunk]) => String(chunk)).join(''))
+			expect(answer).toEqual({ error: 'bad options', code: 'command-failed', help: [expect.stringMatching(/\S/)] })
+		},
+	)
+
+	it.each([
+		['an unsupported format', ['--format', 'yaml']],
+		['no format value', ['--format']],
+	])('falls back to the default format when given %s', async (_case, format) => {
+		stubApp(vi.fn(async () => Promise.reject(new Error('bad options'))))
+
+		await run(['node', 'buddy-agent-harness', 'doctor', ...format])
+
+		expect(stdout.mock.calls.map(([chunk]) => String(chunk)).join('')).toContain('code: command-failed')
+	})
+
+	it.each([
+		['something that is not an Error', 'bad options'],
+		['an Error with no message', new Error('')],
+	])('still states a reason when the throw is %s', async (_case, thrown) => {
+		stubApp(vi.fn(async () => Promise.reject(thrown)))
+
+		await run(['node', 'buddy-agent-harness', 'doctor', '--format', 'json'])
+
+		const answer = JSON.parse(stdout.mock.calls.map(([chunk]) => String(chunk)).join(''))
+		expect(answer).toMatchObject({ error: 'buddy-agent-harness failed unexpectedly.', code: 'command-failed' })
 	})
 
 	// Runs against the real clibuilder rather than the stub: the code comes from clibuilder's own
@@ -123,12 +153,6 @@ describe('run', () => {
 		mockedCli.mockImplementation(actualCli as typeof cli)
 
 		await expect(run(['node', 'buddy-agent-harness', 'doctor', '--nope'])).resolves.toBe(2)
-	})
-
-	it('returns the usage code when the invocation could not be parsed', async () => {
-		stubApp(vi.fn(async () => Promise.reject(new Error('bad options'))))
-
-		await expect(run(['node', 'buddy-agent-harness', 'doctor'])).resolves.toBe(2)
 	})
 
 	it('neither reads process.argv nor writes process.exitCode', async () => {

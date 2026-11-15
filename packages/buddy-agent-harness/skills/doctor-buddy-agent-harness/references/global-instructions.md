@@ -11,7 +11,7 @@
 | `copilot-cli` | `~/.copilot/copilot-instructions.md` | run `ln -s ~/.agents/AGENTS.md ~/.copilot/copilot-instructions.md` |
 | `gemini-cli` | `~/.gemini/GEMINI.md` | run `ln -s ~/.agents/AGENTS.md ~/.gemini/GEMINI.md` |
 
-Cursor keeps its user rules in a settings panel rather than a file, so there is nothing on disk to check; Devin Desktop documents no user-scope path. Neither gets a row.
+Cursor keeps its user rules in a settings panel rather than a file, and Devin Desktop documents no user-scope path, so no file of theirs can load `~/.agents/AGENTS.md`. Each gets a `cannot-load-file` row, named by the harness rather than a path, and, while `~/.agents/AGENTS.md` exists, a `global-instructions-no-file` finding whose step is to paste its text into that harness's user rules. Devin Desktop has no directory to detect it by, so it gets a row only when named with `--harness`.
 
 A harness's directory can be moved by a variable: `CLAUDE_CONFIG_DIR` for `claude-code` (`~/.claude`), `CODEX_HOME` for `codex` (`~/.codex`), `COPILOT_HOME` for `copilot-cli` (`~/.copilot`). Where one is set and non-empty, the row and the step name the file under it, written from the variable — `$CODEX_HOME/AGENTS.md` — so the step works in the shell the user ran `doctor` from. Set but empty, it is read the way the harness reads it: as unset for `CODEX_HOME` and `COPILOT_HOME`, and as the directory the harness starts in for `CLAUDE_CONFIG_DIR`.
 
@@ -21,6 +21,7 @@ A harness's directory can be moved by a variable: `CLAUDE_CONFIG_DIR` for `claud
 | `global-instructions-unbridged` | the file holds its own content and does not load ~/.agents/AGENTS.md — text placed there reaches no session of this harness | hand the user the step the harness page names for that file, keeping what the file says; write nothing yourself |
 | `global-instructions-overridden` | the harness reads this file in place of its own user-scope file, so whatever that file loads goes unread, and this one does not load ~/.agents/AGENTS.md | hand the user the move of what that file says into the global file, and its removal; write nothing yourself |
 | `global-instructions-emptied` | the variable is set but empty, which this harness reads as the directory it starts in rather than as unset — its user-scope file is whichever one sits there, not the one in its own folder | hand the user the step of unsetting that variable; write nothing yourself |
+| `global-instructions-no-file` | the harness keeps its user rules outside a file, so no file can load ~/.agents/AGENTS.md for it — its text reaches the harness only pasted in | hand the user the step of pasting the global file's text into that harness's user rules; write nothing yourself |
 
 **Hand the step over; never take it.** The file is in the user's home directory, outside the repository this tool works in, so every repair carries an empty `command` and names the step for the user to take themselves.
 

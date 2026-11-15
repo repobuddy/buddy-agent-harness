@@ -1,7 +1,12 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { filesUnder } from '../diagnose-bridges/directory-files.ts'
-import { type ConfigurationProblem, type RepairAction, repairFor } from '../diagnose-bridges/doctor-guidance.ts'
+import {
+	type ConfigurationProblem,
+	type RepairAction,
+	repairFor,
+	type UnloadableSkillCause,
+} from '../diagnose-bridges/doctor-guidance.ts'
 import type { GitBridgeState } from '../diagnose-bridges/git-bridge-state.ts'
 import { selectHarnesses } from '../harness-registry/harness-registry.ts'
 
@@ -14,6 +19,8 @@ export type ConfigurationFinding = {
 	/** Repository-relative path the finding is about. */
 	path: string
 	problem: ConfigurationProblem
+	/** Which cause an `unloadable-skill` finding was raised for; absent on every other finding. */
+	cause?: UnloadableSkillCause
 	detail: string
 	/**
 	 * What repairs it, already carrying the path; `command` is always empty since every fault here
@@ -35,17 +42,18 @@ const localOverride = 'AGENTS.local.md'
 /**
  * The two frontmatter faults that make a harness skip a skill outright (see
  * `skills/init-buddy-agent-harness/references/frontmatter.md`): unparseable YAML, and a missing
- * `description`. A name/directory mismatch only warns and still loads, so it's not checked here.
- * Checked directly for an unquoted colon rather than by parsing YAML — the package ships no parser.
+ * `description`, which includes no frontmatter block at all. A name/directory mismatch only warns
+ * and still loads, so it's not checked here. Checked directly for an unquoted colon rather than by
+ * parsing YAML — the package ships no parser.
  */
-function frontmatterFault(body: string): 'unparseable' | 'no-description' | undefined {
+function frontmatterFault(body: string): UnloadableSkillCause | undefined {
 	const block = /^---\n([\s\S]*?)\n---/.exec(body)
-	if (!block) return 'unparseable'
+	if (!block) return 'missing-description'
 	const description = /^description:[ \t]*(.*)$/m.exec(block[1] as string)
 	const value = description?.[1]?.trim()
-	if (!value) return 'no-description'
+	if (!value) return 'missing-description'
 	const quoted = /^(['"]).*\1$/.test(value)
-	if (!quoted && /:\s/.test(value)) return 'unparseable'
+	if (!quoted && /:\s/.test(value)) return 'unparsable-frontmatter'
 	return undefined
 }
 
@@ -55,9 +63,9 @@ function frontmatterFault(body: string): 'unparseable' | 'no-description' | unde
  */
 export function diagnoseConfiguration({ root, git, cli }: DiagnoseConfigurationOptions): ConfigurationFinding[] {
 	const findings: ConfigurationFinding[] = []
-	const add = (path: string, problem: ConfigurationProblem) => {
-		const { detail, repair } = repairFor(problem)
-		findings.push({ path, problem, detail, repair: repair({ file: path }, cli) })
+	const add = (path: string, problem: ConfigurationProblem, cause?: UnloadableSkillCause) => {
+		const { detail, repair } = repairFor(problem, cause)
+		findings.push({ path, problem, ...(cause ? { cause } : {}), detail, repair: repair({ file: path }, cli) })
 	}
 
 	const harnesses = selectHarnesses(root, [])
@@ -81,8 +89,8 @@ export function diagnoseConfiguration({ root, git, cli }: DiagnoseConfigurationO
 	// `filesUnder` already confirmed these are readable files, so a failure here is a genuine IO
 	// error, not a guard to add.
 	for (const file of filesUnder(join(root, canonicalSkills)).filter((file) => file.endsWith('SKILL.md'))) {
-		if (frontmatterFault(readFileSync(join(root, canonicalSkills, file), 'utf8')))
-			add(`${canonicalSkills}/${file}`, 'unloadable-skill')
+		const cause = frontmatterFault(readFileSync(join(root, canonicalSkills, file), 'utf8'))
+		if (cause) add(`${canonicalSkills}/${file}`, 'unloadable-skill', cause)
 	}
 
 	return findings

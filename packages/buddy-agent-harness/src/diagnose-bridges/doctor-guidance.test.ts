@@ -33,7 +33,7 @@ const version = JSON.parse(readFileSync(join(packageRoot, 'package.json'), 'utf8
 
 describe('doctor guidance', () => {
 	it('has one repair for every problem it can report', () => {
-		for (const entry of doctorRepairs) expect(repairFor(entry.problem)).toEqual(entry)
+		for (const entry of doctorRepairs) expect(repairFor(entry.problem, entry.cause)).toEqual(entry)
 	})
 
 	// The half the assertion above cannot reach. Iterating the table and looking each entry back up
@@ -306,7 +306,7 @@ describe('the detect-and-repair seam', () => {
 	// rendering hands the work to the `init-buddy-agent-harness` skill; a caller reading the command's output can just
 	// run the invocation, so the command rendering gives it one and names no skill.
 	it('renders every repair twice, and the two disagree about who acts', () => {
-		for (const entry of doctorRepairs) expect(repairFor(entry.problem)).toEqual(entry)
+		for (const entry of doctorRepairs) expect(repairFor(entry.problem, entry.cause)).toEqual(entry)
 
 		const missing = repairFor('missing')
 		expect(missing.repair({ file: '<path>' }, commandInvocation).command).toBe(`${commandInvocation} init`)
@@ -354,14 +354,14 @@ describe('the detect-and-repair seam', () => {
 			expect(entry.skillRepair({ file: '<path>' })).toContain(repairSkillInvocation)
 	})
 
-	it('sends every worktree finding to init, and to enhance for a repository that has an AGENTS.md', () => {
+	it('sends every worktree finding to init, and to neither enhance nor repair', () => {
 		expect(worktreeRepairs.length).toBe(3)
 		for (const entry of worktreeRepairs) {
 			const { command, instruction } = entry.repair({ file: '<path>' }, commandInvocation)
 			expect(command).toBe('')
 			for (const text of [entry.skillRepair({ file: '<path>' }), instruction]) {
 				expect(text).toContain(initSkillInvocation)
-				expect(text).toContain('/buddy-agent-harness:enhance')
+				expect(text).not.toContain('enhance')
 				expect(text).not.toContain(repairSkillInvocation)
 			}
 		}
@@ -405,10 +405,31 @@ describe('the detect-and-repair seam', () => {
 			nonstandardRepairs,
 			worktreeRepairs,
 		]
-		const counted = families.flatMap((family) => family.map((entry) => entry.problem))
+		const key = (entry: { problem: string; cause?: string }) => `${entry.problem}/${entry.cause ?? ''}`
+		const counted = families.flatMap((family) => family.map(key))
 
 		expect(new Set(counted).size).toBe(counted.length)
-		expect(counted.sort()).toEqual(doctorRepairs.map((entry) => entry.problem).sort())
+		expect(counted.sort()).toEqual(doctorRepairs.map(key).sort())
+	})
+
+	// One fault name, two causes: a consumer routes on the name and tells the causes apart from the
+	// `cause` field, never from the prose.
+	it('gives each cause of an unloadable skill its own detail and repair under the one fault name', () => {
+		const causes = configurationRepairs.filter((entry) => entry.problem === 'unloadable-skill')
+		expect(causes.map((entry) => entry.cause)).toEqual(['unparsable-frontmatter', 'missing-description'])
+
+		const [unparsable, missing] = causes.map((entry) => ({
+			detail: entry.detail,
+			instruction: entry.repair({ file: '.agents/skills/x/SKILL.md' }, 'bah').instruction,
+		}))
+		expect(unparsable?.detail).not.toBe(missing?.detail)
+		expect(unparsable?.instruction).toContain('make the frontmatter in .agents/skills/x/SKILL.md parse')
+		expect(missing?.instruction).toContain("have the skill's author write a description")
+		expect(doctorRepairs.filter((entry) => entry.cause !== undefined)).toEqual(causes)
+	})
+
+	it('refuses to state an unloadable-skill repair without its cause', () => {
+		expect(() => repairFor('unloadable-skill')).toThrow(TypeError)
 	})
 
 	// The name is what a consumer routes on, so it must not have to be recovered from the prose.
@@ -420,7 +441,7 @@ describe('the detect-and-repair seam', () => {
 	// the options come from the repairing skill's own reference, not from the report.
 	it('states exactly one repair per problem, never a set to choose between', () => {
 		for (const entry of doctorRepairs) {
-			expect(repairFor(entry.problem)).toEqual(entry)
+			expect(repairFor(entry.problem, entry.cause)).toEqual(entry)
 			expect(Object.keys(entry.repair({ file: '.claude/skills' }, 'bah')).sort()).toEqual(['command', 'instruction'])
 			expect(typeof entry.skillRepair({ file: '.claude/skills' })).toBe('string')
 		}
@@ -440,7 +461,10 @@ describe('the repair as a command and an instruction', () => {
 	})
 
 	it('leaves the command empty for a repair that is judgment', () => {
-		const { command, instruction } = repairFor('unloadable-skill').repair({ file: '.agents/skills/x/SKILL.md' }, 'bah')
+		const { command, instruction } = repairFor('unloadable-skill', 'missing-description').repair(
+			{ file: '.agents/skills/x/SKILL.md' },
+			'bah',
+		)
 
 		expect(command).toBe('')
 		expect(instruction).not.toBe('')

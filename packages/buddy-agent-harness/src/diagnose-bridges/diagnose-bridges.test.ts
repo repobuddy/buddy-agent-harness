@@ -62,9 +62,18 @@ describe('diagnoseBridges', () => {
 			bridges: [{ harness: 'claude-code', path: '.claude/skills', kind: 'symlink', status: 'ok' }],
 			instructions: [],
 			globalInstructions: [],
+			harnessInUse: 'unknown',
 			divergence: [],
 			findings: [],
 		})
+	})
+
+	// The rows alone cannot say which harness a skill is answering for, so the report names it.
+	it('names the harness the run is under from the environment, and unknown where it cannot tell', () => {
+		const root = repository()
+
+		expect(diagnoseBridges({ root, cli, env: { CURSOR_AGENT: '1' } }).harnessInUse).toBe('cursor')
+		expect(diagnoseBridges({ root, cli, env: {} }).harnessInUse).toBe('unknown')
 	})
 
 	// The flagship failure: a checkout with core.symlinks=false leaves a regular file behind.

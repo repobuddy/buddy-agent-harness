@@ -27,16 +27,18 @@ The command is read-only. It never repairs anything, so it is safe to run at any
 
 `instructions` is everything standing between a harness and `AGENTS.md`, with a `status` of `ok`, `missing`, `unbridged`, `unreadable`, `shadowing`, or `superseded`. The last two are not bridges: they are files that suppress an `AGENTS.md` the harness would otherwise read by itself. A separate section because nothing about any of them is shared with `bridges`: a different `kind`, a different status vocabulary, and a repair that is never a command.
 
-`globalInstructions` is the same question one level up: whether each harness installed for this user loads `~/.agents/AGENTS.md` through its own user-scope file, with a `status` of `ok`, `missing`, `unbridged`, or `overridden`. No harness reads that file by itself, so text placed there reaches only the harnesses whose row is `ok`. The rows are there whether or not the file exists; a finding is raised only when it exists and goes unread.
+`globalInstructions` is the same question one level up: whether each harness installed for this user loads `~/.agents/AGENTS.md` through its own user-scope file, with a `status` of `ok`, `missing`, `unbridged`, `overridden`, or `cannot-load-file` for a harness that keeps its user rules outside a file. No harness reads that file by itself, so text placed there reaches only the harnesses whose row is `ok`. The rows are there whether or not the file exists; a finding is raised only when it exists and goes unread. `harnessInUse` names the harness this run is under, or `unknown` when the environment cannot tell, so you can answer for that harness's row.
 
-`findings` explains each problem and carries more than the two sections above: the configuration, MCP, and non-standard findings have no section of their own, because they are about files rather than about bridges. `help` carries each repair, one row per distinct repair, with two columns:
+`findings` explains each problem and carries more than the sections above: the configuration, MCP, and non-standard findings have no section of their own, because they are about files rather than about bridges. Each finding carries its own repair on its row, in two columns:
 
 - `command` — a shell invocation that, run exactly as given, **completes** the repair.
 - `instruction` — the same repair in the imperative, always present and complete on its own.
 
+An `unloadable-skill` finding also names its `cause`, `unparsable-frontmatter` or `missing-description`, since each has its own repair; `cause` is empty on every other finding. `help` lists each distinct repair once, as a summary of the findings' own.
+
 `command` is empty whenever no single invocation does the job, and that emptiness is the signal: act on `instruction` and do not assemble a command out of it. A runnable invocation quoted *inside* an `instruction` is not the repair either — `diverged-both` names `git diff --no-index` because the diff shows you what differs, not because running it reconciles anything. Apply the repair, then re-run `doctor`.
 
-Nothing in `help` is wrapped.
+No repair is wrapped, on a finding or in `help`.
 
 Do not run an `init` command yourself. Rebuilding a skills bridge can move skills a user wrote, and rewriting an instruction file touches prose a person authored — both are the `init-buddy-agent-harness` skill's judgment, so hand the repair to `/buddy-agent-harness:init-buddy-agent-harness` (pnpm install: `pnpm-buddy-agent-harness-init-buddy-agent-harness`) instead. Every such repair carries an empty `command`: a skill invocation has no shell equivalent at all.
 

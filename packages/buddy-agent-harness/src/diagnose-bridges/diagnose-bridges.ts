@@ -1,5 +1,6 @@
 import { lstatSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
+import { detectHarness, type HarnessId } from 'cyber-agentkit'
 import { type HarnessName, selectHarnesses } from '../harness-registry/harness-registry.ts'
 import { linksTo } from '../skill-projection/skill-projection.ts'
 import { diagnoseGlobalInstructions, type GlobalInstructionReport } from './diagnose-global-instructions.ts'
@@ -60,8 +61,16 @@ export type DiagnoseResult = {
 	 * is never a command.
 	 */
 	instructions: InstructionReport[]
-	/** One row per installed harness whose user-scope file can load `~/.agents/AGENTS.md`. */
+	/**
+	 * One row per installed or named harness, saying whether it loads `~/.agents/AGENTS.md`, or that
+	 * it cannot load a file.
+	 */
 	globalInstructions: GlobalInstructionReport[]
+	/**
+	 * The harness this run is under, as its environment shows it; `unknown` when no environment was
+	 * given, or when it matches no harness or more than one.
+	 */
+	harnessInUse: HarnessId | 'unknown'
 	divergence: DivergenceReport[]
 	findings: BridgeFinding[]
 }
@@ -180,6 +189,7 @@ export function diagnoseBridges({ root, harnesses: preferred = [], cli, home, en
 		bridges,
 		instructions: instructions.instructions,
 		globalInstructions: global.globalInstructions,
+		harnessInUse: env === undefined ? 'unknown' : detectHarness({ env }).harness,
 		divergence,
 		findings,
 	}

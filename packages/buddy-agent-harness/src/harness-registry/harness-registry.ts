@@ -64,6 +64,11 @@ export type Harness = {
 	user?: HarnessScope
 	/** Set when this name has been superseded; the value is the name that replaces it. */
 	deprecated?: HarnessName
+	/**
+	 * Where the harness keeps its user rules when they live outside a file, as a step names it; set,
+	 * no file of the harness can load `~/.agents/AGENTS.md`, so its text is pasted in instead.
+	 */
+	userRules?: string
 }
 
 /**
@@ -129,6 +134,8 @@ export const harnessRegistry: readonly Harness[] = [
 			],
 		},
 		user: { detect: '.cursor', ...skillsProjection('cursor', 'user') },
+		// A settings panel, not a file (E-CUR-08).
+		userRules: "Cursor's user rules, under Customize → Rules",
 	},
 	{
 		name: 'codex',
@@ -190,7 +197,8 @@ export const harnessRegistry: readonly Harness[] = [
 			instructionBridge: { kind: 'symlink', path: '.gemini/GEMINI.md' },
 		},
 	},
-	{ name: 'devin-desktop', project: { detect: '.devin' } },
+	// No user-scope path is documented (E-WS-02), so there is no directory to detect it by either.
+	{ name: 'devin-desktop', project: { detect: '.devin' }, userRules: "Devin Desktop's user rules" },
 	{
 		name: 'windsurf',
 		project: {

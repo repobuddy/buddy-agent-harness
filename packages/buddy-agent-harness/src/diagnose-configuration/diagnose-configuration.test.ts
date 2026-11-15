@@ -3,6 +3,7 @@ import { mkdirSync, mkdtempSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { describe, expect, it } from 'vitest'
+import { repairFor } from '../diagnose-bridges/doctor-guidance.ts'
 import { GitBridgeState } from '../diagnose-bridges/git-bridge-state.ts'
 import { diagnoseConfiguration } from './diagnose-configuration.ts'
 
@@ -112,6 +113,8 @@ describe('diagnoseConfiguration', () => {
 
 			expect(diagnose(root).find((entry) => entry.problem === 'unloadable-skill')).toMatchObject({
 				path: '.agents/skills/pdf/SKILL.md',
+				cause: 'unparsable-frontmatter',
+				detail: repairFor('unloadable-skill', 'unparsable-frontmatter').detail,
 			})
 		})
 
@@ -126,21 +129,24 @@ describe('diagnoseConfiguration', () => {
 			const root = repository()
 			write(root, '.agents/skills/pdf/SKILL.md', '---\nname: pdf\n---\n')
 
-			expect(problems(root)).toContain('unloadable-skill')
+			expect(diagnose(root).find((entry) => entry.problem === 'unloadable-skill')).toMatchObject({
+				cause: 'missing-description',
+				detail: repairFor('unloadable-skill', 'missing-description').detail,
+			})
 		})
 
 		it('reports a skill whose description key is present but empty', () => {
 			const root = repository()
 			write(root, '.agents/skills/pdf/SKILL.md', '---\nname: pdf\ndescription:\n---\n')
 
-			expect(problems(root)).toContain('unloadable-skill')
+			expect(diagnose(root).find((entry) => entry.problem === 'unloadable-skill')?.cause).toBe('missing-description')
 		})
 
 		it('reports a skill with no frontmatter block at all', () => {
 			const root = repository()
 			write(root, '.agents/skills/pdf/SKILL.md', '# PDF\n')
 
-			expect(problems(root)).toContain('unloadable-skill')
+			expect(diagnose(root).find((entry) => entry.problem === 'unloadable-skill')?.cause).toBe('missing-description')
 		})
 
 		// The skill still loads: a mismatched name is a warning, not a reason to skip it.
