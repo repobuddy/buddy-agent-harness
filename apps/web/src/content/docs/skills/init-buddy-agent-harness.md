@@ -86,6 +86,10 @@ These hold regardless of what you ask for mid-run:
 - `init` writes `AGENTS.md` and `.agents/skills/`, and treats only those as standard. Other folders under `.agents/`, such as `.agents/agents/` or `.agents/commands/`, are your project's choice: `init` does not create them, leaves any you have, and does not call them standard.
 - Local agent configuration only: no workflows, Actions, repository settings, security scanning, branch rules, or unrelated project files.
 
+## Agent worktree offers
+
+Where Claude Code is in use, the skill also offers two settings, each on its own and written only on approval: ignoring `.claude/worktrees/` in `.gitignore` and in each tree-scanning tool's config, and setting `worktree.baseRef` to `"head"`. [Agent Worktrees](/agent-configuration/agent-worktrees/) explains why.
+
 ## Which harnesses get enabled
 
 The enabled set is the union of three sources: Claude Code and Cursor unconditionally, any harness whose directory already exists in the repository, and any you name explicitly with `--harness codex,gemini-cli`.

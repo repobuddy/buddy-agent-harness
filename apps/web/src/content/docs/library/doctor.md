@@ -274,6 +274,7 @@ type DoctorProblem =
 	| ConfigurationFault
 	| McpProblem
 	| NonstandardProblem
+	| WorktreeProblem
 ```
 
 Every finding name `doctor` can report, across every section. `ConfigurationProblem` is an alias for the same union.
@@ -286,6 +287,7 @@ Every finding name `doctor` can report, across every section. `ConfigurationProb
 | `ConfigurationFault` | `deprecated-harness`, `ignored-bridge`, `unread-local-override`, `unloadable-skill` | [Configuration findings](/cli/doctor/#configuration-findings) |
 | `McpProblem` | `mcp-golden-unreadable`, `mcp-target-unreadable`, `mcp-unprojected`, `mcp-undeclared`, `mcp-diverged-target`, `mcp-diverged-golden`, `mcp-diverged-both`, `mcp-diverged-unknown`, `mcp-literal-secret`, `mcp-committed-secret` | [MCP Servers](/agent-configuration/mcp-servers/) |
 | `NonstandardProblem` | `nonstandard-instructions`, `nonstandard-rule`, `nonstandard-command`, `nonstandard-skill`, `nonstandard-subagent` | [Non-standard configuration findings](/cli/doctor/#non-standard-configuration-findings) |
+| `WorktreeProblem` | `worktrees-untracked`, `worktrees-scanned`, `worktree-base-unset` | [Agent worktree findings](/cli/doctor/#agent-worktree-findings) |
 
 `NonstandardProblem` is not exported by name; it is reachable only through `DoctorProblem`.
 

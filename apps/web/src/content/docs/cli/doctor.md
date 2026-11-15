@@ -288,6 +288,18 @@ Where a repository keeps a [golden MCP server set](/agent-configuration/mcp-serv
 
 These findings stay within the command's contract: read-only, `--harness`-independent for the same reason as the configuration findings, and routed on `problem`. What the golden set is, which file each harness reads, and every `mcp-*` finding with its repair are on [MCP Servers](/agent-configuration/mcp-servers/).
 
+## Agent worktree findings
+
+Where a repository has a `.claude/` directory, `doctor` reports what it lacks for the [git worktrees Claude Code creates](/agent-configuration/agent-worktrees/) under `.claude/worktrees/`.
+
+| Finding | What is missing |
+| --- | --- |
+| `worktrees-untracked` | a `.gitignore` rule for `.claude/worktrees/`, so every agent worktree shows as untracked in `git status` |
+| `worktrees-scanned` | an exclusion of `.claude/worktrees` in `biome.json`, so Biome walks into each worktree's own config |
+| `worktree-base-unset` | `worktree.baseRef` in `.claude/settings.json`, so agent worktrees branch from the default branch |
+
+An explicit `"fresh"` is the owner's choice and is not reported. Each finding is offered by the [`init-buddy-agent-harness` skill](/skills/init-buddy-agent-harness/), or by [`enhance`](/skills/enhance/#agent-worktrees) where the repository already has an `AGENTS.md`. Why each one matters is on [Agent Worktrees](/agent-configuration/agent-worktrees/).
+
 ## Exit codes
 
 `doctor` exits `0` even when it has findings. The diagnosis succeeded, and a non-zero code reads to an agent as "this command is broken, try something else." A `--strict` flag for CI, the one caller that genuinely wants a failing process, is not implemented yet.
