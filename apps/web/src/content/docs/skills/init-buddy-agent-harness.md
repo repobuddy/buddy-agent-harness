@@ -53,25 +53,30 @@ Nothing you authored is touched before you see the plan. The skill presents:
 
 - what will be created,
 - which content moves into `AGENTS.md`,
-- which harness files would become pointers,
+- which harness files it will ask about deleting or replacing with a pointer,
 - any frontmatter to be added, showing the derived `name` and `description` verbatim,
 - which harnesses will be enabled,
 - what is being left alone, and why.
 
-Explicit approval is required before any step that deletes, replaces, or rewrites a user-authored file. Creating a missing directory or a missing `AGENTS.md` does not need approval.
+Explicit approval is required before any step that deletes, replaces, or rewrites a user-authored file. Creating a missing directory or a missing `AGENTS.md` does not need approval. A step you decline leaves its file byte-identical.
+
+Once a harness instruction file such as `.cursorrules`, `GEMINI.md`, or `.github/copilot-instructions.md` has been consolidated into `AGENTS.md`, what is left of it is your call, asked about each file on its own: delete it, replace it with a pointer to `AGENTS.md`, or leave it as it is. The skill never writes a copy of `AGENTS.md` in its place. Deletion is offered only when every harness that read the file will read `AGENTS.md` after the run, so `GEMINI.md` can be deleted only together with, or after, the `.gemini/settings.json` entry that names `AGENTS.md`. The offer for `.github/copilot-instructions.md` names the readers of that file that are not agent harnesses, because deleting it or replacing it with a pointer takes its content from them. A `CLAUDE.md` keeps its own rule: it is removed, or left holding the `@AGENTS.md` import.
 
 ### 4. Apply
 
 1. Scaffold the baseline: `.agents/`, `.agents/skills/`, and a root `AGENTS.md` if absent. An existing `AGENTS.md` is never rewritten.
 2. Move approved skills and commands to `.agents/skills/<name>/SKILL.md`, preferring `git mv` so history follows, and fix frontmatter per [Portable Skills](/agent-configuration/portable-skills/).
-3. Merge approved instruction content into `AGENTS.md`, preserving your wording. Content is appended, not restructured.
+3. Merge approved instruction content into `AGENTS.md`, preserving your wording. Content is appended, not restructured. Each consolidated harness file is then deleted, replaced with a pointer, or left as it is, as you answered.
 4. Run the `init` command to create the projections and report the enabled harnesses.
 5. Resolve any reported conflict and retry. `--force` replaces one named projection; `--copy` is only for environments without symlinks.
+   Where an existing skills copy drifted from `.agents/skills`, the command syncs it file by file. For each file changed on both sides, the skill shows you the difference and asks which side wins, then reruns the `sync` command with your picks. A file you give no answer for is left as it is on both sides.
 6. Settle the instruction files the CLI does not touch. [Gemini CLI](/agent-configuration/harnesses/gemini-cli/) needs a `.gemini/settings.json` edit, and it is the only bridge left to write. No `CLAUDE.md` is written, at the root or beside a nested `AGENTS.md`: [Claude Code reads `AGENTS.md` itself](/agent-configuration/harnesses/claude-code/#instructions-need-nothing-written), and a generated copy would be read instead of it.
 
 ### 5. Verify and report
 
 Each projection is checked to resolve into `.agents/skills`, and every migrated `SKILL.md` is checked to parse with valid frontmatter. The report states what was created, consolidated, linked, and left canonical-only.
+
+Next the skill runs `doctor` again and lists the findings it does not own that [`repair`](/skills/repair/) does, such as a git-ignored bridge or MCP drift one side is plainly ahead on, and asks once whether to continue with `repair`. With no such finding, it does not ask. A finding about your global instructions is yours to fix in your home directory, and the skill gives you the step.
 
 The run ends by asking whether to run [`enhance`](/skills/enhance/), which offers guidance your `AGENTS.md` does not have. Decline and nothing more happens. That offer is the only opinion `init` carries, and even it is a question.
 
@@ -88,7 +93,7 @@ These hold regardless of what you ask for mid-run:
 
 ## Agent worktree offers
 
-Where Claude Code is in use, the skill also offers two settings, each on its own and written only on approval: ignoring `.claude/worktrees/` in `.gitignore` and in each tree-scanning tool's config, and setting `worktree.baseRef` to `"head"`. [Agent Worktrees](/agent-configuration/agent-worktrees/) explains why.
+Where Claude Code is in use, meaning the repository has a `.claude/` directory or you named Claude Code in the run, the skill also offers two settings, each on its own and written only on approval: ignoring `.claude/worktrees/` in `.gitignore` and in each tree-scanning tool's config, and setting `worktree.baseRef` to `"head"`. A setting the repository already has is not offered, and the report says it is covered. [Agent Worktrees](/agent-configuration/agent-worktrees/) explains why.
 
 ## Which harnesses get enabled
 

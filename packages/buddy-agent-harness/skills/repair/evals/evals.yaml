@@ -1,0 +1,13 @@
+runs: 3
+threshold: 2
+trigger:
+  - { prompt: "doctor says my agent config is wrong, fix it", expect: fire }
+  - { prompt: "The .claude/skills bridge is git-ignored, repair that.", expect: fire }
+  - { prompt: "Cursor won't load one of my skills, can you fix it?", expect: fire }
+  - { prompt: "Sync the .claude/skills copy that drifted from .agents/skills.", expect: fire }
+  - { prompt: "Our AGENTS.local.md isn't being read by anything. Fix our agent config.", expect: fire }
+  - { prompt: "Set up AGENTS.md and agent skills for this repo so it works across Claude Code, Codex, and Cursor.", expect: skip }
+  - { prompt: "What guidance is my AGENTS.md missing? Add the recommended sections.", expect: skip }
+  - { prompt: "Just tell me what's wrong with our agent harness config. Don't change anything.", expect: skip }
+  - { prompt: "Rebuild the .claude/skills bridge from scratch.", expect: skip }
+  - { prompt: "Replace the .claude/skills projection with a fresh link to .agents/skills.", expect: skip }

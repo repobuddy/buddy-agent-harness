@@ -29,15 +29,20 @@ Our agent config is out of date — check it and fix what's wrong.
 
 ## What it corrects
 
-`doctor` reports several families of finding. One is the skill's whole, and four MCP findings are its too.
+`doctor` reports several families of finding. One is the skill's whole, and so are the drifted and unprotected skills copies and four MCP findings.
 
-**Bridge and instruction findings** — the `missing` / `degraded` / `stale` / `diverged-*` / `unpinned-copy` set, and the `instructions-*` set — are about whether canonical configuration reaches a harness at all: a bridge that stopped resolving, one that was never completed, or a file standing in the way of one it would otherwise read. Most go to [`init`](/skills/init-buddy-agent-harness/), which is what builds every bridge in the first place. A few go to nobody: a divergence with edits on both sides, one where no baseline says which side moved, and a bridge whose only fault is the git index. Rebuilding those would destroy work rather than repair it, so they are yours to settle by hand. Either way the skill reports them and hands them on.
+**Bridge and instruction findings** — the `missing` / `degraded` / `stale` / `diverged-*` / `unpinned-copy` set, and the `instructions-*` set — are about whether canonical configuration reaches a harness at all: a bridge that stopped resolving, one that was never completed, or a file standing in the way of one it would otherwise read. Most go to [`init`](/skills/init-buddy-agent-harness/), which is what builds every bridge in the first place. Two kinds are the skill's own, because neither rebuilds anything:
+
+- **A skills copy that drifted from `.agents/skills`** (`diverged-*`, whichever side changed). The skill shows each differing file and the side it would take, and on your approval runs the `sync` command, which merges the copy and `.agents/skills` file by file, so an edit made through the copy is kept. For each file changed on both sides, or every differing file where no shared history says which side moved, it shows you the difference and asks which side wins, then reruns `sync` with your picks. A file you give no answer for stays as it is on both sides.
+- **A tracked copy without its protection** (`unpinned-copy`). The skill offers to set skip-worktree on the copy's tracked files and list the copy in `.git/info/exclude`, so git stops showing its changes. No file's content changes, and the committed `.gitignore` is not touched.
+
+You can ask for the first directly: "sync the `.claude/skills` copy that drifted from `.agents/skills`" reaches this skill. Rebuilding or replacing a bridge does not; that is `init`'s.
 
 The `instructions-*` findings are worth a note, because they look like configuration faults. A `.gemini/settings.json` that names `AGENTS.md` nowhere is a bridge that was never finished, and `init` is what writes that entry. A `CLAUDE.md` that [suppresses the `AGENTS.md` beside it](/agent-configuration/harnesses/claude-code/#a-claudemd-beside-it-suppresses-it) is instructions that were never consolidated, and consolidating is the thing `init` exists to do. `repair` corrects a file in place; it does not merge two files into one, and it does not decide which of them a repository should keep.
 
-**MCP findings** — the `mcp-*` set, reported when a golden MCP server set and a harness's copy of it disagree — are split. `mcp-unprojected` and `mcp-diverged-golden` are the two cases where the golden set is plainly ahead: a harness missing a server it declares, or a field only the golden side changed. Those are the skill's — it runs [`buddy-agent-harness mcp project`](/cli/mcp/) as a dry run, shows the plan beside each target file as it stands, and applies it with `--write` once you approve. A row the command refuses, or one it holds back because the harness side also changed, is reported without an offered write. `mcp-undeclared` and `mcp-diverged-target` are the mirror cases, where the harness side is plainly ahead. For those the skill runs [`mcp reconcile`](/cli/mcp/#mcp-reconcile), offers each field on its own, and passes `--accept` only for the fields you approve; a literal credential is refused and never shown. Every other `mcp-*` finding — `mcp-diverged-both`, `-unknown`, and the two `-unreadable` findings — belongs to nobody: `doctor` states its repair in full and the skill passes it to you unchanged.
+**MCP findings** — the `mcp-*` set, reported when a golden MCP server set and a harness's copy of it disagree — are split. `mcp-unprojected` and `mcp-diverged-golden` are the two cases where the golden set is plainly ahead: a harness missing a server it declares, or a field only the golden side changed. Those are the skill's — it runs [`buddy-agent-harness mcp project`](/cli/mcp/) as a dry run, shows the plan beside each target file as it stands, and applies it with `--write` once you approve. A row the command refuses, or one it holds back because the harness side also changed, is reported without an offered write. `mcp-undeclared` and `mcp-diverged-target` are the mirror cases, where the harness side is plainly ahead. For those the skill runs [`mcp reconcile`](/cli/mcp/#mcp-reconcile), offers each field on its own, and passes `--accept` only for the fields you approve; a literal credential is refused and never shown, in any offer or report, in whole or in part. A server the projection refuses for a target is reported with the reason it gave, and no write of it is offered. A hand edit the commands hand back changes only that server's entry; the rest of the file, comments included, is left byte-identical. Every other `mcp-*` finding — `mcp-diverged-both`, `-unknown`, and the two `-unreadable` findings — belongs to nobody: `doctor` states its repair in full and the skill passes it to you unchanged, as needing your decision.
 
-**Global instruction findings** — `global-instructions-missing`, `global-instructions-unbridged`, `global-instructions-overridden`, and `global-instructions-emptied`, where a harness's user-scope file such as `~/.claude/CLAUDE.md` does not load `~/.agents/AGENTS.md` — are never the skill's to write. The file is in your home directory, and nothing this package ships writes outside the repository. The skill gives you the exact line, symlink, or variable to unset that `doctor` names, and you make the change yourself.
+**Global instruction findings** — `global-instructions-missing`, `global-instructions-unbridged`, `global-instructions-overridden`, and `global-instructions-emptied`, where a harness's user-scope file such as `~/.claude/CLAUDE.md` does not load `~/.agents/AGENTS.md` — are never the skill's to write. The file is in your home directory, and nothing this package ships writes outside the repository. The skill gives you the exact line, symlink, or variable to unset that `doctor` names, as a step for you to do outside the repo, and you make the change yourself.
 
 **Configuration findings** are its own:
 
@@ -64,7 +69,19 @@ Where more than one correction is valid, the skill presents the options and asks
 
 After writing what you approved, it runs `doctor` again. A correction can fail to hold: a second `.gitignore` rule matching the same path, a frontmatter fix that leaves another fault behind. Re-running is how the skill knows, and a finding that survives is reported as still open rather than as landed.
 
-Every run reports, whichever way it went — one row per finding, naming what was wrong and what happened to it. A run that finds nothing still reports, because "nothing found" is otherwise indistinguishable from not having looked.
+Every run reports, whichever way it went — one row per finding, naming its path, what was wrong, and what happened to it. Each outcome is told apart from the others:
+
+| Outcome | Meaning |
+| --- | --- |
+| corrected | the re-run no longer reports it |
+| declined | you said no, and its files are unchanged |
+| still open | the correction was written, and the re-run still reports it |
+| reported as material | correcting it would assert what your repository means |
+| handed to `init` | its repair is `init`'s, which builds bridges and consolidates instructions |
+| needs your decision | no skill owns it, and someone has to judge it |
+| for you to do outside the repo | a step in your home directory, given word for word |
+
+A run that finds nothing still reports, because "nothing found" is otherwise indistinguishable from not having looked.
 
 ## Rules it follows
 
@@ -72,7 +89,8 @@ These hold regardless of what you ask for mid-run:
 
 - Never write without approval. There is no flag that skips it.
 - Never detect. `doctor` owns detection; a check here would be a second home for it.
-- Never rebuild a bridge. That is `doctor`'s diagnosis and [`init`](/skills/init-buddy-agent-harness/)'s repair.
+- Never rebuild a bridge. That is `doctor`'s diagnosis and [`init`](/skills/init-buddy-agent-harness/)'s repair. Syncing a drifted copy and restoring its protection rebuild nothing.
+- Never repeat a literal MCP credential, in any output.
 - Never invent an owner. A finding whose repair names no skill is work for a person, and the skill says so rather than picking one.
 - Never consolidate. Moving content into `AGENTS.md` is `init`'s.
 - Local agent configuration only: no workflows, repository settings, or unrelated project files. A retired harness name in a workflow file is not the skill's to rename.

@@ -298,7 +298,7 @@ Where a repository has a `.claude/` directory, `doctor` reports what it lacks fo
 | `worktrees-scanned` | an exclusion of `.claude/worktrees` in `biome.json`, so Biome walks into each worktree's own config |
 | `worktree-base-unset` | `worktree.baseRef` in `.claude/settings.json`, so agent worktrees branch from the default branch |
 
-An explicit `"fresh"` is the owner's choice and is not reported. Each finding is offered by the [`init-buddy-agent-harness` skill](/skills/init-buddy-agent-harness/), or by [`enhance`](/skills/enhance/#agent-worktrees) where the repository already has an `AGENTS.md`. Why each one matters is on [Agent Worktrees](/agent-configuration/agent-worktrees/).
+An explicit `"fresh"` is the owner's choice and is not reported. Each finding is offered by the [`init-buddy-agent-harness` skill](/skills/init-buddy-agent-harness/). Why each one matters is on [Agent Worktrees](/agent-configuration/agent-worktrees/).
 
 ## Exit codes
 

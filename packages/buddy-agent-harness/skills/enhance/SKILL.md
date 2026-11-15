@@ -14,13 +14,13 @@ Every addition is **offered, never written on sight**. An addition asserts somet
 
 Four additions ship today: `references/delegation.md`, `references/list-identifiers.md`, `references/session-scope.md`, and `references/references-as-links.md`. Classify, offer, and report each one on its own; the owner's answer to one decides nothing about the others. Each addition's reference file carries the text to offer, a `## Covered when` criterion for the subject already being present, a `## Stale when` section naming the history file its stale check reads and what else that check needs for this addition, and a `## Where it belongs` recommendation naming which instruction file the text should go in. The retired wordings themselves are kept beside it — `references/<addition>.history.md` — and are what a present section is compared against.
 
-Beside the additions, it offers the two **agent-worktree settings** in `references/agent-worktrees.md`: lines in `.gitignore`, a tool config, and `.claude/settings.json` rather than prose in `AGENTS.md`. Step 6 is theirs. Beside the owner's global file, `~/.agents/AGENTS.md`, written only where the owner picks it (step 5), they are the only writes this skill makes outside the root `AGENTS.md`.
+Beside the root `AGENTS.md`, the only file this skill writes is the owner's global file, `~/.agents/AGENTS.md`, and only where the owner picks it (step 5). Claude Code's agent-worktree settings are not offered here; `init` offers them.
 
 ## 1. Find the instruction file
 
 Where the invocation names `--root <dir>`, that directory is the repository: read and write inside it only, apart from `~/.agents/AGENTS.md` as step 5 allows. Otherwise locate the Git repository root. The target is the root `AGENTS.md`.
 
-If there is no root `AGENTS.md`, stop and say so. This skill adds to an existing file; creating one is `init`'s job, so point there and write nothing. Still report in full as step 7 says — what you read, that nothing was written — with **not judged** as each addition's verdict.
+If there is no root `AGENTS.md`, stop and say so. This skill adds to an existing file; creating one is `init`'s job, so point there and write nothing. Still report in full as step 6 says — what you read, that nothing was written — with **not judged** as each addition's verdict.
 
 A nested `AGENTS.md` is never a target. It governs its own subtree, and none of these additions are subtree-scoped.
 
@@ -171,15 +171,18 @@ On approval of a **removal**, remove that one section — from its heading throu
 
 On a decline, write nothing. A declined replacement leaves the section exactly where it stands, and so does an unanswered question.
 
-## 6. Offer the agent-worktree settings
+## 6. Report
 
-Where Claude Code is in use — a `.claude/` directory exists — read `references/agent-worktrees.md` and judge **P1**, ignoring `.claude/worktrees/`, and **P2**, setting `worktree.baseRef` to `"head"`, against the files that page names. Each is covered, or offered on its own, one line per file, with P2's trade-off explained before you ask. On approval, write exactly the line approved into that file and leave every other byte of it as it was: change the one key or array element, keep key order, indentation, and comments. On a decline, write nothing.
+Report every run, whichever way it went: what you read, the verdict for each addition and why — already global, already current, absent, the owner's own, from a retired wording, undecidable, or not judged — what you offered, which destination you recommended, and what was written, naming the file each write went to. For an already-current addition your instructions from outside the repository also carry, say the owner reads it twice. Wherever those instructions cover an addition's subject, name that copy and its verdict. A hand-over — a bridging step, or the current text for a global copy in a file this skill does not write — is an outcome, not a decline; say so. A run that offers nothing still reports — that is the only way the user can tell "already covered" from "did not look".
 
-These are settings, not additions. They have no history file, no global destination, and no `prose-update` comparison: a line is there or it is not. Where no `AGENTS.md` exists the run stops at step 1 and offers neither; `init`, which it points to, offers both.
+## Done when
 
-## 7. Report
-
-Report every run, whichever way it went: what you read, the verdict for each addition and why — already global, already current, absent, the owner's own, from a retired wording, undecidable, or not judged — what you offered, which destination you recommended, and what was written, naming the file each write went to. For an already-current addition your instructions from outside the repository also carry, say the owner reads it twice. Wherever those instructions cover an addition's subject, name that copy and its verdict. A hand-over — a bridging step, or the current text for a global copy in a file this skill does not write — is an outcome, not a decline; say so. Report each agent-worktree offer as written, declined, or already covered, naming the file. A run that offers nothing still reports — that is the only way the user can tell "already covered" from "did not look".
+- **C1.** Each of the four additions has exactly one verdict in the report, with the reason, and the report names the files read and each file written, or says nothing was.
+- **C2.** Every file written is the root `AGENTS.md` or `~/.agents/AGENTS.md`, and only on the owner's approval in this run, or their request for a team copy.
+- **C3.** Every offered text is byte-identical to the addition's current text, and each addition was offered and answered on its own.
+- **C4.** A replacement or removal changed only its section, and every other byte of the file, the managed region included, is unchanged.
+- **C5.** No section whose origin could not be placed was decided without the owner, and no measurement ran unless the owner picked it.
+- **C6.** No harness's own user-scope file, workflow, or project file was written; each step for one was handed over and reported as an outcome.
 
 ## Rules
 
@@ -190,6 +193,6 @@ Report every run, whichever way it went: what you read, the verdict for each add
 - **Never run an evaluation unasked.** It costs the owner many model runs. Offer it; wait.
 - **Never edit an addition to fit a repository.** The wording is fixed. Offer it as written or not at all.
 - **Name `~/.agents/AGENTS.md` as the global file.** Name a harness's own user-scope file only where that harness documents it.
-- **Never touch the managed region**, a nested `AGENTS.md`, or any file other than the root `AGENTS.md` — except `~/.agents/AGENTS.md` in step 5 and the agent-worktree lines in step 6, each as approved.
+- **Never touch the managed region**, a nested `AGENTS.md`, or any file other than the root `AGENTS.md` — except `~/.agents/AGENTS.md` in step 5, as approved.
 - **Never write a harness's own user-scope file**, such as `~/.claude/CLAUDE.md`. A step for it is handed over.
-- Local agent configuration only. Do not change workflows, repository settings, or unrelated project files; the agent-worktree lines are the one exception.
+- Local agent configuration only. Do not change workflows, repository settings, `.gitignore`, tool configs, `.claude/settings.json`, or unrelated project files.
