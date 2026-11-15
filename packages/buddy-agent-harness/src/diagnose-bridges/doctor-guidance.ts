@@ -81,10 +81,14 @@ export type GlobalInstructionProblem =
 	| 'global-instructions-no-file'
 
 /**
- * What a repository lacks for the git worktrees Claude Code creates under `.claude/worktrees/`;
- * each is an offer the `init-buddy-agent-harness` skill makes, never a fault in a file the owner wrote.
+ * Where Claude Code's agent worktrees land and what breaks them; each repair is an offer the
+ * `init-buddy-agent-harness` skill makes and writes only on approval.
  */
-export type WorktreeProblem = 'worktrees-untracked' | 'worktrees-scanned' | 'worktree-base-unset'
+export type WorktreeProblem =
+	| 'worktrees-in-repository'
+	| 'worktrees-untracked'
+	| 'worktrees-self-ignored'
+	| 'worktree-base-unset'
 
 /** Everything `doctor` can report against, across every section. */
 export type DoctorProblem =
@@ -208,7 +212,10 @@ export const initSkillInvocation: string = `/buddy-agent-harness:${initSkillName
 export const pnpmSkillRef = (invocation: string): string =>
 	`\`${invocation}\` (pnpm install: \`pnpm-${commandInvocation}-${invocation.slice(invocation.indexOf(':') + 1)}\`)`
 
+export const enhanceSkillInvocation = '/buddy-agent-harness:enhance'
+
 export const initSkillRef: string = pnpmSkillRef(initSkillInvocation)
+export const enhanceSkillRef: string = pnpmSkillRef(enhanceSkillInvocation)
 export const repairSkillRef: string = pnpmSkillRef(repairSkillInvocation)
 
 /** Where the user authors the golden MCP server set, named in every MCP repair that points at it. */
@@ -647,24 +654,33 @@ const nonstandardTable: Record<NonstandardProblem, RepairRow> = {
 
 export const nonstandardRepairs: readonly Repair[] = repairsOf(nonstandardTable)
 
-/** Who offers every worktree repair, named the same way in each row. */
+/** Who offers every worktree repair but the guidance, named the same way in each row. */
 const worktreeOffer = `${initSkillRef} offers it`
 
 const worktreeTable: Record<WorktreeProblem, RepairRow> = {
+	'worktrees-in-repository': {
+		detail:
+			'this agent worktree is inside the repository, so it carries the repository config, and a tool exclusion meant to skip nested worktrees matches every file in it',
+		repair: ({ file }) => ({
+			command: '',
+			instruction: `once no session works in it, move ${file} out of the repository to a sibling \`<repository>.worktrees/\` directory with \`git worktree move\`, and keep agents creating worktrees there — ${enhanceSkillRef} offers the Agent worktrees guidance`,
+		}),
+		skillRepair: () => `run ${enhanceSkillRef}, which offers the Agent worktrees guidance`,
+	},
 	'worktrees-untracked': {
 		detail:
 			'.claude/worktrees/ is not git-ignored, so every agent worktree Claude Code creates there shows up as untracked in git status',
 		repair: ({ file }) => ({ command: '', instruction: `add \`.claude/worktrees/\` to ${file} — ${worktreeOffer}` }),
 		skillRepair: () => `run ${initSkillRef}, which offers the .gitignore line`,
 	},
-	'worktrees-scanned': {
+	'worktrees-self-ignored': {
 		detail:
-			'this config does not exclude .claude/worktrees, so the tool walks into each agent worktree, a whole checkout with its own config, and Biome stops on the nested root configuration',
+			'this config excludes .claude/worktrees, and an agent worktree under .claude/worktrees/ carries the same config, so inside one every file matches the exclusion and Biome processes nothing',
 		repair: ({ file }) => ({
 			command: '',
-			instruction: `add \`"!**/.claude/worktrees"\` to \`files.includes\` in ${file} — ${worktreeOffer}`,
+			instruction: `remove the \`.claude/worktrees\` exclusion from ${file} and set \`"vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true }\`, so Biome skips the worktrees through the \`.gitignore\` rule instead — ${worktreeOffer}`,
 		}),
-		skillRepair: () => `run ${initSkillRef}, which offers the exclusion`,
+		skillRepair: () => `run ${initSkillRef}, which offers the replacement`,
 	},
 	'worktree-base-unset': {
 		detail:
@@ -808,7 +824,7 @@ Every \`problem\` name routes to exactly one page. Load the page for the finding
 | \`references/configuration.md\` | a finding about the configuration around the bridges rather than a bridge |
 | \`references/mcp.md\` | any finding whose path is an MCP locator — **always** before acting on a credential finding |
 | \`references/nonstandard.md\` | a finding about configuration only one harness can read |
-| \`references/worktrees.md\` | a finding about the agent worktrees Claude Code creates under \`.claude/worktrees/\` |
+| \`references/worktrees.md\` | a finding about where Claude Code puts agent worktrees, or what breaks them |
 | \`references/harnesses/<name>.md\` | the paths and files one named harness uses |
 
 ## Rules
@@ -1112,15 +1128,19 @@ Hooks, LSP settings, and output styles are not covered yet. Their event names an
 
 # Agent worktree findings
 
-Claude Code runs a session started with \`--worktree\`, and a subagent isolated in a worktree, in a git worktree under \`.claude/worktrees/<name>/\` inside the repository. That place is by design, and no setting moves it. These findings are what a repository needs so the worktrees there do no harm. \`doctor\` checks them only where a \`.claude\` directory exists.
+Claude Code runs a session started with \`--worktree\`, and a subagent isolated in a worktree, in a git worktree under \`.claude/worktrees/<name>/\` inside the repository. Each one is a whole checkout, config files included, so a tool exclusion that keeps the main checkout from scanning \`.claude/worktrees\` also matches every file of the worktree itself. \`doctor\` checks these findings only where a \`.claude\` directory exists.
 
 ${repairTable(worktreeRepairs)}
 
-None of these is a fault in a file the owner wrote, and none is a \`repair\` correction. Each is an offer the \`init-buddy-agent-harness\` skill makes, one at a time, and writes only on approval.
+Each is an offer, written only on approval: \`enhance\` offers the Agent worktrees guidance, which has agents create worktrees in a sibling \`<repository>.worktrees/\` directory instead, and \`init-buddy-agent-harness\` offers each of the other lines, one at a time.
+
+\`worktrees-in-repository\` is reported once per worktree found under \`.claude/worktrees/\`. Moving one is safe only when no session is working in it, so ask before running \`git worktree move\`; the finding carries no command.
 
 \`worktree-base-unset\` is a choice, not an error. The default branch suits agents given unrelated tasks; \`"head"\` suits agents asked to build on the branch in front of them. Put the trade-off to the owner, and report an explicit \`"fresh"\` as their answer rather than as a finding — \`doctor\` already does.
 
-\`worktrees-scanned\` is checked for Biome only, the one tool with a confirmed failure. A repository whose ESLint, Prettier, knip, or TypeScript configuration walks the tree can hit the same thing; the skill looks for those when it makes the offer.
+\`worktrees-untracked\` stays a backstop with the guidance in place: an agent that skips it, or a session started with \`--worktree\`, still lands under \`.claude/worktrees/\`.
+
+\`worktrees-self-ignored\` is checked for Biome only, the tool whose exclusion is confirmed to match a worktree's own files. The skill also offers to remove the same exclusion from ESLint, Prettier, knip, and TypeScript configuration, where an earlier version of the skill added it.
 `,
 		},
 		...harnessRegistry.map((harness) => harnessPage(harness, initReferences.has(harness.name))),

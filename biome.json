@@ -1,6 +1,7 @@
 {
 	"$schema": "https://biomejs.dev/schemas/2.5.7/schema.json",
 	"extends": ["@repobuddy/biome/recommended"],
+	"vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
 	"files": {
 		"includes": [
 			"!.github/renovate.json",
@@ -12,8 +13,7 @@
 			"!**/.astro",
 			"!**/.turbo",
 			"!.github/scripts/min-release-age.mjs",
-			"!packages/buddy-agent-harness/skills/*/scripts/*.mjs",
-			"!**/.claude/worktrees"
+			"!packages/buddy-agent-harness/skills/*/scripts/*.mjs"
 		]
 	}
 }

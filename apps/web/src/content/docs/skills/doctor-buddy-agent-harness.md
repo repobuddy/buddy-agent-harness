@@ -57,7 +57,7 @@ Where the repository keeps a [golden MCP server set](/agent-configuration/mcp-se
 
 ## Agent worktree findings
 
-In a repository with a `.claude/` directory, the command reports a missing `.gitignore` rule, a Biome config that does not exclude `.claude/worktrees`, and an unset `worktree.baseRef`. The skill passes each to [`init`](/skills/init-buddy-agent-harness/#agent-worktree-offers), which offers it. `worktree-base-unset` is a choice, so put the trade-off to the owner. [Agent Worktrees](/agent-configuration/agent-worktrees/) is the home for all three.
+In a repository with a `.claude/` directory, the command reports each agent worktree inside the repository, a missing `.gitignore` rule, a Biome config whose `.claude/worktrees` exclusion matches a worktree's own files, and an unset `worktree.baseRef`. The skill passes a worktree inside the repository to [`enhance`](/skills/enhance/#agent-worktrees), which offers the guidance that keeps new ones out, and each other finding to [`init`](/skills/init-buddy-agent-harness/#agent-worktree-offers), which offers it. `worktree-base-unset` is a choice, so put the trade-off to the owner. [Agent Worktrees](/agent-configuration/agent-worktrees/) is the home for all four.
 
 ## What it will not do
 

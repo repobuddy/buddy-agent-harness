@@ -39,7 +39,7 @@ Every run reports, whichever way it went: what it read, the verdict for each add
 
 ## Where an addition goes
 
-Each addition says where it belongs. One about the repository belongs in its `AGENTS.md`. Delegation, List identifiers, Session scope, and References as links all describe how the agent works, and that holds in every repository you open, so the skill recommends your global instruction file first, names this repository's `AGENTS.md` as the alternative, and asks which one to write.
+Each addition says where it belongs. One about the repository belongs in its `AGENTS.md`. Delegation, List identifiers, Session scope, References as links, and Agent worktrees all describe how the agent works, and that holds in every repository you open, so the skill recommends your global instruction file first, names this repository's `AGENTS.md` as the alternative, and asks which one to write.
 
 | Destination | Reaches | Costs |
 | --- | --- | --- |
@@ -268,4 +268,22 @@ This section has no retired wording, so `references/references-as-links.history.
 
 ### Agent worktrees
 
-`enhance` does not offer Claude Code's agent-worktree settings. They are lines in `.gitignore`, a tool config, and `.claude/settings.json`, not guidance in `AGENTS.md`, and [`init`](/skills/init-buddy-agent-harness/#agent-worktree-offers) is the one skill that offers them. `enhance` writes only the root `AGENTS.md` and, where you pick it, `~/.agents/AGENTS.md`. [Agent Worktrees](/agent-configuration/agent-worktrees/) is the home for the reasons.
+A `## Agent worktrees` section, on where the agent creates a git worktree:
+
+```markdown wrap
+## Agent worktrees
+
+Create a git worktree outside the repository, in a sibling directory named after it: `git worktree add -b <branch> ../<repo>.worktrees/<name> HEAD`, where `<repo>` is the repository's directory name. Branch from `HEAD` unless told to start elsewhere, so the work builds on the commit in front of you.
+
+Do not use a built-in worktree isolation that creates the worktree inside the repository, such as Claude Code's `isolation: "worktree"`, which uses `.claude/worktrees/`. A worktree inside the repository carries the repository's own config, so a tool exclusion meant to skip nested worktrees matches every file in it, and its pre-commit hook fails.
+
+To isolate a subagent, create its worktree this way first and tell it to work in that path.
+```
+
+Claude Code puts its own agent worktrees under `.claude/worktrees/` inside the repository, and no setting moves them. Each is a whole checkout carrying the repository's config. A tool exclusion of `.claude/worktrees` that keeps the main checkout from scanning them matches every file inside one, so Biome processes nothing, exits 1, and the pre-commit hook blocks every commit the agent makes there. Telling the agent to create worktrees in a sibling directory keeps them out of the repository. The sibling `<repo>.worktrees/` layout is the one other worktree tools already use, and `doctor` names the same directory when it reports a worktree inside the repository.
+
+An ignore of `.claude/worktrees/`, in `.gitignore` or in a tool's config, does not count as covering this subject: it accounts for worktrees inside the repository without moving them.
+
+`enhance` does not offer Claude Code's agent-worktree settings themselves. They are lines in `.gitignore`, a tool config, and `.claude/settings.json`, not guidance in `AGENTS.md`, and [`init`](/skills/init-buddy-agent-harness/#agent-worktree-offers) offers them. [Agent Worktrees](/agent-configuration/agent-worktrees/) is the home for the reasons.
+
+This section has no retired wording, so `references/agent-worktrees.history.md` is empty and an existing section is compared against the current text. No harness scores this wording, so where the skill cannot tell whose words a section is, it offers you two answers instead of three.

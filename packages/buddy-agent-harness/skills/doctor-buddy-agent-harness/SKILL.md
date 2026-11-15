@@ -58,7 +58,7 @@ Every `problem` name routes to exactly one page. Load the page for the finding i
 | `references/configuration.md` | a finding about the configuration around the bridges rather than a bridge |
 | `references/mcp.md` | any finding whose path is an MCP locator — **always** before acting on a credential finding |
 | `references/nonstandard.md` | a finding about configuration only one harness can read |
-| `references/worktrees.md` | a finding about the agent worktrees Claude Code creates under `.claude/worktrees/` |
+| `references/worktrees.md` | a finding about where Claude Code puts agent worktrees, or what breaks them |
 | `references/harnesses/<name>.md` | the paths and files one named harness uses |
 
 ## Rules

@@ -175,8 +175,10 @@ once it holds a finding belongs to that skill's spec.
   or only one side changed a field.
 - **R29** (UC1, E12) Neither rendering of any other MCP fault names a skill: a field both sides changed, a change no
   baseline can place, a file that does not parse, or a credential written literally or committed.
-- **R32** (UC1, E17) Both renderings of every agent-worktree fault name the `init-buddy-agent-harness` skill, and
-  neither names the `enhance` skill or the `repair` skill.
+- **R32** (UC1, E17) Both renderings of every agent-worktree fault other than a worktree inside the repository name the
+  `init-buddy-agent-harness` skill, and neither names the `enhance` skill or the `repair` skill.
+- **R33** (UC1, E18) Both renderings of the fault for an agent worktree inside the repository name the `enhance`
+  skill, and neither names the `init-buddy-agent-harness` skill or the `repair` skill.
 - **R31** (UC1, E14) No rendering of a global-instructions fault names a skill.
 - **R24** (UC1, E12, E13, E14) A consumer reports a finding whose skill rendering names no skill for a
   person and hands it to no repairing skill.
