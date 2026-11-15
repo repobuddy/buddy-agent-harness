@@ -51,7 +51,7 @@ Offer this repository's `AGENTS.md` as the alternative, and name what each one b
 
 The project file is the right pick for one reason and it is worth stating: a team's agents read the repository, not the maintainer's home directory. Where the owner wants the guidance to reach contributors, `AGENTS.md` is the only lever, and the duplicate copy is what that costs.
 
-This skill writes the root `AGENTS.md` and nothing else, so a global placement is **handed over, not made**: give the text and the path, say it goes at the end of that file, and stop there.
+Ask which of the two the owner wants, leading with the global file. Where they pick it, write the text at the end of `~/.agents/AGENTS.md` on that yes, as step 5 of the skill says; never without it.
 
 ## Do not edit it
 
