@@ -123,8 +123,8 @@ describe('initializeHarnesses', () => {
 	it('preflights every conflict before writing and replaces them only with --force', () => {
 		const root = repository()
 		mkdirSync(join(root, '.windsurf'), { recursive: true })
-		mkdirSync(join(root, '.claude', 'skills', 'review'), { recursive: true })
-		writeFileSync(join(root, '.claude', 'skills', 'review', 'SKILL.md'), 'custom')
+		mkdirSync(join(root, '.claude'), { recursive: true })
+		writeFileSync(join(root, '.claude', 'skills'), 'custom')
 
 		expect(() => initializeHarnesses({ root })).toThrow(/\.claude\/skills/)
 		expect(existsSync(join(root, '.windsurf', 'skills'))).toBe(false)
@@ -150,8 +150,8 @@ describe('initializeHarnesses', () => {
 
 	it('reports the conflict it was told to leave alone rather than failing the run', () => {
 		const root = repository()
-		mkdirSync(join(root, '.windsurf', 'skills'), { recursive: true })
-		writeFileSync(join(root, '.windsurf', 'skills', 'theirs.md'), 'theirs')
+		mkdirSync(join(root, '.windsurf'), { recursive: true })
+		writeFileSync(join(root, '.windsurf', 'skills'), 'theirs')
 		mkdirSync(join(root, '.claude', 'skills'), { recursive: true })
 		writeFileSync(join(root, '.claude', 'skills', 'ours.md'), 'ours')
 

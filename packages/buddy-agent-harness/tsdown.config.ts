@@ -56,6 +56,7 @@ export default defineConfig([
 	...skillScriptConfig('doctor'),
 	...skillScriptConfig('init'),
 	...skillScriptConfig('mcp'),
+	...skillScriptConfig('sync'),
 ])
 
 /**

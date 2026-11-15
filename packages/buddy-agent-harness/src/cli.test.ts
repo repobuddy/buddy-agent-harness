@@ -4,6 +4,8 @@ import { fileURLToPath } from 'node:url'
 import { cli } from 'clibuilder'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { defaultFormat, rootCommand, run } from './cli.ts'
+import { syncSkillCopies } from './copy-sync/copy-sync.ts'
+import { syncCommand } from './copy-sync/sync.command.ts'
 import { buildDoctorReport, doctorCommand } from './diagnose-bridges/doctor.command.ts'
 import { governanceCommand } from './governance-overrides/governance.command.ts'
 import * as publicApi from './index.ts'
@@ -99,21 +101,51 @@ describe('run', () => {
 		await expect(run(['node', 'buddy-agent-harness', 'doctor'])).resolves.toBe(1)
 	})
 
-	it('writes the failure to stderr, not to the stream the report is parsed from', async () => {
+	it('answers a throw clibuilder did not handle with a coded error on stdout, and nothing on stderr', async () => {
 		stubApp(vi.fn(async () => Promise.reject(new Error('bad options'))))
 
-		await run(['node', 'buddy-agent-harness', 'doctor'])
+		await expect(run(['node', 'buddy-agent-harness', 'doctor'])).resolves.toBe(1)
 
-		expect(stderr).toHaveBeenCalledWith('error: bad options\n')
-		expect(stdout).not.toHaveBeenCalled()
+		const written = stdout.mock.calls.map(([chunk]) => String(chunk)).join('')
+		expect(written).toContain('error: bad options')
+		expect(written).toContain('code: command-failed')
+		expect(written).toContain('help')
+		expect(stderr).not.toHaveBeenCalled()
 	})
 
-	it('still reports a failure it cannot read a message from', async () => {
-		stubApp(vi.fn(async () => Promise.reject('bad options')))
+	it.each([['--format', 'json'], ['--format=json']])(
+		'writes that error in the format the caller asked for (%s)',
+		async (...format) => {
+			stubApp(vi.fn(async () => Promise.reject(new Error('bad options'))))
 
-		await run(['node', 'buddy-agent-harness', 'doctor'])
+			await run(['node', 'buddy-agent-harness', 'doctor', ...format])
 
-		expect(stderr).toHaveBeenCalledWith('error: Invalid command.\n')
+			const answer = JSON.parse(stdout.mock.calls.map(([chunk]) => String(chunk)).join(''))
+			expect(answer).toEqual({ error: 'bad options', code: 'command-failed', help: [expect.stringMatching(/\S/)] })
+		},
+	)
+
+	it.each([
+		['an unsupported format', ['--format', 'yaml']],
+		['no format value', ['--format']],
+	])('falls back to the default format when given %s', async (_case, format) => {
+		stubApp(vi.fn(async () => Promise.reject(new Error('bad options'))))
+
+		await run(['node', 'buddy-agent-harness', 'doctor', ...format])
+
+		expect(stdout.mock.calls.map(([chunk]) => String(chunk)).join('')).toContain('code: command-failed')
+	})
+
+	it.each([
+		['something that is not an Error', 'bad options'],
+		['an Error with no message', new Error('')],
+	])('still states a reason when the throw is %s', async (_case, thrown) => {
+		stubApp(vi.fn(async () => Promise.reject(thrown)))
+
+		await run(['node', 'buddy-agent-harness', 'doctor', '--format', 'json'])
+
+		const answer = JSON.parse(stdout.mock.calls.map(([chunk]) => String(chunk)).join(''))
+		expect(answer).toMatchObject({ error: 'buddy-agent-harness failed unexpectedly.', code: 'command-failed' })
 	})
 
 	// Runs against the real clibuilder rather than the stub: the code comes from clibuilder's own
@@ -123,12 +155,6 @@ describe('run', () => {
 		mockedCli.mockImplementation(actualCli as typeof cli)
 
 		await expect(run(['node', 'buddy-agent-harness', 'doctor', '--nope'])).resolves.toBe(2)
-	})
-
-	it('returns the usage code when the invocation could not be parsed', async () => {
-		stubApp(vi.fn(async () => Promise.reject(new Error('bad options'))))
-
-		await expect(run(['node', 'buddy-agent-harness', 'doctor'])).resolves.toBe(2)
 	})
 
 	it('neither reads process.argv nor writes process.exitCode', async () => {
@@ -228,6 +254,8 @@ describe('the public entry point', () => {
 		expect(publicApi.doctorCommand).toBe(doctorCommand)
 		expect(publicApi.governanceCommand).toBe(governanceCommand)
 		expect(publicApi.referenceCommand).toBe(referenceCommand)
+		expect(publicApi.syncCommand).toBe(syncCommand)
+		expect(publicApi.syncSkillCopies).toBe(syncSkillCopies)
 		expect(Object.keys(publicApi)).not.toContain('app')
 		expect(Object.values(publicApi)).not.toContainEqual(expect.objectContaining({ parse: expect.any(Function) }))
 	})
@@ -250,12 +278,15 @@ describe('the process boundary', () => {
 			'skills/enhance/scripts/doctor.mjs',
 			'skills/init-buddy-agent-harness/scripts/doctor.mjs',
 			'skills/init-buddy-agent-harness/scripts/init.mjs',
+			'skills/init-buddy-agent-harness/scripts/sync.mjs',
 			'skills/repair/scripts/doctor.mjs',
 			'skills/repair/scripts/mcp.mjs',
+			'skills/repair/scripts/sync.mjs',
 			// The sources the bundles above are built from, not a second writer of their own.
 			'src/skill-scripts/doctor.ts',
 			'src/skill-scripts/init.ts',
 			'src/skill-scripts/mcp.ts',
+			'src/skill-scripts/sync.ts',
 		])
 	})
 })

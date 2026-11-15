@@ -8,7 +8,7 @@ Each worktree is a whole checkout inside the repository, config files included. 
 - **Tools that walk the tree find each worktree's config.** Biome stops with "Found a nested root configuration, but there's already a root configuration", and a pre-commit hook running it fails every commit until the worktrees are gone. ESLint, Prettier, knip, and a tsconfig `include` walk the same tree.
 - **Agent worktrees branch from the default branch.** Unless `worktree.baseRef` is `"head"`, a subagent asked to build on a feature branch starts from `main` without that branch's commits, and its work comes back as merge conflicts.
 
-Two offers follow. Make them only where Claude Code is in use: a `.claude/` directory exists, or the owner enabled Claude Code in this run. Each is offered on its own, and the owner's answer to one decides nothing about the other.
+Two offers follow. Make them only where Claude Code is in use: a `.claude/` directory exists, or the owner named Claude Code in this run. Claude Code is enabled by default, and that alone does not count. Each is offered on its own, and the owner's answer to one decides nothing about the other.
 
 ## P1: ignore the worktree directory
 

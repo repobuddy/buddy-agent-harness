@@ -8,11 +8,11 @@
 | `missing` | no bridge at this path — the harness sees zero project skills | run `/buddy-agent-harness:init-buddy-agent-harness` (pnpm install: `pnpm-buddy-agent-harness-init-buddy-agent-harness`) |
 | `degraded` | expected a directory but found a regular file — checkout without core.symlinks | run `/buddy-agent-harness:init-buddy-agent-harness --copy --force <path>` |
 | `stale` | symlink does not resolve to .agents/skills | run `/buddy-agent-harness:init-buddy-agent-harness --force <path>` |
-| `diverged-bridge` | only the bridge changed since the two last agreed — an agent wrote through the copy | replace .agents/skills with <path> to keep the newer edit, then run `/buddy-agent-harness:init-buddy-agent-harness --force <path>` |
-| `diverged-canonical` | only .agents/skills changed since the two last agreed — the copy is stale | run `/buddy-agent-harness:init-buddy-agent-harness --copy --force <path>` |
-| `diverged-both` | both sides changed since they last agreed — rebuilding would discard one of them | run `git diff --no-index .agents/skills <path>` and reconcile by hand |
-| `diverged-unknown` | contents differ and no commit where they agreed was found — which side moved is unknown | run `git diff --no-index .agents/skills <path>` and reconcile by hand |
-| `unpinned-copy` | tracked copy without the skip-worktree bit — the tree is dirty with content that must not be committed | run `git ls-files -z <path> \| xargs -0 git update-index --skip-worktree` |
+| `diverged-bridge` | only the bridge changed since the two last agreed — an agent wrote through the copy | run `/buddy-agent-harness:repair` (pnpm install: `pnpm-buddy-agent-harness-repair`), which syncs <path> with .agents/skills file by file |
+| `diverged-canonical` | only .agents/skills changed since the two last agreed — the copy is stale | run `/buddy-agent-harness:repair` (pnpm install: `pnpm-buddy-agent-harness-repair`), which syncs <path> with .agents/skills file by file |
+| `diverged-both` | both sides changed since they last agreed — rebuilding would discard one of them | run `/buddy-agent-harness:repair` (pnpm install: `pnpm-buddy-agent-harness-repair`), which syncs <path> with .agents/skills and asks which side wins each file both sides changed |
+| `diverged-unknown` | contents differ and no commit where they agreed was found — which side moved is unknown | run `/buddy-agent-harness:repair` (pnpm install: `pnpm-buddy-agent-harness-repair`), which syncs <path> with .agents/skills and asks which side wins each file that differs |
+| `unpinned-copy` | tracked copy without both parts of copy protection — git still shows its changes, or would add its files to a commit | run `/buddy-agent-harness:repair` (pnpm install: `pnpm-buddy-agent-harness-repair`), which puts both parts of copy protection on <path> |
 
 Substitute the reported bridge path for `<path>`.
 

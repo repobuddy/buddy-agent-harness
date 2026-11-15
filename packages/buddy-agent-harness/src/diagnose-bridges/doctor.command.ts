@@ -9,31 +9,47 @@ import { diagnoseMcp } from '../diagnose-mcp/diagnose-mcp.ts'
 import { diagnoseNonstandard } from '../diagnose-nonstandard/diagnose-nonstandard.ts'
 import { diagnoseWorktrees } from '../diagnose-worktrees/diagnose-worktrees.ts'
 import { referenceLayers } from '../references/references.ts'
-import { type DiagnoseResult, diagnoseBridges } from './diagnose-bridges.ts'
-import { commandInvocation, type DoctorProblem, type RepairAction } from './doctor-guidance.ts'
+import { type BridgeFinding, type DiagnoseResult, diagnoseBridges } from './diagnose-bridges.ts'
+import {
+	commandInvocation,
+	type DoctorProblem,
+	type RepairAction,
+	type UnloadableSkillCause,
+} from './doctor-guidance.ts'
 import { GitBridgeState } from './git-bridge-state.ts'
 
 export type DoctorReference = Pick<ReferenceListLayerRow, 'name' | 'tier' | 'path'> & { status: string }
+
+/**
+ * One finding with its own repair on the row, so a consumer pairs the two without matching against
+ * `help`. Every key is always emitted — `cause` and `command` empty where there is none — since an
+ * optional key would break TOON's tabular form.
+ */
+export type DoctorFinding = {
+	path: string
+	/** Routed on by a caller, rather than `detail` prose. */
+	problem: DoctorProblem
+	/** Which cause an `unloadable-skill` finding was raised for; empty for every other problem. */
+	cause: UnloadableSkillCause | ''
+	detail: string
+} & RepairAction
 
 export type DoctorReport = {
 	bin: string
 	bridges: DiagnoseResult['bridges']
 	instructions: DiagnoseResult['instructions']
 	globalInstructions: DiagnoseResult['globalInstructions']
+	harnessInUse: DiagnoseResult['harnessInUse']
 	/**
 	 * References the managed, project, and user tiers hold, with the status `reference list` gives;
 	 * reported rather than diagnosed, since a reference is a choice, not a fault.
 	 */
 	references: DoctorReference[] | string
 	divergence?: DiagnoseResult['divergence']
+	findings: DoctorFinding[] | string
 	/**
-	 * The repair is lifted out into `help`; `problem` stays on the row so a caller routes without
-	 * parsing `detail` prose.
-	 */
-	findings: { path: string; problem: DoctorProblem; detail: string }[] | string
-	/**
-	 * One entry per distinct repair; `command` is always emitted, empty when there is none — an
-	 * optional key would break TOON's tabular form.
+	 * Each distinct repair once, as a summary of the findings' own; `command` is always emitted, empty
+	 * when there is none — an optional key would break TOON's tabular form.
 	 */
 	help?: RepairAction[]
 }
@@ -48,7 +64,7 @@ export function buildDoctorReport(
 	configuration: ConfigurationFinding[] = [],
 	held: DoctorReference[] = [],
 ): DoctorReport {
-	const findings = [...result.findings, ...configuration]
+	const findings: (BridgeFinding | ConfigurationFinding)[] = [...result.findings, ...configuration]
 	const references = held.length ? held : '0 references — no layer outside the plugin tier holds one'
 	// Counted together so a reader doesn't add up two numbers to learn that nothing is wrong.
 	if (!findings.length) {
@@ -59,6 +75,7 @@ export function buildDoctorReport(
 			bridges: result.bridges,
 			instructions: result.instructions,
 			globalInstructions: result.globalInstructions,
+			harnessInUse: result.harnessInUse,
 			references,
 			findings: `0 problems found — ${bridges} and the configuration around them is current`,
 		}
@@ -69,9 +86,17 @@ export function buildDoctorReport(
 		bridges: result.bridges,
 		instructions: result.instructions,
 		globalInstructions: result.globalInstructions,
+		harnessInUse: result.harnessInUse,
 		references,
 		...(result.divergence.length ? { divergence: result.divergence } : {}),
-		findings: findings.map(({ path, problem, detail }) => ({ path, problem, detail })),
+		findings: findings.map((finding) => ({
+			path: finding.path,
+			problem: finding.problem,
+			cause: ('cause' in finding && finding.cause) || '',
+			detail: finding.detail,
+			command: finding.repair.command,
+			instruction: finding.repair.instruction,
+		})),
 		// Deduped on the whole pair: several findings often share one repair, and repeating it
 		// reads as more work than there is.
 		help: [

@@ -768,3 +768,35 @@ Status values: `confirmed`, `contested`, `thin`. Confidence: high / medium / low
 - **Confidence**: high on the directory; the instruction file is the one the docs place in that directory (E-COPILOT-05)
 - **Source**: a reproducible local test with Copilot CLI 1.0.91 (the launcher; it ran the 1.0.90 package); the bundled JS is unreadable, so no code excerpt
 - **Notes**: An empty `HOME` directory holding `.copilot/copilot-instructions.md`, and a working directory holding a `copilot-instructions.md` of its own, then, from the working directory, `HOME=<home> COPILOT_HOME= copilot -p "hi" --log-level all --log-dir <logs>`. It stopped at "No authentication information found", but first wrote `config.json`, `session-state/`, and `installed-plugins/` under `<home>/.copilot/`, and nothing into the working directory. The control, `COPILOT_HOME=<dir>` with a fresh `HOME`, wrote the same three under `<dir>` and created no `<home>/.copilot`, so the test tells the two apart. An empty value falls back to `$HOME/.copilot`, as Codex's does (E-CODEX-06) and unlike Claude Code's (E-CC-20).
+
+## E-COPILOT-07 — Which Copilot surfaces read `.github/copilot-instructions.md`, and which also read `AGENTS.md`
+
+- **Date**: 2026-11-15
+- **Status**: confirmed
+- **Confidence**: high on the matrix; the page is the vendor's own and says the matrix changes ("currently not supported by all Copilot features")
+- **Source**: Support for different types of custom instructions — https://docs.github.com/en/copilot/reference/custom-instructions-support — official docs; Adding repository custom instructions for GitHub Copilot — https://docs.github.com/en/copilot/how-tos/configure-custom-instructions/add-repository-instructions; Custom instructions in VS Code — https://code.visualstudio.com/docs/copilot/customization/custom-instructions
+- **Notes**: Each cell is a bullet on the support page: "Repository-wide instructions (using the .github/copilot-instructions.md file)" and "Agent instructions (using AGENTS.md, CLAUDE.md or GEMINI.md files)". The VS Code docs add "The harness determines which instruction files it reads." and that `AGENTS.md` "is a cross-agent format".
+
+  | Surface | Reads `copilot-instructions.md` | Reads `AGENTS.md` |
+  |---|---|---|
+  | github.com Copilot Chat | yes | no |
+  | github.com cloud agent | yes | yes |
+  | github.com code review | yes | yes (also `REVIEW.md`) |
+  | VS Code Copilot Chat | yes | yes ("using an `AGENTS.md` file" only, not `CLAUDE.md` or `GEMINI.md`) |
+  | VS Code cloud agent | yes | yes |
+  | VS Code code review | yes | no |
+  | Visual Studio Chat | yes | no |
+  | Visual Studio code review | yes | no |
+  | JetBrains Chat | yes | no |
+  | JetBrains cloud agent | yes | yes |
+  | JetBrains code review | yes | no |
+  | Xcode Chat | yes | no |
+  | Xcode cloud agent | yes | yes |
+  | Xcode code review | yes | no |
+  | Eclipse Chat | yes | no |
+  | Eclipse cloud agent | yes | yes |
+  | Eclipse code review | no ("Custom instructions are currently not supported.") | no |
+  | Copilot CLI | yes | yes |
+
+  The `add-repository-instructions` page, for the github.com surfaces, says code review "reads repository custom instructions, agent instructions, and agent skills from the head branch".
+- **Why it matters here**: `init-buddy-agent-harness` may offer to delete a consolidated `.github/copilot-instructions.md` only once every reader reads `AGENTS.md`. Today the readers that would lose the file's content are github.com Copilot Chat, Visual Studio (Chat and code review), VS Code code review, and Chat or code review in JetBrains, Xcode, and Eclipse; the skill must name them, and must not rely on the matrix staying fixed.

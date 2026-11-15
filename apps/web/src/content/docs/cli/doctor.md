@@ -52,19 +52,19 @@ globalInstructions[1]{harness,path,kind,status}:
 references[2]{name,tier,path,status}:
   testing,repo,~/code/acme/.agents/references/testing.md,used
   testing,user,~/.agents/references/testing.md,shadowed by repo (replace)
-findings[4]{path,problem,detail}:
-  .claude/skills,degraded,expected a directory but found a regular file — checkout without core.symlinks
-  .windsurf/skills,missing,no bridge at this path — the harness sees zero project skills
-  .gemini/settings.json,instructions-missing,no instruction bridge at this path — the harness reads none of AGENTS.md
-  CLAUDE.md,instructions-shadowing,this file suppresses the AGENTS.md beside it — the harness reads this instead, and none of AGENTS.md
+findings[4]{path,problem,cause,detail,command,instruction}:
+  .claude/skills,degraded,"",expected a directory but found a regular file — checkout without core.symlinks,buddy-agent-harness init --copy --force .claude/skills,run `buddy-agent-harness init --copy --force .claude/skills` to rebuild .claude/skills as a real directory
+  .windsurf/skills,missing,"",no bridge at this path — the harness sees zero project skills,buddy-agent-harness init,run `buddy-agent-harness init` to create the bridge at .windsurf/skills
+  .gemini/settings.json,instructions-missing,"",no instruction bridge at this path — the harness reads none of AGENTS.md,"","hand .gemini/settings.json to `/buddy-agent-harness:init-buddy-agent-harness` (pnpm install: `pnpm-buddy-agent-harness-init-buddy-agent-harness`), which writes the bridge into it"
+  CLAUDE.md,instructions-shadowing,"","this file suppresses the AGENTS.md beside it — the harness reads this instead, and none of AGENTS.md","","hand CLAUDE.md to `/buddy-agent-harness:init-buddy-agent-harness` (pnpm install: `pnpm-buddy-agent-harness-init-buddy-agent-harness`), which consolidates what it says into AGENTS.md, or adds an @AGENTS.md import above it where the file has to stay"
 help[4]{command,instruction}:
-  buddy-agent-harness init --copy --force,run `buddy-agent-harness init --copy --force` to rebuild .claude/skills as a real directory
+  buddy-agent-harness init --copy --force .claude/skills,run `buddy-agent-harness init --copy --force .claude/skills` to rebuild .claude/skills as a real directory
   buddy-agent-harness init,run `buddy-agent-harness init` to create the bridge at .windsurf/skills
-  "","hand .gemini/settings.json to `/buddy-agent-harness:init-buddy-agent-harness`, which writes the bridge into it"
-  "","hand CLAUDE.md to `/buddy-agent-harness:init-buddy-agent-harness`, which consolidates what it says into AGENTS.md, or adds an @AGENTS.md import above it where the file has to stay"
+  "","hand .gemini/settings.json to `/buddy-agent-harness:init-buddy-agent-harness` (pnpm install: `pnpm-buddy-agent-harness-init-buddy-agent-harness`), which writes the bridge into it"
+  "","hand CLAUDE.md to `/buddy-agent-harness:init-buddy-agent-harness` (pnpm install: `pnpm-buddy-agent-harness-init-buddy-agent-harness`), which consolidates what it says into AGENTS.md, or adds an @AGENTS.md import above it where the file has to stay"
 ```
 
-Each `help` row is one repair, in two columns. `command` is a shell invocation that runs exactly as given and **completes** the repair; `instruction` is the same repair in the imperative. `command` is empty when no single invocation does the job — the last two rows above, where the repair is the [`init-buddy-agent-harness` skill](/skills/init-buddy-agent-harness/)'s judgment and nothing in a shell does it.
+Each finding carries its own repair on its row, in two columns. `command` is a shell invocation that runs exactly as given and **completes** the repair; `instruction` is the same repair in the imperative. `command` is empty when no single invocation does the job — the last two rows above, where the repair is the [`init-buddy-agent-harness` skill](/skills/init-buddy-agent-harness/)'s judgment and nothing in a shell does it. `cause` is set only on an `unloadable-skill` finding, which has one repair per cause. `help` lists each distinct repair once, as a summary of the rows' own.
 
 That emptiness is the whole point of the split: a caller can tell an executable repair from an instruction without parsing prose. A runnable invocation quoted *inside* an `instruction` is not a command either — `diverged-both` names `git diff --no-index` because the diff shows you what differs, not because running it reconciles anything.
 
@@ -117,18 +117,18 @@ references:
   testing  user     ~/.agents/references/testing.md            shadowed by repo (replace)
 
 findings:
-  path                   problem                 detail
-  .claude/skills         degraded                expected a directory but found a regular file — checkout without core.symlinks
-  .windsurf/skills       missing                 no bridge at this path — the harness sees zero project skills
-  .gemini/settings.json  instructions-missing    no instruction bridge at this path — the harness reads none of AGENTS.md
-  CLAUDE.md              instructions-shadowing  this file suppresses the AGENTS.md beside it — the harness reads this instead, and none of AGENTS.md
+  path                   problem                 cause  detail                                                                                                command                                                 instruction
+  .claude/skills         degraded                       expected a directory but found a regular file — checkout without core.symlinks                        buddy-agent-harness init --copy --force .claude/skills  run `buddy-agent-harness init --copy --force .claude/skills` to rebuild .claude/skills as a real directory
+  .windsurf/skills       missing                        no bridge at this path — the harness sees zero project skills                                         buddy-agent-harness init                                run `buddy-agent-harness init` to create the bridge at .windsurf/skills
+  .gemini/settings.json  instructions-missing           no instruction bridge at this path — the harness reads none of AGENTS.md                                                                                      hand .gemini/settings.json to `/buddy-agent-harness:init-buddy-agent-harness` (pnpm install: `pnpm-buddy-agent-harness-init-buddy-agent-harness`), which writes the bridge into it
+  CLAUDE.md              instructions-shadowing         this file suppresses the AGENTS.md beside it — the harness reads this instead, and none of AGENTS.md                                                          hand CLAUDE.md to `/buddy-agent-harness:init-buddy-agent-harness` (pnpm install: `pnpm-buddy-agent-harness-init-buddy-agent-harness`), which consolidates what it says into AGENTS.md, or adds an @AGENTS.md import above it where the file has to stay
 
 help:
-  command                                  instruction
-  buddy-agent-harness init --copy --force  run `buddy-agent-harness init --copy --force` to rebuild .claude/skills as a real directory
-  buddy-agent-harness init                 run `buddy-agent-harness init` to create the bridge at .windsurf/skills
-                                           hand .gemini/settings.json to `/buddy-agent-harness:init-buddy-agent-harness`, which writes the bridge into it
-                                           hand CLAUDE.md to `/buddy-agent-harness:init-buddy-agent-harness`, which consolidates what it says into AGENTS.md, or adds an @AGENTS.md import above it where the file has to stay
+  command                                                 instruction
+  buddy-agent-harness init --copy --force .claude/skills  run `buddy-agent-harness init --copy --force .claude/skills` to rebuild .claude/skills as a real directory
+  buddy-agent-harness init                                run `buddy-agent-harness init` to create the bridge at .windsurf/skills
+                                                          hand .gemini/settings.json to `/buddy-agent-harness:init-buddy-agent-harness` (pnpm install: `pnpm-buddy-agent-harness-init-buddy-agent-harness`), which writes the bridge into it
+                                                          hand CLAUDE.md to `/buddy-agent-harness:init-buddy-agent-harness` (pnpm install: `pnpm-buddy-agent-harness-init-buddy-agent-harness`), which consolidates what it says into AGENTS.md, or adds an @AGENTS.md import above it where the file has to stay
 ```
 
 `init` accepts the same flag.
@@ -246,16 +246,31 @@ divergence[1]{path,direction}:
 
 | Direction | What happened | What to do |
 | --- | --- | --- |
-| `bridge` | An agent wrote through the copy. | Propagate the bridge into `.agents/skills`, then re-run `init --force`. |
-| `canonical` | Ordinary staleness. | Refresh the bridge with `init --copy --force`. |
-| `both` | A genuine conflict. | Reconcile by hand. Rebuilding discards one side's edit. |
-| `unknown` | No commit where the two agreed was found. | Reconcile by hand. |
+| `bridge` | An agent wrote through the copy. | `buddy-agent-harness sync` carries the edits into `.agents/skills`. |
+| `canonical` | Ordinary staleness. | `buddy-agent-harness sync` carries the newer `.agents/skills` into the copy. |
+| `both` | A genuine conflict. | `sync` carries every file one side changed and leaves each file both sides changed for you to pick a side, through `sync --resolve`. |
+| `unknown` | No commit where the two agreed was found. | `sync` leaves every differing file for you to pick a side. |
+
+Every direction takes the same repair, the file-by-file [`sync`](/cli/sync/), and none takes a rebuild: rebuilding the copy from `.agents/skills` discards the edits made through it, and the reverse discards the edits made in `.agents/skills`. A program that runs every `command` a report offers therefore rebuilds no diverged bridge. The `both` and `unknown` findings offer no `command`, since the sync cannot finish them until you pick a side for each file it leaves. The [`repair` skill](/skills/repair/) owns all four, and asks you for each pick.
 
 ## The skip-worktree bit
 
-Running `init --copy --force` over a tracked symlink turns the bridge from a symlink blob into a directory of real files, leaving a permanently dirty tree holding something that must never be committed. `git update-index --skip-worktree` is the intended tool for a tracked path deliberately different on one machine.
+Running `init --copy` over a tracked symlink turns the bridge from a symlink blob into a directory of real files. Without help, that leaves a permanently dirty tree holding something that must never be committed. A copy over a tracked path therefore needs copy protection, in two parts:
 
-It is a hint rather than a guarantee, because some checkout and merge operations clear it. So `doctor` verifies the bit is still set on a tracked copy rather than assuming it, and reports the path as dirty-and-uncommittable if it has been lost.
+- **skip-worktree** on the copy's tracked entries in the index: `git update-index --skip-worktree` is git's tool for a tracked path deliberately different on one machine, and it stops `git status` and `git add` from seeing changes to those entries.
+- **the bridge path in the clone's own exclude file**, as a line such as `/.claude/skills/`. When the committed bridge is a symlink, the copy's files are untracked paths under it, which skip-worktree does not cover and `git add -A` would still add. The exclude file is the one `git rev-parse --git-path info/exclude` names: `.git/info/exclude` in a plain clone, and the file the clone shares in a linked worktree. It is never the committed `.gitignore`, so the rule stays on this machine.
+
+A copy with only one part is not protected. [`init`](/cli/init/) puts both in place on every copy it writes, syncs, or keeps at a tracked path, and so does [`sync`](/cli/sync/#copy-protection).
+
+The skip-worktree bit is a hint rather than a guarantee, because some checkout and merge operations clear it. So `doctor` checks both parts on every tracked copy that holds what `.agents/skills` holds, rather than assuming them, and reports an `unpinned-copy` finding while either is missing. Its repair puts both in place for that copy and changes no file's content.
+
+To undo the protection, such as before committing a change to the copy on purpose, remove both parts:
+
+```sh
+git ls-files -z .claude/skills | xargs -0 git update-index --no-skip-worktree
+```
+
+and delete the `/.claude/skills/` line from the exclude file `git rev-parse --git-path info/exclude` names.
 
 ## Configuration findings
 
@@ -298,7 +313,7 @@ Where a repository has a `.claude/` directory, `doctor` reports what it lacks fo
 | `worktrees-scanned` | an exclusion of `.claude/worktrees` in `biome.json`, so Biome walks into each worktree's own config |
 | `worktree-base-unset` | `worktree.baseRef` in `.claude/settings.json`, so agent worktrees branch from the default branch |
 
-An explicit `"fresh"` is the owner's choice and is not reported. Each finding is offered by the [`init-buddy-agent-harness` skill](/skills/init-buddy-agent-harness/), or by [`enhance`](/skills/enhance/#agent-worktrees) where the repository already has an `AGENTS.md`. Why each one matters is on [Agent Worktrees](/agent-configuration/agent-worktrees/).
+An explicit `"fresh"` is the owner's choice and is not reported. Each finding is offered by the [`init-buddy-agent-harness` skill](/skills/init-buddy-agent-harness/). Why each one matters is on [Agent Worktrees](/agent-configuration/agent-worktrees/).
 
 ## Exit codes
 
@@ -308,7 +323,7 @@ It exits `1` when the diagnosis itself fails, and `2` on a usage error: an unkno
 
 ## No `--fix`
 
-Every repair is already expressible with existing `init` flags, and each finding names the exact command — or says plainly, with an empty `command`, that no command does it:
+Every repair is already expressible with an existing command, and each finding names the exact one — or says plainly, with an empty `command`, that no command does it:
 
 | Finding | Repair |
 | --- | --- |
@@ -316,8 +331,9 @@ Every repair is already expressible with existing `init` flags, and each finding
 | `missing` | `buddy-agent-harness init` |
 | `degraded` | `buddy-agent-harness init --copy --force` |
 | `stale` | `buddy-agent-harness init --force` |
-| `diverged` | Depends on the direction; see above. |
-| `unpinned-copy` | `git ls-files -z <path> \| xargs -0 git update-index --skip-worktree` |
+| `diverged-bridge`, `diverged-canonical` | `buddy-agent-harness sync` |
+| `diverged-both`, `diverged-unknown` | `buddy-agent-harness sync`, then a pick for each file it leaves, through `sync --resolve`; no `command` |
+| `unpinned-copy` | `git ls-files -z <path> \| xargs -0 git update-index --skip-worktree && echo /<path>/ >> "$(git rev-parse --git-path info/exclude)"` |
 | `no-instructions` | `/buddy-agent-harness:init-buddy-agent-harness` |
 | `instructions-missing` | `/buddy-agent-harness:init-buddy-agent-harness` |
 | `instructions-unbridged` | `/buddy-agent-harness:init-buddy-agent-harness` |
@@ -325,8 +341,8 @@ Every repair is already expressible with existing `init` flags, and each finding
 | `instructions-superseded` | `/buddy-agent-harness:init-buddy-agent-harness`, which offers the removal |
 | `instructions-unreadable` | Fix the JSON by hand, then `/buddy-agent-harness:init-buddy-agent-harness` |
 
-`no-canonical` is the one finding that is not about a bridge: `.agents/skills` itself is absent, so nothing can resolve into it. `no-instructions` is its counterpart for `AGENTS.md`. `unpinned-copy` is the [skip-worktree](#the-skip-worktree-bit) case, and it is reported against a bridge whose status is still `ok`.
+`no-canonical` is the one finding that is not about a bridge: `.agents/skills` itself is absent, so nothing can resolve into it. `no-instructions` is its counterpart for `AGENTS.md`. `unpinned-copy` is the [copy protection](#the-skip-worktree-bit) case, and it is reported against a bridge whose status is still `ok`.
 
 Every instruction repair names a skill rather than a shell command, because no shell command does the job. They carry an empty `command` for exactly that reason, so a caller never has to work out which rows it can run.
 
-A `--fix` flag would reimplement that logic and drift from it. On the Windows case it would likely reimplement it wrongly: the naive repair is to recreate the link, which is precisely the operation that already failed on that machine. `--copy` is the branch that works there. The three-way divergence case has no safe automatic answer at all.
+A `--fix` flag would reimplement that logic and drift from it. On the Windows case it would likely reimplement it wrongly: the naive repair is to recreate the link, which is precisely the operation that already failed on that machine. `--copy` is the branch that works there. The three-way divergence case has no safe automatic answer at all, which is why `sync` leaves each such file for a pick.

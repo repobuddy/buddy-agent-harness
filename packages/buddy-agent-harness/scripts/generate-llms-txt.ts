@@ -28,6 +28,7 @@ const outputs = [join(packageRoot, 'llms.txt'), join(webRoot, 'public', 'llms.tx
 /** Command path, space-separated below the root, to its docs page slug. */
 const commandPages: Record<string, string | null> = {
 	init: 'cli/init',
+	sync: 'cli/sync',
 	doctor: 'cli/doctor',
 	mcp: 'cli/mcp',
 	'mcp project': 'cli/mcp',
@@ -59,6 +60,8 @@ const skillPages: Record<string, string | null> = {
 /** Module `src/index.ts` re-exports from, to the docs page covering it. */
 const libraryPages: Record<string, string | null> = {
 	'./cli.ts': 'library/init',
+	'./copy-sync/copy-sync.ts': 'library/init',
+	'./copy-sync/sync.command.ts': 'library/init',
 	'./diagnose-bridges/diagnose-bridges.ts': 'library/doctor',
 	'./diagnose-bridges/diagnose-global-instructions.ts': 'library/doctor',
 	'./diagnose-bridges/diagnose-instructions.ts': 'library/doctor',

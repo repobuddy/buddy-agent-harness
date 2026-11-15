@@ -45,6 +45,6 @@ For ESLint, Prettier, knip, and tsconfig, the skills offer the equivalent exclus
 
 ## Who offers and who reports
 
-[`init-buddy-agent-harness`](/skills/init-buddy-agent-harness/) and [`enhance`](/skills/enhance/#agent-worktrees) offer each line on its own, only where Claude Code is in use, and write only what you approve. A decline writes nothing.
+[`init-buddy-agent-harness`](/skills/init-buddy-agent-harness/) offers each line on its own, only where Claude Code is in use, and write only what you approve. A decline writes nothing.
 
 [`doctor`](/cli/doctor/#agent-worktree-findings) reports what is still missing, in a repository with a `.claude/` directory.

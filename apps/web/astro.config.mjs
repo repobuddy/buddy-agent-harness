@@ -104,6 +104,7 @@ export default defineConfig({
 					items: [
 						{ label: 'Overview', slug: 'cli' },
 						{ label: 'init', slug: 'cli/init' },
+						{ label: 'sync', slug: 'cli/sync' },
 						{ label: 'doctor', slug: 'cli/doctor' },
 						{ label: 'mcp', slug: 'cli/mcp' },
 						{ label: 'dep-plugins', slug: 'cli/dep-plugins' },

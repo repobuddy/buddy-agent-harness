@@ -8,23 +8,25 @@ import {
 } from '../harness-registry/harness-registry.ts'
 import type { InstructionBridge } from '../harness-registry/instruction-bridge.ts'
 import type { BridgeFinding } from './diagnose-bridges.ts'
-import { type GlobalInstructionProblem, repairFor } from './doctor-guidance.ts'
+import { type GlobalInstructionProblem, repairFor, userRulesAt } from './doctor-guidance.ts'
 
 /** What is at a harness's user-scope instruction file. */
 export type GlobalInstructionKind = 'import' | 'symlink' | 'file' | 'none'
 /**
  * `missing`: no file, so the harness loads no user instructions at all; `unbridged`: a file that
  * loads its own content and not the global one; `overridden`: a file the harness reads in its place,
- * such as Codex's `AGENTS.override.md`, that does not load the global one either.
+ * such as Codex's `AGENTS.override.md`, that does not load the global one either; `cannot-load-file`:
+ * the harness keeps its user rules outside a file, so no file can load the global one.
  */
-export type GlobalInstructionStatus = 'ok' | 'missing' | 'unbridged' | 'overridden'
+export type GlobalInstructionStatus = 'ok' | 'missing' | 'unbridged' | 'overridden' | 'cannot-load-file'
 
 export type GlobalInstructionReport = {
 	harness: HarnessName
 	/**
 	 * The harness's user-scope instruction file, written from `~` so the report is publishable, or
 	 * from the variable that moved it, such as `$CODEX_HOME`, or from `.` where an empty variable moved
-	 * it to the directory the harness starts in.
+	 * it to the directory the harness starts in. For a harness that keeps its user rules outside a
+	 * file, where those rules are, named by the harness since there is no path.
 	 */
 	path: string
 	kind: GlobalInstructionKind
@@ -141,6 +143,13 @@ export function diagnoseGlobalInstructions(
 
 	for (const harness of harnessRegistry) {
 		const user = harness.user
+		if (harness.userRules !== undefined) {
+			if (!preferred.includes(harness.name) && !(user !== undefined && isDirectory(join(home, user.detect)))) continue
+			const path = userRulesAt(harness.name)
+			rows.push({ harness: harness.name, path, kind: 'none', status: 'cannot-load-file' })
+			if (hasGlobal) findings.push(finding(path, 'global-instructions-no-file', cli))
+			continue
+		}
 		const bridge = user?.instructionBridge
 		if (!user || !bridge) continue
 		const moved = base(user, env, start)

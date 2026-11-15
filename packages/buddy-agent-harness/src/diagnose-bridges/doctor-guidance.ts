@@ -1,6 +1,6 @@
 import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import type { Harness, HarnessScope } from '../harness-registry/harness-registry.ts'
+import type { Harness, HarnessName, HarnessScope } from '../harness-registry/harness-registry.ts'
 import { globalInstructions, harnessRegistry } from '../harness-registry/harness-registry.ts'
 import type { InstructionBridge } from '../harness-registry/instruction-bridge.ts'
 import type { NonstandardKind } from '../harness-registry/nonstandard-artifact.ts'
@@ -28,6 +28,13 @@ export type BridgeProblem =
  * corrects a file the user already wrote.
  */
 export type ConfigurationFault = 'deprecated-harness' | 'ignored-bridge' | 'unread-local-override' | 'unloadable-skill'
+
+/**
+ * Why a harness will not load a skill. Both share the `unloadable-skill` name, and each has its own
+ * repair: frontmatter that does not parse is corrected, while a missing description is the skill
+ * author's to write.
+ */
+export type UnloadableSkillCause = 'unparsable-frontmatter' | 'missing-description'
 
 /**
  * Every way the golden MCP server set and a harness's copy of it can disagree, plus the two
@@ -71,10 +78,11 @@ export type GlobalInstructionProblem =
 	| 'global-instructions-unbridged'
 	| 'global-instructions-overridden'
 	| 'global-instructions-emptied'
+	| 'global-instructions-no-file'
 
 /**
  * What a repository lacks for the git worktrees Claude Code creates under `.claude/worktrees/`;
- * each is an offer `init` and `enhance` make, never a fault in a file the owner wrote.
+ * each is an offer the `init-buddy-agent-harness` skill makes, never a fault in a file the owner wrote.
  */
 export type WorktreeProblem = 'worktrees-untracked' | 'worktrees-scanned' | 'worktree-base-unset'
 
@@ -100,6 +108,8 @@ export type RepairAction = {
 
 export type Repair = {
 	problem: DoctorProblem
+	/** Which cause of an `unloadable-skill` fault this repair is for; absent for every other problem. */
+	cause?: UnloadableSkillCause
 	/** What `doctor` prints in the `findings` row for this problem. */
 	detail: string
 	/**
@@ -199,7 +209,6 @@ export const pnpmSkillRef = (invocation: string): string =>
 	`\`${invocation}\` (pnpm install: \`pnpm-${commandInvocation}-${invocation.slice(invocation.indexOf(':') + 1)}\`)`
 
 export const initSkillRef: string = pnpmSkillRef(initSkillInvocation)
-export const enhanceSkillRef: string = pnpmSkillRef('/buddy-agent-harness:enhance')
 export const repairSkillRef: string = pnpmSkillRef(repairSkillInvocation)
 
 /** Where the user authors the golden MCP server set, named in every MCP repair that points at it. */
@@ -240,48 +249,53 @@ const bridgeTable: Record<BridgeProblem, RepairRow> = {
 	},
 	'diverged-bridge': {
 		detail: 'only the bridge changed since the two last agreed — an agent wrote through the copy',
-		// No command: `init` only ever builds a bridge from the canonical directory, so no flag
-		// promotes the bridge's content back into it.
 		repair: ({ file }, cli) => ({
-			command: '',
-			instruction: `replace .agents/skills with ${file} to keep the newer edit, then run \`${cli} init --force ${file}\``,
+			command: `${cli} sync`,
+			instruction: `run \`${cli} sync\` to carry the edits made through ${file} into .agents/skills, file by file`,
 		}),
-		skillRepair: ({ file }) =>
-			`replace .agents/skills with ${file} to keep the newer edit, then run \`${initSkillInvocation} --force ${file}\``,
+		skillRepair: ({ file }) => `run ${repairSkillRef}, which syncs ${file} with .agents/skills file by file`,
 	},
 	'diverged-canonical': {
 		detail: 'only .agents/skills changed since the two last agreed — the copy is stale',
 		repair: ({ file }, cli) => ({
-			command: `${cli} init --copy --force ${file}`,
-			instruction: `run \`${cli} init --copy --force ${file}\` to rebuild ${file} from the newer .agents/skills`,
+			command: `${cli} sync`,
+			instruction: `run \`${cli} sync\` to carry the newer .agents/skills into ${file}, file by file`,
 		}),
-		skillRepair: ({ file }) => `run \`${initSkillInvocation} --copy --force ${file}\``,
+		skillRepair: ({ file }) => `run ${repairSkillRef}, which syncs ${file} with .agents/skills file by file`,
 	},
+	// No command for the next two: the sync leaves each file both sides changed until someone picks a
+	// side for it, so no single invocation completes the repair.
 	'diverged-both': {
 		detail: 'both sides changed since they last agreed — rebuilding would discard one of them',
-		repair: ({ file }) => ({
+		repair: ({ file }, cli) => ({
 			command: '',
-			instruction: `reconcile .agents/skills with ${file} by hand — rebuilding would discard one of them; \`git diff --no-index .agents/skills ${file}\` shows what differs`,
+			instruction: `run \`${cli} sync\`, which carries every file only one side changed and leaves each file both sides changed; pick a side for each of those after \`git diff --no-index .agents/skills ${file}\` shows what differs, and pass the picks as \`${cli} sync --resolve ${file}/<file>=<canonical|copy>\``,
 		}),
-		skillRepair: ({ file }) => `run \`git diff --no-index .agents/skills ${file}\` and reconcile by hand`,
+		skillRepair: ({ file }) =>
+			`run ${repairSkillRef}, which syncs ${file} with .agents/skills and asks which side wins each file both sides changed`,
 	},
 	'diverged-unknown': {
 		detail: 'contents differ and no commit where they agreed was found — which side moved is unknown',
-		repair: ({ file }) => ({
+		repair: ({ file }, cli) => ({
 			command: '',
-			instruction: `reconcile .agents/skills with ${file} by hand — which side moved is unknown; \`git diff --no-index .agents/skills ${file}\` shows what differs`,
+			instruction: `run \`${cli} sync\`, which leaves every file that differs, since no commit where the two agreed was found; pick a side for each after \`git diff --no-index .agents/skills ${file}\` shows what differs, and pass the picks as \`${cli} sync --resolve ${file}/<file>=<canonical|copy>\``,
 		}),
-		skillRepair: ({ file }) => `run \`git diff --no-index .agents/skills ${file}\` and reconcile by hand`,
+		skillRepair: ({ file }) =>
+			`run ${repairSkillRef}, which syncs ${file} with .agents/skills and asks which side wins each file that differs`,
 	},
 	'unpinned-copy': {
-		detail: 'tracked copy without the skip-worktree bit — the tree is dirty with content that must not be committed',
+		detail:
+			'tracked copy without both parts of copy protection — git still shows its changes, or would add its files to a commit',
 		// Reads paths back from git rather than assuming them: the tracked entry is a symlink on a
 		// Windows checkout, but individual files in a committed copy.
-		repair: ({ file }) => ({
-			command: `git ls-files -z ${file} | xargs -0 git update-index --skip-worktree`,
-			instruction: `run \`git ls-files -z ${file} | xargs -0 git update-index --skip-worktree\` to restore the skip-worktree bit`,
-		}),
-		skillRepair: ({ file }) => `run \`git ls-files -z ${file} | xargs -0 git update-index --skip-worktree\``,
+		repair: ({ file }) => {
+			const command = `git ls-files -z ${file} | xargs -0 git update-index --skip-worktree && echo /${file}/ >> "$(git rev-parse --git-path info/exclude)"`
+			return {
+				command,
+				instruction: `run \`${command}\` to set skip-worktree on the copy's tracked files and list ${file} in the clone's own exclude file`,
+			}
+		},
+		skillRepair: ({ file }) => `run ${repairSkillRef}, which puts both parts of copy protection on ${file}`,
 	},
 }
 
@@ -381,6 +395,20 @@ function stepAt(file: string, keepContent: boolean): string {
 	return `${keep}${globalBridgeStep(bridge, file)}`
 }
 
+/**
+ * Where a report names the user rules of a harness that keeps them outside a file: there is no path,
+ * so the harness's name stands in for one.
+ */
+export const userRulesAt = (harness: HarnessName): string => `${harness} user rules`
+
+/** The paste step for one reported harness, naming the reported place itself when no harness has it. */
+function pasteStepAt(file: string): string {
+	const place =
+		harnessRegistry.find((harness) => harness.userRules !== undefined && userRulesAt(harness.name) === file)
+			?.userRules ?? file
+	return `paste what ${globalFile} says into ${place}, and paste it again whenever that file changes, since a pasted copy does not follow it`
+}
+
 /** Outside the repository, so never written: a repair is a step handed to the user. */
 const handOver = 'hand the user this step, since nothing here writes outside the repository:'
 
@@ -414,11 +442,17 @@ const globalInstructionTable: Record<GlobalInstructionProblem, RepairRow> = {
 		}),
 		skillRepair: () => 'hand the user the step of unsetting that variable; write nothing yourself',
 	},
+	'global-instructions-no-file': {
+		detail: `the harness keeps its user rules outside a file, so no file can load ${globalFile} for it — its text reaches the harness only pasted in`,
+		repair: ({ file }) => ({ command: '', instruction: `${handOver} ${pasteStepAt(file)}` }),
+		skillRepair: () =>
+			"hand the user the step of pasting the global file's text into that harness's user rules; write nothing yourself",
+	},
 }
 
 export const globalInstructionRepairs: readonly Repair[] = repairsOf(globalInstructionTable)
 
-const configurationTable: Record<ConfigurationFault, RepairRow> = {
+const configurationTable: Record<Exclude<ConfigurationFault, 'unloadable-skill'>, RepairRow> = {
 	'deprecated-harness': {
 		detail:
 			'a projection under a harness name that has been superseded — the replacement reads .agents/skills natively and needs no projection at all',
@@ -444,17 +478,33 @@ const configurationTable: Record<ConfigurationFault, RepairRow> = {
 		}),
 		skillRepair: () => `run ${repairSkillRef}`,
 	},
-	'unloadable-skill': {
-		detail: 'frontmatter that does not parse, or no description — either one makes a harness skip the skill outright',
+}
+
+const unloadableSkillTable: Record<UnloadableSkillCause, RepairRow> = {
+	'unparsable-frontmatter': {
+		detail:
+			'the frontmatter block does not parse, such as a description holding an unquoted colon — a harness skips the skill outright',
 		repair: ({ file }) => ({
 			command: '',
-			instruction: `quote the description in ${file}, or add one — ${repairSkillRef} offers the correction`,
+			instruction: `make the frontmatter in ${file} parse, such as by quoting the description — ${repairSkillRef} offers the correction`,
 		}),
 		skillRepair: () => `run ${repairSkillRef}`,
 	},
+	'missing-description': {
+		detail: 'no frontmatter block, or no description with a value — a harness skips the skill outright',
+		repair: ({ file }) => ({
+			command: '',
+			instruction: `have the skill's author write a description in ${file} — only they can say when it applies, so ${repairSkillRef} reports it and writes none`,
+		}),
+		skillRepair: () => `run ${repairSkillRef}, which reports that the skill's author must write a description`,
+	},
 }
 
-export const configurationRepairs: readonly Repair[] = repairsOf(configurationTable)
+const unloadableSkillRepairs: readonly Repair[] = (
+	Object.entries(unloadableSkillTable) as [UnloadableSkillCause, RepairRow][]
+).map(([cause, row]) => ({ problem: 'unloadable-skill', cause, ...row }))
+
+export const configurationRepairs: readonly Repair[] = [...repairsOf(configurationTable), ...unloadableSkillRepairs]
 
 /**
  * Every repair names a locator rather than a file, and the locator never carries a credential
@@ -598,14 +648,14 @@ const nonstandardTable: Record<NonstandardProblem, RepairRow> = {
 export const nonstandardRepairs: readonly Repair[] = repairsOf(nonstandardTable)
 
 /** Who offers every worktree repair, named the same way in each row. */
-const worktreeOffer = `${initSkillRef} offers it, or ${enhanceSkillRef} where the repository already has an AGENTS.md`
+const worktreeOffer = `${initSkillRef} offers it`
 
 const worktreeTable: Record<WorktreeProblem, RepairRow> = {
 	'worktrees-untracked': {
 		detail:
 			'.claude/worktrees/ is not git-ignored, so every agent worktree Claude Code creates there shows up as untracked in git status',
 		repair: ({ file }) => ({ command: '', instruction: `add \`.claude/worktrees/\` to ${file} — ${worktreeOffer}` }),
-		skillRepair: () => `run ${initSkillRef} or ${enhanceSkillRef}, which offers the .gitignore line`,
+		skillRepair: () => `run ${initSkillRef}, which offers the .gitignore line`,
 	},
 	'worktrees-scanned': {
 		detail:
@@ -614,7 +664,7 @@ const worktreeTable: Record<WorktreeProblem, RepairRow> = {
 			command: '',
 			instruction: `add \`"!**/.claude/worktrees"\` to \`files.includes\` in ${file} — ${worktreeOffer}`,
 		}),
-		skillRepair: () => `run ${initSkillRef} or ${enhanceSkillRef}, which offers the exclusion`,
+		skillRepair: () => `run ${initSkillRef}, which offers the exclusion`,
 	},
 	'worktree-base-unset': {
 		detail:
@@ -623,7 +673,7 @@ const worktreeTable: Record<WorktreeProblem, RepairRow> = {
 			command: '',
 			instruction: `decide whether agent worktrees should branch from HEAD, and if so set \`"worktree": { "baseRef": "head" }\` in ${file} — ${worktreeOffer}`,
 		}),
-		skillRepair: () => `run ${initSkillRef} or ${enhanceSkillRef}, which explains the trade-off and offers the setting`,
+		skillRepair: () => `run ${initSkillRef}, which explains the trade-off and offers the setting`,
 	},
 }
 
@@ -631,9 +681,9 @@ export const worktreeRepairs: readonly Repair[] = repairsOf(worktreeTable)
 
 /**
  * Annotated over the whole union rather than inferred, so an added problem fails to compile until
- * its section carries it.
+ * its section carries it. `unloadable-skill` is keyed by cause in its own table.
  */
-const doctorTable: Record<DoctorProblem, RepairRow> = {
+const doctorTable: Record<Exclude<DoctorProblem, 'unloadable-skill'>, RepairRow> = {
 	...bridgeTable,
 	...instructionTable,
 	...globalInstructionTable,
@@ -643,11 +693,24 @@ const doctorTable: Record<DoctorProblem, RepairRow> = {
 	...worktreeTable,
 }
 
-export const doctorRepairs: readonly Repair[] = repairsOf(doctorTable)
+export const doctorRepairs: readonly Repair[] = [
+	...bridgeRepairs,
+	...instructionRepairs,
+	...globalInstructionRepairs,
+	...configurationRepairs,
+	...mcpRepairs,
+	...nonstandardRepairs,
+	...worktreeRepairs,
+]
 
-/** The repair for one problem. Total by construction: the table is keyed by the union. */
-export function repairFor(problem: DoctorProblem): Repair {
-	return { problem, ...doctorTable[problem] }
+/**
+ * The repair for one problem, and for `unloadable-skill` the one for its cause, which it cannot do
+ * without. Total by construction: the tables are keyed by the unions.
+ */
+export function repairFor(problem: DoctorProblem, cause?: UnloadableSkillCause): Repair {
+	if (problem !== 'unloadable-skill') return { problem, ...doctorTable[problem] }
+	if (cause === undefined) throw new TypeError('An unloadable-skill repair needs its cause.')
+	return { problem, cause, ...unloadableSkillTable[cause] }
 }
 
 export const doctorSkill = {
@@ -673,7 +736,10 @@ function repairTable(repairs: readonly Repair[]): string {
 	return `| Finding | What it means | Repair |
 | --- | --- | --- |
 ${repairs
-	.map((entry) => `| \`${entry.problem}\` | ${entry.detail} | ${cell(entry.skillRepair({ file: '<path>' }))} |`)
+	.map(
+		(entry) =>
+			`| \`${entry.problem}\`${entry.cause === undefined ? '' : `, cause \`${entry.cause}\``} | ${entry.detail} | ${cell(entry.skillRepair({ file: '<path>' }))} |`,
+	)
 	.join('\n')}`
 }
 
@@ -711,16 +777,18 @@ The command is read-only. It never repairs anything, so it is safe to run at any
 
 \`instructions\` is everything standing between a harness and \`AGENTS.md\`, with a \`status\` of \`ok\`, \`missing\`, \`unbridged\`, \`unreadable\`, \`shadowing\`, or \`superseded\`. The last two are not bridges: they are files that suppress an \`AGENTS.md\` the harness would otherwise read by itself. A separate section because nothing about any of them is shared with \`bridges\`: a different \`kind\`, a different status vocabulary, and a repair that is never a command.
 
-\`globalInstructions\` is the same question one level up: whether each harness installed for this user loads \`${globalFile}\` through its own user-scope file, with a \`status\` of \`ok\`, \`missing\`, \`unbridged\`, or \`overridden\`. No harness reads that file by itself, so text placed there reaches only the harnesses whose row is \`ok\`. The rows are there whether or not the file exists; a finding is raised only when it exists and goes unread.
+\`globalInstructions\` is the same question one level up: whether each harness installed for this user loads \`${globalFile}\` through its own user-scope file, with a \`status\` of \`ok\`, \`missing\`, \`unbridged\`, \`overridden\`, or \`cannot-load-file\` for a harness that keeps its user rules outside a file. No harness reads that file by itself, so text placed there reaches only the harnesses whose row is \`ok\`. The rows are there whether or not the file exists; a finding is raised only when it exists and goes unread. \`harnessInUse\` names the harness this run is under, or \`unknown\` when the environment cannot tell, so you can answer for that harness's row.
 
-\`findings\` explains each problem and carries more than the two sections above: the configuration, MCP, and non-standard findings have no section of their own, because they are about files rather than about bridges. \`help\` carries each repair, one row per distinct repair, with two columns:
+\`findings\` explains each problem and carries more than the sections above: the configuration, MCP, and non-standard findings have no section of their own, because they are about files rather than about bridges. Each finding carries its own repair on its row, in two columns:
 
 - \`command\` — a shell invocation that, run exactly as given, **completes** the repair.
 - \`instruction\` — the same repair in the imperative, always present and complete on its own.
 
+An \`unloadable-skill\` finding also names its \`cause\`, \`unparsable-frontmatter\` or \`missing-description\`, since each has its own repair; \`cause\` is empty on every other finding. \`help\` lists each distinct repair once, as a summary of the findings' own.
+
 \`command\` is empty whenever no single invocation does the job, and that emptiness is the signal: act on \`instruction\` and do not assemble a command out of it. A runnable invocation quoted *inside* an \`instruction\` is not the repair either — \`diverged-both\` names \`git diff --no-index\` because the diff shows you what differs, not because running it reconciles anything. Apply the repair, then re-run \`doctor\`.
 
-Nothing in \`help\` is wrapped.
+No repair is wrapped, on a finding or in \`help\`.
 
 Do not run an \`init\` command yourself. Rebuilding a skills bridge can move skills a user wrote, and rewriting an instruction file touches prose a person authored — both are the \`init-buddy-agent-harness\` skill's judgment, so hand the repair to ${initSkillRef} instead. Every such repair carries an empty \`command\`: a skill invocation has no shell equivalent at all.
 
@@ -745,7 +813,7 @@ Every \`problem\` name routes to exactly one page. Load the page for the finding
 
 ## Rules
 
-- Never repair a \`diverged-both\` or \`diverged-unknown\` bridge by re-running \`init\`. Rebuilding overwrites whichever side holds the newer edit. Reconcile the two directories first.
+- Never repair a \`diverged-*\` bridge by re-running \`init --force\`. Rebuilding overwrites whichever side holds the newer edit. Hand it to ${repairSkillRef}, which syncs the two file by file.
 - Edit skills at \`.agents/skills/<name>/SKILL.md\`. Editing through a bridge is only safe when that bridge is a symlink.
 - Do not add bridges to \`.gitignore\`. An untracked bridge swallows a real edit silently.
 - Never repeat a value from a file an \`mcp-literal-secret\` or \`mcp-committed-secret\` finding points at. The report withheld it on purpose, and quoting it back puts it in the transcript anyway.
@@ -961,7 +1029,7 @@ Shadows are reported per directory holding an \`AGENTS.md\`, so a monorepo gets 
 | --- | --- | --- |
 ${globalBridgeRows()}
 
-Cursor keeps its user rules in a settings panel rather than a file, so there is nothing on disk to check; Devin Desktop documents no user-scope path. Neither gets a row.
+Cursor keeps its user rules in a settings panel rather than a file, and Devin Desktop documents no user-scope path, so no file of theirs can load \`${globalFile}\`. Each gets a \`cannot-load-file\` row, named by the harness rather than a path, and, while \`${globalFile}\` exists, a \`global-instructions-no-file\` finding whose step is to paste its text into that harness's user rules. Devin Desktop has no directory to detect it by, so it gets a row only when named with \`--harness\`.
 
 A harness's directory can be moved by a variable: ${relocationList()}. Where one is set and non-empty, the row and the step name the file under it, written from the variable — \`$CODEX_HOME/AGENTS.md\` — so the step works in the shell the user ran \`doctor\` from. Set but empty, it is read the way the harness reads it: as unset for ${emptyRelocationList(false)}, and as the directory the harness starts in for ${emptyRelocationList(true)}.
 
@@ -1048,11 +1116,11 @@ Claude Code runs a session started with \`--worktree\`, and a subagent isolated 
 
 ${repairTable(worktreeRepairs)}
 
-None of these is a fault in a file the owner wrote, and none is a \`repair\` correction. Each is an offer the \`init-buddy-agent-harness\` and \`enhance\` skills make, one at a time, and write only on approval.
+None of these is a fault in a file the owner wrote, and none is a \`repair\` correction. Each is an offer the \`init-buddy-agent-harness\` skill makes, one at a time, and writes only on approval.
 
 \`worktree-base-unset\` is a choice, not an error. The default branch suits agents given unrelated tasks; \`"head"\` suits agents asked to build on the branch in front of them. Put the trade-off to the owner, and report an explicit \`"fresh"\` as their answer rather than as a finding — \`doctor\` already does.
 
-\`worktrees-scanned\` is checked for Biome only, the one tool with a confirmed failure. A repository whose ESLint, Prettier, knip, or TypeScript configuration walks the tree can hit the same thing; the skills look for those when they make the offer.
+\`worktrees-scanned\` is checked for Biome only, the one tool with a confirmed failure. A repository whose ESLint, Prettier, knip, or TypeScript configuration walks the tree can hit the same thing; the skill looks for those when it makes the offer.
 `,
 		},
 		...harnessRegistry.map((harness) => harnessPage(harness, initReferences.has(harness.name))),

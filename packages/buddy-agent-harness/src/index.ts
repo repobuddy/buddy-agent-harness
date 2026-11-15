@@ -24,6 +24,18 @@ export type {
 } from 'cyber-agentkit/commands'
 export { run } from './cli.ts'
 export type {
+	SyncErrorCode,
+	SyncLeft,
+	SyncOptions,
+	SyncOutcome,
+	SyncResolution,
+	SyncResult,
+	SyncSide,
+	SyncWrite,
+} from './copy-sync/copy-sync.ts'
+export { parseResolutions, SyncError, syncSkillCopies } from './copy-sync/copy-sync.ts'
+export { syncCommand } from './copy-sync/sync.command.ts'
+export type {
 	BridgeFinding,
 	BridgeKind,
 	BridgeReport,
@@ -45,7 +57,7 @@ export type {
 	InstructionStatus,
 } from './diagnose-bridges/diagnose-instructions.ts'
 export { diagnoseInstructions } from './diagnose-bridges/diagnose-instructions.ts'
-export type { DoctorReference, DoctorReport } from './diagnose-bridges/doctor.command.ts'
+export type { DoctorFinding, DoctorReference, DoctorReport } from './diagnose-bridges/doctor.command.ts'
 export { buildDoctorReport, doctorCommand } from './diagnose-bridges/doctor.command.ts'
 export type {
 	BridgeProblem,
@@ -56,6 +68,7 @@ export type {
 	InstructionProblem,
 	McpProblem,
 	Repair,
+	UnloadableSkillCause,
 	WorktreeProblem,
 } from './diagnose-bridges/doctor-guidance.ts'
 export {

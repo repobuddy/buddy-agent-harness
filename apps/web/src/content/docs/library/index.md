@@ -21,7 +21,7 @@ import type { InitializeOptions, InitializeResult } from 'buddy-agent-harness'
 
 | Page | Covers |
 | --- | --- |
-| [Init and run](/library/init/) | `run`, the CLI entry point, and `initializeHarnesses` with the `init` command objects |
+| [Init and run](/library/init/) | `run`, the CLI entry point, `initializeHarnesses` with the `init` command objects, and `syncSkillCopies` with `syncCommand` |
 | [References](/library/references/) | `referenceLayers`, `resolveReference`, `listReferences`, `searchReferences`, and `referenceCommand`: reading reference documents through the layered tiers |
 | [MCP and the harness registry](/library/mcp/) | `harnessRegistry`, the MCP server inventory `listMcpServers`, the golden-set check `diagnoseMcp`, and the shared MCP server model |
 | [Doctor](/library/doctor/) | `diagnoseBridges`, `diagnoseInstructions`, `buildDoctorReport`, the `doctor` command object, and the repair tables behind the doctor skill |

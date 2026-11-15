@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { cli } from 'clibuilder'
-import { exitCodes, homeHeader, result } from 'clibuilder/axi'
+import { encode, errorOutput, exitCodes, type Format, formats, homeHeader, result } from 'clibuilder/axi'
+import { syncCommand } from './copy-sync/sync.command.ts'
 import { depPluginsCommand } from './dep-plugins/dep-plugins.command.ts'
 import { diagnoseReport, doctorCommand } from './diagnose-bridges/doctor.command.ts'
 import { governanceCommand } from './governance-overrides/governance.command.ts'
@@ -24,7 +25,15 @@ const version =
 export const rootCommand: { name: string; description: string; commands: readonly [cli.Command, ...cli.Command[]] } = {
 	name: 'buddy-agent-harness',
 	description: 'Initialize agent harness skill compatibility in consumer repositories.',
-	commands: [initCommand, doctorCommand, mcpCommand, depPluginsCommand, referenceCommand, governanceCommand],
+	commands: [
+		initCommand,
+		syncCommand,
+		doctorCommand,
+		mcpCommand,
+		depPluginsCommand,
+		referenceCommand,
+		governanceCommand,
+	],
 }
 
 // A factory, not a module-level constant: `cli()` builds state, and state built at import time
@@ -64,6 +73,15 @@ export function defaultFormat(argv: string[]): 'toon' | 'text' {
 	return group !== undefined && subcommand !== undefined && textByDefault[group]?.includes(subcommand) ? 'text' : 'toon'
 }
 
+/** The format the caller asked for, or the command's default where `--format` names none clibuilder accepts. */
+function callerFormat(argv: string[]): Format {
+	const args = argv.slice(2)
+	const index = args.findIndex((arg) => arg === '--format' || arg.startsWith('--format='))
+	const flag = args[index]
+	const value = flag?.startsWith('--format=') ? flag.slice('--format='.length) : args[index + 1]
+	return formats.find((format) => format === value) ?? defaultFormat(argv)
+}
+
 /**
  * The application boundary: argv in, exit code out — returned rather than written, so a caller that
  * is not the process (a skill launcher, a test) can act on it.
@@ -73,9 +91,17 @@ export async function run(argv: string[]): Promise<number> {
 		const code = await app(defaultFormat(argv)).parse<number | undefined>(argv)
 		return typeof code === 'number' ? code : exitCodes.success
 	} catch (error) {
-		// stderr, not stdout — stdout carries TOON an agent parses; an error there would land
-		// mid-parse.
-		process.stderr.write(`error: ${error instanceof Error ? error.message : 'Invalid command.'}\n`)
-		return exitCodes.usage
+		// A throw clibuilder did not handle still answers as every command's failure does: coded, on
+		// stdout, in the caller's format, so a program parsing stdout never meets one it cannot read.
+		const message = error instanceof Error && error.message ? error.message : `${rootCommand.name} failed unexpectedly.`
+		const report = errorOutput({
+			message,
+			code: 'command-failed',
+			help: [
+				'Re-run the command; if it fails again, report it at https://github.com/repobuddy/buddy-agent-harness/issues with the command you ran.',
+			],
+		})
+		process.stdout.write(`${encode(report, callerFormat(argv))}\n`)
+		return exitCodes.error
 	}
 }

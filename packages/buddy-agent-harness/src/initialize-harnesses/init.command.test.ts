@@ -1,6 +1,12 @@
+import { execFileSync } from 'node:child_process'
+import { mkdirSync, mkdtempSync, realpathSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import type { Format } from 'clibuilder/axi'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { runCommandSync } from '../command-output/run-command.test-helper.ts'
+import { repositoryRoot } from '../copy-sync/copy-sync.ts'
+import { syncCommand } from '../copy-sync/sync.command.ts'
 import { doctorCommand } from '../diagnose-bridges/doctor.command.ts'
 import { governanceCommand } from '../governance-overrides/governance.command.ts'
 import { referenceCommand } from '../references/references.ts'
@@ -51,6 +57,8 @@ describe('init command', () => {
 			skills: 1,
 			references: 0,
 			copied: true,
+			written: [],
+			left: [],
 		})
 
 		run({ copy: true, force: 'true', format: 'json', root: '/workspace' })
@@ -74,14 +82,41 @@ describe('init command', () => {
 			skills: 0,
 			references: 0,
 			copied: false,
+			written: [],
+			left: [],
 		})
 
 		run({ format: 'toon' })
 
 		expect(mockedInitializeHarnesses).toHaveBeenCalledWith({
-			root: process.cwd(),
+			root: repositoryRoot(process.cwd()),
 		})
 		expect(stdout).toHaveBeenCalledWith(expect.stringContaining('copied'))
+	})
+
+	describe('the root it sets up', () => {
+		const temp = () => realpathSync(mkdtempSync(join(tmpdir(), 'init-root-')))
+
+		it('is the repository root when run from a nested directory of a Git repository', () => {
+			const repository = temp()
+			execFileSync('git', ['init', '-q'], { cwd: repository })
+			const nested = join(repository, 'packages', 'app')
+			mkdirSync(nested, { recursive: true })
+			mockedInitializeHarnesses.mockReturnValue({} as ReturnType<typeof initializeHarnesses>)
+
+			run({ root: nested })
+
+			expect(mockedInitializeHarnesses).toHaveBeenCalledWith({ root: repository })
+		})
+
+		it('is a --root outside Git as given', () => {
+			const folder = temp()
+			mockedInitializeHarnesses.mockReturnValue({} as ReturnType<typeof initializeHarnesses>)
+
+			run({ root: folder })
+
+			expect(mockedInitializeHarnesses).toHaveBeenCalledWith({ root: folder })
+		})
 	})
 
 	// Returned rather than written: a caller that is not the process learns of the failure too.
@@ -106,6 +141,8 @@ describe('init command', () => {
 			skills: 0,
 			references: 0,
 			copied: false,
+			written: [],
+			left: [],
 		})
 
 		expect(run({ format: 'json', harness: 'windsurf, codex', root: '/workspace' })).toBe(0)
@@ -131,6 +168,12 @@ describe('init command', () => {
 		expect(addCommand).toHaveBeenCalledWith(harnessCommand)
 		// The mounted name is what consumers type, so it is pinned here rather than left to the object.
 		expect(harnessCommand.name).toBe('agent-harness')
-		expect(harnessCommand.commands).toEqual([initCommand, doctorCommand, referenceCommand, governanceCommand])
+		expect(harnessCommand.commands).toEqual([
+			initCommand,
+			syncCommand,
+			doctorCommand,
+			referenceCommand,
+			governanceCommand,
+		])
 	})
 })

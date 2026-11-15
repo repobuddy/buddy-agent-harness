@@ -1,7 +1,9 @@
 import type { cli } from 'clibuilder'
 import { command, t } from 'clibuilder'
 import { result } from 'clibuilder/axi'
-import { fail, parseHarnessOption } from '../command-output/command-output.ts'
+import { parseHarnessOption } from '../command-output/command-output.ts'
+import { repositoryRoot } from '../copy-sync/copy-sync.ts'
+import { syncCommand, syncFailure } from '../copy-sync/sync.command.ts'
 import { doctorCommand } from '../diagnose-bridges/doctor.command.ts'
 import { governanceCommand } from '../governance-overrides/governance.command.ts'
 import { referenceCommand } from '../references/references.ts'
@@ -13,7 +15,8 @@ export const initCommand: cli.Command = command({
 	description: 'Set up canonical agent skills for the harnesses already enabled in a repository.',
 	options: {
 		root: {
-			description: 'Repository or package directory. Defaults to the current directory.',
+			description:
+				'Directory to set up; inside a Git repository, its repository root is used. Defaults to the current directory.',
 			type: t.string().optional(),
 		},
 		harness: {
@@ -26,7 +29,7 @@ export const initCommand: cli.Command = command({
 		},
 		force: {
 			description:
-				'Replace conflicting target skill directories. Names the targets to replace, comma-separated (e.g. .claude/skills); given alone it replaces every conflicting target.',
+				'Replace conflicting targets and existing copies instead of syncing them. Names the targets to replace, comma-separated (e.g. .claude/skills); given alone it replaces every one.',
 			type: t.string().optional(),
 		},
 	},
@@ -42,14 +45,14 @@ export const initCommand: cli.Command = command({
 			const harnesses = parseHarnessOption(args.harness)
 			return result(
 				initializeHarnesses({
-					root: args.root ?? process.cwd(),
+					root: repositoryRoot(args.root ?? process.cwd()),
 					...(harnesses.length ? { harnesses } : {}),
 					...(args.copy === undefined ? {} : { copy: args.copy }),
 					...(args.force === undefined ? {} : { force: parseForce(args.force) }),
 				}),
 			)
 		} catch (error) {
-			return fail(error, 'Harness initialization failed.')
+			return syncFailure(error, 'Harness initialization failed.')
 		}
 	},
 })
@@ -59,7 +62,7 @@ export const initCommand: cli.Command = command({
 export const harnessCommand: cli.Command = command({
 	name: 'agent-harness',
 	description: 'Commands for configuring agent harness compatibility.',
-	commands: [initCommand, doctorCommand, referenceCommand, governanceCommand],
+	commands: [initCommand, syncCommand, doctorCommand, referenceCommand, governanceCommand],
 })
 
 export function activate({ addCommand }: { addCommand(command: typeof harnessCommand): void }): void {

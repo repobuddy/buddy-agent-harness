@@ -2,6 +2,7 @@ import { mkdirSync, mkdtempSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
+import type { HarnessName } from '../harness-registry/harness-registry.ts'
 import { diagnoseBridges } from './diagnose-bridges.ts'
 import { diagnoseGlobalInstructions } from './diagnose-global-instructions.ts'
 import { repairFor } from './doctor-guidance.ts'
@@ -22,7 +23,7 @@ function write(root: string, path: string, content: string): void {
 	writeFileSync(join(root, path), content)
 }
 
-function diagnose(root: string, preferred: ('codex' | 'gemini-cli')[] = [], env: NodeJS.ProcessEnv = {}) {
+function diagnose(root: string, preferred: HarnessName[] = [], env: NodeJS.ProcessEnv = {}) {
 	return diagnoseGlobalInstructions(root, preferred, cli, env)
 }
 
@@ -36,9 +37,48 @@ describe('diagnoseGlobalInstructions', () => {
 		expect(diagnose(home([]))).toEqual({ globalInstructions: [], findings: [] })
 	})
 
-	// Cursor's user rules are a settings panel; there is no file to check.
-	it('reports no row for a harness whose user rules are not a file', () => {
-		expect(diagnose(home(['.cursor'])).globalInstructions).toEqual([])
+	// Cursor's user rules are a settings panel; there is no file to check, so the only step is a paste.
+	it('reports a harness whose user rules are not a file as unable to load one, with the paste step', () => {
+		expect(diagnose(home(['.cursor']))).toEqual({
+			globalInstructions: [{ harness: 'cursor', path: 'cursor user rules', kind: 'none', status: 'cannot-load-file' }],
+			findings: [
+				{
+					path: 'cursor user rules',
+					problem: 'global-instructions-no-file',
+					detail: repairFor('global-instructions-no-file').detail,
+					repair: {
+						command: '',
+						instruction: `${handOver} paste what ~/.agents/AGENTS.md says into Cursor's user rules, under Customize → Rules, and paste it again whenever that file changes, since a pasted copy does not follow it`,
+					},
+				},
+			],
+		})
+	})
+
+	it('reports the row without a finding where there is no global file to paste', () => {
+		expect(diagnose(home(['.cursor'], { global: false }))).toEqual({
+			globalInstructions: [{ harness: 'cursor', path: 'cursor user rules', kind: 'none', status: 'cannot-load-file' }],
+			findings: [],
+		})
+	})
+
+	// Devin Desktop documents no user-scope directory, so naming it is the only way it is checked.
+	it('reports Devin Desktop only when named, as unable to load a file', () => {
+		expect(diagnose(home([])).globalInstructions).toEqual([])
+
+		const named = diagnose(home([]), ['devin-desktop'])
+		expect(named.globalInstructions).toEqual([
+			{ harness: 'devin-desktop', path: 'devin-desktop user rules', kind: 'none', status: 'cannot-load-file' },
+		])
+		expect(named.findings.map(({ repair }) => repair.instruction)).toEqual([
+			`${handOver} paste what ~/.agents/AGENTS.md says into Devin Desktop's user rules, and paste it again whenever that file changes, since a pasted copy does not follow it`,
+		])
+	})
+
+	it('reports Cursor when named, even where it is not installed', () => {
+		expect(diagnose(home([]), ['cursor']).globalInstructions).toEqual([
+			{ harness: 'cursor', path: 'cursor user rules', kind: 'none', status: 'cannot-load-file' },
+		])
 	})
 
 	it('reports a harness named on the command line even where it is not installed', () => {

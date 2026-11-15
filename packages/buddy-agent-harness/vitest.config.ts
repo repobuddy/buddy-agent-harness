@@ -18,6 +18,7 @@ export default defineConfig({
 				'src/skill-scripts/init.ts',
 				'src/skill-scripts/mcp.ts',
 				'src/skill-scripts/reference.ts',
+				'src/skill-scripts/sync.ts',
 			],
 			thresholds: {
 				statements: 100,

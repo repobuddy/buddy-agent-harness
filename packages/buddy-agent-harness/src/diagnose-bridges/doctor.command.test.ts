@@ -22,6 +22,7 @@ const healthy: DiagnoseResult = {
 	bridges: [{ harness: 'claude-code', path: '.claude/skills', kind: 'symlink', status: 'ok' }],
 	instructions: [{ harness: 'gemini-cli', path: '.gemini/settings.json', kind: 'settings-entry', status: 'ok' }],
 	globalInstructions: [],
+	harnessInUse: 'unknown',
 	divergence: [],
 	findings: [],
 }
@@ -72,6 +73,7 @@ describe('doctor command', () => {
 			bridges: [{ harness: 'claude-code', path: '.claude/skills', kind: 'file', status: 'degraded' }],
 			instructions: [],
 			globalInstructions: [],
+			harnessInUse: 'unknown',
 			divergence: [],
 			findings: [
 				{
@@ -193,6 +195,7 @@ describe('buildDoctorReport', () => {
 			bridges: healthy.bridges,
 			instructions: [],
 			globalInstructions: [],
+			harnessInUse: 'unknown',
 			references: '0 references — no layer outside the plugin tier holds one',
 			findings: '0 problems found — the 1 bridge resolves and the configuration around them is current',
 		})
@@ -210,7 +213,7 @@ describe('buildDoctorReport', () => {
 		})
 	})
 
-	it('moves each repair into help and keeps findings to the diagnosis and its name', async () => {
+	it('carries each repair on its own finding, and lists each distinct repair once in help', async () => {
 		const report = buildDoctorReport('~/bin/bah', {
 			bridges: [
 				{ harness: 'claude-code', path: '.claude/skills', kind: 'none', status: 'missing' },
@@ -218,6 +221,7 @@ describe('buildDoctorReport', () => {
 			],
 			instructions: [],
 			globalInstructions: [],
+			harnessInUse: 'unknown',
 			divergence: [],
 			findings: [
 				{
@@ -235,10 +239,12 @@ describe('buildDoctorReport', () => {
 			],
 		})
 
-		// `problem` survives into the row so a caller routes on the name rather than on `detail` prose.
+		// `problem` survives into the row so a caller routes on the name rather than on `detail` prose,
+		// and the repair rides with it so no consumer pairs the two by position.
+		const repair = { command: 'bah init', instruction: 'run `bah init` to create the bridge' }
 		expect(report.findings).toEqual([
-			{ path: '.claude/skills', problem: 'missing', detail: 'no bridge at this path' },
-			{ path: '.windsurf/skills', problem: 'missing', detail: 'no bridge at this path' },
+			{ path: '.claude/skills', problem: 'missing', cause: '', detail: 'no bridge at this path', ...repair },
+			{ path: '.windsurf/skills', problem: 'missing', cause: '', detail: 'no bridge at this path', ...repair },
 		])
 		// Deduped on the pair, so two findings about two different paths share one entry while
 		// keeping a row each.
@@ -253,6 +259,7 @@ describe('buildDoctorReport', () => {
 			bridges: [{ harness: 'claude-code', path: '.claude/skills', kind: 'copy', status: 'diverged' }],
 			instructions: [],
 			globalInstructions: [],
+			harnessInUse: 'unknown',
 			divergence: [{ path: '.claude/skills', direction: 'both' }],
 			findings: [
 				{
@@ -287,6 +294,7 @@ describe('buildDoctorReport', () => {
 			bridges: [],
 			instructions: [],
 			globalInstructions: [],
+			harnessInUse: 'unknown',
 			divergence: [],
 			findings: [
 				{
@@ -326,6 +334,7 @@ describe('buildDoctorReport', () => {
 				bridges: [],
 				instructions: [],
 				globalInstructions: [],
+				harnessInUse: 'unknown',
 				divergence: [],
 				findings: [
 					{
@@ -357,6 +366,7 @@ describe('buildDoctorReport', () => {
 			bridges: [],
 			instructions: [],
 			globalInstructions: [],
+			harnessInUse: 'unknown',
 			divergence: [],
 			findings: [
 				{
@@ -372,11 +382,63 @@ describe('buildDoctorReport', () => {
 		expect(encode(report, 'toon')).toContain('help[1]{command,instruction}:')
 	})
 
+	it('carries the cause of an unloadable skill on its finding, and keeps the findings tabular', async () => {
+		const report = buildDoctorReport('~/bin/bah', { ...healthy, findings: [] }, [
+			{
+				path: '.agents/skills/pdf/SKILL.md',
+				problem: 'unloadable-skill',
+				cause: 'missing-description',
+				detail: 'no description',
+				repair: { command: '', instruction: 'have the author write one' },
+			},
+			{
+				path: 'AGENTS.local.md',
+				problem: 'unread-local-override',
+				detail: 'no harness reads this filename',
+				repair: { command: '', instruction: 'move AGENTS.local.md to CLAUDE.local.md' },
+			},
+		])
+
+		expect(report.findings).toEqual([
+			{
+				path: '.agents/skills/pdf/SKILL.md',
+				problem: 'unloadable-skill',
+				cause: 'missing-description',
+				detail: 'no description',
+				command: '',
+				instruction: 'have the author write one',
+			},
+			{
+				path: 'AGENTS.local.md',
+				problem: 'unread-local-override',
+				cause: '',
+				detail: 'no harness reads this filename',
+				command: '',
+				instruction: 'move AGENTS.local.md to CLAUDE.local.md',
+			},
+		])
+		expect(encode(report, 'toon')).toContain('findings[2]{path,problem,cause,detail,command,instruction}:')
+	})
+
+	it('names the harness the run is under, healthy or not', async () => {
+		expect(buildDoctorReport('~/bin/bah', { ...healthy, harnessInUse: 'codex' }).harnessInUse).toBe('codex')
+		expect(
+			buildDoctorReport('~/bin/bah', {
+				...healthy,
+				harnessInUse: 'codex',
+				findings: [
+					{ path: '.claude/skills', problem: 'missing', detail: 'none', repair: { command: '', instruction: 'x' } },
+				],
+			}).harnessInUse,
+		).toBe('codex')
+	})
+
 	it('adds a divergence section only when a bridge has diverged', async () => {
 		const report = buildDoctorReport('~/bin/bah', {
 			bridges: [{ harness: 'claude-code', path: '.claude/skills', kind: 'copy', status: 'diverged' }],
 			instructions: [],
 			globalInstructions: [],
+			harnessInUse: 'unknown',
 			divergence: [{ path: '.claude/skills', direction: 'bridge' }],
 			findings: [
 				{
