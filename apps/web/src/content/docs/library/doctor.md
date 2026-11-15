@@ -58,6 +58,7 @@ for (const finding of result.findings) console.log(finding.problem, finding.repa
 | `bridges` | `BridgeReport[]` | One row per skills bridge |
 | `instructions` | `InstructionReport[]` | One row per instruction bridge and per file that suppresses `AGENTS.md`. Kept out of `bridges` because its `kind` and `status` vocabularies differ and its repair is never a command |
 | `globalInstructions` | `GlobalInstructionReport[]` | One row per harness installed for the user, saying whether its user-scope file loads `~/.agents/AGENTS.md`. Empty when `home` is omitted |
+| `harnessInUse` | `HarnessId \| 'unknown'` | The harness this run is under, as `env` shows it. `'unknown'` when `env` is omitted, or when it matches no harness or more than one |
 | `divergence` | `DivergenceReport[]` | One row per `diverged` bridge, with the side that moved |
 | `findings` | `BridgeFinding[]` | One row per problem, across every section |
 
@@ -84,7 +85,7 @@ What is on disk at a bridge path: a symlink, a directory copy, a regular file, o
 type BridgeStatus = 'ok' | 'missing' | 'degraded' | 'stale' | 'diverged'
 ```
 
-The statuses are described on [`doctor`](/cli/doctor/#output). A tracked copy whose skip-worktree bit was lost is still `ok`; it carries an `unpinned-copy` finding.
+The statuses are described on [`doctor`](/cli/doctor/#output). A tracked copy that lacks either part of [copy protection](/cli/doctor/#the-skip-worktree-bit) is still `ok`; it carries an `unpinned-copy` finding.
 
 ### BridgeFinding
 
@@ -185,7 +186,7 @@ The statuses are described in [Reaching AGENTS.md](/cli/doctor/#reaching-agentsm
 function buildDoctorReport(
 	bin: string,
 	result: DiagnoseResult,
-	configuration?: { path: string; problem: DoctorProblem; detail: string; repair: { command: string; instruction: string } }[],
+	configuration?: { path: string; problem: DoctorProblem; cause?: UnloadableSkillCause; detail: string; repair: { command: string; instruction: string } }[],
 	held?: DoctorReference[],
 ): DoctorReport
 ```
@@ -201,7 +202,7 @@ buildDoctorReport('~/bin/bah', result).findings
 
 The count adds the `bridges` and `instructions` rows together. When `held` is empty, `references` is the sentence `0 references — no layer outside the plugin tier holds one`.
 
-When there are findings, each repair moves into `help`, one entry per distinct pair of `command` and `instruction`, and `divergence` appears when it has rows.
+When there are findings, each row carries its own repair, and `help` lists each distinct pair of `command` and `instruction` once, as a summary. `divergence` appears when it has rows.
 
 ### DoctorReport
 
@@ -213,8 +214,24 @@ When there are findings, each repair moves into `help`, one entry per distinct p
 | `globalInstructions` | `GlobalInstructionReport[]` | Whether each installed harness loads `~/.agents/AGENTS.md` |
 | `references` | `DoctorReference[] \| string` | The references held, or the zero sentence |
 | `divergence` | `DivergenceReport[]` | Present only when there are findings and a bridge diverged |
-| `findings` | `{ path: string; problem: DoctorProblem; detail: string }[] \| string` | The findings without their repairs, or the zero sentence |
-| `help` | `{ command: string; instruction: string }[]` | Present only when there are findings. One entry per distinct repair. `command` is always present, empty when no command does the repair |
+| `harnessInUse` | `HarnessId \| 'unknown'` | The harness this run is under, as its environment shows it, or `'unknown'` |
+| `findings` | `DoctorFinding[] \| string` | One row per finding, each with its own repair, or the zero sentence |
+| `help` | `{ command: string; instruction: string }[]` | Present only when there are findings. Each distinct repair once, as a summary of the rows' own. `command` is always present, empty when no command does the repair |
+
+### DoctorFinding
+
+```ts
+type DoctorFinding = {
+	path: string
+	problem: DoctorProblem
+	cause: UnloadableSkillCause | ''
+	detail: string
+	command: string
+	instruction: string
+}
+```
+
+One finding with its repair on the row, so a caller pairs the two without matching against `help`. Every key is always present, since an optional key would break TOON's tabular form: `cause` names which cause an `unloadable-skill` finding was raised for, `'unparsable-frontmatter'` or `'missing-description'` (`UnloadableSkillCause`), and is empty on every other finding. `command` completes the repair when run as given and is empty when no single invocation does; `instruction` is the same repair in the imperative and is always present.
 
 ### DoctorReference
 
@@ -260,7 +277,8 @@ degraded?.repair({ file: '.claude/skills' }, 'buddy-agent-harness').command
 | `problem` | `DoctorProblem` | The finding's name |
 | `detail` | `string` | What `doctor` prints in the `findings` row for it |
 | `repair` | `(at: Locator, cli: string) => { command: string; instruction: string }` | The repair the CLI reports, for the location `at`, naming the tool as `cli` |
-| `skillRepair` | `(at: Locator) => string` | The repair the generated skill gives. It hands a bridge rebuild to the [`init-buddy-agent-harness` skill](/skills/init-buddy-agent-harness/) rather than `init`, since rebuilding can move skills a user wrote |
+| `cause` | `UnloadableSkillCause` | Which cause of an `unloadable-skill` finding the row is for; absent on every other row |
+| `skillRepair` | `(at: Locator) => string` | The repair the generated skill gives. It hands a bridge rebuild to the [`init-buddy-agent-harness` skill](/skills/init-buddy-agent-harness/) rather than `init`, since rebuilding can move skills a user wrote, and a diverged or unprotected copy to the [`repair` skill](/skills/repair/) |
 
 `at` is a location in parts: `file`, the repository-relative path, plus `server` and `field` when the finding is about an MCP server entry, and `position` when the file does not parse. Read the parts off it rather than splitting a rendered path.
 

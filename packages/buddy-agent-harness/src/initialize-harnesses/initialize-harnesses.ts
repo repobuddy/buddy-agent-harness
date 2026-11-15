@@ -1,8 +1,9 @@
-import { mkdirSync, readdirSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { referenceNames, repoReferencesDir } from 'cyber-agentkit'
+import { canonicalSkillsPath, SyncError, type SyncLeft, type SyncWrite } from '../copy-sync/copy-sync.ts'
 import { type HarnessName, selectHarnesses } from '../harness-registry/harness-registry.ts'
-import { countSkills, type ForceSelection, projectSkills } from '../skill-projection/skill-projection.ts'
+import { copiesToSync, countSkills, type ForceSelection, projectSkills } from '../skill-projection/skill-projection.ts'
 
 export type InitializeOptions = {
 	root: string
@@ -30,6 +31,13 @@ export type InitializeResult = {
 	 */
 	references: number
 	copied: boolean
+	/** Each file the sync of an existing copy wrote, and the side whose version it took. */
+	written: SyncWrite[]
+	/**
+	 * Each file of an existing copy left as it is on both sides, for the `sync` command's
+	 * `--resolve` to settle.
+	 */
+	left: SyncLeft[]
 }
 
 /** Git does not track an empty directory, so an empty one gets a `.gitkeep` to survive a commit and clone. */
@@ -44,13 +52,23 @@ export function initializeHarnesses({
 	force = false,
 }: InitializeOptions): InitializeResult {
 	const canonicalSkills = join(root, '.agents', 'skills')
+	const harnesses = selectHarnesses(root, preferred)
+	// Checked before the scaffold creates it: an empty canonical directory would read as every skill
+	// deleted, and the sync would carry that into the copy.
+	const copies = copiesToSync(root, harnesses, force)
+	if (copies.length && !existsSync(canonicalSkills)) {
+		throw new SyncError(
+			'canonical-missing',
+			`${canonicalSkillsPath} does not exist, so the existing copies cannot be synced with it: ${copies.join(', ')}.`,
+			copies,
+		)
+	}
 	const skills = countSkills(canonicalSkills)
 	mkdirSync(repoReferencesDir(root), { recursive: true })
 	const references = referenceNames([{ tier: 'repo', dir: repoReferencesDir(root) }]).length
 	keepWhenEmpty(canonicalSkills)
 	keepWhenEmpty(repoReferencesDir(root))
-	const harnesses = selectHarnesses(root, preferred)
-	const { linked, skipped } = projectSkills({ root, canonicalSkills, harnesses, copy, force })
+	const { linked, skipped, written, left } = projectSkills({ root, canonicalSkills, harnesses, copy, force })
 
 	return {
 		root,
@@ -64,5 +82,7 @@ export function initializeHarnesses({
 		skills,
 		references,
 		copied: copy,
+		written,
+		left,
 	}
 }

@@ -74,7 +74,7 @@ describe('doctor guidance', () => {
 		// single invocation repairs has to be listed here deliberately instead of passing unnoticed.
 		const judgment = bridgeRepairs.filter((entry) => entry.repair({ file: '<path>' }, 'bah').command === '')
 
-		expect(judgment.map((entry) => entry.problem)).toEqual(['diverged-bridge', 'diverged-both', 'diverged-unknown'])
+		expect(judgment.map((entry) => entry.problem)).toEqual(['diverged-both', 'diverged-unknown'])
 		for (const entry of judgment) {
 			expect(entry.repair({ file: '<path>' }, 'bah').instruction, entry.problem).not.toBe('')
 		}
@@ -299,7 +299,8 @@ describe('skill script', () => {
 })
 
 /** The bridge problems a rebuilt bridge fixes — every one but the three that need a hand. */
-const byHand = ['diverged-both', 'diverged-unknown', 'unpinned-copy']
+/** The bridge problems the `repair` skill owns: a rebuild would discard an edit or change nothing. */
+const repairOwned = ['diverged-bridge', 'diverged-canonical', 'diverged-both', 'diverged-unknown', 'unpinned-copy']
 
 describe('the detect-and-repair seam', () => {
 	// One entry, two renderings, for two readers. A skill must not run `init` itself, so the skill
@@ -329,18 +330,18 @@ describe('the detect-and-repair seam', () => {
 	})
 
 	it('sends a bridge finding to the init skill wherever rebuilding is the repair', () => {
-		for (const entry of bridgeRepairs.filter((repair) => !byHand.includes(repair.problem)))
+		for (const entry of bridgeRepairs.filter((repair) => !repairOwned.includes(repair.problem)))
 			expect(entry.skillRepair({ file: '<path>' })).toContain(initSkillInvocation)
 	})
 
-	// Rebuilding is what destroys the work here, so no skill is named at all — an invented owner
-	// would be `init`, which is the one thing that must not run.
-	it('names no skill for a finding that rebuilding would not repair', () => {
-		for (const entry of bridgeRepairs.filter((repair) => byHand.includes(repair.problem))) {
+	// detect-and-repair R28: every diverged-copy fault and the unprotected-copy fault go to `repair`,
+	// and to no other skill.
+	it('sends every diverged and unprotected copy to the repair skill and no other', () => {
+		for (const entry of bridgeRepairs.filter((repair) => repairOwned.includes(repair.problem))) {
 			const skillRepair = entry.skillRepair({ file: '<path>' })
-			expect(skillRepair).not.toContain(initSkillInvocation)
-			expect(skillRepair).not.toContain(repairSkillInvocation)
-			expect(skillRepair).toContain('git ')
+			expect(skillRepair, entry.problem).toContain(repairSkillInvocation)
+			expect(skillRepair, entry.problem).not.toContain(initSkillInvocation)
+			expect(skillRepair, entry.problem).not.toContain('enhance')
 		}
 	})
 
@@ -448,8 +449,8 @@ describe('the detect-and-repair seam', () => {
 	})
 })
 
-/** The bridge problems a person must choose or reconcile through before anything is rebuilt. */
-const needsAPersonFirst = ['diverged-bridge', 'diverged-both', 'diverged-unknown']
+/** The bridge problems a person must pick a side through before the sync can finish. */
+const needsAPersonFirst = ['diverged-both', 'diverged-unknown']
 
 describe('the repair as a command and an instruction', () => {
 	it('states a repair as a runnable command and a prose instruction', () => {
@@ -482,14 +483,15 @@ describe('the repair as a command and an instruction', () => {
 			'missing',
 			'degraded',
 			'stale',
+			'diverged-bridge',
 			'diverged-canonical',
 			'unpinned-copy',
 		])
 	})
 
 	// The data-loss guard, and the reason the split is worth its cost. Each of these quotes a
-	// genuinely runnable invocation inside its instruction — a diff, or an init after a manual
-	// replace — and carries no command, because running that invocation is not the repair.
+	// genuinely runnable invocation inside its instruction — a diff, or a sync that leaves files for a
+	// pick — and carries no command, because running that invocation does not finish the repair.
 	it('gives a diverged bridge no command, so executing every command destroys nothing', () => {
 		for (const problem of needsAPersonFirst) {
 			const { command, instruction } = repairFor(problem as (typeof needsAPersonFirst)[number] & DoctorProblem).repair(
@@ -506,6 +508,16 @@ describe('the repair as a command and an instruction', () => {
 			.filter((entry) => entry.command !== '')
 			.map((entry) => entry.problem)
 		expect(runnable.filter((problem) => needsAPersonFirst.includes(problem))).toEqual([])
+	})
+
+	// diagnosis-report R29: a diverged repair is the file-by-file sync, never a rebuild.
+	it('offers no rebuild for any diverged bridge, only the sync', () => {
+		for (const entry of bridgeRepairs.filter((repair) => repair.problem.startsWith('diverged-'))) {
+			const { command, instruction } = entry.repair({ file: '.claude/skills' }, commandInvocation)
+			expect(['', `${commandInvocation} sync`], entry.problem).toContain(command)
+			expect(instruction, entry.problem).toContain(`${commandInvocation} sync`)
+			expect(instruction, entry.problem).not.toContain(`${commandInvocation} init`)
+		}
 	})
 })
 
@@ -538,8 +550,6 @@ const initOwned: DoctorProblem[] = [
 	'missing',
 	'degraded',
 	'stale',
-	'diverged-bridge',
-	'diverged-canonical',
 	'no-instructions',
 	'instructions-missing',
 	'instructions-unbridged',

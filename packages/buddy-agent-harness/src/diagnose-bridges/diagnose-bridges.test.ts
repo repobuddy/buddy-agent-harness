@@ -222,24 +222,33 @@ describe('diagnoseBridges', () => {
 		expect(diagnoseBridges({ root, cli }).bridges[0]).toMatchObject({ status: 'diverged' })
 	})
 
-	it('reports a tracked copy whose skip-worktree bit has been lost, and clears it once set', () => {
+	// bridge-resolution R25: either part missing is a finding; both in place, it is gone.
+	it('reports a tracked copy lacking either part of copy protection, and clears it once both are in place', () => {
 		const root = committedCopy()
+		const exclude = join(root, '.git', 'info', 'exclude')
+		const command = `git ls-files -z .claude/skills | xargs -0 git update-index --skip-worktree && echo /.claude/skills/ >> "$(git rev-parse --git-path info/exclude)"`
 
 		expect(diagnoseBridges({ root, cli }).findings).toEqual([
 			{
 				path: '.claude/skills',
 				problem: 'unpinned-copy',
 				detail:
-					'tracked copy without the skip-worktree bit — the tree is dirty with content that must not be committed',
+					'tracked copy without both parts of copy protection — git still shows its changes, or would add its files to a commit',
 				repair: {
-					command: 'git ls-files -z .claude/skills | xargs -0 git update-index --skip-worktree',
-					instruction:
-						'run `git ls-files -z .claude/skills | xargs -0 git update-index --skip-worktree` to restore the skip-worktree bit',
+					command,
+					instruction: `run \`${command}\` to set skip-worktree on the copy's tracked files and list .claude/skills in the clone's own exclude file`,
 				},
 			},
 		])
 
 		git(root, 'update-index', '--skip-worktree', '.claude/skills/review/SKILL.md')
+		expect(diagnoseBridges({ root, cli }).findings.map((finding) => finding.problem)).toEqual(['unpinned-copy'])
+
+		git(root, 'update-index', '--no-skip-worktree', '.claude/skills/review/SKILL.md')
+		writeFileSync(exclude, '/.claude/skills/\n')
+		expect(diagnoseBridges({ root, cli }).findings.map((finding) => finding.problem)).toEqual(['unpinned-copy'])
+
+		execFileSync('sh', ['-c', command], { cwd: root })
 		expect(diagnoseBridges({ root, cli }).findings).toEqual([])
 	})
 
@@ -261,9 +270,9 @@ describe('diagnoseBridges', () => {
 			expect(result.divergence).toEqual([{ path: '.claude/skills', direction: 'bridge' }])
 			expect(result.findings[0]).toMatchObject({
 				repair: {
-					command: '',
+					command: 'bah sync',
 					instruction:
-						'replace .agents/skills with .claude/skills to keep the newer edit, then run `bah init --force .claude/skills`',
+						'run `bah sync` to carry the edits made through .claude/skills into .agents/skills, file by file',
 				},
 			})
 		})
@@ -277,9 +286,8 @@ describe('diagnoseBridges', () => {
 			expect(result.divergence).toEqual([{ path: '.claude/skills', direction: 'canonical' }])
 			expect(result.findings[0]).toMatchObject({
 				repair: {
-					command: 'bah init --copy --force .claude/skills',
-					instruction:
-						'run `bah init --copy --force .claude/skills` to rebuild .claude/skills from the newer .agents/skills',
+					command: 'bah sync',
+					instruction: 'run `bah sync` to carry the newer .agents/skills into .claude/skills, file by file',
 				},
 			})
 		})
@@ -295,11 +303,11 @@ describe('diagnoseBridges', () => {
 			expect(result.findings[0]).toMatchObject({
 				problem: 'diverged-both',
 				detail: 'both sides changed since they last agreed — rebuilding would discard one of them',
-				// The diff is a diagnostic, not the repair, so it stays in the prose and offers no command.
+				// The sync leaves the files both sides changed for a pick, so no single invocation completes it.
 				repair: {
 					command: '',
 					instruction:
-						'reconcile .agents/skills with .claude/skills by hand — rebuilding would discard one of them; `git diff --no-index .agents/skills .claude/skills` shows what differs',
+						'run `bah sync`, which carries every file only one side changed and leaves each file both sides changed; pick a side for each of those after `git diff --no-index .agents/skills .claude/skills` shows what differs, and pass the picks as `bah sync --resolve .claude/skills/<file>=<canonical|copy>`',
 				},
 			})
 		})

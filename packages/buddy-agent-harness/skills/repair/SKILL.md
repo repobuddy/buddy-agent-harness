@@ -19,7 +19,7 @@ node scripts/doctor.mjs
 
 That path is relative to this skill's own directory: `scripts/doctor.mjs` is a self-contained bundle shipped inside this skill folder through the npm package, so it runs against the current working directory with nothing downloaded and no `node_modules` needed. Fall back to `npx -y buddy-agent-harness@1.3.0 doctor` when `scripts/doctor.mjs` is missing or cannot be run — the case for a skill installed from git rather than from the npm package, which does not carry the bundle.
 
-The default output is TOON, which is what you parse. Each entry in `findings` carries three fields: `problem` (the finding's name), `path` (what it is about), and `detail` (what is wrong, in prose). The repairs are not on the row — they are lifted into `help`, which follows `findings` in order and collapses two entries only where the repair is word-for-word identical. Read a finding's repair off the matching position and confirm it by the `path` it names; where two findings sit at one path, what each repair says to do is what tells them apart.
+The default output is TOON, which is what you parse. Each entry in `findings` carries `problem` (the finding's name), `path` (what it is about), `cause` (set only on an `unloadable-skill` finding), `detail` (what is wrong, in prose), and its own repair in `command` and `instruction`. `help` lists each distinct repair once, as a summary; read a finding's repair off its own row.
 
 **Route on `problem`, never on `detail`.** The prose exists to be read by a person, and rewording it must not change what you do.
 

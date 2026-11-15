@@ -1,5 +1,6 @@
 import { execFileSync } from 'node:child_process'
-import { join } from 'node:path'
+import { appendFileSync, mkdirSync, readFileSync } from 'node:fs'
+import { dirname, join, resolve } from 'node:path'
 import { filesUnder } from './directory-files.ts'
 
 /** Which side of a diverged bridge moved since the last commit where the two agreed. */
@@ -7,6 +8,12 @@ export type DivergenceDirection = 'bridge' | 'canonical' | 'both' | 'unknown'
 
 /** Whether a path is tracked, and if so whether its skip-worktree bit is still set. */
 export type TrackingState = 'untracked' | 'tracked' | 'skip-worktree'
+
+/**
+ * Whether a copy over a tracked path is kept out of commits: `protected` needs both parts, the
+ * skip-worktree bit on every tracked entry and the path in the clone's own exclude file.
+ */
+export type CopyProtection = 'untracked' | 'protected' | 'unprotected'
 
 function git(root: string, args: string[], input?: string): string | undefined {
 	try {
@@ -18,6 +25,15 @@ function git(root: string, args: string[], input?: string): string | undefined {
 		})
 	} catch {
 		return undefined
+	}
+}
+
+/** A file that cannot be read reads as empty, as a missing exclude file means no rule. */
+function readText(path: string): string {
+	try {
+		return readFileSync(path, 'utf8')
+	} catch {
+		return ''
 	}
 }
 
@@ -51,6 +67,50 @@ export class GitBridgeState {
 	}
 
 	/**
+	 * Skip-worktree alone is not enough: when the committed bridge is a symlink, the copied files
+	 * are untracked paths under it, which `git add -A` still adds unless the exclude file lists them.
+	 */
+	protectionOf(path: string): CopyProtection {
+		const tracking = this.trackingOf(path)
+		if (tracking === 'untracked') return 'untracked'
+		return tracking === 'skip-worktree' && this.isExcluded(path) ? 'protected' : 'unprotected'
+	}
+
+	/**
+	 * Puts both parts of copy protection on a tracked copy, writing the clone's exclude file and
+	 * never `.gitignore`. Returns whether the copy is protected afterwards.
+	 */
+	protect(path: string): boolean {
+		const entries = git(this.root, ['ls-files', '-z', '--', path])
+		if (!entries) return false
+		git(this.root, ['update-index', '-z', '--skip-worktree', '--stdin'], entries)
+		if (!this.isExcluded(path)) {
+			const exclude = this.excludeFile()
+			const text = readText(exclude)
+			mkdirSync(dirname(exclude), { recursive: true })
+			appendFileSync(exclude, `${text && !text.endsWith('\n') ? '\n' : ''}/${this.repoRootPrefix}${path}/\n`)
+		}
+		return this.protectionOf(path) === 'protected'
+	}
+
+	/**
+	 * Resolved through git, so a linked worktree finds the exclude file its clone shares. Asked only
+	 * once a tracked entry has shown the repository exists.
+	 */
+	private excludeFile(): string {
+		return resolve(this.root, (git(this.root, ['rev-parse', '--git-path', 'info/exclude']) as string).trim())
+	}
+
+	/** Matched as a line rather than asked of `check-ignore`, which would also count `.gitignore`. */
+	private isExcluded(path: string): boolean {
+		const bare = `${this.repoRootPrefix}${path}`
+		const spellings = [`/${bare}/`, `/${bare}`, `${bare}/`, bare]
+		return readText(this.excludeFile())
+			.split('\n')
+			.some((line) => spellings.includes(line.trim()))
+	}
+
+	/**
 	 * Asked of git rather than matched against the file, so a rule on a parent directory is caught
 	 * too.
 	 */
@@ -75,7 +135,6 @@ export class GitBridgeState {
 	}
 
 	directionOf(bridge: string, canonical: string): DivergenceDirection {
-		if (this.repoRootPrefix === undefined) return 'unknown'
 		const base = this.lastAgreedTree(bridge, canonical)
 		if (base === undefined) return 'unknown'
 		const bridgeMoved = !this.matchesTree(bridge, base)
@@ -85,8 +144,12 @@ export class GitBridgeState {
 		return 'canonical'
 	}
 
-	/** The tree of the newest commit where both paths held identical content. */
-	private lastAgreedTree(bridge: string, canonical: string): string | undefined {
+	/**
+	 * The tree of the newest commit where both paths held identical content. A commit that holds the
+	 * bridge as a symlink never counts: the link says nothing about what a copy made from it held.
+	 */
+	lastAgreedTree(bridge: string, canonical: string): string | undefined {
+		if (this.repoRootPrefix === undefined) return undefined
 		for (const commit of lines(git(this.root, ['rev-list', '-n', '200', 'HEAD', '--', bridge, canonical]))) {
 			const bridgeObject = git(this.root, [
 				'rev-parse',
@@ -106,22 +169,34 @@ export class GitBridgeState {
 		return undefined
 	}
 
-	/**
-	 * Compares by object id via `hash-object` rather than hashing in-process, so it follows
-	 * whatever object format the repository uses.
-	 */
-	private matchesTree(directory: string, tree: string): boolean {
-		const expected = new Map(
-			lines(git(this.root, ['ls-tree', '-r', tree])).map((entry) => {
+	/** Each file of a tree `lastAgreedTree` found, by its path inside the tree, mapped to its blob id. */
+	treeFiles(tree: string): Map<string, string> {
+		const entries = (git(this.root, ['ls-tree', '-r', '-z', tree]) as string).split('\0').filter(Boolean)
+		return new Map(
+			entries.map((entry) => {
 				const [meta, path] = entry.split('\t')
-				return [path, (meta as string).split(' ')[2] as string] as const
+				return [path as string, (meta as string).split(' ')[2] as string] as const
 			}),
 		)
-		const files = filesUnder(join(this.root, directory))
-		if (files.length !== expected.size || files.some((file) => !expected.has(file))) return false
+	}
+
+	/**
+	 * The blob id each file under `directory` would get, by its path inside the directory. Asked of
+	 * `hash-object` rather than hashed in-process, so it follows whatever object format and clean
+	 * filters the repository uses.
+	 */
+	hashFiles(directory: string, files: readonly string[]): Map<string, string> {
 		const hashed = lines(
 			git(this.root, ['hash-object', '--stdin-paths'], files.map((file) => join(directory, file)).join('\n')),
 		)
-		return hashed.length === files.length && files.every((file, index) => expected.get(file) === hashed[index])
+		return new Map(files.map((file, index) => [file, hashed[index] as string]))
+	}
+
+	private matchesTree(directory: string, tree: string): boolean {
+		const expected = this.treeFiles(tree)
+		const files = filesUnder(join(this.root, directory))
+		if (files.length !== expected.size || files.some((file) => !expected.has(file))) return false
+		const hashed = this.hashFiles(directory, files)
+		return files.every((file) => expected.get(file) === hashed.get(file))
 	}
 }

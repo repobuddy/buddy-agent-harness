@@ -69,7 +69,7 @@ Once a harness instruction file such as `.cursorrules`, `GEMINI.md`, or `.github
 3. Merge approved instruction content into `AGENTS.md`, preserving your wording. Content is appended, not restructured. Each consolidated harness file is then deleted, replaced with a pointer, or left as it is, as you answered.
 4. Run the `init` command to create the projections and report the enabled harnesses.
 5. Resolve any reported conflict and retry. `--force` replaces one named projection; `--copy` is only for environments without symlinks.
-   Where an existing skills copy drifted from `.agents/skills`, the command syncs it file by file. For each file changed on both sides, the skill shows you the difference and asks which side wins, then reruns the `sync` command with your picks. A file you give no answer for is left as it is on both sides.
+   Where an existing skills copy drifted from `.agents/skills`, the command syncs it file by file. For each file changed on both sides, the skill shows you the difference and asks which side wins, then reruns the [`sync`](/cli/sync/#picking-a-side) command with your picks. A file you give no answer for is left as it is on both sides.
 6. Settle the instruction files the CLI does not touch. [Gemini CLI](/agent-configuration/harnesses/gemini-cli/) needs a `.gemini/settings.json` edit, and it is the only bridge left to write. No `CLAUDE.md` is written, at the root or beside a nested `AGENTS.md`: [Claude Code reads `AGENTS.md` itself](/agent-configuration/harnesses/claude-code/#instructions-need-nothing-written), and a generated copy would be read instead of it.
 
 ### 5. Verify and report

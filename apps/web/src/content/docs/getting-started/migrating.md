@@ -41,6 +41,6 @@ The same reasoning covers subagents, hooks, and MCP servers. They are reported a
 
 ## Conflicts
 
-A pre-existing harness skills directory containing real skills is a conflict by design. The CLI checks every target before changing any of them, and without `--force` a conflict stops the run with all targets unchanged.
+A pre-existing harness skills directory containing real skills is not overwritten. The CLI treats it as an [existing copy](/cli/init/#existing-copies) and syncs it with `.agents/skills` file by file. Where the two were never committed holding the same files, it writes none of them and lists each differing file for you to pick a side. When `.agents/skills` does not exist yet, it writes nothing and fails with `canonical-missing`.
 
-Move those skills into `.agents/skills/` first. Do not clear the conflict with `--force`, which discards them.
+Move those skills into `.agents/skills/` first. Do not pass `--force` for that directory, which replaces it and discards them.

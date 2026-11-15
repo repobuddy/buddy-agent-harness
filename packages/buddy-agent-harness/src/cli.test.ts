@@ -4,6 +4,8 @@ import { fileURLToPath } from 'node:url'
 import { cli } from 'clibuilder'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { defaultFormat, rootCommand, run } from './cli.ts'
+import { syncSkillCopies } from './copy-sync/copy-sync.ts'
+import { syncCommand } from './copy-sync/sync.command.ts'
 import { buildDoctorReport, doctorCommand } from './diagnose-bridges/doctor.command.ts'
 import { governanceCommand } from './governance-overrides/governance.command.ts'
 import * as publicApi from './index.ts'
@@ -252,6 +254,8 @@ describe('the public entry point', () => {
 		expect(publicApi.doctorCommand).toBe(doctorCommand)
 		expect(publicApi.governanceCommand).toBe(governanceCommand)
 		expect(publicApi.referenceCommand).toBe(referenceCommand)
+		expect(publicApi.syncCommand).toBe(syncCommand)
+		expect(publicApi.syncSkillCopies).toBe(syncSkillCopies)
 		expect(Object.keys(publicApi)).not.toContain('app')
 		expect(Object.values(publicApi)).not.toContainEqual(expect.objectContaining({ parse: expect.any(Function) }))
 	})
@@ -274,12 +278,15 @@ describe('the process boundary', () => {
 			'skills/enhance/scripts/doctor.mjs',
 			'skills/init-buddy-agent-harness/scripts/doctor.mjs',
 			'skills/init-buddy-agent-harness/scripts/init.mjs',
+			'skills/init-buddy-agent-harness/scripts/sync.mjs',
 			'skills/repair/scripts/doctor.mjs',
 			'skills/repair/scripts/mcp.mjs',
+			'skills/repair/scripts/sync.mjs',
 			// The sources the bundles above are built from, not a second writer of their own.
 			'src/skill-scripts/doctor.ts',
 			'src/skill-scripts/init.ts',
 			'src/skill-scripts/mcp.ts',
+			'src/skill-scripts/sync.ts',
 		])
 	})
 })

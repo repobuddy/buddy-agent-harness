@@ -249,48 +249,53 @@ const bridgeTable: Record<BridgeProblem, RepairRow> = {
 	},
 	'diverged-bridge': {
 		detail: 'only the bridge changed since the two last agreed — an agent wrote through the copy',
-		// No command: `init` only ever builds a bridge from the canonical directory, so no flag
-		// promotes the bridge's content back into it.
 		repair: ({ file }, cli) => ({
-			command: '',
-			instruction: `replace .agents/skills with ${file} to keep the newer edit, then run \`${cli} init --force ${file}\``,
+			command: `${cli} sync`,
+			instruction: `run \`${cli} sync\` to carry the edits made through ${file} into .agents/skills, file by file`,
 		}),
-		skillRepair: ({ file }) =>
-			`replace .agents/skills with ${file} to keep the newer edit, then run \`${initSkillInvocation} --force ${file}\``,
+		skillRepair: ({ file }) => `run ${repairSkillRef}, which syncs ${file} with .agents/skills file by file`,
 	},
 	'diverged-canonical': {
 		detail: 'only .agents/skills changed since the two last agreed — the copy is stale',
 		repair: ({ file }, cli) => ({
-			command: `${cli} init --copy --force ${file}`,
-			instruction: `run \`${cli} init --copy --force ${file}\` to rebuild ${file} from the newer .agents/skills`,
+			command: `${cli} sync`,
+			instruction: `run \`${cli} sync\` to carry the newer .agents/skills into ${file}, file by file`,
 		}),
-		skillRepair: ({ file }) => `run \`${initSkillInvocation} --copy --force ${file}\``,
+		skillRepair: ({ file }) => `run ${repairSkillRef}, which syncs ${file} with .agents/skills file by file`,
 	},
+	// No command for the next two: the sync leaves each file both sides changed until someone picks a
+	// side for it, so no single invocation completes the repair.
 	'diverged-both': {
 		detail: 'both sides changed since they last agreed — rebuilding would discard one of them',
-		repair: ({ file }) => ({
+		repair: ({ file }, cli) => ({
 			command: '',
-			instruction: `reconcile .agents/skills with ${file} by hand — rebuilding would discard one of them; \`git diff --no-index .agents/skills ${file}\` shows what differs`,
+			instruction: `run \`${cli} sync\`, which carries every file only one side changed and leaves each file both sides changed; pick a side for each of those after \`git diff --no-index .agents/skills ${file}\` shows what differs, and pass the picks as \`${cli} sync --resolve ${file}/<file>=<canonical|copy>\``,
 		}),
-		skillRepair: ({ file }) => `run \`git diff --no-index .agents/skills ${file}\` and reconcile by hand`,
+		skillRepair: ({ file }) =>
+			`run ${repairSkillRef}, which syncs ${file} with .agents/skills and asks which side wins each file both sides changed`,
 	},
 	'diverged-unknown': {
 		detail: 'contents differ and no commit where they agreed was found — which side moved is unknown',
-		repair: ({ file }) => ({
+		repair: ({ file }, cli) => ({
 			command: '',
-			instruction: `reconcile .agents/skills with ${file} by hand — which side moved is unknown; \`git diff --no-index .agents/skills ${file}\` shows what differs`,
+			instruction: `run \`${cli} sync\`, which leaves every file that differs, since no commit where the two agreed was found; pick a side for each after \`git diff --no-index .agents/skills ${file}\` shows what differs, and pass the picks as \`${cli} sync --resolve ${file}/<file>=<canonical|copy>\``,
 		}),
-		skillRepair: ({ file }) => `run \`git diff --no-index .agents/skills ${file}\` and reconcile by hand`,
+		skillRepair: ({ file }) =>
+			`run ${repairSkillRef}, which syncs ${file} with .agents/skills and asks which side wins each file that differs`,
 	},
 	'unpinned-copy': {
-		detail: 'tracked copy without the skip-worktree bit — the tree is dirty with content that must not be committed',
+		detail:
+			'tracked copy without both parts of copy protection — git still shows its changes, or would add its files to a commit',
 		// Reads paths back from git rather than assuming them: the tracked entry is a symlink on a
 		// Windows checkout, but individual files in a committed copy.
-		repair: ({ file }) => ({
-			command: `git ls-files -z ${file} | xargs -0 git update-index --skip-worktree`,
-			instruction: `run \`git ls-files -z ${file} | xargs -0 git update-index --skip-worktree\` to restore the skip-worktree bit`,
-		}),
-		skillRepair: ({ file }) => `run \`git ls-files -z ${file} | xargs -0 git update-index --skip-worktree\``,
+		repair: ({ file }) => {
+			const command = `git ls-files -z ${file} | xargs -0 git update-index --skip-worktree && echo /${file}/ >> "$(git rev-parse --git-path info/exclude)"`
+			return {
+				command,
+				instruction: `run \`${command}\` to set skip-worktree on the copy's tracked files and list ${file} in the clone's own exclude file`,
+			}
+		},
+		skillRepair: ({ file }) => `run ${repairSkillRef}, which puts both parts of copy protection on ${file}`,
 	},
 }
 
@@ -808,7 +813,7 @@ Every \`problem\` name routes to exactly one page. Load the page for the finding
 
 ## Rules
 
-- Never repair a \`diverged-both\` or \`diverged-unknown\` bridge by re-running \`init\`. Rebuilding overwrites whichever side holds the newer edit. Reconcile the two directories first.
+- Never repair a \`diverged-*\` bridge by re-running \`init --force\`. Rebuilding overwrites whichever side holds the newer edit. Hand it to ${repairSkillRef}, which syncs the two file by file.
 - Edit skills at \`.agents/skills/<name>/SKILL.md\`. Editing through a bridge is only safe when that bridge is a symlink.
 - Do not add bridges to \`.gitignore\`. An untracked bridge swallows a real edit silently.
 - Never repeat a value from a file an \`mcp-literal-secret\` or \`mcp-committed-secret\` finding points at. The report withheld it on purpose, and quoting it back puts it in the transcript anyway.

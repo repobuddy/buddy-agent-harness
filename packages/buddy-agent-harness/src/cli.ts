@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { cli } from 'clibuilder'
 import { encode, errorOutput, exitCodes, type Format, formats, homeHeader, result } from 'clibuilder/axi'
+import { syncCommand } from './copy-sync/sync.command.ts'
 import { depPluginsCommand } from './dep-plugins/dep-plugins.command.ts'
 import { diagnoseReport, doctorCommand } from './diagnose-bridges/doctor.command.ts'
 import { governanceCommand } from './governance-overrides/governance.command.ts'
@@ -24,7 +25,15 @@ const version =
 export const rootCommand: { name: string; description: string; commands: readonly [cli.Command, ...cli.Command[]] } = {
 	name: 'buddy-agent-harness',
 	description: 'Initialize agent harness skill compatibility in consumer repositories.',
-	commands: [initCommand, doctorCommand, mcpCommand, depPluginsCommand, referenceCommand, governanceCommand],
+	commands: [
+		initCommand,
+		syncCommand,
+		doctorCommand,
+		mcpCommand,
+		depPluginsCommand,
+		referenceCommand,
+		governanceCommand,
+	],
 }
 
 // A factory, not a module-level constant: `cli()` builds state, and state built at import time

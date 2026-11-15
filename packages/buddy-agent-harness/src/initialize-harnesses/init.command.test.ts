@@ -1,6 +1,7 @@
 import type { Format } from 'clibuilder/axi'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { runCommandSync } from '../command-output/run-command.test-helper.ts'
+import { syncCommand } from '../copy-sync/sync.command.ts'
 import { doctorCommand } from '../diagnose-bridges/doctor.command.ts'
 import { governanceCommand } from '../governance-overrides/governance.command.ts'
 import { referenceCommand } from '../references/references.ts'
@@ -51,6 +52,8 @@ describe('init command', () => {
 			skills: 1,
 			references: 0,
 			copied: true,
+			written: [],
+			left: [],
 		})
 
 		run({ copy: true, force: 'true', format: 'json', root: '/workspace' })
@@ -74,6 +77,8 @@ describe('init command', () => {
 			skills: 0,
 			references: 0,
 			copied: false,
+			written: [],
+			left: [],
 		})
 
 		run({ format: 'toon' })
@@ -106,6 +111,8 @@ describe('init command', () => {
 			skills: 0,
 			references: 0,
 			copied: false,
+			written: [],
+			left: [],
 		})
 
 		expect(run({ format: 'json', harness: 'windsurf, codex', root: '/workspace' })).toBe(0)
@@ -131,6 +138,12 @@ describe('init command', () => {
 		expect(addCommand).toHaveBeenCalledWith(harnessCommand)
 		// The mounted name is what consumers type, so it is pinned here rather than left to the object.
 		expect(harnessCommand.name).toBe('agent-harness')
-		expect(harnessCommand.commands).toEqual([initCommand, doctorCommand, referenceCommand, governanceCommand])
+		expect(harnessCommand.commands).toEqual([
+			initCommand,
+			syncCommand,
+			doctorCommand,
+			referenceCommand,
+			governanceCommand,
+		])
 	})
 })

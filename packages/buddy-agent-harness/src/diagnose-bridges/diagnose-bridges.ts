@@ -131,8 +131,8 @@ function inspect(target: string, path: string, canonical: string, git: GitBridge
 				const direction = git.directionOf(path, canonicalPath)
 				return { kind: 'copy', status: 'diverged', problem: `diverged-${direction}`, direction }
 			}
-			// Stays out of `git status` only while the skip-worktree bit survives.
-			return git.trackingOf(path) === 'tracked'
+			// Stays out of `git status` and commits only while both parts of copy protection hold.
+			return git.protectionOf(path) === 'unprotected'
 				? { kind: 'copy', status: 'ok', problem: 'unpinned-copy' }
 				: { kind: 'copy', status: 'ok' }
 		}

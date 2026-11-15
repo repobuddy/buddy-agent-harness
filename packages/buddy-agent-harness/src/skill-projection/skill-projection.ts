@@ -1,6 +1,8 @@
 import { cpSync, lstatSync, mkdirSync, readdirSync, realpathSync, rmSync, symlinkSync } from 'node:fs'
 import { platform } from 'node:os'
 import { dirname, join, relative, resolve } from 'node:path'
+import { type SyncLeft, type SyncWrite, syncCopyBridges } from '../copy-sync/copy-sync.ts'
+import { GitBridgeState } from '../diagnose-bridges/git-bridge-state.ts'
 import type { Harness, HarnessName } from '../harness-registry/harness-registry.ts'
 
 function skillNames(skillsDirectory: string): string[] {
@@ -76,6 +78,40 @@ export type ProjectSkillsOptions = {
 export type ProjectSkillsResult = {
 	linked: HarnessName[]
 	skipped: HarnessName[]
+	/** Each file the sync of an existing copy wrote, and the side it took. */
+	written: SyncWrite[]
+	/** Each file of an existing copy the sync left for the user. */
+	left: SyncLeft[]
+}
+
+/** A directory, not a link, already at the projection path. */
+function isExistingCopy(target: string): boolean {
+	try {
+		return lstatSync(target).isDirectory()
+	} catch {
+		return false
+	}
+}
+
+type Projection = { harness: Harness; target: string }
+
+function projectionsOf(root: string, harnesses: readonly Harness[]): Projection[] {
+	return harnesses
+		.filter((harness) => harness.project.skillsDirectory)
+		.map((harness) => ({ harness, target: join(root, harness.project.skillsDirectory as string) }))
+}
+
+function forcing(root: string, force: ForceSelection): (target: string) => boolean {
+	const named = Array.isArray(force) ? force : []
+	return (target) => force === true || named.some((given) => namesTarget(root, target, given))
+}
+
+/** The existing copies a run syncs rather than replaces: every one no request to replace covers. */
+export function copiesToSync(root: string, harnesses: readonly Harness[], force: ForceSelection): string[] {
+	const forces = forcing(root, force)
+	return projectionsOf(root, harnesses)
+		.filter(({ target }) => isExistingCopy(target) && !forces(target))
+		.map(({ harness }) => harness.project.skillsDirectory as string)
 }
 
 /**
@@ -94,12 +130,7 @@ export function projectSkills({
 	copy,
 	force,
 }: ProjectSkillsOptions): ProjectSkillsResult {
-	const projections = harnesses
-		.filter((harness) => harness.project.skillsDirectory)
-		.map((harness) => ({
-			harness,
-			target: join(root, harness.project.skillsDirectory as string),
-		}))
+	const projections = projectionsOf(root, harnesses)
 
 	const named = Array.isArray(force) ? force : []
 	// An unmatched force target is a typo, not a narrower run — ignoring it would misattribute the
@@ -112,9 +143,13 @@ export function projectSkills({
 		)
 	}
 
-	const forces = (target: string): boolean => force === true || named.some((given) => namesTarget(root, target, given))
+	const forces = forcing(root, force)
 
-	const conflicts = projections.filter(({ target }) => pathOccupied(target) && !linksTo(target, canonicalSkills))
+	// An existing copy is synced, not a conflict, unless a request to replace covers it.
+	const syncing = new Set(copiesToSync(root, harnesses, force))
+	const conflicts = projections.filter(
+		({ target }) => pathOccupied(target) && !linksTo(target, canonicalSkills) && !isExistingCopy(target),
+	)
 	const blocked = conflicts.filter(({ target }) => !forces(target))
 
 	// No target named: nothing distinguishes one conflict from another, so refuse before writing.
@@ -127,26 +162,32 @@ export function projectSkills({
 	}
 
 	const skipped = new Set(blocked.map(({ harness }) => harness.name))
+	const git = new GitBridgeState(root)
 
 	for (const { harness, target } of projections) {
-		if (skipped.has(harness.name)) continue
+		const path = harness.project.skillsDirectory as string
+		if (skipped.has(harness.name) || syncing.has(path)) continue
 		mkdirSync(dirname(target), { recursive: true })
 		if (linksTo(target, canonicalSkills)) continue
 		if (pathOccupied(target)) rmSync(target, { recursive: true, force: true })
-		if (copy) {
-			cpSync(canonicalSkills, target, { recursive: true })
-			continue
+		if (!copy) {
+			try {
+				symlinkSync(linkTarget(target, canonicalSkills), target, platform() === 'win32' ? 'junction' : undefined)
+				continue
+			} catch (error) {
+				if (pathOccupied(target)) throw error
+			}
 		}
-		try {
-			symlinkSync(linkTarget(target, canonicalSkills), target, platform() === 'win32' ? 'junction' : undefined)
-		} catch (error) {
-			if (pathOccupied(target)) throw error
-			cpSync(canonicalSkills, target, { recursive: true })
-		}
+		cpSync(canonicalSkills, target, { recursive: true })
+		git.protect(path)
 	}
+
+	const synced = syncCopyBridges({ root, bridges: [...syncing] })
 
 	return {
 		linked: projections.filter(({ harness }) => !skipped.has(harness.name)).map(({ harness }) => harness.name),
 		skipped: projections.filter(({ harness }) => skipped.has(harness.name)).map(({ harness }) => harness.name),
+		written: synced.written,
+		left: synced.left,
 	}
 }

@@ -46,7 +46,7 @@ A skills copy at a bridge path that no longer holds what `.agents/skills` holds.
 
 **Offer.** Show each file that differs, as it stands on each side (`git diff --no-index .agents/skills <copy>`), and the side the sync takes for it. A file only one side changed takes that side's version, so an edit made through the copy lands in `.agents/skills`. A file both sides changed, and every differing file under `diverged-unknown`, takes no side until the owner picks one.
 
-**Apply.** On approval, run the `sync` command at the repository root: `npx -y buddy-agent-harness@1.3.0 sync`. It writes every file one side changed and reports each file it would not decide. Put each of those to the owner on its own: show that file's difference between the two sides and ask which side wins. Then run the same invocation again with the answers, naming each answered file once: `sync --resolve <file>=<canonical|copy>,<file>=<canonical|copy>`. Write nothing for a file without an answer; it stays as it is on both sides, and the finding is still open.
+**Apply.** On approval, run `node scripts/sync.mjs` at the repository root, resolving that path against this skill's own directory as for `scripts/doctor.mjs`, or the `npx` fallback `SKILL.md` gives with `sync` in place of `doctor`. It writes every file one side changed, keeps the copy out of commits, and lists in `left` each file it would not decide. Put each of those to the owner on its own: show that file's difference between the two sides and ask which side wins. Then run the same invocation again with the answers, naming each answered file once by its `path` in `left`, which runs through the bridge: `node scripts/sync.mjs --resolve .claude/skills/<file>=<canonical|copy>,.claude/skills/<file>=<canonical|copy>`. Write nothing for a file without an answer; it stays as it is on both sides, and the finding is still open.
 
 **Stops at.** Every file the owner gave no side for, and everything outside the copy and `.agents/skills`.
 
@@ -62,7 +62,7 @@ A tracked skills copy that holds what `.agents/skills` holds but lacks copy prot
 git ls-files -z <copy> | xargs -0 git update-index --skip-worktree
 ```
 
-and add the bridge path as one line at the end of `.git/info/exclude`, creating it if missing, where no line there already covers it. Never write it into the committed `.gitignore`.
+and add the bridge path, as `/<copy>/`, as one line at the end of the clone's own exclude file, creating it if missing, where no line there already covers it. `git rev-parse --git-path info/exclude` names that file: `.git/info/exclude` in a plain clone, and the file the clone shares in a linked worktree. Never write it into the committed `.gitignore`.
 
 **Stops at.** Every other copy, every file's content, and `.gitignore`.
 
