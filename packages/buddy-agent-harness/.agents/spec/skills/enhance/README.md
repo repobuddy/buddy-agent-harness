@@ -13,7 +13,7 @@ The `enhance` skill's conduct: which vetted sections it offers to a repository t
 
 These properties make it a node rather than a paragraph inside `../init-buddy-agent-harness/`.
 
-**Where a section goes is part of what it offers.** A subject that is not about the repository has no business being copied into every repository the owner works in — that is the drift this package exists to remove, one level up from the file it removes it in. So an addition names its destination, the offer leads with it, and the one destination this skill cannot write is the one it recommends for delegation and list identifiers: a global placement is handed over, never made. The global file is `~/.agents/AGENTS.md`, the user-scope counterpart of the root `AGENTS.md`, for the same reason `.agents/skills/` has `~/.agents/skills/`: one home per fact, and each harness pointed at it.
+**Where a section goes is part of what it offers.** A subject that is not about the repository has no business being copied into every repository the owner works in — that is the drift this package exists to remove, one level up from the file it removes it in. So an addition names its destination, the offer leads with it, and the one destination this skill cannot write is the one it recommends for every addition shipped today: a global placement is handed over, never made. The global file is `~/.agents/AGENTS.md`, the user-scope counterpart of the root `AGENTS.md`, for the same reason `.agents/skills/` has `~/.agents/skills/`: one home per fact, and each harness pointed at it.
 
 **The same text loaded twice is a cost this node avoids.** The owner's agent already reads its own always-loaded instructions, including those from outside the repository. Where those carry an addition's current text and the merged view does not cover its subject, the recommendation is already met, so the run offers nothing and says so. A copy in the repository still reaches the team, and it is written only when the owner asks for it, because it costs the owner a second copy of the text in every session.
 
@@ -29,8 +29,8 @@ These properties make it a node rather than a paragraph inside `../init-buddy-ag
 
 **Key terms**
 
-- **addition** — a named block of instruction content this skill can offer, shipped as a reference file carrying the text to offer, the criterion for the subject already being present, the criterion that compares a present section against the wordings this addition has retired, and the destination it recommends. Two additions ship today: `## Delegation` and `## List identifiers`. Each is classified, offered, and reported on its own.
-- **destination** — which instruction file an addition's text belongs in, declared by the addition rather than assumed. An addition about the repository belongs in the repository's `AGENTS.md`; one about how the agent works belongs in the owner's own global file, where it is written once for every repository they open. Delegation and list identifiers are both the second kind. The global file is `~/.agents/AGENTS.md`; a harness reads it only where a user-scope instruction file of its own loads it.
+- **addition** — a named block of instruction content this skill can offer, shipped as a reference file carrying the text to offer, the criterion for the subject already being present, the criterion that compares a present section against the wordings this addition has retired, and the destination it recommends. Four additions ship today: `## Delegation`, `## List identifiers`, `## Session scope`, and `## References as links`. Each is classified, offered, and reported on its own.
+- **destination** — which instruction file an addition's text belongs in, declared by the addition rather than assumed. An addition about the repository belongs in the repository's `AGENTS.md`; one about how the agent works belongs in the owner's own global file, where it is written once for every repository they open. All four shipped today are the second kind. The global file is `~/.agents/AGENTS.md`; a harness reads it only where a user-scope instruction file of its own loads it.
 - **already global** — the merged view does not cover an addition, and instructions the agent loads from outside the repository, other than another repository's, carry every sentence of its current text, in order, and assert no sentence found only in a retired wording. The recommended destination already holds it.
 - **global copy** — a section on an addition's subject in the instructions the agent loads from outside the repository, other than another repository's. It is classified like a repository section: already current, from a retired wording, the owner's own, or unplaceable. Only the root `AGENTS.md` is ever written; a change to a global copy is handed over.
 - **merged view** — the root `AGENTS.md` together with every harness instruction file whose content still belongs in it. It is the text a downstream agent effectively reads, so guidance sitting in a Cursor always-on rule counts as present. It never includes instructions the agent loads from outside the repository.
@@ -42,7 +42,7 @@ These properties make it a node rather than a paragraph inside `../init-buddy-ag
 **Non-goals**
 
 - **Consolidating harness instruction files.** This skill reads them into the merged view and moves none of them; consolidation has one home, `../init-buddy-agent-harness/`. Where a run finds content that should be consolidated it says so and recommends that skill.
-- **The wording of `## Delegation`.** What it says was settled by blind A/B evaluation and is fixed; the repo-private `eval-delegation` skill owns it. This node specifies **when that text is surfaced**, never what it says. The `## List identifiers` text is scored by the repo-private `eval-list-identifiers` skill, so this node owns what it must direct, and not its exact wording: the rules issue #146 asked for, narrowed by the eval's round 5 to the lists that ask the user to answer.
+- **The wording of `## Delegation`.** What it says was settled by blind A/B evaluation and is fixed; the repo-private `eval-delegation` skill owns it. This node specifies **when that text is surfaced**, never what it says. The `## List identifiers` text is scored by the repo-private `eval-list-identifiers` skill, so this node owns what it must direct, and not its exact wording: the rules issue #146 asked for, narrowed by the eval's round 5 to the lists that ask the user to answer. No harness scores the `## Session scope` or `## References as links` text yet.
 - **Correcting agent configuration that is present and wrong.** `../repair/`. A stale addition is not a fault in the repository — it is this package's wording having moved.
 - **Creating an `AGENTS.md`.** `../init-buddy-agent-harness/`'s. A repository without one is reported and left alone.
 - **Anything outside local agent configuration.** Workflows, repository settings, and project source are out of reach whatever a run finds in them — a bar the suite asserts as a barred scenario rather than a path, since no decision in the graph can reach them.
@@ -316,7 +316,13 @@ flowchart TD
 | GC→G1 | the current List identifiers text plus a sentence of the retired wording | `does not call a List identifiers section current while it still asserts a retired sentence` |
 | P2→I | the owner answers that a List identifiers section came from this package | `offers the List identifiers replacement when the owner says the section came from this package` |
 | F | the List identifiers addition absent | `recommends the owner's global file for List identifiers` |
-| Z | a run over both additions | `reports a verdict for every addition` |
+| E→F | an `AGENTS.md` with no guidance on how to mention an issue, pull request, or commit | `offers the References as links addition the merged view does not cover` |
+| E→F | an `AGENTS.md` whose only reference guidance is a commit-message convention | `does not count a commit-message convention as covering references as links` |
+| G→H | an `AGENTS.md` covering references as links under the owner's own heading | `withholds References as links where the owner's own words cover it` |
+| GC→HC | an `AGENTS.md` carrying the References as links text | `offers nothing where the file already carries the current References as links text` |
+| G1→I | the current References as links text edited in place, and an empty history | `offers the current References as links text where that text was edited in place while the addition has no retired wording` |
+| F | the References as links addition absent | `recommends the owner's global file for References as links` |
+| Z | a run over every addition | `reports a verdict for every addition` |
 | barred | a nested `AGENTS.md` carrying a retired wording | `writes to no file other than the root AGENTS.md` |
 | barred | a repository whose CI workflow names an agent harness | `changes no file outside the repository's agent configuration` |
 | barred | an addition whose wording would sit better in this repository reworded | `offers the text as written rather than adapted to the repository` |
@@ -342,10 +348,12 @@ A run following a **declined** offer gets no row of its own. The repository it l
 | T | the shipped List identifiers reference | `states what already covers the List identifiers subject` |
 | U | the shipped List identifiers reference | `points the List identifiers stale check at its own history file` |
 | R→T | the shipped List identifiers reference | `offers List identifiers text that labels what the user answers and leaves explanations out` |
+| T | the shipped References as links reference | `states what already covers the References as links subject` |
+| U→X | the shipped References as links reference | `points the References as links stale check at its own empty history file` |
 
 ## References
 
 - `../../../../skills/enhance/SKILL.md` is the shipped skill: the merged view, the six-way detection, and the approval gate this node specifies.
-- `../../../../skills/enhance/references/delegation.md` and `../../../../skills/enhance/references/list-identifiers.md` are the additions shipped today; each sibling `*.history.md` holds the wordings that addition has retired, which is the artifact `G` compares against.
+- `../../../../skills/enhance/references/delegation.md`, `../../../../skills/enhance/references/list-identifiers.md`, `../../../../skills/enhance/references/session-scope.md`, and `../../../../skills/enhance/references/references-as-links.md` are the additions shipped today; each sibling `*.history.md` holds the wordings that addition has retired, which is the artifact `G` compares against.
 - `../init-buddy-agent-harness/` owns consolidation and the material/non-material discriminator this skill's approval rule rests on.
 - [AGENTS.md](https://agents.md/) defines the open, project-level instruction format every addition is written into.

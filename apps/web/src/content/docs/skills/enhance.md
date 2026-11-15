@@ -39,7 +39,7 @@ Every run reports, whichever way it went: what it read, the verdict for each add
 
 ## Where an addition goes
 
-Each addition says where it belongs. One about the repository belongs in its `AGENTS.md`. Delegation, List identifiers, and Session scope all describe how the agent works, and that holds in every repository you open, so the skill recommends your global instruction file first and names this repository's `AGENTS.md` as the alternative.
+Each addition says where it belongs. One about the repository belongs in its `AGENTS.md`. Delegation, List identifiers, Session scope, and References as links all describe how the agent works, and that holds in every repository you open, so the skill recommends your global instruction file first and names this repository's `AGENTS.md` as the alternative.
 
 | Destination | Reaches | Costs |
 | --- | --- | --- |
@@ -246,3 +246,22 @@ This one came from reading transcripts rather than from a hypothesis. Sessions t
 The text names no file to write the record to, and no command to compact or clear a session. Both are specific to a harness or a repository, and the wording has to hold wherever it is loaded. What it fixes is the decision — this is a new subject, so it is a new session — and the handoff that makes the split lossless.
 
 This section has no retired wording, so `references/session-scope.history.md` is empty and an existing section is compared against the current text, the same way List identifiers is. Unlike the other two, no harness scores this wording yet, so where the skill cannot tell whose words a section is, it offers you two answers instead of three and says measurement would need a harness that does not exist. Read the paragraphs above as the reason for the wording, not as a score: nothing here has been settled by runs.
+
+### References as links
+
+A `## References as links` section, on how the agent mentions an issue, pull request, or commit:
+
+```markdown wrap
+## References as links
+
+Write each issue, pull request, or commit you mention as a Markdown link to its page, such as
+[cyber-agentkit#222](https://github.com/cyber-uni/cyber-agentkit/pull/222), not a bare `#222`. A bare
+number is a link only on GitHub itself; in a terminal or a chat it leads nowhere, and across
+repositories it names the wrong one.
+```
+
+An agent left to itself writes a bare `#222`. GitHub renders that as a link, but a terminal or a chat does not, so you cannot click through to the item. When the agent works across repositories, a bare number also points at whichever repository the reader assumes, which is often the wrong one. A link to the item's page fixes both.
+
+A convention for commit messages, such as closing an issue with `Closes #12`, does not count as covering this subject: GitHub renders that text, so a bare number works there. Neither does a rule that only adds the repository, such as `owner/repo#12`, because that still leads nowhere in a terminal.
+
+This section has no retired wording, so `references/references-as-links.history.md` is empty and an existing section is compared against the current text, the same way Session scope is. No harness scores this wording, so where the skill cannot tell whose words a section is, it offers you two answers instead of three.

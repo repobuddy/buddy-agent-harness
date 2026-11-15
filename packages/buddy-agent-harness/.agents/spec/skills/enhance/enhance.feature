@@ -672,12 +672,74 @@ Feature: Offer the current wording of a vetted section to a repository that alre
     Then the owner's own global instruction file is recommended over the repository's `AGENTS.md`
     And the repository's `AGENTS.md` is named as the alternative, with what each destination reaches
 
+  # ── /buddy-agent-harness:enhance — the References as links addition ──
+
+  @behavior
+  Scenario: offers the References as links addition the merged view does not cover
+    Given a root `AGENTS.md` holding a build-commands section and a code-style section
+    When the agent runs the `enhance` skill
+    Then the `## References as links` section is offered
+    And the offered `## References as links` text is byte-identical to the text inside the fence in `references/references-as-links.md`
+
+  @behavior
+  Scenario: does not count a commit-message convention as covering references as links
+    Given a root `AGENTS.md` whose only reference guidance is a `## Commits` line saying to close an issue with `Closes #<number>` in the pull request body
+    When the agent runs the `enhance` skill
+    Then the `## References as links` section is offered
+
+  @behavior
+  Scenario: withholds References as links where the owner's own words cover it
+    Given a root `AGENTS.md` holding a `## Reporting` section written by the repository owner
+    And that section says to give every issue or pull request it mentions as a full URL to its page
+    And no sentence of it appears verbatim in the text `references/references-as-links.md` offers
+    And the root `AGENTS.md` also holds the `## Delegation` section exactly as `references/delegation.md` offers it
+    And the root `AGENTS.md` also holds the `## List identifiers` section exactly as `references/list-identifiers.md` offers it
+    And the root `AGENTS.md` also holds the `## Session scope` section exactly as `references/session-scope.md` offers it
+    When the agent runs the `enhance` skill
+    Then no `## References as links` section is offered
+    And the report names the `## Reporting` section as what covers the subject
+    And `AGENTS.md` is unchanged
+
+  @behavior
+  Scenario: offers nothing where the file already carries the current References as links text
+    Given a root `AGENTS.md` holding the `## References as links` section exactly as `references/references-as-links.md` offers it
+    And the root `AGENTS.md` also holds the `## Delegation` section exactly as `references/delegation.md` offers it
+    And the root `AGENTS.md` also holds the `## List identifiers` section exactly as `references/list-identifiers.md` offers it
+    And the root `AGENTS.md` also holds the `## Session scope` section exactly as `references/session-scope.md` offers it
+    When the agent runs the `enhance` skill
+    Then no `## References as links` section is offered
+    And the report says the section is already the text the addition offers
+    And `AGENTS.md` is unchanged
+
+  @behavior
+  Scenario: offers the current References as links text where that text was edited in place while the addition has no retired wording
+    Given a root `AGENTS.md` holding a `## References as links` section carrying two sentences of the text `references/references-as-links.md` offers verbatim
+    And that section keeps the sentence order of that text
+    And its remaining sentences are that text's, reworded
+    And `references/references-as-links.history.md` names no retired wording
+    And the root `AGENTS.md` also holds the `## Delegation` section exactly as `references/delegation.md` offers it
+    And the root `AGENTS.md` also holds the `## List identifiers` section exactly as `references/list-identifiers.md` offers it
+    And the root `AGENTS.md` also holds the `## Session scope` section exactly as `references/session-scope.md` offers it
+    When the agent runs the `enhance` skill
+    Then the report does not describe the `## References as links` section as the owner's own words
+    And the current `## References as links` text is offered as a replacement for the `## References as links` section
+    And `AGENTS.md` is unchanged until the owner answers
+
+  @behavior
+  Scenario: recommends the owner's global file for References as links
+    Given a root `AGENTS.md` the `## References as links` section is absent from
+    When the `## References as links` section is offered
+    Then the owner's own global instruction file is recommended over the repository's `AGENTS.md`
+    And the repository's `AGENTS.md` is named as the alternative, with what each destination reaches
+
   @behavior
   Scenario: reports a verdict for every addition
     Given a repository the `enhance` skill has been run in
     When the run reaches any of its outcomes
     Then the report gives a verdict for the `## Delegation` addition
     And the report gives a verdict for the `## List identifiers` addition
+    And the report gives a verdict for the `## Session scope` addition
+    And the report gives a verdict for the `## References as links` addition
 
   # ── an addition's reference file ──
 
@@ -742,3 +804,18 @@ Feature: Offer the current wording of a vetted section to a repository that alre
     And it says the points of a plain explanation need no label
     And it directs that a revised list keeps each item's label, reuses no removed label, and gives a new item the next label
     And it names no model, vendor, or version
+
+  @behavior
+  Scenario: states what already covers the References as links subject
+    Given the shipped `references/references-as-links.md`
+    When the file is read
+    Then it carries a `## Covered when` section
+    And that section names at least one shape of existing prose that counts as the subject being present
+    And that section names a commit-message convention as a shape that does not count
+
+  @behavior
+  Scenario: points the References as links stale check at its own empty history file
+    Given the shipped `references/references-as-links.md`
+    When the file is read
+    Then it carries a `## Stale when` section directing the comparison at `references/references-as-links.history.md`
+    And that history file names no retired wording
