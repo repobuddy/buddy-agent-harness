@@ -29,7 +29,7 @@ Our agent config is out of date — check it and fix what's wrong.
 
 ## What it corrects
 
-`doctor` reports several families of finding, and only one is the skill's.
+`doctor` reports several families of finding. One is the skill's whole, and four MCP findings are its too.
 
 **Bridge and instruction findings** — the `missing` / `degraded` / `stale` / `diverged-*` / `unpinned-copy` set, and the `instructions-*` set — are about whether canonical configuration reaches a harness at all: a bridge that stopped resolving, one that was never completed, or a file standing in the way of one it would otherwise read. Most go to [`init`](/skills/init-buddy-agent-harness/), which is what builds every bridge in the first place. A few go to nobody: a divergence with edits on both sides, one where no baseline says which side moved, and a bridge whose only fault is the git index. Rebuilding those would destroy work rather than repair it, so they are yours to settle by hand. Either way the skill reports them and hands them on.
 
