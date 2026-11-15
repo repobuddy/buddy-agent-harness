@@ -305,15 +305,16 @@ These findings stay within the command's contract: read-only, `--harness`-indepe
 
 ## Agent worktree findings
 
-Where a repository has a `.claude/` directory, `doctor` reports what it lacks for the [git worktrees Claude Code creates](/agent-configuration/agent-worktrees/) under `.claude/worktrees/`.
+Where a repository has a `.claude/` directory, `doctor` reports where the [git worktrees Claude Code creates](/agent-configuration/agent-worktrees/) land, and what the repository lacks, or carries, that breaks them.
 
 | Finding | What is missing |
 | --- | --- |
+| `worktrees-in-repository` | nothing missing: an agent worktree sits inside the repository under `.claude/worktrees/`, reported once per worktree, with `git worktree move` to a sibling `<repository>.worktrees/` directory as the repair and [`enhance`](/skills/enhance/#agent-worktrees) offering the guidance that keeps new ones out |
 | `worktrees-untracked` | a `.gitignore` rule for `.claude/worktrees/`, so every agent worktree shows as untracked in `git status` |
-| `worktrees-scanned` | an exclusion of `.claude/worktrees` in `biome.json`, so Biome walks into each worktree's own config |
+| `worktrees-self-ignored` | nothing missing: `biome.json` excludes `.claude/worktrees`, and inside an agent worktree there that exclusion matches every file, so Biome processes nothing; the repair replaces it with `vcs.useIgnoreFile` |
 | `worktree-base-unset` | `worktree.baseRef` in `.claude/settings.json`, so agent worktrees branch from the default branch |
 
-An explicit `"fresh"` is the owner's choice and is not reported. Each finding is offered by the [`init-buddy-agent-harness` skill](/skills/init-buddy-agent-harness/). Why each one matters is on [Agent Worktrees](/agent-configuration/agent-worktrees/).
+An explicit `"fresh"` is the owner's choice and is not reported. Every finding but `worktrees-in-repository` is offered by the [`init-buddy-agent-harness` skill](/skills/init-buddy-agent-harness/). Why each one matters is on [Agent Worktrees](/agent-configuration/agent-worktrees/).
 
 ## Exit codes
 

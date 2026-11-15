@@ -52,7 +52,7 @@ Documentation site: [One canonical agent configuration](https://repobuddy.github
 
 ## Agent configuration
 
-- [Agent Worktrees](https://repobuddy.github.io/buddy-agent-harness/agent-configuration/agent-worktrees/): Where Claude Code puts the git worktrees it creates for agents, why that breaks linters and git status, and the two settings a repository needs.
+- [Agent Worktrees](https://repobuddy.github.io/buddy-agent-harness/agent-configuration/agent-worktrees/): Where Claude Code puts the git worktrees it creates for agents, why that breaks commits and git status, and how to keep them out of the repository.
 - [Agent Configuration Best Practices](https://repobuddy.github.io/buddy-agent-harness/agent-configuration/best-practices/): Practices that apply across AGENTS.md, skills, and harness bridges, starting with the cost of every file an agent has to go and open.
 - [Harness Differences](https://repobuddy.github.io/buddy-agent-harness/agent-configuration/harness-differences/): Which agent harnesses read canonical configuration directly, and which need a bridge.
 - [Claude Code](https://repobuddy.github.io/buddy-agent-harness/agent-configuration/harnesses/claude-code/): Claude Code needs a skills projection, and reads AGENTS.md itself unless a CLAUDE.md beside it suppresses it.

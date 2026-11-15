@@ -93,7 +93,7 @@ These hold regardless of what you ask for mid-run:
 
 ## Agent worktree offers
 
-Where Claude Code is in use, meaning the repository has a `.claude/` directory or you named Claude Code in the run, the skill also offers two settings, each on its own and written only on approval: ignoring `.claude/worktrees/` in `.gitignore` and in each tree-scanning tool's config, and setting `worktree.baseRef` to `"head"`. A setting the repository already has is not offered, and the report says it is covered. [Agent Worktrees](/agent-configuration/agent-worktrees/) explains why.
+Where Claude Code is in use, meaning the repository has a `.claude/` directory or you named Claude Code in the run, the skill also offers these settings, each on its own and written only on approval: ignoring `.claude/worktrees/` in `.gitignore`, setting `worktree.baseRef` to `"head"`, and removing each `.claude/worktrees` exclusion an earlier version added to a tree-scanning tool's config. It no longer offers that exclusion, which matches every file inside an agent worktree. A setting the repository already has is not offered, and the report says it is covered. Where agents create worktrees is guidance for `AGENTS.md`, offered by [`enhance`](/skills/enhance/#agent-worktrees). [Agent Worktrees](/agent-configuration/agent-worktrees/) explains why.
 
 ## Which harnesses get enabled
 

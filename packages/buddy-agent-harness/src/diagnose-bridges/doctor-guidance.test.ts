@@ -12,6 +12,7 @@ import {
 	type DoctorProblem,
 	doctorRepairs,
 	doctorSkill,
+	enhanceSkillInvocation,
 	globalInstructionRepairs,
 	handWrittenPinTargets,
 	initSkillInvocation,
@@ -355,14 +356,23 @@ describe('the detect-and-repair seam', () => {
 			expect(entry.skillRepair({ file: '<path>' })).toContain(repairSkillInvocation)
 	})
 
-	it('sends every worktree finding to init, and to neither enhance nor repair', () => {
-		expect(worktreeRepairs.length).toBe(3)
+	it('sends an in-repository worktree to enhance, every other worktree finding to init, and none to repair', () => {
+		expect(worktreeRepairs.map((entry) => entry.problem)).toEqual([
+			'worktrees-in-repository',
+			'worktrees-untracked',
+			'worktrees-self-ignored',
+			'worktree-base-unset',
+		])
 		for (const entry of worktreeRepairs) {
 			const { command, instruction } = entry.repair({ file: '<path>' }, commandInvocation)
+			const [owner, other] =
+				entry.problem === 'worktrees-in-repository'
+					? [enhanceSkillInvocation, initSkillInvocation]
+					: [initSkillInvocation, enhanceSkillInvocation]
 			expect(command).toBe('')
 			for (const text of [entry.skillRepair({ file: '<path>' }), instruction]) {
-				expect(text).toContain(initSkillInvocation)
-				expect(text).not.toContain('enhance')
+				expect(text).toContain(owner)
+				expect(text).not.toContain(other)
 				expect(text).not.toContain(repairSkillInvocation)
 			}
 		}
@@ -561,7 +571,7 @@ const initOwned: DoctorProblem[] = [
 	'nonstandard-command',
 	'nonstandard-skill',
 	'worktrees-untracked',
-	'worktrees-scanned',
+	'worktrees-self-ignored',
 	'worktree-base-unset',
 ]
 

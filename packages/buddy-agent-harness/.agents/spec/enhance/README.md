@@ -41,7 +41,7 @@ already loads from outside the repository is not offered again, because loading 
   reach whatever a run finds in them.
 - **N13 Claude Code's agent-worktree settings.** Offering and writing them is
   [`agent-worktree-settings`](../agent-worktree-settings/README.md)'s, delivered by `init-buddy-agent-harness`
-  alone.
+  alone. Where agents create worktrees is guidance, not a setting, and is this skill's Agent worktrees addition.
 - **N11 Writing a harness's own user-scope instruction file**, such as `~/.claude/CLAUDE.md`. A step that changes one
   is handed over. Of the files outside the repository, only the global instruction file is ever written.
 - **N9 Deciding activation.** Which shipped skill a request reaches is co-owned by the four skill descriptions and the
@@ -55,14 +55,14 @@ already loads from outside the repository is not offered again, because loading 
 - **K2 harness**: see [glossary](../glossary.md#harness).
 - **K3 harness in use**: the harness the skill is running in.
 - **K4 addition**: a named section of instruction text this skill can offer. Each addition ships with its current
-  text, what counts as its subject already being covered, where it belongs, and every wording it has retired. Four
-  ship today: Delegation, List identifiers, Session scope, and References as links. Each is judged, offered, and
+  text, what counts as its subject already being covered, where it belongs, and every wording it has retired. Five
+  ship today: Delegation, List identifiers, Session scope, References as links, and Agent worktrees. Each is judged, offered, and
   reported on its own.
 - **K5 current text**: the text an addition offers now.
 - **K6 retired wording**: a text an addition used to offer, kept byte-identical after a revision replaced it.
 - **K7 destination**: the instruction file an addition's text belongs in, declared by the addition: the root
   `AGENTS.md` for a section about the repository, the global instruction file for one about how the agent works. All
-  four shipped additions are the second kind.
+  five shipped additions are the second kind.
 - **K8 global instruction file**: `~/.agents/AGENTS.md`, the user-scope counterpart of the root `AGENTS.md`. A harness
   reads it only where a user-scope instruction file of its own loads it.
 - **K9 global instructions**: the instructions the agent loads from outside the repository, other than the
@@ -229,6 +229,8 @@ that revises an addition.
   offered. (UC1, E3)
 - **R9** An `AGENTS.md` whose only reference guidance is a commit-message convention, such as closing an issue from a
   pull request body, gets References as links offered. (UC1, E3)
+- **R86** An `AGENTS.md` whose only worktree guidance ignores `.claude/worktrees/`, in `.gitignore` or in a tool's
+  config, gets Agent worktrees offered. (UC1, E3)
 
 ### Offering an absent addition (UC1)
 
@@ -370,7 +372,7 @@ that revises an addition.
 
 ### Report (UC1 to UC4)
 
-- **R64** Every run, whichever way it went, ends in a report that names the files read, gives each of the four
+- **R64** Every run, whichever way it went, ends in a report that names the files read, gives each of the five
   additions one verdict, distinct per verdict, with the reason, names what was offered and the destination
   recommended, and names each file written or says nothing was. (UC1, E1, E2)
 - **R84** The report gives each hand-over as an outcome, not a decline. (UC1, E58)
@@ -380,8 +382,13 @@ that revises an addition.
 - **R66** No addition's current text names a model, vendor, or version, and a candidate whose text does is rejected
   with the model, vendor, or version named as the cause. (UC6.1, E40)
 - **R67** Each shipped addition states at least one shape of existing prose that counts as its subject covered; List
-  identifiers also states a shape of list guidance that does not count, and References as links names a
-  commit-message convention as a shape that does not count. (UC6, E41)
+  identifiers also states a shape of list guidance that does not count, References as links names a
+  commit-message convention as a shape that does not count, and Agent worktrees names an ignore of
+  `.claude/worktrees/` as a shape that does not count. (UC6, E41)
+- **R87** The Agent worktrees current text directs the agent to create a git worktree outside the repository, in a
+  sibling `<repo>.worktrees/` directory, branching from `HEAD` unless told otherwise; not to use a built-in worktree
+  isolation that creates the worktree inside the repository; and to create a subagent's worktree that way before
+  handing it the path. (UC6, E41)
 - **R68** Each shipped addition's stale check reads that addition's own store of retired wordings. (UC6, E41)
 - **R69** A revision that replaces an addition's current text adds the outgoing wording to that addition's store,
   byte-identical to what it offered, in the same change. (UC6.2, E42, E44)
@@ -408,6 +415,6 @@ None.
 - Sibling specs: [`init-buddy-agent-harness`](../init-buddy-agent-harness/README.md) owns consolidation and the rule
   that material content needs approval; [`global-instructions`](../global-instructions/README.md) owns whether a
   harness loads the global instruction file; [`worktree-diagnosis`](../worktree-diagnosis/README.md) owns reporting
-  unaccounted agent worktrees; [`agent-worktree-settings`](../agent-worktree-settings/README.md) owns offering the
+  unaccounted agent worktrees, and sends a worktree it finds inside the repository here; [`agent-worktree-settings`](../agent-worktree-settings/README.md) owns offering the
   settings that account for them; [`repair`](../repair/README.md) owns correcting what is present and wrong.
 - [AGENTS.md](https://agents.md/): the open instruction format every addition is written into.

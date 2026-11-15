@@ -1,12 +1,12 @@
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { type RepairAction, repairFor, type WorktreeProblem } from '../diagnose-bridges/doctor-guidance.ts'
 import type { GitBridgeState } from '../diagnose-bridges/git-bridge-state.ts'
 import { isRecord } from '../is-record/is-record.ts'
 
 /**
- * The agent-worktree half of `doctor`: what a repository lacks for the git worktrees Claude Code
- * creates inside it under `.claude/worktrees/`. Read-only.
+ * The agent-worktree half of `doctor`: where Claude Code puts a repository's agent worktrees, and
+ * what the repository lacks, or carries, that breaks them. Read-only.
  */
 export type WorktreeFinding = {
 	/** Repository-relative path the finding is about. */
@@ -39,10 +39,19 @@ function readJson(path: string): unknown {
 	}
 }
 
+/** A linked worktree's root holds a `.git` file pointing back at the main checkout. */
+function worktreesInside(root: string): string[] {
+	const directory = join(root, worktreeDirectory)
+	if (!existsSync(directory)) return []
+	return readdirSync(directory, { withFileTypes: true })
+		.filter((entry) => entry.isDirectory() && existsSync(join(directory, entry.name, '.git')))
+		.map((entry) => `${worktreeDirectory}${entry.name}`)
+		.sort()
+}
+
 /**
  * Checked only where `.claude/` exists, the sign the repository is worked in with Claude Code.
- * Biome is the one tool checked: it is the confirmed failure, and the others are offered by the
- * skills without a finding.
+ * Biome is the one tool checked for a self-matching exclusion: it is the confirmed failure.
  */
 export function diagnoseWorktrees({ root, git, cli }: DiagnoseWorktreesOptions): WorktreeFinding[] {
 	if (!existsSync(join(root, '.claude'))) return []
@@ -53,11 +62,14 @@ export function diagnoseWorktrees({ root, git, cli }: DiagnoseWorktreesOptions):
 		findings.push({ path, problem, detail, repair: repair({ file: path }, cli) })
 	}
 
+	for (const worktree of worktreesInside(root)) add(worktree, 'worktrees-in-repository')
+
 	if (git.isRepository() && !git.isIgnored(worktreeDirectory)) add('.gitignore', 'worktrees-untracked')
 
 	for (const config of biomeConfigs) {
 		const path = join(root, config)
-		if (existsSync(path) && !readFileSync(path, 'utf8').includes('.claude/worktrees')) add(config, 'worktrees-scanned')
+		if (existsSync(path) && readFileSync(path, 'utf8').includes('.claude/worktrees'))
+			add(config, 'worktrees-self-ignored')
 	}
 
 	const settings = readJson(join(root, claudeSettings))

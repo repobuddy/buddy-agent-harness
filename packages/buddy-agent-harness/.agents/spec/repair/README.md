@@ -59,7 +59,7 @@ names, or to a person.
 - **K9 golden MCP set**: the repository's one declared set of MCP servers that each harness's MCP file is projected
   from; see [mcp-projection](../mcp-projection/README.md).
 - **K13 outcome**: what became of one finding in a run: corrected, declined, still open, reported as material, handed
-  to `init-buddy-agent-harness`, needs your decision (no skill owns it, and someone must judge it), or for you to do
+  to `init-buddy-agent-harness`, handed to `enhance`, needs your decision (no skill owns it, and someone must judge it), or for you to do
   outside the repo (a step in the user's home directory). Each is told apart from the others.
 - **K11 sync**: the file-by-file merge of a drifted skills copy with the canonical skills directory, as
   [copy-sync](../copy-sync/README.md) states it.
@@ -172,6 +172,8 @@ R28 is checked by trigger evals whose near misses include each request UC1.2 nam
 - **R6** (UC2, E5) For an out-of-remit finding whose repair names `init-buddy-agent-harness` or the `init` command,
   the report hands it to the `init-buddy-agent-harness` skill, the run does not run `init`, and the bridge or
   instruction file it names is unchanged.
+- **R37** (UC2, E18) For an out-of-remit finding whose repair names the `enhance` skill and not `init`, the report
+  hands it to the `enhance` skill, and the run writes nothing for it.
 - **R31** (UC2.3, E6) For an out-of-remit finding whose repair names no skill, the report gives it the outcome needs
   your decision and names no skill as its owner.
 - **R32** (UC2.4, E7) For a global-instructions finding, the report gives it the outcome for you to do outside the

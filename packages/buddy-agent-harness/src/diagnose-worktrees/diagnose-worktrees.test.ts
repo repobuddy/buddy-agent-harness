@@ -15,7 +15,7 @@ function write(root: string, path: string, body: string): void {
 
 const headSettings = '{\n\t"worktree": { "baseRef": "head" }\n}\n'
 
-/** A git repository worked in with Claude Code, carrying both offers. */
+/** A git repository worked in with Claude Code, carrying every offer. */
 function repository(): string {
 	const root = mkdtempSync(join(tmpdir(), 'buddy-agent-harness-worktrees-'))
 	execFileSync('git', ['init', '-q', '.'], { cwd: root, stdio: ['pipe', 'pipe', 'pipe'] })
@@ -70,34 +70,61 @@ describe('diagnoseWorktrees', () => {
 		})
 	})
 
-	describe('worktrees-scanned', () => {
-		it('reports a biome.json that does not exclude the worktrees', () => {
+	describe('worktrees-in-repository', () => {
+		it('reports each linked worktree under .claude/worktrees/', () => {
 			const root = repository()
-			write(root, 'biome.json', '{ "files": { "includes": ["**", "!**/dist"] } }\n')
+			write(root, '.claude/worktrees/bold-oak/.git', 'gitdir: elsewhere\n')
+			write(root, '.claude/worktrees/agent-a1/.git', 'gitdir: elsewhere\n')
+			const findings = diagnose(root)
 
-			expect(problems(root)).toEqual(['worktrees-scanned biome.json'])
-			expect(diagnose(root)[0]?.repair.instruction).toContain('"!**/.claude/worktrees"')
+			expect(problems(root)).toEqual([
+				'worktrees-in-repository .claude/worktrees/agent-a1',
+				'worktrees-in-repository .claude/worktrees/bold-oak',
+			])
+			expect(findings[0]?.repair).toMatchObject({ command: '' })
+			expect(findings[0]?.repair.instruction).toContain('git worktree move')
+		})
+
+		it('skips an entry that is not a worktree', () => {
+			const root = repository()
+			write(root, '.claude/worktrees/notes.md', 'notes\n')
+			mkdirSync(join(root, '.claude/worktrees/empty'))
+
+			expect(problems(root)).toEqual([])
+		})
+	})
+
+	describe('worktrees-self-ignored', () => {
+		it('reports a biome.json that excludes the worktrees', () => {
+			const root = repository()
+			write(root, 'biome.json', '{ "files": { "includes": ["**", "!**/.claude/worktrees"] } }\n')
+
+			expect(problems(root)).toEqual(['worktrees-self-ignored biome.json'])
+			expect(diagnose(root)[0]?.repair.instruction).toContain('remove the `.claude/worktrees` exclusion')
 		})
 
 		it('reports a biome.jsonc the same way', () => {
 			const root = repository()
-			write(root, 'biome.jsonc', '// config\n{}\n')
+			write(root, 'biome.jsonc', '// config\n{ "files": { "includes": ["!**/.claude/worktrees"] } }\n')
 
-			expect(problems(root)).toEqual(['worktrees-scanned biome.jsonc'])
+			expect(problems(root)).toEqual(['worktrees-self-ignored biome.jsonc'])
 		})
 
-		it('accepts a biome.json that excludes the worktrees', () => {
+		it('accepts a biome.json that does not mention the worktrees', () => {
 			const root = repository()
-			write(root, 'biome.json', '{ "files": { "includes": ["**", "!**/.claude/worktrees"] } }\n')
+			write(root, 'biome.json', '{ "files": { "includes": ["**", "!**/dist"] } }\n')
 
 			expect(problems(root)).toEqual([])
 		})
 	})
 
 	describe('worktree-base-unset', () => {
+		const unhooked = ['worktree-base-unset .claude/settings.json']
+
 		it('reports a .claude directory with no settings file', () => {
 			const root = repository()
 			rmSync(join(root, '.claude/settings.json'))
+			mkdirSync(join(root, '.claude'), { recursive: true })
 			const finding = diagnose(root).find((entry) => entry.problem === 'worktree-base-unset')
 
 			expect(finding).toMatchObject({ path: '.claude/settings.json', repair: { command: '' } })
@@ -108,21 +135,21 @@ describe('diagnoseWorktrees', () => {
 			const root = repository()
 			write(root, '.claude/settings.json', '{ "worktree": ')
 
-			expect(problems(root)).toEqual(['worktree-base-unset .claude/settings.json'])
+			expect(problems(root)).toEqual(unhooked)
 		})
 
 		it('reports settings that leave worktree.baseRef unset', () => {
 			const root = repository()
 			write(root, '.claude/settings.json', '{ "worktree": { "bgIsolation": "none" } }\n')
 
-			expect(problems(root)).toEqual(['worktree-base-unset .claude/settings.json'])
+			expect(problems(root)).toEqual(unhooked)
 		})
 
 		it('reports settings with no worktree key', () => {
 			const root = repository()
 			write(root, '.claude/settings.json', '{ "enabledPlugins": {} }\n')
 
-			expect(problems(root)).toEqual(['worktree-base-unset .claude/settings.json'])
+			expect(problems(root)).toEqual(unhooked)
 		})
 
 		it('leaves an explicit "fresh" alone, since it is the owner\'s choice', () => {
@@ -133,15 +160,17 @@ describe('diagnoseWorktrees', () => {
 		})
 	})
 
-	it('reports all three at once', () => {
+	it('reports all four at once', () => {
 		const root = repository()
 		write(root, '.gitignore', '')
-		write(root, 'biome.json', '{}\n')
+		write(root, 'biome.json', '{ "files": { "includes": ["!**/.claude/worktrees"] } }\n')
 		write(root, '.claude/settings.json', '{}\n')
+		write(root, '.claude/worktrees/bold-oak/.git', 'gitdir: elsewhere\n')
 
 		expect(problems(root)).toEqual([
+			'worktrees-in-repository .claude/worktrees/bold-oak',
 			'worktrees-untracked .gitignore',
-			'worktrees-scanned biome.json',
+			'worktrees-self-ignored biome.json',
 			'worktree-base-unset .claude/settings.json',
 		])
 	})
