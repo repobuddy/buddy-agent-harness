@@ -55,6 +55,10 @@ Those four go to the [`repair` skill](/skills/repair/), which offers each correc
 
 Where the repository keeps a [golden MCP server set](/agent-configuration/mcp-servers/), the command also reports how each harness's own MCP config has drifted from it, and it reports a literal credential in any MCP file whether or not a golden set exists. This skill does not act on any `mcp-*` finding itself — every repair is carried in the finding, and passing it on is the whole of what this skill does with it. `mcp-unprojected` and `mcp-diverged-golden` are the two the [`repair` skill](/skills/repair/) owns, driving [`mcp project`](/cli/mcp/) with approval; every other `mcp-*` finding is a person's call. Two rules bind this skill regardless: never merge a `mcp-diverged-both` conflict automatically, and never read a reported secret's value back into the conversation; the report deliberately does not contain it. [MCP Servers](/agent-configuration/mcp-servers/) is the home for the golden set, the per-harness files, and the findings.
 
+## Agent worktree findings
+
+In a repository with a `.claude/` directory, the command reports a missing `.gitignore` rule, a Biome config that does not exclude `.claude/worktrees`, and an unset `worktree.baseRef`. The skill passes each to [`init`](/skills/init-buddy-agent-harness/) or [`enhance`](/skills/enhance/#agent-worktrees), which offers it. `worktree-base-unset` is a choice, so put the trade-off to the owner. [Agent Worktrees](/agent-configuration/agent-worktrees/) is the home for all three.
+
 ## What it will not do
 
 There is no `--fix`, and the skill does not invent one. Three rules hold whatever you ask for mid-run:

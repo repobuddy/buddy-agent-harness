@@ -134,6 +134,7 @@ export default defineConfig({
 						{ label: 'Skill Scripts', slug: 'agent-configuration/skill-scripts' },
 						{ label: 'Lookup Files', slug: 'agent-configuration/lookup-files' },
 						{ label: 'MCP Servers', slug: 'agent-configuration/mcp-servers' },
+						{ label: 'Agent Worktrees', slug: 'agent-configuration/agent-worktrees' },
 						{
 							label: 'Skill Design',
 							items: [

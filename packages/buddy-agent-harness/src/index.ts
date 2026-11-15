@@ -56,6 +56,7 @@ export type {
 	InstructionProblem,
 	McpProblem,
 	Repair,
+	WorktreeProblem,
 } from './diagnose-bridges/doctor-guidance.ts'
 export {
 	bridgeRepairs,

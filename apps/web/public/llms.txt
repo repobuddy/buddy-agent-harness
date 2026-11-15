@@ -51,6 +51,7 @@ Documentation site: [One canonical agent configuration](https://repobuddy.github
 
 ## Agent configuration
 
+- [Agent Worktrees](https://repobuddy.github.io/buddy-agent-harness/agent-configuration/agent-worktrees/): Where Claude Code puts the git worktrees it creates for agents, why that breaks linters and git status, and the two settings a repository needs.
 - [Agent Configuration Best Practices](https://repobuddy.github.io/buddy-agent-harness/agent-configuration/best-practices/): Practices that apply across AGENTS.md, skills, and harness bridges, starting with the cost of every file an agent has to go and open.
 - [Harness Differences](https://repobuddy.github.io/buddy-agent-harness/agent-configuration/harness-differences/): Which agent harnesses read canonical configuration directly, and which need a bridge.
 - [Claude Code](https://repobuddy.github.io/buddy-agent-harness/agent-configuration/harnesses/claude-code/): Claude Code needs a skills projection, and reads AGENTS.md itself unless a CLAUDE.md beside it suppresses it.
@@ -87,7 +88,7 @@ Documentation site: [One canonical agent configuration](https://repobuddy.github
 - [Library: `diagnose-bridges/diagnose-global-instructions.ts`](https://repobuddy.github.io/buddy-agent-harness/library/doctor/): exports `diagnoseGlobalInstructions`, type `GlobalInstructionKind`, type `GlobalInstructionReport`, type `GlobalInstructionStatus`.
 - [Library: `diagnose-bridges/diagnose-instructions.ts`](https://repobuddy.github.io/buddy-agent-harness/library/doctor/): exports `diagnoseInstructions`, type `InstructionKind`, type `InstructionReport`, type `InstructionStatus`.
 - [Library: `diagnose-bridges/doctor.command.ts`](https://repobuddy.github.io/buddy-agent-harness/library/doctor/): exports `buildDoctorReport`, `doctorCommand`, type `DoctorReference`, type `DoctorReport`.
-- [Library: `diagnose-bridges/doctor-guidance.ts`](https://repobuddy.github.io/buddy-agent-harness/library/doctor/): exports `bridgeRepairs`, `doctorRepairs`, `doctorSkill`, `globalInstructionRepairs`, `instructionRepairs`, `renderDoctorSkill`, type `BridgeProblem`, type `ConfigurationFault`, type `ConfigurationProblem`, type `DoctorProblem`, type `GlobalInstructionProblem`, type `InstructionProblem`, type `McpProblem`, type `Repair`.
+- [Library: `diagnose-bridges/doctor-guidance.ts`](https://repobuddy.github.io/buddy-agent-harness/library/doctor/): exports `bridgeRepairs`, `doctorRepairs`, `doctorSkill`, `globalInstructionRepairs`, `instructionRepairs`, `renderDoctorSkill`, type `BridgeProblem`, type `ConfigurationFault`, type `ConfigurationProblem`, type `DoctorProblem`, type `GlobalInstructionProblem`, type `InstructionProblem`, type `McpProblem`, type `Repair`, type `WorktreeProblem`.
 - [Library: `diagnose-bridges/git-bridge-state.ts`](https://repobuddy.github.io/buddy-agent-harness/library/doctor/): exports type `DivergenceDirection`.
 - [Library: `diagnose-mcp/diagnose-mcp.ts`](https://repobuddy.github.io/buddy-agent-harness/library/mcp/): exports `diagnoseMcp`, type `DiagnoseMcpOptions`.
 - [Library: `diagnose-mcp/mcp-baseline.ts`](https://repobuddy.github.io/buddy-agent-harness/library/mcp/): exports type `McpDirection`.

@@ -23,6 +23,8 @@ Each entry gives the short definition and links to the page that owns the topic.
 
 **reference**: a Markdown document an agent reads on demand, fetched by name rather than loaded at session start. It resolves through the managed, project, user, and plugin tiers, and the higher layer decides how it combines with the ones below. See [References and Skills](/agent-configuration/references/).
 
+**agent worktree**: a git worktree Claude Code creates for a `--worktree` session or an isolated subagent, under `.claude/worktrees/<name>/`. See [Agent Worktrees](/agent-configuration/agent-worktrees/).
+
 **last-projected record**: `.agents/buddy-agent-harness/mcp.projected.json`, the per-target record of what was last written from the golden set, and the drift baseline for a file git cannot speak for. See [MCP Servers](/agent-configuration/mcp-servers/#which-side-moved).
 
 ## Harnesses

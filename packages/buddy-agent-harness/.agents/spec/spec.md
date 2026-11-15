@@ -47,6 +47,7 @@ This project mirrors its source surfaces so a contributor can find a spec beside
 | [`cli/instruction-bridges/`](./cli/instruction-bridges/README.md) | Report whether every enabled harness can still read `AGENTS.md` |
 | [`cli/global-instructions/`](./cli/global-instructions/README.md) | Report whether each installed harness loads `~/.agents/AGENTS.md` |
 | [`cli/configuration-diagnosis/`](./cli/configuration-diagnosis/README.md) | Report agent configuration that is present and wrong |
+| [`cli/worktree-diagnosis/`](./cli/worktree-diagnosis/README.md) | Report agent worktrees a repository leaves unaccounted for |
 | [`cli/mcp-diagnosis/`](./cli/mcp-diagnosis/README.md) | Report drift between a golden MCP server set and the harness copies of it |
 | [`cli/mcp-projection/`](./cli/mcp-projection/README.md) | Project a golden MCP server set into each harness's own MCP file |
 | [`cli/mcp-reconcile/`](./cli/mcp-reconcile/README.md) | Reconcile a harness-side MCP change back into the golden set |
@@ -78,7 +79,7 @@ What is still outstanding:
 
 | Concept | Facets |
 |---|---|
-| `command-interface` | `cli/bridge-resolution/` (behavior) · `cli/command-output/` (behavior) · `cli/configuration-diagnosis/` (behavior) · `cli/diagnosis-report/` (behavior) · `cli/entry-point/` (behavior) · `cli/governance-overrides/` (behavior) · `cli/instruction-bridges/` (behavior) · `cli/mcp-diagnosis/` (behavior) · `cli/mcp-projection/` (behavior) · `cli/mcp-reconcile/` (behavior) · `cli/references/` (behavior) |
+| `command-interface` | `cli/bridge-resolution/` (behavior) · `cli/command-output/` (behavior) · `cli/configuration-diagnosis/` (behavior) · `cli/diagnosis-report/` (behavior) · `cli/entry-point/` (behavior) · `cli/governance-overrides/` (behavior) · `cli/instruction-bridges/` (behavior) · `cli/mcp-diagnosis/` (behavior) · `cli/mcp-projection/` (behavior) · `cli/mcp-reconcile/` (behavior) · `cli/references/` (behavior) · `cli/worktree-diagnosis/` (behavior) |
 | `harness-compatibility` | `cli/nonstandard-configuration/` (behavior) · `skills/enhance/` (behavior) · `skills/harness-init/` (behavior) · `skills/init-buddy-agent-harness/` (behavior) · `skills/repair/` (behavior) · `workflows/detect-and-repair/` (workflow) |
 | `release-tooling` | `tooling/` (reference) |
 

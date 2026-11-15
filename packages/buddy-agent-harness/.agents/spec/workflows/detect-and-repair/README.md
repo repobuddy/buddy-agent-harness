@@ -11,18 +11,20 @@ The contract between the surface that **finds** wrong agent configuration and th
 
 `doctor` is a read-only CLI command. `init` and `repair` are skills that write. Neither half works alone: a detector that cannot hand its findings on is a report nobody acts on, and a repairer that detects for itself is a second detector free to drift from the first. What makes the pair work is the narrow thing passed between them, and until now that was written as a paragraph inside one of the two nodes — which is the wrong home the moment a second cross-surface flow appears.
 
-This node owns **the seam and nothing else**. What each finding means is the detecting node's (`../../cli/bridge-resolution/`, `../../cli/instruction-bridges/`, `../../cli/configuration-diagnosis/`, `../../cli/mcp-diagnosis/`). What a repairing skill does once it holds a finding is that skill's (`../../skills/repair/`). What lives here is what crosses: the fields a consumer may rely on, which surface owns each repair, and the properties that keep the split honest.
+This node owns **the seam and nothing else**. What each finding means is the detecting node's (`../../cli/bridge-resolution/`, `../../cli/instruction-bridges/`, `../../cli/configuration-diagnosis/`, `../../cli/mcp-diagnosis/`, `../../cli/worktree-diagnosis/`). What a repairing skill does once it holds a finding is that skill's (`../../skills/repair/`). What lives here is what crosses: the fields a consumer may rely on, which surface owns each repair, and the properties that keep the split honest.
 
 **Detection has exactly one home.** Every check lives in the `doctor` command. That is what lets the finding set grow without touching a skill, and it is why `doctor` refuses to carry repairs: the moment it writes, it stops being safe to run from a session-start hook, and the hook is the only thing that notices a broken bridge before a person does.
 
-**Repair has an owner per finding where one exists, and the finding names it.** Two families are uniform: every instruction-bridge finding repairs through **`init`**, which writes those bridges in the first place, and every configuration finding repairs through **`repair`**, because no `init` flag corrects a file the user already wrote. The MCP family is uniform the other way — none of its ten problems names a skill, because correcting a drifted server set is the user's judgment about which side is right. So is the global-instruction family: both of its problems are a step in the user's home directory, outside the repository every skill here writes in, so each is handed to the user and names no skill.
+**Repair has an owner per finding where one exists, and the finding names it.** Four families are uniform. Every instruction-bridge finding repairs through **`init`**, which writes those bridges in the first place. Every configuration finding repairs through **`repair`**, because no `init` flag corrects a file the user already wrote. Every agent-worktree finding names **`init` and `enhance` together**, because each offers the lines on approval and neither is the one owner; none names `repair`. The global-instruction family is uniform the other way: all four of its problems are a step in the user's home directory, outside the repository every skill here writes in, so each is handed to the user and names no skill.
+
+The MCP family is **not** uniform. Four of its ten problems name **`repair`**: `mcp-unprojected`, `mcp-undeclared`, `mcp-diverged-target`, and `mcp-diverged-golden`, where one side is plainly the one to copy from. The other six name no skill, because correcting them is the user's judgment about which side is right or what to do with a credential. The non-standard family is nearly uniform: four of its five problems name `init`, and `nonstandard-subagent` names none, because no portable form exists to convert it to.
 
 The bridge-resolution family is **not** uniform, and that is a property of the seam rather than an oversight. Six of its nine problems repair by rebuilding the bridge, and name `init`. Three name **no skill at all**:
 
 - `diverged-both` and `diverged-unknown` — rebuilding would discard whichever side holds the newer edit, and which side that is cannot be decided from the filesystem. The repair is a reconciliation by hand, and handing it to a skill that rebuilds is the one thing that must not happen.
 - `unpinned-copy` — the bridge resolves. What is wrong is the **git index**, not the bridge, and the repair is a `git update-index` invocation that no skill owns.
 
-So a consumer's question is not "which of the two skills?" but "does this finding name a skill, and which?" — a finding that names none is work for a person, not work to route. Across all twenty-seven problems the shipped skill's rendering names `init` for ten, `repair` for four, and nobody for thirteen.
+So a consumer's question is not "which of the two skills?" but "does this finding name a skill, and which?" — a finding that names none is work for a person, not work to route. Across all forty-one problems the shipped skill's rendering names `init` for nineteen (six bridge, six instruction, four non-standard, three agent-worktree), `repair` for eight (four configuration, four MCP), and nobody for fourteen (three bridge, four global-instruction, six MCP, one non-standard).
 
 **Key terms**
 
@@ -76,7 +78,7 @@ That one repair is **rendered twice**, for the two consumers, and the renderings
 
 Where they part is the bridge family. The skill rendering sends every bridge problem a rebuild fixes to `/buddy-agent-harness:init-buddy-agent-harness`, because a skill must not run `init` itself. The command rendering gives those same problems a **runnable `command`** and names no skill at all, because a caller reading the command's output can simply run it. Neither is wrong; they answer different questions for different readers.
 
-So **an owner is not something a consumer can always read off the report.** In `help`, the instruction names a skill for the eight problems in the instruction and configuration families and for none of the twenty-one bridge, global-instruction, and MCP problems. Route on `problem`, which every finding carries, rather than on a skill name in `help`.
+So **an owner is not something a consumer can always read off the report.** In `help`, the instruction names a skill for twenty-one problems (six instruction, four configuration, four non-standard, three agent-worktree, four MCP) and for none of the twenty: the nine bridge problems, the four global-instruction problems, six MCP problems, and one non-standard problem. A bridge problem a rebuild fixes names no skill there, because its command is runnable. Route on `problem`, which every finding carries, rather than on a skill name in `help`.
 
 **Extensions**
 
@@ -121,7 +123,8 @@ Routing reads the `problem` name only. Nothing on this path reads `detail`, and 
 | F→G | an instruction-bridge problem | `sends every instruction finding to the init skill` |
 | F→H | a configuration fault | `sends every configuration finding to the repair skill` |
 | F→I | `diverged-both`, `diverged-unknown`, `unpinned-copy` | `names no skill for a finding that rebuilding would not repair` |
-| F→I | an MCP problem | `names no skill for any MCP finding, in either rendering` |
+| F→H | an MCP problem where one side is plainly the source | `names the repair skill for the four MCP problems with a plain source, and none for the rest` |
+| F→G | an agent-worktree problem | `names both the init and enhance skills for every agent-worktree finding` |
 | F | the families the report routes by | `accounts for every problem in exactly one family` |
 | J | a repair the `init` command would satisfy | `never tells the skill to run the init command` |
 | J | a repair naming the binary the command invokes for its own output | `never points the skill at a bare binary invocation` |

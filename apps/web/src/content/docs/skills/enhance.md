@@ -265,3 +265,7 @@ An agent left to itself writes a bare `#222`. GitHub renders that as a link, but
 A convention for commit messages, such as closing an issue with `Closes #12`, does not count as covering this subject: GitHub renders that text, so a bare number works there. Neither does a rule that only adds the repository, such as `owner/repo#12`, because that still leads nowhere in a terminal.
 
 This section has no retired wording, so `references/references-as-links.history.md` is empty and an existing section is compared against the current text, the same way Session scope is. No harness scores this wording, so where the skill cannot tell whose words a section is, it offers you two answers instead of three.
+
+### Agent worktrees
+
+Where Claude Code is in use, a `.claude/` directory exists, the skill offers two settings in its own step after the additions: ignoring `.claude/worktrees/` in `.gitignore` and in each tree-scanning tool's config, and setting `worktree.baseRef` to `"head"` after the trade-off is explained. Each is covered or offered on its own, one line per file, and only an approved line is written. These are settings, not additions to `AGENTS.md`: there is no history file and no global destination. Where no `AGENTS.md` exists the run stops and points at [`init`](/skills/init-buddy-agent-harness/#agent-worktree-offers), which offers both. [Agent Worktrees](/agent-configuration/agent-worktrees/) is the home for the reasons.

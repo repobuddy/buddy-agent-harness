@@ -53,11 +53,20 @@ Feature: Hand every doctor finding to the one surface that repairs it
     Then each names the `repair` skill as the surface that repairs it
 
   @behavior
-  Scenario: names no skill for any MCP finding, in either rendering
+  Scenario: names the repair skill for the four MCP problems with a plain source, and none for the rest
     Given every problem belonging to the MCP family
     When each repair is read in both of its renderings
-    Then none names a skill
-    And each states what the user must decide instead
+    Then `mcp-unprojected`, `mcp-undeclared`, `mcp-diverged-target`, and `mcp-diverged-golden` name the `repair` skill
+    And the other six name no skill
+    And each of those six states what the user must decide instead
+
+  @behavior
+  Scenario: names both the init and enhance skills for every agent-worktree finding
+    Given every problem belonging to the agent-worktree family
+    When each repair is read as the command renders it and as the shipped skill states it
+    Then each names the `init-buddy-agent-harness` skill and the `enhance` skill
+    And none names the `repair` skill
+    And each carries an empty runnable command
 
   @behavior
   Scenario: accounts for every problem in exactly one family

@@ -69,6 +69,7 @@ const mirrors: { from: string[]; to: string[] }[] = [
 	{ from: [initSkillName, 'references', 'agents-md.md'], to: ['repair', 'references', 'agents-md.md'] },
 	{ from: [initSkillName, 'references', 'agents-md.md'], to: ['enhance', 'references', 'agents-md.md'] },
 	{ from: [initSkillName, 'references', 'detection.md'], to: ['enhance', 'references', 'detection.md'] },
+	{ from: [initSkillName, 'references', 'agent-worktrees.md'], to: ['enhance', 'references', 'agent-worktrees.md'] },
 	{
 		from: [doctorSkill.name, 'references', 'global-instructions.md'],
 		to: ['enhance', 'references', 'global-instructions.md'],
