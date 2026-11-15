@@ -1,5 +1,51 @@
 # buddy-agent-harness
 
+## 2.0.0
+
+### Major Changes
+
+- 18cab4c: `doctor` now puts each finding's repair on the finding's own row. Every row in `findings` has `path`, `problem`, `cause`, `detail`, `command`, and `instruction`, so you can tell which repair goes with which finding without matching rows against `help`. `help` still lists each distinct repair once, as a summary. This breaks code that reads `findings` rows as `path`, `problem`, and `detail` only, or that pairs findings with `help` entries by position. The `findings` rows of `buildDoctorReport` change the same way.
+
+### Minor Changes
+
+- a02e26d: Keep agent worktrees out of the repository instead of excluding them from each tool.
+  
+  A `.claude/worktrees` exclusion in a tool config matches every file inside an agent worktree there, so Biome processed nothing and every commit in the worktree failed its pre-commit hook.
+  
+  - `enhance` offers a new Agent worktrees addition for `AGENTS.md`. It tells agents to create worktrees in a sibling `<repo>.worktrees/` directory, branching from `HEAD`, rather than with `isolation: "worktree"`.
+  - `init-buddy-agent-harness` no longer offers a `.claude/worktrees` exclusion for Biome, ESLint, Prettier, knip, or tsconfig. It offers to remove one an earlier version added, and for Biome to replace it with `vcs.useIgnoreFile`, which skips the worktrees through `.gitignore` without matching inside one, and keeps the `.gitignore` line and the `worktree.baseRef` offer.
+  - `doctor` reports `worktrees-in-repository` for each agent worktree under `.claude/worktrees/`, routed to `enhance`, and `worktrees-self-ignored` for a Biome config that excludes `.claude/worktrees`. `worktrees-scanned` is removed.
+  - `repair` hands a finding whose repair names `enhance` to that skill.
+- c0613a1: A new `sync` command merges each skills copy bridge, such as a `.claude/skills` copy made where links are unavailable, with `.agents/skills` file by file, against the last commit where the two agreed.
+  
+  - A file only one side changed takes that side's version on both sides, a removal included, so an edit made through the copy reaches `.agents/skills`.
+  - A file both sides changed, or every differing file when no last agreement exists, is left as it is and listed in `left`. Pass your picks with `--resolve <bridge>/<file>=<canonical|copy>,...`, such as `--resolve .claude/skills/review/SKILL.md=copy`.
+  - A pick for a file the sync does not leave for you, or with an unknown side, is refused before anything is written (`unneeded-resolution`, `invalid-resolution`, exit `2`). When `.agents/skills` is missing while a copy exists, nothing is written and the command fails with `canonical-missing`.
+  - The result reports `outcome` (`synced` or `files-left`), the files `written` with the side each took, the files `left`, and the copies `protected`. It defaults to TOON.
+  
+  `init` now syncs an existing copy the same way instead of reporting it as a conflict, and reports the sync in two new result fields, `written` and `left`. `--force` naming the copy's path, or given alone, still replaces it.
+  
+  Copies at a path git tracks are now kept out of commits: `init` and `sync` set skip-worktree on the copy's tracked entries and list the bridge path in the clone's own exclude file, never in `.gitignore`. `doctor` reports `unpinned-copy` while either part is missing, and its repair now puts both in place.
+  
+  `doctor`'s repair for a diverged copy is now the sync, never a rebuild: `diverged-bridge` and `diverged-canonical` offer `buddy-agent-harness sync`, and `diverged-both` and `diverged-unknown` say to run it and pick a side for each file it leaves. The `doctor-buddy-agent-harness` skill hands every diverged and unprotected copy to the `repair` skill, and the `repair` and `init-buddy-agent-harness` skills run the sync from a bundled `scripts/sync.mjs`.
+  
+  The library exports `syncSkillCopies`, `parseResolutions`, `SyncError`, `syncCommand`, and their types, and now exports the `DoctorFinding` and `UnloadableSkillCause` types too.
+- 18cab4c: - An `unloadable-skill` finding from `doctor` now says why the skill will not load: its `cause` is `unparsable-frontmatter` or `missing-description`, and each cause has its own detail and repair. A skill file with no frontmatter block at all now counts as `missing-description`. When the description is missing, the repair says the skill's author has to write it.
+  - `doctor` now gives every installed harness a `globalInstructions` row. Cursor, and Devin Desktop when you name it with `--harness`, get the status `cannot-load-file`, because they keep user rules outside a file. When `~/.agents/AGENTS.md` exists, each also gets a `global-instructions-no-file` finding whose step is to paste that file's text into the harness's user rules.
+  - The `doctor` report has a new `harnessInUse` field, the harness the run was started from as its environment shows it, or `unknown`. `diagnoseBridges` returns the same field. It is `unknown` when no `env` is passed.
+  - The repairs for the agent-worktree findings (`worktrees-untracked`, `worktrees-scanned`, `worktree-base-unset`) now name only the `init-buddy-agent-harness` skill, not `enhance`.
+  - A crash the CLI framework does not handle while it reads the arguments now prints a coded error on stdout, in the format you asked for, with the code `command-failed`, a reason, and a next step. It writes nothing to stderr and exits with 1. It used to print a plain message on stderr and exit with 2.
+- 592f530: Run from a nested package of a monorepo, `init` now sets up the repository root instead of that package. `--root` names a directory inside a Git repository by its repository root, and a folder outside Git is used as given.
+- 5212b66: The `init-buddy-agent-harness`, `repair`, and `enhance` skills now follow the owner-approved design specs.
+  
+  - `init-buddy-agent-harness` asks, for each harness instruction file it consolidated other than `CLAUDE.md`, whether to delete it, replace it with a pointer to `AGENTS.md`, or leave it as it is. It never writes a copy of `AGENTS.md` in its place, and offers deletion only when every harness that read the file reads `AGENTS.md` after the run (`GEMINI.md` only with the `context.fileName` entry). A declined step leaves the file byte-identical.
+  - `init-buddy-agent-harness` shows you each skills-copy file changed on both sides, asks which side wins, and writes nothing for a file you do not answer, then reruns `sync --resolve` with your picks.
+  - `init-buddy-agent-harness` now ends by listing the `doctor` findings that `repair` owns and offering once to continue with `repair`, before it offers `enhance`.
+  - The agent-worktree settings are offered by `init-buddy-agent-harness` only, where the repository has a `.claude/` directory or you named Claude Code. `enhance` no longer offers them, and writes only the root `AGENTS.md` and `~/.agents/AGENTS.md`.
+  - `repair` now syncs a skills copy that drifted from `.agents/skills`, asking which side wins for each file both sides changed, and restores a tracked copy's protection. "Sync the `.claude/skills` copy that drifted" reaches it.
+  - `repair` reports two new outcomes: "needs your decision" for a finding no skill owns, and "for you to do outside the repo" for a step in your home directory. It never repeats a literal MCP credential, reports a server the projection refuses with the reason, and applies a hand edit with only that server's entry changed.
+  - Each of the three skills now ends with a `Done when` checklist.
+
 ## 1.3.0
 
 ### Minor Changes
