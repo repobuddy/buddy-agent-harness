@@ -1,5 +1,8 @@
 {
 	"enabledPlugins": {
 		"buddy-agent-harness@buddy-agent-harness-local": true
+	},
+	"worktree": {
+		"baseRef": "head"
 	}
 }
