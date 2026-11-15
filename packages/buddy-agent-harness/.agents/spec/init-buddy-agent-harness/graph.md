@@ -17,8 +17,6 @@ flowchart TD
   survey -->|E10 no root AGENTS.md with authored content| derive{Does any derived line survive?}
   derive -->|E11 yes| plan
   derive -->|E12 no: a heading and one line| plan
-  survey -->|E13 Claude Code in use and an agent-worktree setting uncovered| plan
-  survey -->|E14 Claude Code not in use, or the setting covered| left
   plan[Plan presented] -->|E15| step{Does the step replace, rewrite, or remove an authored file, or add material content?}
   step -->|E16 no: it creates what is absent, or writes the non-material region| apply
   step -->|E17 yes| ask{Did the owner approve it?}
@@ -35,10 +33,12 @@ flowchart TD
   region -->|E32| verify[Verify projections and migrated skills]
   verify -->|E28 verified| formatter{Does the repository have its own formatter?}
   formatter -->|E29 yes| format[Formatter run over the written files]
-  format -->|E30| done([Run reported, enhance offered once])
+  format -->|E30| done([Run reported, repair offered for the findings it owns, enhance offered once])
   formatter -->|E31 no| done
 ```
 
 - Outcomes: `left` and `done`.
+- E13 and E14 are retired: the agent-worktree offer moved to
+  [agent-worktree-settings](../agent-worktree-settings/graph.md). A retired edge ID is never reused.
 - The instruction bridge for Gemini CLI and the approved removals are steps of `apply`; whether each needs approval is
   decided at `step`.

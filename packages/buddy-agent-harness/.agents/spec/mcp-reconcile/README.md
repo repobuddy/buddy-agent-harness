@@ -173,6 +173,7 @@ comment in the golden set, and never imports a literal credential or a change bo
   its reasons) is distinct and stable in the result, and each row that changes a field carries its value in golden
   form or says it would be unset. (UC1, E6, E7, E12, E10, E17, E18)
 - R28 A failed run is told apart from a successful one without reading the result. (UC2, E2, E15)
+- R29 With no format named, the result is written in `toon`. (UC1, UC2, E14, E18)
 
 ## Open questions
 

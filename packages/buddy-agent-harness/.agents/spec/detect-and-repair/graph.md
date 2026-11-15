@@ -14,11 +14,11 @@ flowchart TD
   Owner -->|E7 non-standard, with a portable form| Init
   Owner -->|E8 configuration| Repair([With the repair skill])
   Owner -->|E9 MCP drift, one side plainly the source| Repair
-  Owner -->|E10 agent worktree| Both([With the init-buddy-agent-harness and enhance skills])
+  Owner -->|E17 agent worktree| Init
   Owner -->|E16 skills bridge: a diverged or an unprotected copy| Repair
   Owner -->|E12 MCP drift needing the user's judgment| Person([Reported for a person, routed to no skill])
   Owner -->|E13 non-standard, with no portable form| Person
   Owner -->|E14 global instructions| User([A step for the user in their home directory, routed to no skill])
 ```
 
-E6 and E11 are retired. Routing reads the fault name only. No edge reads the prose description, and no edge writes.
+E6, E10, and E11 are retired. Routing reads the fault name only. No edge reads the prose description, and no edge writes.

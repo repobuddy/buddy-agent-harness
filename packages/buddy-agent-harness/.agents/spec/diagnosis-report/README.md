@@ -93,7 +93,7 @@ and a failure of the tool told apart from a report of faults.
   - Library: the report builder's value.
 - **Inputs**: one report.
 - **Success**: the skill knows, from which sections are present and what they hold, whether anything is wrong,
-  whether a bridge diverged, and what each repair is.
+  whether a bridge diverged, and which repair belongs to each finding.
 - **Extensions**:
   - **UC2.1** Nothing is wrong: the findings section holds the healthy answer and no repairs section exists.
   - **UC2.2** No bridge diverged: no divergence section exists.
@@ -176,8 +176,10 @@ and a failure of the tool told apart from a report of faults.
   zero problems were found and how many bridges resolve, counting skills bridges and instruction bridges as one
   number, and is never an empty list.
 - **R10** (UC2.1, E9) The healthy answer's count reads correctly for a single bridge as well as for many.
-- **R11** (UC2, E10) When any family finds a fault, the findings section holds one finding per fault, each with its
-  path, its fault name, and a prose detail, and no finding carries its repair.
+- **R28** (UC2, E10) When any family finds a fault, the findings section holds one finding per fault, each with its
+  path, its fault name, a prose detail, and its own repair, the same instruction and command as that repair's entry
+  in the repairs section, so a consumer pairs a finding with its repair from that finding alone; the repairs section
+  stays, listing each distinct repair once (R20).
 - **R12** (UC2, E9, E10) The findings section holds either findings or the healthy answer, never both and never
   neither.
 - **R13** (UC2.1, E9, E10) The repairs section is present when at least one finding is reported, and absent, not
@@ -194,9 +196,9 @@ and a failure of the tool told apart from a report of faults.
   states.
 - **R17** (UC3, E13, E14) Every repair carries a non-empty instruction that reads as a self-contained imperative with
   nothing wrapped around it, whether or not it offers a command.
-- **R18** (UC3, E14) A program that runs every command a report offers, and nothing else, rebuilds no diverged bridge
-  and overwrites neither side of one, even where a diverged bridge's instruction quotes an invocation that only shows
-  the difference.
+- **R29** (UC3, E13, E14) A program that runs every command a report offers, and nothing else, rebuilds no diverged
+  bridge: the repair of a diverged bridge is a file-by-file merge with the canonical skills directory, which writes no
+  file both sides changed since they last agreed.
 - **R19** (UC3.2, E13, E14) Two findings of one fault at two different paths yield two repairs, each naming its own
   path.
 - **R20** (UC3, E13, E14) Two repairs identical in both their command and their instruction are listed once.
@@ -214,8 +216,8 @@ and a failure of the tool told apart from a report of faults.
 
 ### Formats
 
-- **R25** (UC1, E5) With no format named, the report is written in the package's format meant for agents to parse.
-  With another supported format named, the same report is written in that format instead.
+- **R30** (UC1, E5) With no format named, the report is written in `toon`. With another supported format named, the
+  same report is written in that format instead.
 
 ### Adapters
 
@@ -227,14 +229,7 @@ and a failure of the tool told apart from a report of faults.
 
 ## Open questions
 
-- **Q1** Pairing a finding with its repair. The repairs section follows the findings' order and collapses identical
-  repairs (R20), so a consumer pairs them by position, and nothing in the data states the pairing. Two findings at
-  one path tie when matched by path. [detect-and-repair](../detect-and-repair/README.md) Q2 leaves the shape to this
-  spec (ledger CR 63).
-  - Options: (a) each repair names the findings it serves; (b) state as a criterion that repairs follow the
-    findings' order; (c) carry each repair on its finding and drop the separate section.
-  - Recommendation: (a). It keeps the collapsed list and makes the pairing readable rather than inferred. (b) breaks
-    once R20 collapses two findings into one repair.
+None.
 
 ## References
 

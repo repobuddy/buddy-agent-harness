@@ -28,6 +28,7 @@ where the behavior branches. Each spec stands alone, with its own IDs; an ID suc
 | --- | --- |
 | [`harness-init/`](./harness-init/README.md) | The `init` command projects the canonical skills into every enabled harness |
 | [`init-buddy-agent-harness/`](./init-buddy-agent-harness/README.md) | The `init-buddy-agent-harness` skill consolidates a repository's agent configuration into the canonical form |
+| [`agent-worktree-settings/`](./agent-worktree-settings/README.md) | A repository that uses Claude Code accounts for its agent worktrees, one setting at a time, on the owner's word |
 | [`enhance/`](./enhance/README.md) | The `enhance` skill offers the vetted guidance a repository's `AGENTS.md` lacks, or carries in a retired form |
 
 ### Finding what is wrong (`doctor`)
@@ -64,6 +65,7 @@ where the behavior branches. Each spec stands alone, with its own IDs; an ID suc
 | Spec | Outcome |
 | --- | --- |
 | [`entry-point/`](./entry-point/README.md) | A program reaches any command without starting a process |
+| [`mcp-inventory/`](./mcp-inventory/README.md) | A program learns every MCP server configured for a project, across harnesses and scopes, with no credential in the answer |
 | [`command-output/`](./command-output/README.md) | Every command's result becomes the bytes on stdout the same way |
 
 ## Not yet specified

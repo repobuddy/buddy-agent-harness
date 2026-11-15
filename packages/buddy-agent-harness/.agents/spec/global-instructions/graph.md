@@ -9,7 +9,7 @@ flowchart TD
   D1{Harness installed for the user, or named by the caller?}
   D1 -->|E1: neither| O1[No row]
   D1 -->|E2: yes| D2{Harness keeps its user rules in a file?}
-  D2 -->|E3: no| O1
+  D2 -->|E17: no| O6[Row cannot load a file, finding with the step to paste into its user rules]
   D2 -->|E4: yes| D3{Relocating variable for this harness?}
   D3 -->|E5: set and non-empty| L1[Look up every file under the variable's directory]
   D3 -->|E6: unset, or empty where the harness reads empty as unset| L2[Look up every file under the home directory]
@@ -26,3 +26,5 @@ flowchart TD
   D5 -->|E15: a file importing the global file, in a harness that imports| OK
   D5 -->|E16: anything else| O5[Row unbridged, unbridged finding with the step that bridges it]
 ```
+
+E3 is retired: a harness without a user-scope file now gets a row (E17). A retired edge ID is never reused.

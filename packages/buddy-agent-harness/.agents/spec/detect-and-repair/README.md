@@ -175,8 +175,8 @@ once it holds a finding belongs to that skill's spec.
   or only one side changed a field.
 - **R29** (UC1, E12) Neither rendering of any other MCP fault names a skill: a field both sides changed, a change no
   baseline can place, a file that does not parse, or a credential written literally or committed.
-- **R30** (UC1, E10) Both renderings of every agent-worktree fault name the `init-buddy-agent-harness` skill and the
-  `enhance` skill, and neither names the `repair` skill.
+- **R32** (UC1, E17) Both renderings of every agent-worktree fault name the `init-buddy-agent-harness` skill, and
+  neither names the `enhance` skill or the `repair` skill.
 - **R31** (UC1, E14) No rendering of a global-instructions fault names a skill.
 - **R24** (UC1, E12, E13, E14) A consumer reports a finding whose skill rendering names no skill for a
   person and hands it to no repairing skill.
@@ -190,21 +190,7 @@ once it holds a finding belongs to that skill's spec.
 
 ## Open questions
 
-- **Q1** One fault name, two corrections. The configuration fault for a skill a harness will not load arrives for two
-  causes: a description that breaks its own frontmatter, which `repair` corrects, and a missing description, which
-  `repair` must report and not write. Both route to `repair`, so ownership holds, but the finding cannot say which
-  correction applies (ledger CR 63).
-  - Options: (a) split the fault name in two; (b) keep one name and have the finding carry which cause it found;
-    (c) keep it as is, since `repair` reads the named file anyway to show the before and after.
-  - Recommendation: (c), and record in [configuration-diagnosis](../configuration-diagnosis/README.md) that the cause
-    is read from the file. Choose (a) if a second consumer ever needs the cause without opening the file.
-- **Q2** Pairing a finding with its repair. A consumer finds each finding's repair by position in a separate list that
-  collapses identical repairs. Nothing in the data states that pairing, and two findings at one path tie when matched
-  by path (ledger CR 63). R3 requires every finding to carry its repair, which position alone barely meets.
-  - Options: (a) a key on each repair naming its finding; (b) a stated ordering guarantee in
-    [diagnosis-report](../diagnosis-report/README.md); (c) carry the repair on the finding itself.
-  - Recommendation: (a). It keeps the collapsed list and makes the pairing readable rather than inferred. The choice
-    of shape is diagnosis-report's; this spec needs only that the pairing is decidable from the data.
+None.
 
 ## References
 

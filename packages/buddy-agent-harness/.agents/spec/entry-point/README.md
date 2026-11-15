@@ -19,8 +19,8 @@ process's exit status, so a call never reaches past its caller.
 
 - **N1 Exporting the CLI framework's application object.** It would make that framework's shape part of this
   package's public surface, so a breaking release of the framework would become one here.
-- **N2 The MCP server inventory.** The package exports an inventory of configured MCP servers as a separate call for a
-  separate question, outside `doctor`. What it reports is not stated here (Q1).
+- **N7 The MCP server inventory.** The package exports an inventory of configured MCP servers as a separate call for a
+  separate question, outside `doctor`. What it reports is [mcp-inventory](../mcp-inventory/README.md)'s.
 - **N3 What a command prints.** Each command owns its output, written through
   [command-output](../command-output/README.md).
 - **N4 The report's shape.** The sections and rows of the `doctor` report are
@@ -42,8 +42,6 @@ process's exit status, so a call never reaches past its caller.
   the skill's folder through the npm package.
 - **K5 report builder**: the exported call that returns the `doctor` report as a value, given a diagnosis and the
   invoked path to report.
-- **K6 failure channel**: the stream a run's failure message is written to, separate from the one its answer is
-  written to.
 
 ## Actors and goals
 
@@ -72,8 +70,9 @@ process's exit status, so a call never reaches past its caller.
 - **Extensions**:
   - **UC1.1** The command reports a failure: the failure is returned.
   - **UC1.2** The framework rejects the invocation, such as an unknown option or command: refused is returned.
-  - **UC1.3** Parsing the arguments throws: the message goes to the failure channel and refused is returned.
-  - **UC1.4** What was thrown carries no message: a generic invalid-command message goes to the failure channel.
+  - **UC1.5** Parsing the arguments throws outside the framework's own error handling: a coded error goes to stdout,
+    and the outcome that error's code ends as is returned.
+  - **UC1.6** What was thrown carries no message: the coded error still states a reason.
 
 ### UC2 — Turn a process into a call and back (A2.1)
 
@@ -137,10 +136,13 @@ process's exit status, so a call never reaches past its caller.
 - **R4** (UC1.1, E2) When the command reports a failure, the entry point returns that failure.
 - **R5** (UC1.2, E4) When the framework rejects the invocation, such as an option no command declares, the entry point
   returns refused.
-- **R6** (UC1.3, E5) When parsing the arguments throws, the entry point writes the message to the failure channel,
-  writes nothing to stdout, and returns refused.
-- **R7** (UC1.4, E5) When parsing throws something that carries no message, the entry point still writes a failure
-  naming an invalid command to the failure channel.
+- **R19** (UC1.5, E5) When parsing the arguments throws outside the framework's own error handling, the entry point
+  writes to stdout an error in the form [command-output](../command-output/README.md) states for every command,
+  carrying the shared code for unexpected failures (command-output R19), writes nothing about the failure to the
+  human-only stream, and returns the outcome [command-output](../command-output/README.md) R21 gives that code,
+  never done.
+- **R20** (UC1.6, E5) When parsing throws something that carries no message, the error the entry point writes still
+  states a reason and carries that code.
 - **R8** (UC1, E8) No call of the entry point sets the process's exit status.
 - **R9** (UC1, E3) The version the entry point reports is the published package's own version.
 
@@ -177,21 +179,7 @@ process's exit status, so a call never reaches past its caller.
 
 ## Open questions
 
-- **Q1** The MCP server inventory has no spec. The package exports it as a separate call that reads user-scope
-  configuration `doctor` does not, and that a consumer can bundle without the CLI framework. The v1 node named it only
-  as a layer of the reachable surface.
-  - Options: (a) give it a spec of its own; (b) fold it into [mcp-diagnosis](../mcp-diagnosis/README.md) as a use
-    case; (c) add a use case here.
-  - Recommendation: (a). It answers a different question from any diagnosis, and what it reads and redacts needs
-    criteria of its own.
-- **Q3** A throw that escapes the framework still goes to the human-only stream. R6 and R7 state what the code does:
-  when parsing the arguments throws outside the framework's own error handling, the message goes to the failure
-  channel and nothing to stdout. [command-output](../command-output/README.md) R17 says no command's failure writes
-  to that stream, and every other failure is now a coded error on stdout.
-  - Options: (a) make this last-resort path a coded error on stdout too, with the unexpected-failure code; (b) keep
-    it as an exception, since no command ran and the framework could not encode anything.
-  - Recommendation: (a), so a program parsing stdout never meets a failure it cannot read. Until it is decided, R6
-    and R7 hold.
+None.
 
 ## References
 
@@ -199,3 +187,4 @@ process's exit status, so a call never reaches past its caller.
 - [diagnosis-report](../diagnosis-report/README.md): the report the builder returns.
 - [command-output](../command-output/README.md): how a command's answer becomes bytes, the same in process and out.
 - [detect-and-repair](../detect-and-repair/README.md): the pinned fallback a skill rendering uses.
+- [mcp-inventory](../mcp-inventory/README.md): the MCP server inventory the package also exports.

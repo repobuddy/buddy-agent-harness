@@ -7,7 +7,7 @@ owner approves.
 
 A repository's agent configuration can be present and still wrong: a harness name the registry retired, a
 `.gitignore` rule that swallows a bridge, an `AGENTS.local.md` no harness reads, a skill a harness refuses to load,
-a skills copy that drifted from `.agents/skills` or lost the protection that keeps it out of commits, or an MCP server
+a skills copy that drifted from `.agents/skills` or lacks the protection that keeps it out of commits, or an MCP server
 that differs between the golden set and a harness copy. The other shipped skills refuse this work on
 purpose. `init-buddy-agent-harness` consolidates what is there and invents nothing, so it never rewrites a file the
 user wrote. `enhance` offers only what is missing. `doctor` never writes. Without `repair`, such a fault is reported
@@ -58,11 +58,12 @@ names, or to a person.
 - **K8 offer**: one correction shown to the owner as the actual file, or path, as it stands and as it would read.
 - **K9 golden MCP set**: the repository's one declared set of MCP servers that each harness's MCP file is projected
   from; see [mcp-projection](../mcp-projection/README.md).
-- **K10 outcome**: what became of one finding in a run: corrected, declined, still open, reported as material, handed
-  to `init-buddy-agent-harness`, work for a person, or a step for the user. Each is told apart from the others.
+- **K13 outcome**: what became of one finding in a run: corrected, declined, still open, reported as material, handed
+  to `init-buddy-agent-harness`, needs your decision (no skill owns it, and someone must judge it), or for you to do
+  outside the repo (a step in the user's home directory). Each is told apart from the others.
 - **K11 sync**: the file-by-file merge of a drifted skills copy with the canonical skills directory, as
   [harness-init](../harness-init/README.md) R36 to R40 state it.
-- **K12 skip-worktree protection**: see [bridge-resolution](../bridge-resolution/README.md) K8.
+- **K14 copy protection**: see [bridge-resolution](../bridge-resolution/README.md) K9.
 
 ## Actors and goals
 
@@ -80,15 +81,16 @@ names, or to a person.
 
 - **Trigger**: the user asks an agent to correct agent configuration that is present but wrong or outdated, for
   example "doctor says my agent config is wrong, fix it", "the `.claude/skills` bridge is git-ignored, repair that",
-  or "Cursor won't load one of my skills, can you fix it".
+  "Cursor won't load one of my skills, can you fix it", or "sync the `.claude/skills` copy that drifted from
+  `.agents/skills`".
 - **Entry node**: `Start`
 - **Entry points**:
   - Skill (primary): `/buddy-agent-harness:repair`, or the skill's description matched by the harness.
 - **Inputs**: the request.
 - **Success**: the agent loads this skill.
 - **Extensions**:
-  - UC1.1 The request is to set the repository up, add missing guidance, only report what is wrong, or rebuild a
-    bridge: it belongs to another skill (N12, N4, N6), and this skill does not load.
+  - UC1.2 The request is to set the repository up, add missing guidance, only report what is wrong, or rebuild or
+    replace a bridge: it belongs to another skill (N12, N4, N6), and this skill does not load.
 
 ### UC2 — Correct what `doctor` reports (A2, A4)
 
@@ -105,12 +107,14 @@ names, or to a person.
   - UC2.1 `doctor` reports nothing: the skill says so and stops.
   - UC2.2 A finding's fault has no entry in the correction reference: it is out of remit, and is handed on with the
     repair `doctor` states.
-  - UC2.3 The repair handed on names no skill: it is work for a person, and no owner is inferred.
-  - UC2.4 The repair handed on is a step in the user's home directory: it is given to the user, and nothing outside
-    the repository is written.
+  - UC2.3 The repair handed on names no skill: it needs the owner's decision, and no owner skill is inferred.
+  - UC2.4 The repair handed on is a step in the user's home directory: it is given to the user to do outside the repo,
+    and nothing outside the repository is written.
   - UC2.5 The correction would write material content: it is reported, and no write is offered.
   - UC2.6 Two findings sit at one path: each is acted on with the repair of its own fault.
   - UC2.7 The correction does not hold on the re-run: the finding is reported still open.
+  - UC2.8 Projection refuses a golden MCP server for a target: the refusal is reported with its reason, and no write
+    of that server is offered.
 
 ### UC3 — Approve each correction (A3)
 
@@ -127,7 +131,8 @@ names, or to a person.
   - UC3.4 A harness-side MCP change touches several fields: each field is offered and approved on its own.
   - UC3.5 A skills copy drifted from the canonical skills directory: the sync is offered, and each file it puts to
     the user is the owner's to pick a side for.
-  - UC3.6 A tracked skills copy lost its skip-worktree protection: setting it again is offered.
+  - UC3.7 A tracked skills copy lacks copy protection: putting it in place is offered.
+  - UC3.8 The MCP commands return a hand edit for a server: it is offered, and on approval applied by hand.
 
 ### UC4 — Learn what became of every finding (A3)
 
@@ -145,9 +150,11 @@ Every criterion here belongs to a skill-instruction use case and is checked by a
 
 ### Activation
 
-- **R1** (UC1, E1) A request to correct agent configuration that is present but wrong or outdated loads the `repair`
-  skill, and a request to set a repository up, add missing guidance, only report what is wrong, or rebuild a bridge
-  does not.
+R28 is checked by trigger evals whose near misses include each request UC1.2 names.
+
+- **R28** (UC1, UC1.2, E1) A request to correct agent configuration that is present but wrong or outdated, including a
+  request to sync a skills copy bridge that drifted from `.agents/skills`, loads the `repair` skill; a request to set
+  a repository up, add missing guidance, only report what is wrong, or rebuild or replace a bridge does not.
 
 ### Diagnosing
 
@@ -165,10 +172,11 @@ Every criterion here belongs to a skill-instruction use case and is checked by a
 - **R6** (UC2, E5) For an out-of-remit finding whose repair names `init-buddy-agent-harness` or the `init` command,
   the report hands it to the `init-buddy-agent-harness` skill, the run does not run `init`, and the bridge or
   instruction file it names is unchanged.
-- **R7** (UC2, E6) For an out-of-remit finding whose repair names no skill, the report states it as work for a person
-  and names no skill as its owner.
-- **R9** (UC2, E7) For a global-instructions finding, the report gives the user the step `doctor` stated, unchanged,
-  and the user-scope file it names is unchanged, whatever the owner answers.
+- **R31** (UC2.3, E6) For an out-of-remit finding whose repair names no skill, the report gives it the outcome needs
+  your decision and names no skill as its owner.
+- **R32** (UC2.4, E7) For a global-instructions finding, the report gives it the outcome for you to do outside the
+  repo, with the step `doctor` stated, unchanged, and the user-scope file it names is unchanged, whatever the owner
+  answers.
 
 ### Material content
 
@@ -194,9 +202,13 @@ Every criterion here belongs to a skill-instruction use case and is checked by a
 - **R26** (UC3, E10, E11, E12) For a skills copy drifted from the canonical skills directory, in any divergence
   direction, the correction is offered, not reported as material or handed to `init-buddy-agent-harness`; the offer
   shows each file the sync would write and the side it takes, and the approved correction performs the sync.
-- **R27** (UC3, E12, E14) For a tracked, in-sync skills copy that lost its skip-worktree protection, the offer names
-  the paths the protection would be set on, and the approved correction sets it on exactly those paths and changes no
-  file's content.
+- **R35** (UC3.7, E12, E14) For a tracked, in-sync skills copy that lacks copy protection, the offer names the
+  copy's tracked paths and its bridge path, and the approved correction puts both parts of copy protection in place
+  for exactly that copy and changes no file's content.
+- **R29** (UC2, UC3, E3, E12) No offer, report, or other output of the run reads out or repeats a literal MCP
+  credential's value, or any part of it.
+- **R30** (UC2.8, E12) For a golden MCP server that projection refuses for a target, the report names the server, the
+  target, and the reason the projection gave, and offers no write of that server to that target.
 
 ### Applying
 
@@ -208,6 +220,8 @@ Every criterion here belongs to a skill-instruction use case and is checked by a
   and of several offered corrections only the approved ones are written.
 - **R20** (UC3, E14) The approved correction for a description that breaks its own frontmatter quotes the value and
   leaves the description's text unchanged.
+- **R34** (UC3.8, E14) An approved hand edit the MCP commands returned is applied with only that server's entry
+  changed, and every other byte of the file, comments included, unchanged.
 - **R21** (UC2, E15) After applying an approved correction, the run runs `doctor` a second time.
 - **R22** (UC2, E16) When the second run still reports the finding, the report states it is still open.
 - **R23** (UC2, E17) When the second run no longer reports the finding, the report records it as corrected.
@@ -219,31 +233,13 @@ Every criterion here belongs to a skill-instruction use case and is checked by a
 
 ### Report
 
-- **R25** (UC4, E2, E5, E6, E7, E9, E13, E16, E17) The report has one row per finding `doctor` reported, each naming its
-  path, what was wrong, and its outcome, with each kind of outcome told apart from the others.
+- **R33** (UC4, E2, E5, E6, E7, E9, E13, E16, E17) The report has one row per finding `doctor` reported, each naming
+  its path, what was wrong, and its outcome, with each kind of outcome told apart from the others, needs your
+  decision and for you to do outside the repo included.
 
 ## Open questions
 
-- **Q1** The shipped `SKILL.md` has no `## Done when` list, so R1 to R27 have no counterpart in the skill for an eval
-  run to agree with.
-  - Options: (a) add a Done when list to the shipped skill drawn from these criteria; (b) leave the skill as is and
-    run evals from this spec alone.
-  - Recommendation: (a).
-- **Q2** Activation. The v1 spec left firing unasserted, because which of four skills a request reaches is co-owned
-  by their descriptions. This spec states it as R1, per the skill-spec format.
-  - Options: (a) keep R1 and check it with trigger evals that include the near misses of UC1.1; (b) drop R1 and
-    keep activation out of scope as v1 did.
-  - Recommendation: (a). The near misses are each a sibling skill's own job, so the check is cheap to write.
-- **Q3** The shipped skill's list of outcomes names corrected, declined, handed to `init`, reported as material, and
-  still open. It has no word for work for a person or a step for the user, which the v1 spec decided (K10).
-  - Options: (a) add both outcomes to the shipped skill's report step; (b) fold them into one outcome, handed on.
-  - Recommendation: (a). The two need different actors to act.
-- **Q4** The shipped correction reference states conduct the v1 spec does not: never read out or repeat a literal
-  MCP credential, report a server projection refuses with its reason, and write by hand the entries the MCP commands
-  will not edit.
-  - Options: (a) add a criterion for each; (b) add only the credential rule, the one whose failure leaks a secret;
-    (c) leave them to the reference.
-  - Recommendation: (b).
+None.
 
 ## References
 

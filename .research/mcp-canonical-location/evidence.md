@@ -354,3 +354,34 @@ which holds E-MCP-01 through E-MCP-05. Same subject, same numbering.
 - **Why it matters here**: the watch trigger in the conclusion, a ratified proposal with a stated
   location, has not fired. `.agents/buddy-agent-harness/mcp.toml` stands, and SEP-2633 is the one
   proposal still open.
+
+## E-MCP-21 — Copilot CLI 1.0.100, observed: `.mcp.json` shadows `.github/mcp.json` outright, `${env:VAR}` stays literal, and nothing loads in an untrusted folder
+
+- **Date**: 2026-11-15
+- **Status**: confirmed (observed on Copilot CLI 1.0.100)
+- **Confidence**: high for what was run; the gaps are listed below
+- **Source**: a scratch experiment: a probe MCP server that logs its argv and environment on start,
+  five scratch repositories and one non-git directory, six prompt-mode runs of
+  `copilot -p "reply OK" --allow-all-tools --trust-folder -s`, one untrusted run, and
+  `COPILOT_ALLOW_ALL=true copilot mcp list|get <name>` — primary (observation)
+- **Notes**: `copilot mcp --help` names the workspace sources as `.mcp.json` or `.github/mcp.json`.
+  - A `.mcp.json` holding `mcpServers` alone starts its server, with the configured `env` applied.
+  - `.github/mcp.json` loads only with a top-level `mcpServers` key. A file keyed `servers` is
+    skipped at load as malformed (`mcpServers: Required`).
+  - With both files present, only `.mcp.json` is used. `.github/mcp.json` is ignored entirely: no
+    merge, and a server only it declares is not loaded either. Whether a malformed `.mcp.json`
+    falls back to `.github/mcp.json` was not tested.
+  - In `args` and `env` values, `${VAR}`, `${VAR:-default}`, and `$VAR` are expanded at spawn.
+    `${env:VAR}` is passed through literally. An unset `${UNSET}` stays literal, and
+    `${UNSET:-default}` takes the default. `copilot mcp get` shows the unexpanded text.
+  - Workspace servers load only in a trusted folder. Without trust the run answered and the probe
+    never started, and `copilot mcp list` listed no workspace server. `--trust-folder` and
+    `COPILOT_ALLOW_ALL=true` (exactly `true`; `1` did not) each trusted the folder for that
+    process. The interactive trust prompt was not exercised.
+  - No git repository is needed: a non-git directory with `.mcp.json` started its server. From a
+    subdirectory, `copilot mcp list` still listed the repository-root `.mcp.json` server (listing
+    only, no server started).
+- **Why it matters here**: this settles what E-MCP-19 left open. Copilot CLI reads the `.mcp.json`
+  projected for Claude Code, in that dialect, so it needs no MCP target of its own, and a
+  `.github/mcp.json` written beside `.mcp.json` would never be read. A reference spelled
+  `${env:VAR}` reaches Copilot CLI unexpanded; `${VAR}`, `${VAR:-default}`, and `$VAR` do not.

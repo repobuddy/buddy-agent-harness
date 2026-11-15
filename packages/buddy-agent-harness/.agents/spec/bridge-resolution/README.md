@@ -44,7 +44,10 @@ another family's finding. Each finding carries the repair this spec states for i
   content.
 - K7 **divergence direction**: which side of a diverged copy changed since the last agreement: the bridge, the
   canonical skills directory, both, or unknown when no last agreement can be found.
-- K8 **skip-worktree protection**: the git index setting that keeps a tracked copy's local content out of commits.
+- K9 **copy protection**: what keeps a copy over a tracked bridge path out of uncommitted changes and out of commits,
+  in two parts: skip-worktree set on the copy's tracked entries in the git index, and the bridge path listed in the
+  clone's own exclude file (`.git/info/exclude`, never the committed `.gitignore`). A copy with only one part is not
+  protected.
 
 ## Actors and goals
 
@@ -79,7 +82,7 @@ another family's finding. Each finding carries the repair this spec states for i
   - UC1.4 A symlink lands somewhere other than the canonical skills directory, or on a target that no longer exists.
   - UC1.5 A copy differs from the canonical skills directory, and the side that moved is known, or both moved.
   - UC1.6 A copy differs and no last agreement can be found, including outside a git repository.
-  - UC1.7 An in-sync copy is tracked in git and has lost its skip-worktree protection.
+  - UC1.8 An in-sync copy is tracked in git and lacks copy protection, so git can still add its files.
 
 ### UC2 — Check at every session start without writing (A3)
 
@@ -134,8 +137,9 @@ another family's finding. Each finding carries the repair this spec states for i
   three directions, and completes. (UC1, E16)
 - R16 The report names, for every diverged bridge, its path and its divergence direction, and names no direction for
   a bridge that resolves. (UC1, E12)
-- R17 An in-sync copy that is tracked in git without skip-worktree protection is listed as resolving and raises an
-  unprotected-copy finding naming its path; once the protection is set, the finding is gone. (UC1, E18)
+- R25 An in-sync copy that is tracked in git and lacks either part of copy protection is listed as resolving and
+  raises an unprotected-copy finding naming its path; once both parts are in place, the finding is gone. (UC1.8,
+  E18)
 - R18 An in-sync copy that is untracked, or in a directory that is not a git repository, is listed as resolving and
   raises no unprotected-copy finding. (UC1, E17, E19)
 - R19 Every listed bridge carries its harness, its path, the form found (absent, file, symlink, or copy), and whether
@@ -144,7 +148,7 @@ another family's finding. Each finding carries the repair this spec states for i
 
 ### Routing
 
-- R21 Each of the nine bridge causes in R2, R7, R8, R10, R12, R14, and R17 is reported under a fault name of its own,
+- R27 Each of the nine bridge causes in R2, R7, R8, R10, R12, R14, and R25 is reported under a fault name of its own,
   as [detect-and-repair](../detect-and-repair/README.md) K4 defines it. (UC3, E1, E6, E7, E10, E13, E14, E15, E16,
   E18)
 
@@ -158,8 +162,8 @@ here.
 - R23 The repair of a diverged-copy finding, in each of the four divergence directions, is the file-by-file sync
   [harness-init](../harness-init/README.md) R36 to R40 state, and it names no side to keep for a file both sides
   changed. (UC3, E13, E14, E15, E16)
-- R24 The repair of an unprotected-copy finding sets skip-worktree protection on the copy's tracked paths and changes
-  no file's content. (UC3, E18)
+- R26 The repair of an unprotected-copy finding puts both parts of copy protection in place for that copy, and
+  changes no file's content and no committed file. (UC3, E18)
 
 ## Open questions
 

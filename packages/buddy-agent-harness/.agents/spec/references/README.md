@@ -101,8 +101,8 @@ owns only those additions.
   `check`.
 - R2 (UC1.1) Through this package, the `reference` command offers no subcommand `cyber-agentkit` 2.0 retired: there is
   no `show` and no `select`.
-- R3 (UC1) Each `reference` subcommand behaves as `cyber-agentkit` defines it; this package changes only the plugin it
-  names (R5) and the default form of each subcommand (R7, R8).
+- R14 (UC1) Each `reference` subcommand behaves as `cyber-agentkit` defines it; this package changes only the plugin it
+  names (R5) and the default form of each subcommand (R12, R13).
 - R4 (UC1.2) When a `reference` subcommand run through this package fails or warns, the caller receives the same code
   `cyber-agentkit` assigned to that failure or warning.
 
@@ -115,10 +115,9 @@ owns only those additions.
 
 ### Default form
 
-- R7 (UC3) Run through this package with no format named, `reference load`, `reference create`, and `reference delete`
-  answer with the document or the file itself, not wrapped in a structure.
-- R8 (UC3) Run through this package with no format named, every other `reference` subcommand answers in the
-  structured form an agent parses, the one the package's other commands default to.
+- R12 (UC3) Run through this package with no format named, `reference load`, `reference create`, and `reference
+  delete` answer in `text`: the document or the file itself, not wrapped in a structure.
+- R13 (UC3) Run through this package with no format named, every other `reference` subcommand answers in `toon`.
 - R9 (UC3.1) When the caller names a format on any `reference` subcommand, the answer is in that format.
 
 ### Docs
@@ -133,11 +132,7 @@ owns only those additions.
 
 ## Open questions
 
-- Q1 Which spec is the home of the default-form rule (R7, R8)? The [command-output](../command-output/README.md)
-  spec owns the encoder, and `llms.txt` states every command's default in one line. Options: (a) keep the rule for
-  `reference` here and have command-output link it; (b) move every command's default form to command-output and link
-  it from here. Recommendation: (b), since the same split holds for `governance show` and one home stops the two
-  from drifting.
+None.
 
 ## References
 

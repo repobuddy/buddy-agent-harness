@@ -15,8 +15,9 @@ detect anything themselves. Each fix is a line in a file the owner wrote, so it 
 
 ## Non-goals
 
-- N1 **Repairing.** The command never writes. The offers, the explanation of the base trade-off, and the approved
-  writes are [init-buddy-agent-harness](../init-buddy-agent-harness/README.md) and [enhance](../enhance/README.md).
+- N8 **Repairing.** The command never writes. The offers, the explanation of the base trade-off, and the approved
+  writes are [agent-worktree-settings](../agent-worktree-settings/README.md)'s, delivered by
+  [init-buddy-agent-harness](../init-buddy-agent-harness/README.md).
 - N2 **A runnable fix.** Every fault is a line in a file the owner wrote or may want to keep, so correcting one is
   judgment and no finding carries a command.
 - N3 **Moving the worktrees.** The place is Claude Code's and no setting moves it. Nothing here suggests otherwise.
@@ -40,14 +41,13 @@ detect anything themselves. Each fix is a line in a file the owner wrote, so it 
 | ID | Actor | Goal |
 | --- | --- | --- |
 | A1.1 | `init-buddy-agent-harness` skill | know which worktree lines a repository lacks, without detecting them |
-| A2.1 | `enhance` skill | know the same, for a repository that already has an `AGENTS.md` |
 | A3.1 | person at a shell | see what is missing and which skill offers it |
 | A4.1 | session-start hook | learn of a fault at every session start with no risk of a write |
 | A5.1 | `doctor-buddy-agent-harness` skill | route each worktree finding to the skill that offers its fix |
 
 ## Use cases
 
-### UC1 — Learn which worktree lines a repository lacks (A1, A2, A3, A5)
+### UC1 — Learn which worktree lines a repository lacks (A1, A3, A5)
 
 - **Trigger**: a caller asks what is wrong with this repository's agent configuration.
 - **Entry node**: `D1` in [graph.md](./graph.md).
@@ -58,7 +58,7 @@ detect anything themselves. Each fix is a line in a file the owner wrote, so it 
   - Skill: `doctor-buddy-agent-harness` presents the report and routes each finding.
 - **Inputs**: the repository root.
 - **Success**: each of the three faults the repository has is a finding naming the file to change and the line to
-  add, with a repair that names the skills that offer it.
+  add, with a repair that names the skill that offers it.
 - **Extensions**:
   - UC1.1 No `.claude` directory: nothing to account for.
   - UC1.2 The root is not a git repository, so no ignore rule can be read.
@@ -103,9 +103,9 @@ detect anything themselves. Each fix is a line in a file the owner wrote, so it 
 - R12 Each worktree finding's repair names the line to add: the ignore rule for `.claude/worktrees/`, the Biome
   exclusion of the worktrees, or the base setting. (UC1, E5, E10, E13)
 - R15 No worktree finding's repair carries a runnable invocation. (UC1, E5, E10, E13)
-- R16 Each of the three worktree causes in R3, R6, and R9 is reported under a fault name of its own, as
-  [detect-and-repair](../detect-and-repair/README.md) K4 defines it. Which skills each repair names is
-  detect-and-repair R30. (UC1, E5, E10, E13)
+- R17 Each of the three worktree causes in R3, R6, and R9 is reported under a fault name of its own, as
+  [detect-and-repair](../detect-and-repair/README.md) K4 defines it. Which skill each repair names is
+  detect-and-repair R32. (UC1, E5, E10, E13)
 
 ## Open questions
 
@@ -117,5 +117,6 @@ None.
 - [detect-and-repair](../detect-and-repair/README.md): how a finding reaches the skill that owns its repair.
 - [configuration-diagnosis](../configuration-diagnosis/README.md): why a repair keeps the command and the
   instruction apart.
+- [agent-worktree-settings](../agent-worktree-settings/README.md): the offers that fix these faults.
 - `skills/init-buddy-agent-harness/references/agent-worktrees.md`: where Claude Code puts agent worktrees, what each
   fault costs, and how each line is judged covered.

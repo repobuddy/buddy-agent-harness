@@ -1,7 +1,7 @@
 # enhance
 
-The `enhance` skill puts to the owner each vetted section or setting a repository's agent configuration lacks, or
-carries in a retired form.
+The `enhance` skill puts to the owner each vetted section a repository's agent configuration lacks, or carries in a
+retired form.
 
 ## What
 
@@ -13,9 +13,8 @@ instruction until someone notices.
 The `enhance` skill is the opinionated half that `init` leaves out. For each vetted section this package ships, it
 decides whether the repository lacks it, already carries it, covers it in the owner's own words, or carries a wording
 this package has retired. It offers the missing section, offers the current wording in place of a retired one, and
-asks the owner where it cannot tell whose words a section is. It also offers the two agent-worktree settings a
-Claude Code repository needs. It writes only what the owner approves, and every run ends in a report of what it read,
-judged, offered, and wrote.
+asks the owner where it cannot tell whose words a section is. It writes only what the owner approves, and every run
+ends in a report of what it read, judged, offered, and wrote.
 
 Where a section goes is part of what is offered. A section about how the agent works belongs in the owner's own
 global instruction file, written once for every repository, not copied into each one. And text the owner's agent
@@ -38,8 +37,11 @@ already loads from outside the repository is not offered again, because loading 
 - **N6 The exact wording of the List identifiers section.** It is scored by the repository's `eval-list-identifiers`
   skill. This spec owns only what that text must direct (R71).
 - **N7 Adapting an addition's text to a repository.** The text is offered as written or not at all.
-- **N8 Anything outside local agent configuration.** Workflows, repository settings, and project source are out of
-  reach whatever a run finds in them. The agent-worktree lines are the one exception.
+- **N12 Anything outside local agent configuration.** Workflows, repository settings, and project source are out of
+  reach whatever a run finds in them.
+- **N13 Claude Code's agent-worktree settings.** Offering and writing them is
+  [`agent-worktree-settings`](../agent-worktree-settings/README.md)'s, delivered by `init-buddy-agent-harness`
+  alone.
 - **N11 Writing a harness's own user-scope instruction file**, such as `~/.claude/CLAUDE.md`. A step that changes one
   is handed over. Of the files outside the repository, only the global instruction file is ever written.
 - **N9 Deciding activation.** Which shipped skill a request reaches is co-owned by the four skill descriptions and the
@@ -88,10 +90,6 @@ already loads from outside the repository is not offered again, because loading 
   against a fixed set of tasks. A harness for one addition does not score another.
 - **K18 hand over**: give the owner a text or a step and the file it belongs in, without writing that file. A hand-over
   is an outcome, not a decline.
-- **K19 agent-worktree settings**: the two settings that account for Claude Code's agent worktrees: ignoring
-  `.claude/worktrees/` in `.gitignore` and in each tree-scanning tool config the repository has (the shipped skill's
-  agent-worktree reference lists them), and setting
-  `worktree.baseRef` in `.claude/settings.json`. Claude Code reads only that key, so the spec names it.
 
 ## Actors and goals
 
@@ -101,7 +99,6 @@ already loads from outside the repository is not offered again, because loading 
 | A1.2 | repository owner | nothing is added to my files, and nothing of mine is replaced or removed, without my word |
 | A1.3 | repository owner | where it cannot be told whose a section is, I am asked, and can settle it by which wording serves better |
 | A1.4 | repository owner | I am not asked to load text my agent already loads, and a retired copy outside the repository is refreshed too |
-| A1.5 | repository owner | a Claude Code repository accounts for its agent worktrees |
 | A2.1 | invoking agent | give every addition one verdict from the texts themselves, never a guess |
 | A3.1 | addition author | add or revise an addition and have repositories on an old wording told, not silently kept there |
 | A4.1 | downstream agent | the guidance I load is the wording that serves me better, loaded once |
@@ -183,20 +180,6 @@ The decision graph is in [graph.md](./graph.md).
   - UC4.5 The global copy sits in a file this skill does not write: handed over.
   - UC4.6 The owner declines the replacement of a global copy, or does not answer: nothing written.
 
-### UC5 — Account for agent worktrees (A1.5, A1.2)
-
-- **Trigger**: a run in a repository with a `.claude/` directory and a root `AGENTS.md`.
-- **Entry node**: `wt`.
-- **Entry points**:
-  - Skill (primary): `/buddy-agent-harness:enhance`, after the additions.
-- **Inputs**: `.gitignore`, the tree-scanning tool configs present, and `.claude/settings.json`.
-- **Success**: each uncovered setting is offered on its own, and each approved line is written in place.
-- **Extensions**:
-  - UC5.1 No `.claude/` directory: neither setting offered.
-  - UC5.2 A setting is already covered: not offered.
-  - UC5.3 The owner declines: nothing written.
-  - UC5.4 No root `AGENTS.md`: the run stops before these offers.
-
 ### UC6 — Ship or revise an addition (A3.1)
 
 - **Trigger**: a maintainer of this package adds an addition or revises one's text.
@@ -212,7 +195,7 @@ The decision graph is in [graph.md](./graph.md).
 
 ## Criteria
 
-**How the eval-checked criteria are verified.** Every criterion of UC1 to UC5 is checked by an eval run of the skill.
+**How the eval-checked criteria are verified.** Every criterion of UC1 to UC4 is checked by an eval run of the skill.
 Such a run starts its simulated agent without the host's user-scope instructions; otherwise an absent addition reads
 as already global on a host whose global file carries the text, and the verdict depends on the machine. A case that
 says nothing of the global instructions runs with none covering the subject. Launch the agent with the repository's
@@ -224,9 +207,8 @@ that revises an addition.
 
 ### Locating and reading (UC1)
 
-- **R1** A run in a repository with no root `AGENTS.md` writes no file, offers nothing (no addition and no
-  agent-worktree setting), says there is nothing to add to, points to `init-buddy-agent-harness`, and gives every
-  addition the verdict not judged. (UC1, E1)
+- **R82** A run in a repository with no root `AGENTS.md` writes no file, offers no addition, says there is nothing
+  to add to, points to `init-buddy-agent-harness`, and gives every addition the verdict not judged. (UC1, E1)
 - **R2** A run told to work on a repository other than the working directory reads its merged view only from that
   repository, and every repository file it offers to write or writes is inside it. (UC1, E2)
 - **R3** Guidance on an addition's subject held only in a harness instruction file still bound for `AGENTS.md`, such
@@ -273,6 +255,8 @@ that revises an addition.
   variable, whatever else `doctor` reports for that harness. (UC1.5, D4)
 - **R18** An offer with the global destination, where `doctor` reports nothing for the harness in use, says that
   whether it loads the global instruction file cannot be confirmed. (UC1.5, D5)
+- **R85** An offer with the global destination, where `doctor` reports that the harness in use cannot load a file,
+  says the text reaches that harness only when pasted into its user rules, and hands over that step. (UC1.5, D6)
 - **R19** An addition approved for the repository is written into the root `AGENTS.md` after the owner's prose,
   outside the managed region, as prose without the fence, with every other byte of the file unchanged. (UC1, E29)
 - **R75** An addition the owner approves for the global destination is written at the end of `~/.agents/AGENTS.md`,
@@ -376,39 +360,20 @@ that revises an addition.
 - **R54** The global instructions a run judges exclude the repository's own files and another repository's
   instructions loaded from the working directory. (UC4, E21)
 
-### Agent-worktree settings (UC5)
+### Write scope (UC1 to UC4)
 
-- **R55** A repository with no `.claude/` directory gets neither agent-worktree setting offered. (UC5.1, E50)
-- **R56** A repository with a `.claude/` directory and a root `AGENTS.md` gets ignoring `.claude/worktrees/` offered
-  once per file that lacks it, among `.gitignore` and each tree-scanning tool config it has, and the worktree base set
-  to the current `HEAD` offered as its own item; the owner's answer to one decides nothing about another. (UC5, E53)
-- **R57** Ignoring `.claude/worktrees/` is not offered for a file that already excludes it, including by a rule on a
-  parent directory, and the report says it is covered. (UC5.2, E52)
-- **R58** The worktree base is not offered where `.claude/settings.json` already sets `worktree.baseRef` to either
-  value; where it is set to branch from the default branch, the report says the owner chose it. (UC5.2, E52)
-- **R59** The worktree-base offer explains, before the question, that agent worktrees branch from the default branch
-  unless the base is the current `HEAD`, and that the current `HEAD` includes unpushed commits. (UC5, E53)
-- **R60** An approved agent-worktree line is written into its file in place, as one key or array element, with every
-  other byte (comments, key order, indentation) unchanged; a missing `.gitignore` or `.claude/settings.json` is
-  created. (UC5, E54)
-- **R61** A declined agent-worktree offer writes nothing for it, and the report names it declined. (UC5.3, E55)
-
-### Write scope (UC1 to UC5)
-
-- **R79** Every file a run writes is one the owner approved in that run (or, for a team copy, asked for), and is the
-  root `AGENTS.md`, `~/.agents/AGENTS.md`, or an agent-worktree file. (UC1, UC2, UC4, UC5, E29, E32, E34, E35, E54,
-  E56, E59, E61)
+- **R83** Every file a run writes is one the owner approved in that run (or, for a team copy, asked for), and is the
+  root `AGENTS.md` or `~/.agents/AGENTS.md`. (UC1, UC2, UC4, E29, E32, E34, E35, E56, E59, E61)
 - **R80** A run writes no workflow, repository setting, project source file, or harness's own user-scope file (such as
   `~/.claude/CLAUDE.md`), and no offer names one as a target to write, whatever it finds in them. (UC1, UC4.5, E2,
   E58)
 
-### Report (UC1 to UC5)
+### Report (UC1 to UC4)
 
 - **R64** Every run, whichever way it went, ends in a report that names the files read, gives each of the four
   additions one verdict, distinct per verdict, with the reason, names what was offered and the destination
   recommended, and names each file written or says nothing was. (UC1, E1, E2)
-- **R65** The report gives each hand-over as an outcome, not a decline, and each agent-worktree setting as written,
-  declined, or covered, naming the file. (UC1, UC5, E58, E54, E55)
+- **R84** The report gives each hand-over as an outcome, not a decline. (UC1, E58)
 
 ### Shipping an addition (UC6)
 
@@ -431,22 +396,18 @@ that revises an addition.
 
 ## Open questions
 
-- **Q3 Do the agent-worktree settings belong in this spec?** They share the approval gate and the report but have no
-  retired wordings, no destination, and no provenance. Options: (a) keep them here as UC5; (b) move them into a spec
-  of their own beside [`worktree-diagnosis`](../worktree-diagnosis/README.md), shared with `init`, which offers the
-  same settings. Recommendation: (a) until `init`'s spec states its offer; then (b) if the two would otherwise state
-  the same rule twice.
+None.
 
 ## References
 
 - [graph.md](./graph.md): the decision graph and tables the criteria cite.
 - The shipped skill: [SKILL.md](../../../skills/enhance/SKILL.md) and its
-  [references](../../../skills/enhance/references/), one file per addition with a sibling store of retired wordings,
-  and [agent-worktrees.md](../../../skills/enhance/references/agent-worktrees.md) for the two settings.
+  [references](../../../skills/enhance/references/), one file per addition with a sibling store of retired wordings.
 - The blind launcher the run policy names:
   [blind-claude.mjs](../../../../../.agents/skills/eval-delegation/scripts/blind-claude.mjs).
 - Sibling specs: [`init-buddy-agent-harness`](../init-buddy-agent-harness/README.md) owns consolidation and the rule
   that material content needs approval; [`global-instructions`](../global-instructions/README.md) owns whether a
   harness loads the global instruction file; [`worktree-diagnosis`](../worktree-diagnosis/README.md) owns reporting
-  unaccounted agent worktrees; [`repair`](../repair/README.md) owns correcting what is present and wrong.
+  unaccounted agent worktrees; [`agent-worktree-settings`](../agent-worktree-settings/README.md) owns offering the
+  settings that account for them; [`repair`](../repair/README.md) owns correcting what is present and wrong.
 - [AGENTS.md](https://agents.md/): the open instruction format every addition is written into.

@@ -16,7 +16,9 @@ flowchart TD
   L -->|E7 yes| O3[Unread-local-override fault at that file]
   L -->|E8 no| N
   S -->|E15| K{A canonical SKILL.md has unloadable frontmatter?}
-  K -->|E9 yes| O4[Unloadable-skill fault at that SKILL.md]
+  K -->|E9 yes| C{Which cause?}
+  C -->|E17 the frontmatter block does not parse| O4[Unloadable-skill fault at that SKILL.md, unparsable-frontmatter cause]
+  C -->|E18 no block, or no description with a value| O5[Unloadable-skill fault at that SKILL.md, missing-description cause]
   K -->|E10 no| N
   S -->|E16| X{A check cannot read what it needs?}
   X -->|E11 yes| N

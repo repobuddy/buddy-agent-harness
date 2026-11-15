@@ -9,7 +9,7 @@ flowchart TD
   P -->|E2 the command reported a failure| O1[Failure returned]
   P -->|E3 the command did what was asked| O2[Done returned]
   P -->|E4 the framework rejected the invocation| O3[Refused returned]
-  P -->|E5 parsing threw| O4[Message on the failure channel, refused returned]
+  P -->|E5 parsing threw| O4[Coded error on stdout, its code's outcome returned]
   O1 -->|E11| K{Is the caller the process boundary?}
   O2 -->|E12| K
   O3 -->|E13| K

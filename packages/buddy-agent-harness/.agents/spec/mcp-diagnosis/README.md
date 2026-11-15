@@ -38,9 +38,11 @@ These terms are shared with [mcp-projection](../mcp-projection/README.md) and
   [MCP servers page](../../../../../apps/web/src/content/docs/agent-configuration/mcp-servers.md#the-file).
 - K3 **MCP target**: the project-scope MCP file of a harness, with the key and format its vendor documents. The
   targets are those of Claude Code and Cursor always, and those of Codex and Gemini CLI when their own directory
-  exists. A harness whose vendor documents no project-scope MCP file has no target. The file, key, and format of each
+  exists. A harness whose vendor documents no project-scope MCP file has no target. Copilot CLI has none of its own:
+  it reads the `.mcp.json` projected for Claude Code, only in a folder it trusts, and ignores `.github/mcp.json`
+  wherever `.mcp.json` exists, so `.github/mcp.json` is never a target. The file, key, and format of each
   are on the [MCP servers page](../../../../../apps/web/src/content/docs/agent-configuration/mcp-servers.md#the-files-it-is-compared-against),
-  backed by the [evidence](../../../../../.research/mcp-canonical-location/evidence.md).
+  backed by the [evidence](../../../../../.research/mcp-canonical-location/evidence.md), E-MCP-21 for Copilot CLI.
 - K4 **dialect**: one harness's entry shape, read and written as a pair: its field names, how it chooses the
   transport, how it references an environment variable, its timeout unit, and which golden fields it has a place for.
   Each mapping is backed by E-MCP-12 to E-MCP-18 in the
@@ -99,6 +101,7 @@ These terms are shared with [mcp-projection](../mcp-projection/README.md) and
   - UC1.2 The golden set does not parse: it is reported by position only, and nothing is compared.
   - UC1.3 A target does not parse: it is reported unreadable and nothing in it is compared.
   - UC1.4 A target file does not exist, or a harness has no MCP target: nothing is reported for it.
+  - UC1.7 The repository has a `.github/mcp.json`: it is not a target, and nothing is reported for it.
   - UC1.5 The last-projected record does not parse, or holds nothing for the server: the baseline falls through to
     git, then to unknown.
   - UC1.6 The repository is not a git repository, or the two sides never agreed in history: the direction is unknown.
@@ -147,6 +150,8 @@ These terms are shared with [mcp-projection](../mcp-projection/README.md) and
 - R3 A target that does not parse is reported unreadable, naming the file with no position and no content from it,
   and no missing, undeclared, or diverged server is reported against it. (UC1, E3)
 - R4 A target file that does not exist, and a harness with no MCP target, get no finding. (UC1, E1)
+- R28 No finding names Copilot CLI, and a `.github/mcp.json` gets no finding of any kind, whatever it holds and whether
+  or not a `.mcp.json` sits beside it. (UC1.7, E1)
 - R5 A golden server a target does not carry is reported as missing from that target, at a locator naming the
   server in that file. (UC1, E11)
 - R6 A target server the golden set does not declare is reported as undeclared, at a locator naming the server in
@@ -200,12 +205,7 @@ These terms are shared with [mcp-projection](../mcp-projection/README.md) and
 
 ## Open questions
 
-- Q1 Should Copilot CLI get an MCP target? Its vendor now documents `.mcp.json` and `.github/mcp.json` (E-MCP-19),
-  and `.mcp.json`, which takes precedence, is already Claude Code's target. Options: (a) no target of its own,
-  stating that it reads what is projected for Claude Code; (b) `.github/mcp.json` as its target, which `.mcp.json`
-  shadows; (c) `.mcp.json` as a shared target read through a Copilot CLI dialect. Recommendation: (a), and record
-  that Copilot CLI documents no reference syntax for project files, so a reference projected for Claude Code may
-  reach it unexpanded.
+None.
 
 ## References
 

@@ -223,8 +223,8 @@ behavior below until the next major version, and says on every run that it is de
 
 ### Default form
 
-- R23 (UC2, UC4) With no format named, `governance show` answers with the document itself (R10) and `governance list`
-  answers in the structured form an agent parses, the one the package's other commands default to.
+- R28 (UC2, UC4) With no format named, `governance show` answers in `text`, with the document itself (R10), and
+  `governance list` answers in `toon`.
 
 ### Deprecation
 

@@ -11,8 +11,8 @@ flowchart TD
   Run -->|E3 yes| Each{Does the correction reference hold an entry for the fault?}
   Each -->|E4 no| Hand{Whom does the repair doctor stated name?}
   Hand -->|E5 the init-buddy-agent-harness skill or the init command| Init([Handed to init-buddy-agent-harness])
-  Hand -->|E6 no skill| Person([Work for a person])
-  Hand -->|E7 a step in the user's home directory| User([A step for the user])
+  Hand -->|E6 no skill| Person([Needs your decision])
+  Hand -->|E7 a step in the user's home directory| User([For you to do outside the repo])
   Each -->|E8 yes| Material{Would the correction write material content?}
   Material -->|E9 yes| Reported([Reported as material; no write offered])
   Material -->|E10 no| Options{Is more than one correction valid?}

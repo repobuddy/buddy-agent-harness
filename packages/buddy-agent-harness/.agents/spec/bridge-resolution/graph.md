@@ -22,7 +22,7 @@ flowchart TD
   D6 -->|E14: only the canonical directory| O7[Canonical-moved finding]
   D6 -->|E15: both| O8[Both-moved finding]
   D6 -->|E16: no last agreement| O9[Unknown-direction finding]
-  D5 -->|E17: yes| D7{Tracked in git without skip-worktree protection?}
+  D5 -->|E17: yes| D7{Tracked in git without both parts of copy protection?}
   D7 -->|E18: yes| O10[Listed resolving, unprotected-copy finding]
   D7 -->|E19: no, untracked, or no git| OK
 ```

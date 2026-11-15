@@ -25,6 +25,8 @@ kept. Each write is recorded, so a later diagnosis can tell which side moved.
 - N5 Filling in a value the golden set leaves unset, even one a target would use.
 - N6 Asking for approval. The command plans unless asked to write; the [repair](../repair/README.md) skill shows the
   plan and asks.
+- N7 A Copilot CLI target. Copilot CLI reads the `.mcp.json` projected for Claude Code
+  ([mcp-diagnosis](../mcp-diagnosis/README.md) K3), so it gets no file of its own.
 
 ## Key terms
 
@@ -138,6 +140,9 @@ kept. Each write is recorded, so a later diagnosis can tell which side moved.
   nothing is written for it, and the result says which of the three. (UC2, E13)
 - R14 Each entry written spells the transport, the references, and the timeout as the target's dialect does, so that
   reading it back through the dialect yields the golden server over its representable fields. (UC1, E16)
+- R25 No entry written to `.mcp.json` holds a reference spelled `${env:VAR}`, the spelling Copilot CLI, which also
+  reads that file, leaves unexpanded. (UC1, E8, E16)
+- R26 No run writes or creates `.github/mcp.json`. (UC1, E3)
 
 ### Byte preservation (UC3)
 
@@ -166,11 +171,11 @@ kept. Each write is recorded, so a later diagnosis can tell which side moved.
   distinct and stable in the result, and the result names the golden file, whether it is a plan or a write, and
   where the record was written or why it was not. (UC1, E12, E13, E16, E18, E19, E20)
 - R24 A failed run is told apart from a successful one without reading the result. (UC1, E2)
+- R27 With no format named, the result is written in `toon`. (UC1, E19, E20)
 
 ## Open questions
 
-- Q1 Should Copilot CLI get an MCP target? Owned by [mcp-diagnosis](../mcp-diagnosis/README.md) Q1, since projection
-  writes to the same targets diagnosis reads.
+None.
 
 ## References
 
@@ -180,6 +185,7 @@ kept. Each write is recorded, so a later diagnosis can tell which side moved.
 - [mcp-reconcile](../mcp-reconcile/README.md): the reverse direction.
 - [repair](../repair/README.md): the skill that shows the plan and approves the write.
 - [mcp-canonical-location evidence](../../../../../.research/mcp-canonical-location/evidence.md): E-MCP-12 to
-  E-MCP-18 back each dialect's write mapping, including which transports and references each harness can hold.
+  E-MCP-18 back each dialect's write mapping, including which transports and references each harness can hold;
+  E-MCP-21 backs what Copilot CLI reads from `.mcp.json`.
 - [MCP servers page](../../../../../apps/web/src/content/docs/agent-configuration/mcp-servers.md): the user-facing
   account of the golden set and the writers.

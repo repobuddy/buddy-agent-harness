@@ -15,7 +15,9 @@ enabled harness reaches. It surveys what the repository has, sorts each artifact
 owner approved, and verifies what landed. It creates what is absent without asking, and asks before it replaces,
 rewrites, or removes anything a person wrote. It projects the skills by running the `init` command, and writes the one
 instruction bridge the command does not. It hands back a report of what it created, consolidated, linked, and left
-alone, and offers the `enhance` skill once.
+alone, offers to continue with the `repair` skill for the `doctor` findings it does not own, and offers the
+`enhance` skill once. Its offer of Claude Code's agent-worktree settings has a spec of its own,
+[agent-worktree-settings](../agent-worktree-settings/README.md).
 
 It is also where every instruction-bridge finding of `doctor` is repaired, so a finding handed to it must end with the
 bridge written.
@@ -66,11 +68,10 @@ bridge written.
 - **K16 canonical-only**: an artifact with no cross-harness form, or none that is lossless: subagents, hooks, output
   styles, and MCP server definitions.
 - **K17 nested AGENTS.md**: an `AGENTS.md` below the repository root, scoped to its subtree.
-- **K18 agent-worktree settings**: two Claude Code settings for the worktrees its agents run in: ignoring the
-  `.claude/worktrees/` directory (in `.gitignore` and in each tool config that walks the tree), and branching each
-  agent worktree from the current `HEAD` rather than the default branch. Their literal lines are the shipped skill's
-  `references/agent-worktrees.md`; the diagnosis is [worktree-diagnosis](../worktree-diagnosis/README.md)'s.
-- **K19 Claude Code in use**: the repository has a `.claude/` directory, or the owner enabled Claude Code in this run.
+- **K18 agent-worktree settings**: see [agent-worktree-settings](../agent-worktree-settings/README.md) K1.
+- **K20 consolidated harness instruction file**: a harness's own instruction file, other than a shadowing file and a
+  personal override, whose content an approved step has moved into the root `AGENTS.md`, such as a `.cursorrules`, a
+  `GEMINI.md`, or a `.github/copilot-instructions.md`.
 
 ## Actors and goals
 
@@ -79,7 +80,6 @@ bridge written.
 | A1.1 | user who asks for the setup | the repository ends with one canonical configuration every enabled harness reaches |
 | A2.1 | repository owner | nothing they wrote is replaced, rewritten, or removed without their word |
 | A2.2 | repository owner | nothing is asserted in `AGENTS.md` about the project that the repository does not show and they did not approve |
-| A2.3 | repository owner | decides, per setting, how Claude Code's agent worktrees fit the repository |
 | A3.1 | `doctor` and `repair` skills | an instruction-bridge finding handed here ends with the bridge written |
 | A4.1 | later agent session in an enabled harness, which never runs the skill | loads the instructions and skills the repository meant |
 | A4.2 | later agent session asked to change a skill | edits the canonical copy, not a projection |
@@ -154,6 +154,11 @@ run of the skill.
   - UC5.1 A shadowing file holds content: the harness reads none of `AGENTS.md` until it is dealt with.
   - UC5.2 A consolidation would leave a harness reading less: it is offered only with the bridge that prevents it.
   - UC5.3 The file is a personal override: it is never consolidated or removed.
+  - UC5.4 A consolidated harness instruction file is left: deleting it, a pointer, or leaving it as it is are each
+    put to the owner, and no copy of `AGENTS.md` takes its place.
+  - UC5.5 A harness that read the consolidated file would not read `AGENTS.md` after the run: deleting it is not
+    offered.
+  - UC5.6 The consolidated file has readers that are not agent harnesses: the offer names them.
 
 ### UC6 — Bridge the harnesses (A3.1, A4.1)
 
@@ -166,6 +171,8 @@ run of the skill.
 - **Extensions**:
   - UC6.1 The command reports a conflicting target: that target is resolved and the command runs again.
   - UC6.2 Links are unavailable: copies are used and the report says what that means.
+  - UC6.3 The command reports a copy file changed on both sides since the copy and `.agents/skills` last agreed: the
+    owner picks the side for each such file.
 
 ### UC7 — Note the bridges in AGENTS.md (A4.2)
 
@@ -179,19 +186,6 @@ run of the skill.
   - UC7.1 The owner emptied the region's markers: the region stays empty.
   - UC7.2 The repository has no bridge: no region is written.
 
-### UC8 — Offer the agent-worktree settings (A2.3)
-
-- **Trigger**: Claude Code is in use.
-- **Entry node**: `survey`
-- **Entry points**:
-  - Skill (primary): its confirm and apply phases.
-- **Inputs**: `.gitignore`, the repository's tree-scanning tool configs, and `.claude/settings.json`.
-- **Success**: each approved setting is written in place.
-- **Extensions**:
-  - UC8.1 Claude Code is not in use: nothing is offered.
-  - UC8.2 A setting is already covered: it is not offered.
-  - UC8.3 The owner declines: nothing is written for that setting.
-
 ### UC9 — Verify and report (A5.1, A1.1)
 
 - **Trigger**: every applied step is done.
@@ -199,9 +193,11 @@ run of the skill.
 - **Entry points**:
   - Skill (primary): its verify and report phase.
 - **Inputs**: what the run wrote.
-- **Success**: the report says what was created, consolidated, linked, and left, and `enhance` is offered once.
+- **Success**: the report says what was created, consolidated, linked, and left; continuing with `repair` is offered
+  for the `doctor` findings this skill does not own; and `enhance` is offered once.
 - **Extensions**:
   - UC9.1 The repository has no formatter: none is run.
+  - UC9.2 `doctor` reports no finding that `repair` owns: no `repair` offer is made.
 
 ## Criteria
 
@@ -255,8 +251,8 @@ run of the skill.
   `CLAUDE.md`, and the file is unchanged unless the owner approves its removal.
 - R17 (UC3, E17) Each single-harness artifact's conversion is asked about on its own, and approving one converts only
   that one.
-- R18 (UC3, E19) A declined step leaves its file byte-identical with no pointer written in its place, and the other
-  approved steps are applied without being asked again.
+- R63 (UC3, E19) A declined step leaves its file byte-identical, with no pointer and no copy of `AGENTS.md` written
+  in its place, and the other approved steps are applied without being asked again.
 
 ### Deriving AGENTS.md (UC4)
 
@@ -284,9 +280,17 @@ run of the skill.
   needs; no copy of the consolidated content is left under its name.
 - R27 (UC5, E6) A personal override is neither consolidated nor removed, and the only change offered is the
   `AGENTS.md` import at its top.
-- R28 (UC5, E5) For a harness that reads `AGENTS.md` only once a settings file names it, consolidating its
-  instruction file is offered only together with the bridge that keeps the content reachable, and consolidating and
-  deleting it is never offered.
+- R62 (UC5, E5) For a harness that reads `AGENTS.md` only once a settings file names it, consolidating its
+  instruction file is offered only together with the bridge that keeps the content reachable.
+- R59 (UC5.4, E5, E17) What is left of a consolidated harness instruction file is put to the owner as three answers,
+  each asked on its own: delete it, replace it with a pointer to `AGENTS.md`, or leave it as it is; under no answer
+  is a copy of `AGENTS.md` written in its place.
+- R60 (UC5.5, E5, E17) Deleting a consolidated harness instruction file is offered only when every harness that read
+  it reads `AGENTS.md` after the run; for `GEMINI.md`, only together with, or after, the settings entry that names
+  `AGENTS.md` as a Gemini CLI context file.
+- R61 (UC5.6, E5, E17) The offer for a consolidated `.github/copilot-instructions.md` names the readers of that file
+  that are not agent harnesses, and says that deleting it or replacing it with a pointer takes its content from
+  them.
 - R29 (UC5, E5) The offer to consolidate a Cursor rule that loads only when its globs or description match describes
   the trade as that rule becoming always loaded, and claims no loss of readers.
 - R30 (UC5, E18) Approved consolidated content is appended to `AGENTS.md` in the author's wording, and the existing
@@ -313,6 +317,9 @@ run of the skill.
   the command again naming only it, and no other projection is replaced.
 - R40 (UC6, E24) When links are unavailable and the skills are copied, the report says a copy is a snapshot, not a
   live projection.
+- R64 (UC6.3, E22) For each copy file the command reports as changed on both sides since the copy and `.agents/skills`
+  last agreed, the skill shows that file's difference between the two sides, asks which side wins, and writes nothing
+  for that file without an answer.
 - R41 (UC6, E24) With Gemini CLI enabled, after the run its settings name `AGENTS.md` as a context file, unless the
   owner declined that edit to an existing settings file.
 - R42 (UC6, E24) A run started from an instruction-bridge finding, with every step it needs approved, leaves the
@@ -328,22 +335,6 @@ run of the skill.
 - R47 (UC7, E27) When every enabled harness reads the canonical configuration natively, no region is written, on this
   run or a later one.
 
-### Agent-worktree settings (UC8)
-
-- R48 (UC8, E13) With Claude Code in use, each uncovered agent-worktree setting is offered as its own item: the ignore
-  line for `.gitignore`, one ignore line for each tree-scanning tool config the repository has, and the base setting
-  in `.claude/settings.json`; the owner's answer to one decides nothing about the others.
-- R49 (UC8, E14) With Claude Code not in use, no agent-worktree setting is offered.
-- R50 (UC8, E14) A setting already covered is not offered, and the report says it is covered: the directory already
-  ignored (a rule on a parent directory counts), a tool config that already excludes it, or a base already set to
-  either value, which the report calls the owner's choice.
-- R51 (UC8, E13) The base offer explains, before it asks, that agent worktrees branch from the default branch unless
-  the base is set to the current `HEAD`, and that the current `HEAD` includes unpushed commits.
-- R52 (UC8, E18) An approved setting adds exactly its line to its file, in place, leaving every other byte unchanged,
-  and creates the file when it is missing; a file whose only offer was declined is byte-identical after the run.
-- R53 (UC8, E19) When the owner declines every agent-worktree offer, no file is created or changed by them, and the
-  report names each as declined.
-
 ### Verifying and reporting (UC9)
 
 - R54 (UC9, E28) Before the report, the run has confirmed that each projection resolves into `.agents/skills`, that
@@ -355,27 +346,15 @@ run of the skill.
 - R57 (UC9, E31) The report names what was created, consolidated, linked, and left canonical-only with the reason for
   each; each agent-worktree offer as written, declined, or already covered; and each single-harness artifact still
   present, split by declined or no canonical form.
+- R65 (UC9, UC9.2, E30, E31) After the report and before the `enhance` offer, the run lists each `doctor` finding
+  that the `repair` skill owns, as [detect-and-repair](../detect-and-repair/README.md) assigns it, and offers once to
+  continue with `repair`; when there is no such finding, no `repair` offer is made.
 - R58 (UC9, E31) After the report, the `enhance` skill is offered exactly once, and this skill writes no instruction
   content whichever way the owner answers.
 
 ## Open questions
 
-- Q1 The shipped `SKILL.md` has no `## Done when` list, so its result has no criteria of its own to agree with this
-  spec. Options: (a) add a Done when list drawn from R5, R13 to R18, R34, R54, and R57; (b) leave the skill without
-  one. Recommendation: (a), seven or so items, since the skill's criteria aspect requires the section.
-- Q2 After consolidating a harness instruction file other than a shadowing file, what is left in its place? Apply
-  step 4 of the shipped skill leaves "a generated copy"; its confirm step, its `agents-md.md` reference, and the v1
-  spec replace it with a pointer only where approved, and otherwise leave it as it was (R14, R18). Options: (a) the
-  file is unchanged unless a pointer was approved; (b) the file becomes a generated copy of `AGENTS.md`.
-  Recommendation: (a), and correct step 4.
-- Q4 This spec is large (58 criteria). Should it be split into child specs? A natural line is UC4 (deriving
-  `AGENTS.md`) and UC8 (agent-worktree settings), each read by tasks that need little of the rest. Options: (a) split
-  those two out; (b) keep one spec. Recommendation: (a), once these drafts are agreed.
-- Q5 Claude Code is now a default harness and is enabled in every run, so K19 ("Claude Code in use": a `.claude/`
-  directory exists, or the owner enabled Claude Code in this run) always holds, and R49 can never apply. Options:
-  (a) redefine K19 as a `.claude/` directory existing or the owner naming Claude Code in this run; (b) offer the
-  agent-worktree settings in every repository and retire R49. Recommendation: (a), which keeps the shipped
-  `agent-worktrees.md` intent of not offering Claude Code settings where nobody uses it.
+None.
 
 ## References
 
@@ -384,10 +363,11 @@ run of the skill.
   route every instruction-bridge finding to this skill.
 - [repair](../repair/README.md): the other writing skill, which asks before every correction.
 - [enhance](../enhance/README.md): the skill offered at the end of a run.
+- [agent-worktree-settings](../agent-worktree-settings/README.md): the agent-worktree settings this skill offers.
 - [worktree-diagnosis](../worktree-diagnosis/README.md): reports the agent-worktree settings this skill offers.
 - [glossary](../glossary.md): the shared terms.
 - The shipped skill, `packages/buddy-agent-harness/skills/init-buddy-agent-harness/`: its `SKILL.md` and the
-  references `agents-md.md` (the material line and the region), `agent-worktrees.md` (the setting lines and the base
-  trade-off), `frontmatter.md`, and `harnesses/` (each harness's bridge).
+  references `agents-md.md` (the material line and the region), `frontmatter.md`, and `harnesses/` (each harness's
+  bridge).
 - [AGENTS.md](https://agents.md/) and [Agent Skills](https://agentskills.io/): the open standards the canonical form
   follows.

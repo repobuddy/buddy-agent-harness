@@ -57,7 +57,7 @@ so an edit made through the copy is kept, and a file both sides changed waits fo
 - **K16 drifted copy**: an existing copy whose files differ from the canonical skills directory in names, in number,
   or in content. [bridge-resolution](../bridge-resolution/README.md) calls it diverged.
 - **K17 last agreement**: see [bridge-resolution](../bridge-resolution/README.md) K6.
-- **K18 skip-worktree protection**: see [bridge-resolution](../bridge-resolution/README.md) K8.
+- **K19 copy protection**: see [bridge-resolution](../bridge-resolution/README.md) K9.
 
 ## Actors and goals
 
@@ -69,7 +69,7 @@ so an edit made through the copy is kept, and a file both sides changed waits fo
 | A2.1 | repository owner | nothing they wrote is replaced unless they named it |
 | A2.2 | repository owner | a fresh repository has one obvious place for skills and for references, kept across a commit and clone |
 | A2.3 | repository owner | an edit they made through a copy is kept, and no side wins a file both sides changed without their answer |
-| A2.4 | repository owner | a copy the command writes never shows as uncommitted changes |
+| A2.5 | repository owner | a copy the command writes or keeps never shows as uncommitted changes, and git adds none of its files |
 | A3.1 | program caller (the `init-buddy-agent-harness` skill, a `doctor` repair, a script) | reads the result and tells each outcome apart without parsing prose |
 | A4.1 | later agent session in an enabled harness, which never runs the command | loads the same skills as every other enabled harness |
 
@@ -138,7 +138,7 @@ so an edit made through the copy is kept, and a file both sides changed waits fo
 - **Extensions**:
   - UC4.1 Something appears at the target between the failed link and the copy: the run fails and keeps it.
   - UC4.2 An existing copy is already at the target: see UC7.
-  - UC4.3 The target is tracked by git: see UC8.
+  - UC4.3 The target is tracked by git: see UC9.
 
 ### UC5 — Scaffold a fresh repository (A2.2)
 
@@ -187,18 +187,19 @@ so an edit made through the copy is kept, and a file both sides changed waits fo
   - UC7.3 No last agreement can be found: every differing file is put to the user.
   - UC7.4 The user gives no answer for a file: nothing is written for that file, and the rest are synced.
 
-### UC8 — Keep a copy out of uncommitted changes (A2.4)
+### UC9 — Keep a copy out of uncommitted changes (A2.5)
 
-- **Trigger**: a run writes a copy, or syncs files into one, at a projection path git tracks.
+- **Trigger**: a run writes a copy, syncs files into one, or keeps an in-sync one, at a projection path git tracks.
 - **Entry node**: `tracked`
 - **Entry points**:
   - Command line (primary): `buddy-agent-harness init`.
   - Library: the program entry point.
   - Skill: the skill's apply step.
 - **Inputs**: the copy's paths, and which of them git tracks.
-- **Success**: git shows no uncommitted change for the copy.
+- **Success**: git shows no uncommitted change for the copy and would add none of its files to a commit.
 - **Extensions**:
-  - UC8.1 The projection path is untracked, or the repository has no git: nothing is protected, and the run succeeds.
+  - UC9.1 The projection path is untracked, or the repository has no git: nothing is protected, and the run succeeds.
+  - UC9.2 An in-sync copy the run writes nothing into lacks copy protection: the run puts it in place.
 
 ## Criteria
 
@@ -216,8 +217,9 @@ so an edit made through the copy is kept, and a file both sides changed waits fo
 - R6 (UC1, E2) A run leaves both canonical instruction files byte-identical.
 - R7 (UC1, E2) A tool setting with no supported mapping to an enabled harness is left as it is, and no file in that
   harness's format is written for it.
-- R8 (UC1, E2) A run writes no file outside the canonical skills directory, the project references layer, and the
-  projections of the enabled harnesses.
+- R48 (UC1, E2) A run writes no file outside the canonical skills directory, the project references layer, and the
+  projections of the enabled harnesses, except the bridge path it lists in the clone's own exclude file as part of
+  copy protection.
 - R9 (UC1, E2) A run writes no record of which harnesses it enabled; a later run works out the enabled set again.
 
 ### Enabled harnesses (UC1, UC2)
@@ -254,7 +256,7 @@ so an edit made through the copy is kept, and a file both sides changed waits fo
 
 ### Syncing an existing copy (UC7)
 
-- R35 (UC7, E19, E20, E28) An existing copy that holds the same files with the same content as the canonical skills
+- R35 (UC7, E19, E20, E34) An existing copy that holds the same files with the same content as the canonical skills
   directory is kept as it is and is not reported as a conflict, whether or not a copy was requested.
 - R36 (UC7, E21, E22) In a drifted copy, a file added, changed, or removed since the last agreement on one side only
   holds that side's version on both sides after the run, whichever side it was, so an edit made through the copy is
@@ -269,12 +271,15 @@ so an edit made through the copy is kept, and a file both sides changed waits fo
 - R40 (UC7, E26, E27) The result names, for each drifted copy, each file the sync wrote and the side it took,
   and each file left unchanged for want of an answer.
 
-### Protecting a copy (UC8)
+### Protecting a copy (UC9)
 
-- R41 (UC8, E29, E31, E32) After a run writes a copy, or syncs files into one, at a projection path git tracks,
-  every tracked path of that copy has skip-worktree protection, so git shows no uncommitted change for the copy.
-- R42 (UC8, E33) A run sets skip-worktree protection on no path other than the tracked paths of a copy it wrote or
-  synced, and on none at an untracked projection path or outside a git repository.
+- R43 (UC9, E29, E26, E31, E32) After a run writes a copy, or syncs files into one, at a projection path git tracks,
+  that copy has copy protection, so git shows no uncommitted change for the copy and would add none of its files to a
+  commit.
+- R44 (UC9.2, E34, E31, E32) After a run keeps an existing in-sync copy at a projection path git tracks, that copy has
+  copy protection, though the run wrote no file into it.
+- R45 (UC9.1, E33) A run puts copy protection on no copy other than one it wrote, synced, or kept at a tracked
+  projection path, and on none at an untracked projection path or outside a git repository.
 
 ### Scaffolding (UC5)
 
@@ -293,8 +298,9 @@ so an edit made through the copy is kept, and a file both sides changed waits fo
   names with their replacements, the number of canonical skills (directories directly inside the canonical skills
   directory only), the number of references in the project tier (the legacy layer included), and whether copying was
   requested.
-- R26 (UC6, E1) A request for an output form the command does not support is rejected before anything is written.
-  The supported forms and the default are [command-output](../command-output/README.md)'s.
+- R46 (UC6, E1) A request for an output form the command does not support is rejected before anything is written.
+  The supported forms are [command-output](../command-output/README.md)'s.
+- R47 (UC6, E14) With no output form named, the result is written in `toon`.
 - R27 (UC6, E13) A run that fails reports the failure in the requested output form.
 
 ### Adapters
@@ -304,14 +310,7 @@ so an edit made through the copy is kept, and a file both sides changed waits fo
 
 ## Open questions
 
-- Q2 Should the command add the local references tier (`.agents/references.local/`) to the repository's ignore file?
-  The local tier is documented as personal and ignored, and nothing writes the ignore entry. Options: (a) the
-  command writes it, as a non-material scaffold step; (b) the skill offers it; (c) leave it to the owner.
-  Recommendation: (a), if writing outside the agent configuration (R8) is widened for that one entry.
-- Q3 Should a run set skip-worktree protection on an existing in-sync copy that git tracks and that lacks it, though
-  the run writes nothing into that copy? R41 covers only copies the run writes or syncs, so `doctor` can still report
-  such a copy after `init` kept it, and only `repair` restores the protection. Options: (a) the run sets it too;
-  (b) leave it to `repair`. Recommendation: (a), so a copy `init` leaves alone is never one `doctor` reports.
+None.
 
 ## References
 
@@ -322,6 +321,7 @@ so an edit made through the copy is kept, and a file both sides changed waits fo
 - [entry-point](../entry-point/README.md): owns how a program reaches the command without a process.
 - [bridge-resolution](../bridge-resolution/README.md): owns what a copy, its divergence, and its protection mean, as
   `doctor` reports them.
-- [repair](../repair/README.md): performs the sync of UC7 for a drifted-copy finding, after the owner approves.
+- [repair](../repair/README.md): performs the sync of UC7 for a drifted-copy finding, after the owner approves, and
+  restores copy protection.
 - [glossary](../glossary.md): the shared terms.
 - [AGENTS.md](https://agents.md/): the open instruction format the canonical instructions follow.

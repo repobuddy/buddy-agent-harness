@@ -25,7 +25,7 @@ flowchart TD
   linked -->|E14| result([Result reported])
   copied -->|E29| tracked{Does git track the projection path?}
   drift -->|E20 no| kept[Copy kept as it is]
-  kept -->|E28| result
+  kept -->|E34| tracked
   drift -->|E21 yes| sync{For each differing file, which side changed since the last agreement?}
   sync -->|E22 one side only| synced[That side's version written to the other side]
   sync -->|E23 both sides, or no last agreement can be found| ask{Did the user pick a side?}
@@ -33,11 +33,12 @@ flowchart TD
   ask -->|E25 no| left[Nothing written for that file]
   synced -->|E26| tracked
   left -->|E27| result
-  tracked -->|E31 yes| protected[Skip-worktree protection set on the copy's tracked paths]
+  tracked -->|E31 yes| protected[Copy protection in place for the copy]
   tracked -->|E33 no, or no git repository| result
   protected -->|E32| result
   native -->|E16| result
 ```
 
-- E1 to E5, E7 to E14, E16 to E33 are the edges above. E6 and E15 are retired. A retired edge ID is never reused.
+- E1 to E5, E7 to E14, E16 to E27, and E29 to E34 are the edges above. E6, E15, and E28 are retired. A retired edge
+  ID is never reused.
 - Outcomes: `rejected`, `reported`, `nomatch`, `failed`, and `result`.

@@ -96,20 +96,7 @@ else the report says.
 | D3 | it reads another file in place of its user-scope file | says so; hands over moving that file's content into the global file and removing it |
 | D4 | its user-scope location comes from an empty variable | says the location changes with each directory; hands over unsetting the variable |
 | D5 | nothing | says the load cannot be confirmed |
-
-## Agent-worktree settings
-
-Asked once per setting and file, after the additions, on runs that passed E2.
-
-```mermaid
-flowchart TD
-  wt{Is there a .claude/ directory?} -->|E50 no| wtNone[[Neither setting offered]]
-  wt -->|E51 yes| wtCov{Is this setting already covered for this file?}
-  wtCov -->|E52 yes| wtCovered[[Not offered, reported covered]]
-  wtCov -->|E53 no| wtOffer[Offered on its own]
-  wtOffer -->|E54 approved| wtWritten[[The line written in place]]
-  wtOffer -->|E55 declined, or no answer| wtDeclined[[Nothing written, reported declined]]
-```
+| D6 | it cannot load a file, keeping its user rules outside one | says the text reaches it only pasted into its user rules; hands over that step |
 
 ## Shipping an addition
 
@@ -121,3 +108,6 @@ flowchart TD
   retire -->|E43 no| offerable[[Can be offered]]
   stored -->|E44 then| offerable
 ```
+
+E50 to E55 are retired: the agent-worktree offers moved to
+[agent-worktree-settings](../agent-worktree-settings/graph.md). A retired edge ID is never reused.

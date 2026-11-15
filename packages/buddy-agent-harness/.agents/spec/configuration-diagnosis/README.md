@@ -72,7 +72,8 @@ correcting one is judgment, made by the `repair` skill rather than by a command.
 - **Extensions**:
   - **UC1.1** The directory is not a git repository: no ignore rule can be read, so no ignored bridge is reported.
   - **UC1.2** A check cannot read what it needs to decide: it reports nothing rather than a guessed fault.
-  - **UC1.3** A skill's description is missing rather than misquoted: it is still reported as unloadable.
+  - **UC1.4** A skill's description is missing rather than its frontmatter unparsable: it is still reported as
+    unloadable, and the finding says which of the two causes it found.
 
 ### UC2 — Hand each fault to the skill that corrects it (A4.1, A1.1)
 
@@ -103,10 +104,15 @@ correcting one is judgment, made by the `repair` skill rather than by a command.
   ignore file there holds a rule matching a bridge.
 - **R7** (UC1, E7) A local-override file at the repository root is reported as an unread-local-override fault naming
   that file.
-- **R8** (UC1, E9) A canonical `SKILL.md` whose frontmatter does not parse, such as a description holding an unquoted
-  colon, is reported as an unloadable-skill fault naming that `SKILL.md`.
-- **R9** (UC1.3, E9) A canonical `SKILL.md` with no frontmatter block, with no `description` key, or with a
-  `description` key and no value is reported as an unloadable-skill fault naming that `SKILL.md`.
+- **R17** (UC1, E17) A canonical `SKILL.md` whose frontmatter block does not parse, such as a description holding an
+  unquoted colon, is reported as an unloadable-skill fault naming that `SKILL.md`, and the finding carries the
+  unparsable-frontmatter cause.
+- **R18** (UC1.4, E18) A canonical `SKILL.md` with no frontmatter block, with no `description` key, or with a
+  `description` key and no value is reported as an unloadable-skill fault naming that `SKILL.md`, and the finding
+  carries the missing-description cause.
+- **R19** (UC1, UC1.4, E17, E18) The two causes of an unloadable-skill fault share its fault name, are told apart by a
+  program reading the finding without parsing its prose, and each has a prose detail and a repair of its own: for
+  unparsable frontmatter, to make it parse; for a missing description, that the skill's author must write one.
 - **R10** (UC1, E10) A canonical `SKILL.md` whose frontmatter parses and carries a `description` with a value yields
   no unloadable-skill fault, including one whose description quotes a colon and one whose name does not match its
   directory.
@@ -127,13 +133,7 @@ correcting one is judgment, made by the `repair` skill rather than by a command.
 
 ## Open questions
 
-- **Q1** One fault, two corrections. An unloadable skill arrives for two causes: frontmatter that does not parse,
-  which `repair` corrects, and a missing description, which `repair` must report and ask about rather than write. The
-  finding does not say which (ledger CR 63). The decision is
-  [detect-and-repair](../detect-and-repair/README.md) Q1's; its outcome lands here.
-  - Options: (a) split the unloadable-skill fault in two, one per cause; (b) keep one fault and have the finding carry
-    its cause; (c) keep it as is and state here that the cause is read from the named file.
-  - Recommendation: (c), as detect-and-repair Q1 recommends. If (a) is chosen, R8 and R9 become two faults.
+None.
 
 ## References
 
