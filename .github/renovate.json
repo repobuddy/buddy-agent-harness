@@ -1,10 +1,3 @@
 {
-	"extends": ["github>repobuddy/renovate-preset"],
-	"packageRules": [
-		{
-			"description": "@types/node tracks the supported Node range, so bumps are a deliberate call.",
-			"matchPackageNames": ["@types/node"],
-			"automerge": false
-		}
-	]
+	"extends": ["github>repobuddy/renovate-preset"]
 }
