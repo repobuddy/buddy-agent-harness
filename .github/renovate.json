@@ -1,5 +1,5 @@
 {
-	"extends": ["github>unional/renovate-preset"],
+	"extends": ["github>repobuddy/renovate-preset"],
 	"packageRules": [
 		{
 			"description": "@types/node tracks the supported Node range, so bumps are a deliberate call.",
