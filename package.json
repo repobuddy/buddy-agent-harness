@@ -7,6 +7,7 @@
 		"bah": "pnpm --filter ./packages/buddy-agent-harness",
 		"check": "biome check",
 		"check:fix": "biome check --write",
+		"check:plugin": "pnpm dlx universal-plugin@0.23.0 plugin build --root packages/buddy-agent-harness --check",
 		"check:spec-refs": "tsx node_modules/cyber-sdd/skills/check-spec-references/scripts/check-spec-references.mjs --spec-dir packages/buddy-agent-harness/.agents/spec",
 		"coverage": "turbo run coverage",
 		"prepare": "husky",
