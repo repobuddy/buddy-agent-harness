@@ -26,6 +26,5 @@ minimumReleaseAgeStrict: true
 minimumReleaseAgeExclude:
   # Renovate security update: smol-toml@1.9.0
   - smol-toml@1.9.0
-  # Council-approved (upx upgrade): universal-plugin@0.22.0 published 2026-11-18.
-  # Expiry: remove this entry after 2026-11-19, once it has aged past the 1-day soak.
-  - universal-plugin@0.22.0
+  # min-release-age: lift universal-plugin@0.23.0 until 2026-11-19T18:00:00Z
+  - 'universal-plugin@0.23.0'
