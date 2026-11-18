@@ -1,0 +1,18 @@
+{
+	"name": "repobuddy",
+	"owner": {
+		"name": "repobuddy"
+	},
+	"plugins": [
+		{
+			"name": "buddy-agent-harness",
+			"source": "./packages/buddy-agent-harness",
+			"description": "Initialize standards-based agent configuration across agent harnesses",
+			"version": "2.0.0",
+			"homepage": "https://github.com/repobuddy/buddy-agent-harness",
+			"repository": "https://github.com/repobuddy/buddy-agent-harness",
+			"license": "MIT",
+			"keywords": ["agent", "skills", "harness", "claude-code", "codex"]
+		}
+	]
+}
