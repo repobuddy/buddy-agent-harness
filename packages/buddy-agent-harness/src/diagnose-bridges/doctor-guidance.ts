@@ -1,5 +1,3 @@
-import { readdirSync, readFileSync } from 'node:fs'
-import { join } from 'node:path'
 import type { Harness, HarnessName, HarnessScope } from '../harness-registry/harness-registry.ts'
 import { globalInstructions, harnessRegistry } from '../harness-registry/harness-registry.ts'
 import type { InstructionBridge } from '../harness-registry/instruction-bridge.ts'
@@ -143,56 +141,17 @@ function repairsOf<Problem extends DoctorProblem>(table: Record<Problem, RepairR
 }
 
 export const commandInvocation = 'buddy-agent-harness'
-export const skillInvocation = (version: string) => `npx -y ${commandInvocation}@${version}`
-
-/** Any `npx` invocation of this CLI, pinned or not, so a stale pin is rewritten rather than doubled. */
-export const anyNpxInvocation: RegExp = /npx -y buddy-agent-harness(@[^\s`]+)?/g
-
-/** A hand-written `SKILL.md` whose pinned `npx` fallback the generator rewrites in place. */
-export type PinTarget = { path: string; expected: string }
+/**
+ * The forwarder `universal-plugin plugin build` writes into each skill that runs this CLI, named after
+ * the bin, as `plugin.json` declares it.
+ */
+export const forwarderPath: string = `scripts/${commandInvocation}.mjs`
 
 /**
- * Every hand-written `SKILL.md` under `skillsRoot` naming an `npx` invocation of this package,
- * found by scanning `skills/` rather than a maintained list; `doctor`'s own `SKILL.md` is excluded
- * since `renderDoctorSkill` writes it whole.
+ * `node` stays in front: the forwarder ships without a hashbang or an executable bit. The folder is
+ * spelled out because a skill runs from the user's repository, not from its own directory.
  */
-export function handWrittenPinTargets(skillsRoot: string, version: string): PinTarget[] {
-	let skillNames: string[]
-	try {
-		skillNames = readdirSync(skillsRoot, { withFileTypes: true })
-			.filter((entry) => entry.isDirectory())
-			.map((entry) => entry.name)
-	} catch {
-		skillNames = []
-	}
-
-	const targets: PinTarget[] = []
-	for (const skill of [...skillNames].sort()) {
-		for (const file of skill === doctorSkill.name ? ['README.md'] : ['SKILL.md', 'README.md']) {
-			let content: string
-			try {
-				content = readFileSync(join(skillsRoot, skill, file), 'utf8')
-			} catch {
-				continue
-			}
-			if (!content.includes(`npx -y ${commandInvocation}`)) continue
-			targets.push({
-				path: join(skillsRoot, skill, file),
-				expected: content.replaceAll(anyNpxInvocation, skillInvocation(version)),
-			})
-		}
-	}
-	return targets
-}
-
-/** Named for the subcommand it runs, so a stack trace or process list shows which one it was. */
-export const launcherFor = (subcommand: string) => `scripts/${subcommand}.mjs`
-
-/**
- * `node` stays in front: the script ships without an executable bit, and its shebang is a no-op on
- * Windows.
- */
-export const launcherInvocation = (subcommand: string) => `node ${launcherFor(subcommand)}`
+export const forwarderInvocation = (args: string): string => `node <this skill's folder>/${forwarderPath} ${args}`
 
 export const repairSkillInvocation = '/buddy-agent-harness:repair'
 
@@ -763,7 +722,7 @@ ${repairs
  * The shipped `doctor-buddy-agent-harness` skill; the finding tables live in the reference pages
  * below, not here.
  */
-export function renderDoctorSkill(version: string): string {
+export function renderDoctorSkill(): string {
 	return `---
 name: ${doctorSkill.name}
 description: ${doctorSkill.description}
@@ -780,10 +739,10 @@ Instructions fail two ways, both as quiet. A bridge that stops resolving costs m
 Diagnose it:
 
 \`\`\`sh
-${launcherInvocation('doctor')}
+${forwarderInvocation('doctor')}
 \`\`\`
 
-That path is relative to this skill's own directory: \`scripts/doctor.mjs\` is a self-contained bundle built from this package's source and shipped inside the skill folder through the npm package, so it runs against the current working directory with nothing downloaded and no \`node_modules\` needed. Fall back to \`${skillInvocation(version)} doctor\` when \`scripts/doctor.mjs\` is missing or cannot be run — the case for a skill installed from git rather than from the npm package, which does not carry the bundle.
+\`<this skill's folder>\` is the directory that holds this \`SKILL.md\`. The script forwards every argument to the \`${commandInvocation}\` CLI and runs against the current working directory.
 
 The command is read-only. It never repairs anything, so it is safe to run at any point, including from a session-start hook.
 

@@ -12,8 +12,8 @@ back. A program that wanted the `doctor` report had to run the CLI and parse the
 This capability makes every command callable in process. A caller hands over the arguments the process would have
 supplied and gets back how the run went, with the command's output on its own streams. A program that wants the
 `doctor` report as a value calls the report builder, and one that wants a family's raw diagnosis calls that
-diagnosis. Only the executable and the skill launchers turn a process into a call and the returned outcome into the
-process's exit status, so a call never reaches past its caller.
+diagnosis. Only the executable turns a process into a call and the returned outcome into the process's exit status,
+so a call never reaches past its caller.
 
 ## Non-goals
 
@@ -36,10 +36,10 @@ process's exit status, so a call never reaches past its caller.
   and script first, runs the command it names, and returns the run's outcome.
 - **K2 outcome**: how a run went, one of three: done as asked; called correctly but could not complete (failure); called
   wrongly, so the same invocation cannot succeed (refused).
-- **K3 process boundary**: the executable and the skill launchers, the only code that reads the process's arguments
+- **K3 process boundary**: the executable, the only code that reads the process's arguments
   or sets its exit status.
-- **K4 launcher**: the script a shipped skill runs in preference to a download, built from the package and shipped in
-  the skill's folder through the npm package.
+- **K4 forwarder**: the script in a shipped skill's folder, named after the executable, that runs the executable of the
+  package it sits in, or else the published package at the version the skill shipped with.
 - **K5 report builder**: the exported call that returns the `doctor` report as a value, given a diagnosis and the
   invoked path to report.
 
@@ -47,14 +47,14 @@ process's exit status, so a call never reaches past its caller.
 
 | ID | Actor | Goal |
 | --- | --- | --- |
-| A1.1 | skill launcher | run one subcommand without changing global state or importing the executable |
+| A1.1 | skill forwarder | run one subcommand through the executable, passing its arguments and outcome through |
 | A2.1 | the executable | turn the process's arguments into a call, and the call's outcome into the exit status |
 | A3.1 | package consumer | get the `doctor` report as a value, without parsing the tool's own output |
 | A3.2 | package consumer | get exactly what a command prints, and learn how it went |
 | A3.3 | package consumer | get one family's raw diagnosis |
 | A4.1 | agent parsing `doctor` | read a stream that carries the report and nothing else |
 | A5.1 | test | drive a command and read its outcome without stubbing the process |
-| A6.1 | user of a skill installed without its launcher | still run the subcommand the skill needs |
+| A6.1 | user of a skill installed outside the package | still run the subcommand the skill needs |
 | A7.1 | person or agent invoking the package with no command | see live data about the repository, not a manual |
 
 ## Use cases
@@ -90,13 +90,12 @@ process's exit status, so a call never reaches past its caller.
 - **Trigger**: a shipped skill needs one subcommand run against the working directory.
 - **Entry node**: A
 - **Entry points**:
-  - Skill (primary): the launcher in the skill's folder.
-  - Command line: a pinned invocation of the package, the fallback the skill names.
-- **Inputs**: the process's arguments, with the subcommand inserted.
+  - Skill (primary): the forwarder in the skill's folder.
+- **Inputs**: the subcommand and its arguments.
 - **Success**: the subcommand runs against the working directory and the process ends with its outcome.
 - **Extensions**:
-  - **UC3.1** The skill was installed without its launcher, such as from git: the skill names an invocation of the
-    package pinned to the version that generated it.
+  - **UC3.1** The skill sits outside the package, such as a git-sourced install or a skill folder copied alone: the
+    forwarder runs the published package at the version the skill shipped with.
   - **UC3.2** The subcommand fails or is refused: the process ends with that outcome's exit status.
 
 ### UC4 — Get the report or a diagnosis as a value (A3.1, A3.3)
@@ -150,12 +149,11 @@ process's exit status, so a call never reaches past its caller.
 
 - **R10** (UC2, UC2.1, E6) The executable ends the process with the exit status for the outcome the entry point
   returned, failure and refused included.
-- **R11** (UC3, UC3.2, E6) A launcher runs its subcommand against the working directory and ends the process with the
+- **R11** (UC3, UC3.2, E6) A forwarder runs its subcommand against the working directory and ends the process with the
   exit status for the returned outcome, failure and refused included.
-- **R12** (UC3, E6) The published package holds every launcher a shipped skill runs, at the path that skill names, and
-  a skill's folder copied alone, with no installed dependencies around it, runs its launcher successfully.
-- **R13** (UC3.1, E9) A shipped skill that runs a launcher names, for when the launcher is missing or cannot run, an
-  invocation of the package pinned to the version that generated the skill.
+- **R12** (UC3, E6) The published package holds every forwarder a shipped skill runs, at the path that skill names.
+- **R13** (UC3.1, E9) A shipped skill that runs the executable names only its forwarder, with no other invocation of
+  the package beside it, and the forwarder carries the version the skill shipped with.
 
 ### The reachable surface
 

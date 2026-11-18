@@ -1,10 +1,8 @@
 import { execFileSync } from 'node:child_process'
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
-import { launchers } from '../skill-scripts/launchers.ts'
 import {
 	bridgeRepairs,
 	commandInvocation,
@@ -13,11 +11,11 @@ import {
 	doctorRepairs,
 	doctorSkill,
 	enhanceSkillInvocation,
+	forwarderInvocation,
+	forwarderPath,
 	globalInstructionRepairs,
-	handWrittenPinTargets,
 	initSkillInvocation,
 	instructionRepairs,
-	launcherFor,
 	mcpRepairs,
 	nonstandardRepairs,
 	type RepairRow,
@@ -25,12 +23,10 @@ import {
 	renderDoctorSkill,
 	repairFor,
 	repairSkillInvocation,
-	skillInvocation,
 	worktreeRepairs,
 } from './doctor-guidance.ts'
 
 const packageRoot = dirname(dirname(dirname(fileURLToPath(import.meta.url))))
-const version = JSON.parse(readFileSync(join(packageRoot, 'package.json'), 'utf8')).version as string
 
 describe('doctor guidance', () => {
 	it('has one repair for every problem it can report', () => {
@@ -106,7 +102,7 @@ describe('doctor guidance', () => {
 	// Across the whole shipped skill, not just SKILL.md: the tables moved into the reference pages,
 	// and a repair rendered into no page at all is a finding the reader can never route.
 	it('renders every repair into the skill, with the path parameterized', () => {
-		const pages = [renderDoctorSkill(version), ...renderDoctorReferences(initHarnessReferences()).map((d) => d.content)]
+		const pages = [renderDoctorSkill(), ...renderDoctorReferences(initHarnessReferences()).map((d) => d.content)]
 
 		for (const entry of doctorRepairs) {
 			const detail = pages.filter((page) => page.includes(entry.detail))
@@ -118,29 +114,30 @@ describe('doctor guidance', () => {
 		}
 	})
 
-	// A skill may be installed without the binary on PATH, so its fallback runs through npx.
+	// A skill may be installed without the binary on PATH, so it runs the CLI through its forwarder.
 	it('never points the skill at a bare binary invocation', () => {
-		expect(renderDoctorSkill(version)).not.toMatch(/(?<!npx -y )buddy-agent-harness (init|doctor)/)
+		expect(renderDoctorSkill()).not.toMatch(/buddy-agent-harness (init|doctor)/)
 	})
 
 	// Rebuilding a bridge can move user-authored skills, so the skill hands that back to `init`
 	// rather than running the command itself.
 	it('never tells the skill to run the init command', () => {
-		expect(renderDoctorSkill(version)).not.toMatch(/buddy-agent-harness init/)
+		expect(renderDoctorSkill()).not.toMatch(/buddy-agent-harness init/)
 	})
 
-	// An unpinned fallback resolves whatever npm calls latest, which can be a CLI whose findings
-	// the table above it does not list.
-	it('pins the npx fallback to the version that generated the skill', () => {
-		expect(renderDoctorSkill(version)).toContain(skillInvocation(version))
-		expect(skillInvocation('1.2.3')).toBe('npx -y buddy-agent-harness@1.2.3')
+	// The forwarder picks the checkout or the pinned release itself; a fallback beside it would let
+	// the model make that choice instead.
+	it('runs the CLI through the forwarder alone, with no fallback beside it', () => {
+		expect(renderDoctorSkill()).toContain(forwarderInvocation('doctor'))
+		expect(renderDoctorSkill()).not.toContain('npx')
+		expect(forwarderInvocation('doctor')).toBe("node <this skill's folder>/scripts/buddy-agent-harness.mjs doctor")
 	})
 
 	// The build step that keeps them in step is `pnpm skill:gen:check`; this catches the drift
 	// during an ordinary test run as well.
 	it('matches the committed skill', () => {
 		expect(readFileSync(join(packageRoot, 'skills', 'doctor-buddy-agent-harness', 'SKILL.md'), 'utf8')).toBe(
-			renderDoctorSkill(version),
+			renderDoctorSkill(),
 		)
 	})
 
@@ -157,7 +154,7 @@ describe('doctor guidance', () => {
 	// The split is only an improvement if the pointers land. A page named in SKILL.md that does not
 	// exist costs the reader the whole lookup and teaches them to stop following the table.
 	it('ships every reference page its own pointer table names', () => {
-		for (const [, path] of renderDoctorSkill(version).matchAll(/`(references\/[a-z-]+\.md)`/g)) {
+		for (const [, path] of renderDoctorSkill().matchAll(/`(references\/[a-z-]+\.md)`/g)) {
 			expect(
 				existsSync(join(packageRoot, 'skills', 'doctor-buddy-agent-harness', ...(path as string).split('/'))),
 			).toBe(true)
@@ -190,110 +187,41 @@ function initHarnessReferences(): Set<string> {
 	)
 }
 
-describe('hand-written skill pins', () => {
-	// The hole this closes: a hand-written SKILL.md with a pin that nothing in the generator's
-	// target list names goes stale silently, the way `skills/repair/SKILL.md`'s pin once did. This
-	// walks the same directory the generator does and asserts nothing it finds is left uncovered.
-	it('targets every shipped SKILL.md that names an npx invocation of this package, doctor excepted', () => {
+describe('skill forwarders', () => {
+	const scripts = JSON.parse(readFileSync(join(packageRoot, 'plugin.json'), 'utf8')).extensions[
+		'org.cyberuni.universal-plugin'
+	].scripts as Record<string, { forward: string }>
+
+	function skillsNaming(text: string): string[] {
 		const skillsRoot = join(packageRoot, 'skills')
-		const onDisk = readdirSync(skillsRoot, { withFileTypes: true })
+		return readdirSync(skillsRoot, { withFileTypes: true })
 			.filter((entry) => entry.isDirectory())
-			.flatMap((entry) => ['SKILL.md', 'README.md'].map((file) => join(skillsRoot, entry.name, file)))
-			.filter((path) => existsSync(path) && readFileSync(path, 'utf8').includes(`npx -y ${commandInvocation}`))
-			.filter((path) => path !== join(skillsRoot, doctorSkill.name, 'SKILL.md'))
-
-		expect(onDisk.length).toBeGreaterThan(0)
-		expect(
-			handWrittenPinTargets(skillsRoot, version)
-				.map((target) => target.path)
-				.sort(),
-		).toEqual(onDisk.sort())
-	})
-
-	it('rewrites a stale pin to the given version, and leaves doctor and pin-free skills out', () => {
-		const skillsRoot = mkdtempSync(join(tmpdir(), 'buddy-agent-harness-pins-'))
-		mkdirSync(join(skillsRoot, 'repair'), { recursive: true })
-		writeFileSync(join(skillsRoot, 'repair', 'SKILL.md'), 'Fall back to `npx -y buddy-agent-harness@^0.1.0 doctor`.\n')
-		mkdirSync(join(skillsRoot, doctorSkill.name), { recursive: true })
-		writeFileSync(
-			join(skillsRoot, doctorSkill.name, 'SKILL.md'),
-			'Fall back to `npx -y buddy-agent-harness@^0.1.0 doctor`.\n',
-		)
-		mkdirSync(join(skillsRoot, 'enhance'), { recursive: true })
-		writeFileSync(join(skillsRoot, 'enhance', 'SKILL.md'), 'No npx fallback here.\n')
-		mkdirSync(join(skillsRoot, 'no-skill-file'), { recursive: true })
-
-		const targets = handWrittenPinTargets(skillsRoot, '9.9.9')
-
-		expect(targets).toEqual([
-			{
-				path: join(skillsRoot, 'repair', 'SKILL.md'),
-				expected: 'Fall back to `npx -y buddy-agent-harness@9.9.9 doctor`.\n',
-			},
-		])
-		// What `--check` reports as stale: the rewritten target's expected content differs from what
-		// is still committed, so a check run that reads this file back would flag it.
-		expect(readFileSync(targets[0]?.path as string, 'utf8')).not.toBe(targets[0]?.expected)
-	})
-
-	it('finds nothing under a skills directory that does not exist', () => {
-		expect(handWrittenPinTargets(join(tmpdir(), 'buddy-agent-harness-pins-missing'), version)).toEqual([])
-	})
-})
-
-describe('skill script', () => {
-	// The source each skill's bundle is built from — not the built bundle itself, which is
-	// minified and gitignored (see `tsdown.config.ts` and `scripts/pack-check.ts`, which check the
-	// packed, runnable artifact instead of a byte-for-byte copy).
-	function skillScriptSource(subcommand: string): string {
-		return readFileSync(join(packageRoot, 'src', 'skill-scripts', `${subcommand}.ts`), 'utf8')
+			.map((entry) => entry.name)
+			.filter((skill) =>
+				readdirSync(join(skillsRoot, skill), { recursive: true, encoding: 'utf8' })
+					.filter((file) => file.endsWith('.md') && !file.startsWith('evals'))
+					.some((file) => readFileSync(join(skillsRoot, skill, file), 'utf8').includes(text)),
+			)
+			.sort()
 	}
 
-	it('builds its argv with the subcommand inserted, mutating nothing', () => {
-		const source = skillScriptSource('doctor')
-
-		expect(source).toContain("[...process.argv.slice(0, 2), 'doctor', ...process.argv.slice(2)]")
-		expect(source).not.toContain('process.argv.splice')
-	})
-
-	it('calls the entry point instead of importing the executable for its side effect', () => {
-		const source = skillScriptSource('doctor')
-
-		expect(source).toContain("import { run } from '../cli.ts'")
-		expect(source).not.toContain(`'bin'`)
-	})
-
-	// One source file per subcommand, not one per skill: `repair` and `init` both ship `doctor`'s
-	// bundle rather than hand-rolling a second way of reaching the CLI. A skill added to `launchers`
-	// with no matching source under `src/skill-scripts/` has nothing for `tsdown.config.ts` to build.
-	it('has a source file for every subcommand a shipped skill runs', () => {
-		expect(launchers.length).toBeGreaterThan(0)
-		for (const subcommand of new Set(launchers.map((entry) => entry.subcommand))) {
-			expect(existsSync(join(packageRoot, 'src', 'skill-scripts', `${subcommand}.ts`))).toBe(true)
+	// `plugin build` writes only the forwarders `plugin.json` declares, so a skill that names one
+	// without the declaration ships a command line that runs nothing.
+	it('declares a forwarder in plugin.json for every skill that runs the CLI through one', () => {
+		const running = skillsNaming(forwarderPath)
+		expect(running.length).toBeGreaterThan(0)
+		for (const skill of running) {
+			expect(scripts[`skills/${skill}/${forwarderPath}`], skill).toEqual({ forward: commandInvocation })
+			expect(existsSync(join(packageRoot, 'skills', skill, forwarderPath)), skill).toBe(true)
 		}
 	})
 
-	// `pnpm build`, which copies the bundles, is expected to have run before this suite, the same way CI
-	// orders it (see `turbo.json`). Confirms the copy landed and carries the generated header, not
-	// that its bytes match some second rendering of it.
-	it('copies the built bundle into every skill that runs it', () => {
-		for (const { skill, subcommand } of launchers) {
-			const script = readFileSync(join(packageRoot, 'skills', skill, launcherFor(subcommand)), 'utf8')
-
-			expect(script).toContain('#!/usr/bin/env node')
-			expect(script).toContain(`Generated from packages/buddy-agent-harness/src/skill-scripts/${subcommand}.ts by`)
-		}
-	})
-
-	// The point of the bundle: it resolves the CLI from within itself, so it runs from a repository
-	// root that is nowhere near the skill and downloads nothing. `scripts/pack-check.ts` covers the
-	// stronger claim — that it also runs with no `node_modules` anywhere above it, once packed.
-	it('runs the shipped CLI against the working directory, not its own', () => {
-		const launcher = join(packageRoot, 'skills', 'doctor-buddy-agent-harness', launcherFor('doctor'))
-		const stdout = execFileSync(process.execPath, [launcher, '--format', 'json'], {
-			cwd: packageRoot,
-			encoding: 'utf8',
-		})
+	it('runs the CLI against the working directory, not its own', () => {
+		const stdout = execFileSync(
+			process.execPath,
+			[join(packageRoot, 'skills', doctorSkill.name, forwarderPath), 'doctor', '--format', 'json'],
+			{ cwd: packageRoot, encoding: 'utf8' },
+		)
 
 		expect(() => JSON.parse(stdout)).not.toThrow()
 	})

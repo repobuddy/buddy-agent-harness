@@ -50,7 +50,7 @@ Then ask the second question **of text that read as covered, and only of that te
 
 Answer it against the addition's own texts: the one its reference offers now, and the ones it has retired, in the history file its `## Stale when` names. That section also carries what is specific to the addition; apply it with the procedure below.
 
-**Let `prose-update` do the sentence-level reading.** `cyber-agentkit` ships it as a skill, and this plugin depends on that package. Hand it the three texts as files: the text the addition offers now (the fenced block under `## Offer this text verbatim`), the section as found in the file, and the addition's history file. Its script compares them sentence by sentence and returns an outcome per part. Run the script the skill names, or `pnpm exec cyber-agentkit prose-update` / `npx -y cyber-agentkit@1.2.0 prose-update` with the same arguments when it cannot be reached. It writes nothing and asks nothing; this skill still does both.
+**Let `prose-update` do the sentence-level reading.** `cyber-agentkit` ships it as a skill, and this plugin depends on that package. Hand it the three texts as files: the text the addition offers now (the fenced block under `## Offer this text verbatim`), the section as found in the file, and the addition's history file. Its script compares them sentence by sentence and returns an outcome per part. Run the script the skill names, or `node <this skill's folder>/scripts/cyber-agentkit.mjs prose-update` with the same arguments when it cannot be reached. It writes nothing and asks nothing; this skill still does both.
 
 | `prose-update` outcome | State below |
 | --- | --- |
@@ -115,10 +115,10 @@ Where an addition is **absent**, show its text **verbatim** — the whole thing,
 The global file is `~/.agents/AGENTS.md`, the user-scope counterpart of the root `AGENTS.md`. No harness reads it by itself; a harness reads it only where a user-scope instruction file of its own loads it. **Say whether the harness in use does**, and do not judge that yourself — `doctor` owns the check:
 
 ```sh
-node scripts/doctor.mjs
+node <this skill's folder>/scripts/buddy-agent-harness.mjs doctor
 ```
 
-That path is relative to this skill's own directory; fall back to `npx -y buddy-agent-harness@2.0.0 doctor` when it is missing or cannot be run. Read the `globalInstructions` row for the harness you are running in:
+`<this skill's folder>` is the directory that holds this `SKILL.md`. The script forwards every argument to the `buddy-agent-harness` CLI and runs against the current working directory. Read the `globalInstructions` row for the harness you are running in:
 
 - **`ok`** — say that this harness loads `~/.agents/AGENTS.md`, through the file the row names.
 - **`missing` or `unbridged`** — say that it does not yet, so the text would reach no session of this harness until it does. Name the file the row gives, and hand over the step that bridges it beside the text: `references/global-instructions.md` names it per harness, and where `doctor` reported a finding for that file, its `help` row carries the same step. Where the row is `unbridged` and the step is a symlink, say that what the file holds moves into `~/.agents/AGENTS.md` first.

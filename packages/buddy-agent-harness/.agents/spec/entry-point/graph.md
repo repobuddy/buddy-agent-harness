@@ -4,7 +4,7 @@ How one call's outcome is decided, and where it goes. The report builder is a se
 
 ```mermaid
 flowchart TD
-  A[The executable or a launcher builds an argument vector from the process] -->|E9| B
+  A[The executable builds an argument vector from the process] -->|E9| B
   B[The entry point is called with a full argument vector] -->|E1| P{How did parsing and the command end?}
   P -->|E2 the command reported a failure| O1[Failure returned]
   P -->|E3 the command did what was asked| O2[Done returned]

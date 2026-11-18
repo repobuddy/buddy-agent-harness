@@ -3,7 +3,7 @@
 	"tasks": {
 		"//#check": { "cache": false },
 		"//#check:spec-refs": { "cache": false },
-		"build": { "dependsOn": ["^build"], "outputs": ["dist/**", "skills/*/scripts/*.mjs"] },
+		"build": { "dependsOn": ["^build"], "outputs": ["dist/**"] },
 		"coverage": { "dependsOn": ["^build", "build"], "outputs": ["coverage/**"] },
 		"test": { "dependsOn": ["^build", "build"] },
 		"test:dist": { "dependsOn": ["build"] },

@@ -46,7 +46,7 @@ A skills copy at a bridge path that no longer holds what `.agents/skills` holds.
 
 **Offer.** Show each file that differs, as it stands on each side (`git diff --no-index .agents/skills <copy>`), and the side the sync takes for it. A file only one side changed takes that side's version, so an edit made through the copy lands in `.agents/skills`. A file both sides changed, and every differing file under `diverged-unknown`, takes no side until the owner picks one.
 
-**Apply.** On approval, run `node scripts/sync.mjs` at the repository root, resolving that path against this skill's own directory as for `scripts/doctor.mjs`, or the `npx` fallback `SKILL.md` gives with `sync` in place of `doctor`. It writes every file one side changed, keeps the copy out of commits, and lists in `left` each file it would not decide. Put each of those to the owner on its own: show that file's difference between the two sides and ask which side wins. Then run the same invocation again with the answers, naming each answered file once by its `path` in `left`, which runs through the bridge: `node scripts/sync.mjs --resolve .claude/skills/<file>=<canonical|copy>,.claude/skills/<file>=<canonical|copy>`. Write nothing for a file without an answer; it stays as it is on both sides, and the finding is still open.
+**Apply.** On approval, run `node <this skill's folder>/scripts/buddy-agent-harness.mjs sync` at the repository root, with `<this skill's folder>` resolved as in `SKILL.md`. It writes every file one side changed, keeps the copy out of commits, and lists in `left` each file it would not decide. Put each of those to the owner on its own: show that file's difference between the two sides and ask which side wins. Then run the same invocation again with the answers, naming each answered file once by its `path` in `left`, which runs through the bridge: `node <this skill's folder>/scripts/buddy-agent-harness.mjs sync --resolve .claude/skills/<file>=<canonical|copy>,.claude/skills/<file>=<canonical|copy>`. Write nothing for a file without an answer; it stays as it is on both sides, and the finding is still open.
 
 **Stops at.** Every file the owner gave no side for, and everything outside the copy and `.agents/skills`.
 
@@ -70,7 +70,7 @@ and add the bridge path, as `/<copy>/`, as one line at the end of the clone's ow
 
 These are the two MCP findings where the golden set is plainly ahead: a harness is missing a server the golden set declares, or only the golden side changed a field. The correction is to project the golden set, and `mcp project` works out the change. Do not write it yourself.
 
-**Plan.** Run `node scripts/mcp.mjs project`. Where `scripts/doctor.mjs` would fall back to `npx`, use the same `npx` invocation `SKILL.md` gives, with `mcp project` in place of `doctor`. It is a dry run and writes nothing.
+**Plan.** Run `node <this skill's folder>/scripts/buddy-agent-harness.mjs mcp project`. It is a dry run and writes nothing.
 
 - `actions` has one row per server per target.
 - `entries` has each changed server as it would read in its target.
@@ -98,7 +98,7 @@ Show each target file as it stands beside its `entries`. That pair is the before
 
 These are the two MCP findings where the harness side is plainly ahead: only the harness copy changed a field, or a harness carries a server the golden set does not declare. The correction is to import the change into the golden set, **one field at a time**, and `mcp reconcile` works out each field. Do not edit the golden set yourself.
 
-**Plan.** Run `node scripts/mcp.mjs reconcile`, or the `npx` fallback with `mcp reconcile`. It is a dry run and writes nothing. `fields` has one row per field, each with a `path`, an `action`, a `detail`, and for an `import` row the `value` as it would read in the golden set.
+**Plan.** Run `node <this skill's folder>/scripts/buddy-agent-harness.mjs mcp reconcile`. It is a dry run and writes nothing. `fields` has one row per field, each with a `path`, an `action`, a `detail`, and for an `import` row the `value` as it would read in the golden set.
 
 **Offer each `import` row on its own.** Show the golden server's table as it stands beside the row's `value`. Ask about each field separately. **Never offer to import every field at once**, and never approve one on the user's behalf. For a server the golden set does not declare yet, approving its `command` or its `url` is required, or there is nothing to run.
 
