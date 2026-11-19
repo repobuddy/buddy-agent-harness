@@ -40,7 +40,7 @@ In Claude Code, install the plugin and its `init-buddy-agent-harness` skill from
 /plugin install buddy-agent-harness@cyberplace
 ```
 
-Install from the marketplace rather than from a git checkout. The `init-buddy-agent-harness` and `doctor-buddy-agent-harness` skills each run a self-contained script bundle shipped inside the skill folder, built at package time and distributed through npm — a git source does not carry it. A git-sourced install still works: both fall back to fetching the pinned version with `npx`. See [Skill Scripts](/agent-configuration/skill-scripts/) for the pattern and why the fallback stays.
+Each skill runs the CLI through a small forwarding script in its own `scripts/` folder, written by [universal-plugin](https://cyberuni.github.io/universal-plugin/concepts/running-your-cli-from-skills/). The script runs the installed package when the skill sits inside it, and otherwise fetches the version the skill shipped with through `npx`, so a marketplace install and a git-sourced one both work.
 
 ## Initialize a repository
 

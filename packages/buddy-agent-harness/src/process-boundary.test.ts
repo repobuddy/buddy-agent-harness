@@ -80,32 +80,35 @@ describe('the process boundary', () => {
 })
 
 /**
- * The launchers carry the same assignment as `bin`, from the renderer rather than by hand. They
- * are driven here too, so the generated copy cannot drift away from the one above unnoticed.
+ * Each skill runs the CLI through the forwarder `universal-plugin plugin build` writes into it. In this
+ * checkout the forwarder runs `bin`, so the outcome it hands back must survive the extra process.
  */
-describe('a generated launcher', () => {
-	function launcher(skill: string, file: string, ...args: string[]) {
-		return spawnSync(process.execPath, [join(packageRoot, 'skills', skill, 'scripts', file), ...args], {
-			cwd: packageRoot,
-			encoding: 'utf8',
-		})
+describe("a skill's forwarder", () => {
+	function forwarder(skill: string, ...args: string[]) {
+		return spawnSync(
+			process.execPath,
+			[join(packageRoot, 'skills', skill, 'scripts', 'buddy-agent-harness.mjs'), ...args],
+			{
+				cwd: packageRoot,
+				encoding: 'utf8',
+			},
+		)
 	}
 
 	it('applies a reported failure to the process', () => {
-		const { status, stdout, stderr } = launcher('repair', 'doctor.mjs', '--harness', 'aider')
+		const { status, stdout } = forwarder('repair', 'doctor', '--harness', 'aider')
 
 		expect(status).toBe(2)
 		expect(stdout).toContain('code: unsupported-harness')
-		expect(stderr).toBe('')
 	})
 
 	it("applies a rejected invocation's usage code to the process", () => {
-		expect(launcher('doctor-buddy-agent-harness', 'doctor.mjs', '--nope').status).toBe(2)
-		expect(launcher('doctor-buddy-agent-harness', 'doctor.mjs', '--format', 'yaml').status).toBe(2)
+		expect(forwarder('doctor-buddy-agent-harness', 'doctor', '--nope').status).toBe(2)
+		expect(forwarder('doctor-buddy-agent-harness', 'doctor', '--format', 'yaml').status).toBe(2)
 	})
 
 	it('reports the diagnosis of the working directory when asked correctly', () => {
-		const { status, stdout } = launcher('doctor-buddy-agent-harness', 'doctor.mjs', '--format', 'json')
+		const { status, stdout } = forwarder('doctor-buddy-agent-harness', 'doctor', '--format', 'json')
 
 		expect(status).toBe(0)
 		expect(() => JSON.parse(stdout)).not.toThrow()

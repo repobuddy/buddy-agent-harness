@@ -204,26 +204,6 @@ describe('run', () => {
 		const manifest = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'))
 		expect(mockedCli).toHaveBeenCalledWith(expect.objectContaining({ version: manifest.version }))
 	})
-
-	// The skill-script build defines this identifier as a literal (see `tsdown.config.ts`) because
-	// its bundle ships without `package.json` beside it. A fresh module instance, with the global
-	// set the way that `define` would leave it, is the only way to exercise that branch without
-	// actually running the bundler.
-	it('reads the version a build defined as __PACKAGE_VERSION__, in preference to the manifest', async () => {
-		;(globalThis as Record<string, unknown>)['__PACKAGE_VERSION__'] = '9.9.9'
-		try {
-			vi.resetModules()
-			const { run: builtRun } = await import('./cli.ts')
-			stubApp(vi.fn(async () => undefined))
-
-			await builtRun(['node', 'buddy-agent-harness', '--version'])
-
-			expect(mockedCli).toHaveBeenCalledWith(expect.objectContaining({ version: '9.9.9' }))
-		} finally {
-			delete (globalThis as Record<string, unknown>)['__PACKAGE_VERSION__']
-			vi.resetModules()
-		}
-	})
 })
 
 describe('the commands', () => {
@@ -264,7 +244,7 @@ describe('the public entry point', () => {
 describe('the process boundary', () => {
 	// The whole point of the entry point: the application reports its exit code, and one file turns
 	// that into a process outcome. A second writer is the boundary leaking back out.
-	it('writes process.exitCode nowhere but bin, the launchers, and the renderer that emits them', () => {
+	it('writes process.exitCode nowhere but bin', () => {
 		const shipped = globSync(['src/**/*.ts', 'bin/*.mjs', 'skills/*/scripts/*.mjs'], { cwd: packageRoot })
 			.filter((file) => !file.endsWith('.test.ts'))
 			.sort()
@@ -272,22 +252,7 @@ describe('the process boundary', () => {
 			/process\.exitCode\s*=/.test(readFileSync(join(packageRoot, file), 'utf8')),
 		)
 
-		expect(writers).toEqual([
-			'bin/buddy-agent-harness.mjs',
-			'skills/doctor-buddy-agent-harness/scripts/doctor.mjs',
-			'skills/enhance/scripts/doctor.mjs',
-			'skills/init-buddy-agent-harness/scripts/doctor.mjs',
-			'skills/init-buddy-agent-harness/scripts/init.mjs',
-			'skills/init-buddy-agent-harness/scripts/sync.mjs',
-			'skills/repair/scripts/doctor.mjs',
-			'skills/repair/scripts/mcp.mjs',
-			'skills/repair/scripts/sync.mjs',
-			// The sources the bundles above are built from, not a second writer of their own.
-			'src/skill-scripts/doctor.ts',
-			'src/skill-scripts/init.ts',
-			'src/skill-scripts/mcp.ts',
-			'src/skill-scripts/sync.ts',
-		])
+		expect(writers).toEqual(['bin/buddy-agent-harness.mjs'])
 	})
 })
 

@@ -1,11 +1,4 @@
-import { readFileSync } from 'node:fs'
 import { defineConfig } from 'tsdown'
-
-/**
- * Read once here so `skillScriptConfig` can inject it as a literal — a copied-out skill bundle has
- * no `package.json` beside it to read at runtime.
- */
-const version = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')).version as string
 
 // Multiple configs share `outDir` safely: tsdown hoists `clean` and runs it once across all of them,
 // not per-config.
@@ -16,7 +9,7 @@ const shared = {
 	clean: true,
 } as const
 
-/** Every runtime dependency this package ships inlined, shared by the CLI and skill-script builds. */
+/** Every runtime dependency this package ships inlined into the CLI build. */
 const inlineDeps = {
 	// jsonc-parser's default (`main`) build is UMD with `require()` calls rolldown can't analyse.
 	// Alias to its ESM build instead — unlisted in `exports`, but resolvable as a direct subpath.
@@ -53,40 +46,4 @@ export default defineConfig([
 		dts: false,
 		...inlineDeps,
 	},
-	...skillScriptConfig('doctor'),
-	...skillScriptConfig('init'),
-	...skillScriptConfig('mcp'),
-	...skillScriptConfig('sync'),
 ])
-
-/**
- * Each subcommand gets its own build: entries built together get shared modules split into a common
- * chunk, which a copied-out skill folder can't resolve.
- */
-function skillScriptConfig(subcommand: string) {
-	return [
-		{
-			...shared,
-			entry: { [`skill-scripts/${subcommand}`]: `src/skill-scripts/${subcommand}.ts` },
-			dts: false,
-			minify: true,
-			// Forces every dynamically-imported module into this one file — a copied-out skill
-			// script has no sibling chunk files to resolve them from.
-			// `keepNames`: clibuilder tells a zod array argument from a scalar by its constructor's
-			// name, which minifying renames — `<names...>` then rejects every value.
-			outputOptions: { codeSplitting: false, keepNames: true },
-			// `cli.ts` reads `__PACKAGE_VERSION__` in preference to `package.json` when the
-			// identifier is defined; this is the one build that defines it.
-			define: { __PACKAGE_VERSION__: JSON.stringify(version) },
-			banner: {
-				js: `#!/usr/bin/env node
-// Generated from packages/buddy-agent-harness/src/skill-scripts/${subcommand}.ts by \`pnpm build\`
-// — do not edit.
-// Runs \`buddy-agent-harness ${subcommand}\` from this bundle against the current working
-// directory. Nothing outside this file is read.
-`,
-			},
-			...inlineDeps,
-		},
-	]
-}

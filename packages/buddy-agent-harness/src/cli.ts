@@ -9,17 +9,8 @@ import { initCommand } from './initialize-harnesses/init.command.ts'
 import { mcpCommand } from './project-mcp/mcp.command.ts'
 import { referenceCommand } from './references/references.ts'
 
-/**
- * `../package.json` resolves from both `src/cli.ts` and the bundled `dist/cli.mjs` — one directory
- * under the package root — but not from a skill-script bundle, shipped deeper with no package tree
- * beside it; that build defines `__PACKAGE_VERSION__` as a literal instead. `typeof` is safe against
- * an identifier no other build declares — it reads `'undefined'` rather than throwing.
- */
-declare const __PACKAGE_VERSION__: string | undefined
-const version =
-	typeof __PACKAGE_VERSION__ !== 'undefined'
-		? __PACKAGE_VERSION__
-		: (JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')).version as string)
+/** `../package.json` resolves from both `src/cli.ts` and the bundled `dist/cli.mjs`, one directory under the package root. */
+const version = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')).version as string
 
 /** Exported for `scripts/generate-llms-txt.ts`, which lists the CLI from it; `app()` must stay built from it. */
 export const rootCommand: { name: string; description: string; commands: readonly [cli.Command, ...cli.Command[]] } = {

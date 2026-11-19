@@ -14,10 +14,10 @@ Instructions fail two ways, both as quiet. A bridge that stops resolving costs m
 Diagnose it:
 
 ```sh
-node scripts/doctor.mjs
+node <this skill's folder>/scripts/buddy-agent-harness.mjs doctor
 ```
 
-That path is relative to this skill's own directory: `scripts/doctor.mjs` is a self-contained bundle built from this package's source and shipped inside the skill folder through the npm package, so it runs against the current working directory with nothing downloaded and no `node_modules` needed. Fall back to `npx -y buddy-agent-harness@2.0.0 doctor` when `scripts/doctor.mjs` is missing or cannot be run — the case for a skill installed from git rather than from the npm package, which does not carry the bundle.
+`<this skill's folder>` is the directory that holds this `SKILL.md`. The script forwards every argument to the `buddy-agent-harness` CLI and runs against the current working directory.
 
 The command is read-only. It never repairs anything, so it is safe to run at any point, including from a session-start hook.
 
