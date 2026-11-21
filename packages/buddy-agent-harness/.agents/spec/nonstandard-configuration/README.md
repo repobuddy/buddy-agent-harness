@@ -25,7 +25,7 @@ them is a failure.
   owner's call.
 - **N4 Correctness of content.** Whether the content is good, or true, is not checked. This family is decided by
   where a file lives and what reads it.
-- **N5 Absence.** Guidance a repository lacks is [enhance](../enhance/README.md)'s.
+- **N5 Absence.** Guidance a repository lacks is [enhance](../enhance-buddy-agent-harness/README.md)'s.
 - **N6 Wrongness.** Configuration that is present and wrong is
   [configuration-diagnosis](../configuration-diagnosis/README.md)'s.
 - **N7 Hooks, LSP settings, and output styles.** Their names and shapes differ per harness with no safe common form,

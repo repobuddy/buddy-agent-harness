@@ -1,11 +1,11 @@
 ---
 name: eval-list-identifiers
-description: Measures whether a wording of the List identifiers section that the enhance skill ships changes how an agent labels the lists it puts to the user, instead of arguing about whether it reads well. Use before changing that wording, or when enhance needs to settle an existing List identifiers section by measurement.
+description: Measures whether a wording of the List identifiers section that the enhance-buddy-agent-harness skill ships changes how an agent labels the lists it puts to the user, instead of arguing about whether it reads well. Use before changing that wording, or when enhance-buddy-agent-harness needs to settle an existing List identifiers section by measurement.
 ---
 
 # Evaluate the List identifiers wording
 
-The `## List identifiers` text in `packages/buddy-agent-harness/skills/enhance/references/list-identifiers.md` ships into other people's instruction files and loads on every session there. Its wording is a behavioral claim: agents will label the lists they put to the user, and keep those labels through a revision. **Do not change this wording on taste.** Run the harness.
+The `## List identifiers` text in `packages/buddy-agent-harness/skills/enhance-buddy-agent-harness/references/list-identifiers.md` ships into other people's instruction files and loads on every session there. Its wording is a behavioral claim: agents will label the lists they put to the user, and keep those labels through a revision. **Do not change this wording on taste.** Run the harness.
 
 This is the `eval-delegation` method applied to a second section. Read `../eval-delegation/references/method.md` before a round; every contamination it records applies here.
 

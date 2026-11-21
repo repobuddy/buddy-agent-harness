@@ -1,6 +1,6 @@
-# repair
+# repair-buddy-agent-harness
 
-The `repair` skill corrects agent configuration a repository has that is present but wrong, writing only what the
+The `repair-buddy-agent-harness` skill corrects agent configuration a repository has that is present but wrong, writing only what the
 owner approves.
 
 ## What
@@ -10,10 +10,10 @@ A repository's agent configuration can be present and still wrong: a harness nam
 a skills copy that drifted from `.agents/skills` or lacks the protection that keeps it out of commits, or an MCP server
 that differs between the golden set and a harness copy. The other shipped skills refuse this work on
 purpose. `init-buddy-agent-harness` consolidates what is there and invents nothing, so it never rewrites a file the
-user wrote. `enhance` offers only what is missing. `doctor` never writes. Without `repair`, such a fault is reported
+user wrote. `enhance-buddy-agent-harness` offers only what is missing. `doctor` never writes. Without `repair-buddy-agent-harness`, such a fault is reported
 and stays. The session that suffers it is often a later one: a git-ignored bridge loses edits silently.
 
-`repair` takes what `doctor` reports, and for each fault it holds a correction for, offers that correction with the
+`repair-buddy-agent-harness` takes what `doctor` reports, and for each fault it holds a correction for, offers that correction with the
 file as it stands and as it would read, and writes it only on approval. It then runs `doctor` again to prove the
 correction held, and reports every finding with its outcome. It corrects only what the tooling decides is wrong,
 never what the repository means. Every other finding it hands on, to the owner [detect-and-repair](../detect-and-repair/README.md)
@@ -29,7 +29,7 @@ names, or to a person.
   [init-buddy-agent-harness](../init-buddy-agent-harness/README.md) skill's, even when a request says "repair the
   bridge". Syncing a drifted skills copy and restoring a copy's protection rebuild nothing, and are this skill's.
 - **N4 Adding what is absent.** A repository with no canonical configuration is `init-buddy-agent-harness`'s; guidance
-  the repository lacks is [enhance](../enhance/README.md)'s.
+  the repository lacks is [enhance](../enhance-buddy-agent-harness/README.md)'s.
 - **N5 Correcting project policy.** A statement about how the repository is worked in is the owner's, even when it is
   false.
 - **N6 Reporting what is wrong without fixing it.** That is the `doctor` command, or the `doctor-buddy-agent-harness`
@@ -51,7 +51,7 @@ names, or to a person.
 - **K6 correction reference**: the reference the skill ships that holds one correction, with where it stops, per fault
   the skill corrects. A fault with an entry there is in remit; a fault without one is not. The remit is exactly that
   set, and it matches the faults [detect-and-repair](../detect-and-repair/README.md) R19, R20, and R28 send to
-  `repair`.
+  `repair-buddy-agent-harness`.
 - **K7 material**: content that stays true whether or not this tool ever ran. Material content is the owner's. Content
   that would stop being true if the tool's output were removed is non-material, and only non-material content is
   corrected.
@@ -59,7 +59,7 @@ names, or to a person.
 - **K9 golden MCP set**: the repository's one declared set of MCP servers that each harness's MCP file is projected
   from; see [mcp-projection](../mcp-projection/README.md).
 - **K13 outcome**: what became of one finding in a run: corrected, declined, still open, reported as material, handed
-  to `init-buddy-agent-harness`, handed to `enhance`, needs your decision (no skill owns it, and someone must judge it), or for you to do
+  to `init-buddy-agent-harness`, handed to `enhance-buddy-agent-harness`, needs your decision (no skill owns it, and someone must judge it), or for you to do
   outside the repo (a step in the user's home directory). Each is told apart from the others.
 - **K11 sync**: the file-by-file merge of a drifted skills copy with the canonical skills directory, as
   [copy-sync](../copy-sync/README.md) states it.
@@ -85,7 +85,7 @@ names, or to a person.
   `.agents/skills`".
 - **Entry node**: `Start`
 - **Entry points**:
-  - Skill (primary): `/buddy-agent-harness:repair`, or the skill's description matched by the harness.
+  - Skill (primary): `/buddy-agent-harness:repair-buddy-agent-harness`, or the skill's description matched by the harness.
 - **Inputs**: the request.
 - **Success**: the agent loads this skill.
 - **Extensions**:
@@ -97,7 +97,7 @@ names, or to a person.
 - **Trigger**: the skill runs in a repository.
 - **Entry node**: `Start`
 - **Entry points**:
-  - Skill (primary): `/buddy-agent-harness:repair`.
+  - Skill (primary): `/buddy-agent-harness:repair-buddy-agent-harness`.
   - Command line: the `doctor` command the skill runs, and the `mcp project` and `mcp reconcile` commands it runs to
     work out an MCP correction.
 - **Inputs**: the repository root, and the `doctor` report read from it.
@@ -153,7 +153,7 @@ Every criterion here belongs to a skill-instruction use case and is checked by a
 R28 is checked by trigger evals whose near misses include each request UC1.2 names.
 
 - **R28** (UC1, UC1.2, E1) A request to correct agent configuration that is present but wrong or outdated, including a
-  request to sync a skills copy bridge that drifted from `.agents/skills`, loads the `repair` skill; a request to set
+  request to sync a skills copy bridge that drifted from `.agents/skills`, loads the `repair-buddy-agent-harness` skill; a request to set
   a repository up, add missing guidance, only report what is wrong, or rebuild or replace a bridge does not.
 
 ### Diagnosing
@@ -172,8 +172,8 @@ R28 is checked by trigger evals whose near misses include each request UC1.2 nam
 - **R6** (UC2, E5) For an out-of-remit finding whose repair names `init-buddy-agent-harness` or the `init` command,
   the report hands it to the `init-buddy-agent-harness` skill, the run does not run `init`, and the bridge or
   instruction file it names is unchanged.
-- **R37** (UC2, E18) For an out-of-remit finding whose repair names the `enhance` skill and not `init`, the report
-  hands it to the `enhance` skill, and the run writes nothing for it.
+- **R37** (UC2, E18) For an out-of-remit finding whose repair names the `enhance-buddy-agent-harness` skill and not `init`, the report
+  hands it to the `enhance-buddy-agent-harness` skill, and the run writes nothing for it.
 - **R31** (UC2.3, E6) For an out-of-remit finding whose repair names no skill, the report gives it the outcome needs
   your decision and names no skill as its owner.
 - **R32** (UC2.4, E7) For a global-instructions finding, the report gives it the outcome for you to do outside the
@@ -255,4 +255,4 @@ None.
   the owner of bridges and instructions.
 - [copy-sync](../copy-sync/README.md): the home of the sync this skill performs for a drifted skills copy.
 - [bridge-resolution](../bridge-resolution/README.md): what each skills-bridge fault in remit means, and its repair.
-- [enhance](../enhance/README.md): the same offer-and-approve shape, for guidance that is missing.
+- [enhance](../enhance-buddy-agent-harness/README.md): the same offer-and-approve shape, for guidance that is missing.

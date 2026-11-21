@@ -29,7 +29,7 @@ where the behavior branches. Each spec stands alone, with its own IDs; an ID suc
 | [`harness-init/`](./harness-init/README.md) | The `init` command projects the canonical skills into every enabled harness |
 | [`init-buddy-agent-harness/`](./init-buddy-agent-harness/README.md) | The `init-buddy-agent-harness` skill consolidates a repository's agent configuration into the canonical form |
 | [`agent-worktree-settings/`](./agent-worktree-settings/README.md) | A repository that uses Claude Code accounts for its agent worktrees, one setting at a time, on the owner's word |
-| [`enhance/`](./enhance/README.md) | The `enhance` skill offers the vetted guidance a repository's `AGENTS.md` lacks, or carries in a retired form |
+| [`enhance-buddy-agent-harness/`](./enhance-buddy-agent-harness/README.md) | The `enhance-buddy-agent-harness` skill offers the vetted guidance a repository's `AGENTS.md` lacks, or carries in a retired form |
 
 ### Finding what is wrong (`doctor`)
 
@@ -49,7 +49,7 @@ where the behavior branches. Each spec stands alone, with its own IDs; an ID suc
 | Spec | Outcome |
 | --- | --- |
 | [`detect-and-repair/`](./detect-and-repair/README.md) | Each finding reaches the skill that owns its repair |
-| [`repair/`](./repair/README.md) | The `repair` skill corrects agent configuration that is present and wrong |
+| [`repair-buddy-agent-harness/`](./repair-buddy-agent-harness/README.md) | The `repair-buddy-agent-harness` skill corrects agent configuration that is present and wrong |
 | [`copy-sync/`](./copy-sync/README.md) | Each skills copy bridge and the canonical skills directory end up holding the same files, with every edit made on either side kept |
 | [`mcp-projection/`](./mcp-projection/README.md) | The golden MCP server set is written into each harness's own MCP file |
 | [`mcp-reconcile/`](./mcp-reconcile/README.md) | A harness-side MCP change is brought back into the golden set, one approved field at a time |

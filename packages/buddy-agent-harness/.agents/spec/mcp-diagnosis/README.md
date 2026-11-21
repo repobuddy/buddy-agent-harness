@@ -78,7 +78,7 @@ These terms are shared with [mcp-projection](../mcp-projection/README.md) and
 | --- | --- | --- |
 | A1.1 | person authoring the golden set | learn which harness copy no longer matches what they wrote, and which side moved |
 | A1.2 | person authoring the golden set | learn that a credential sits in an MCP file as a literal, without being shown it again |
-| A2.1 | `repair` skill | know every drifted server and field, and its direction, precisely enough to act on each |
+| A2.1 | `repair-buddy-agent-harness` skill | know every drifted server and field, and its direction, precisely enough to act on each |
 | A3.1 | session-start hook | learn of drift with no write and no secret in the output |
 | A4.1 | anyone who reads a session transcript | never see a credential the diagnosis came across |
 | A5.1 | `doctor-buddy-agent-harness` skill | route each MCP finding to whoever repairs it |
@@ -134,7 +134,7 @@ These terms are shared with [mcp-projection](../mcp-projection/README.md) and
 
 - **Trigger**: a skill reads the report to hand each finding on.
 - **Entry node**: `G` in [graph.md](./graph.md).
-- **Entry points**: skill: `doctor-buddy-agent-harness` and `repair` read the report the command line produced.
+- **Entry points**: skill: `doctor-buddy-agent-harness` and `repair-buddy-agent-harness` read the report the command line produced.
 - **Inputs**: the report.
 - **Success**: each finding's kind tells the caller what went wrong, and its repair says in prose what fixes it.
 - **Extensions**: extensions: none, which skill owns each repair is decided in

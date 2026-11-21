@@ -5,7 +5,7 @@ Each finding the `doctor` command reports reaches the skill that owns its repair
 ## What
 
 Finding wrong agent configuration and correcting it are done by different surfaces. The `doctor` command finds and
-never writes. The `init-buddy-agent-harness`, `repair`, and `enhance` skills write. Neither half works alone. A
+never writes. The `init-buddy-agent-harness`, `repair-buddy-agent-harness`, and `enhance-buddy-agent-harness` skills write. Neither half works alone. A
 detector whose findings cannot be handed on is a report nobody acts on. A skill that detects for itself is a second
 detector, free to drift from the first. A finding handed to the wrong skill is worse than none: rebuilding a bridge
 whose two sides both hold edits discards one of them.
@@ -23,7 +23,7 @@ once it holds a finding belongs to that skill's spec.
 - **N1 Adding a check.** What counts as wrong is decided by the detecting specs, such as
   [bridge-resolution](../bridge-resolution/README.md) and [configuration-diagnosis](../configuration-diagnosis/README.md).
 - **N2 How a correction is made.** The offer, the approval, the before and after, and the re-run that proves a
-  correction held belong to the owning skill, such as [repair](../repair/README.md).
+  correction held belong to the owning skill, such as [repair](../repair-buddy-agent-harness/README.md).
 - **N3 The report's shape.** Which sections exist, what a row holds, and how it is formatted is
   [diagnosis-report](../diagnosis-report/README.md)'s. This spec states which parts of a finding a consumer may rely
   on and route by, which is a different claim.
@@ -39,7 +39,7 @@ once it holds a finding belongs to that skill's spec.
 - **K1 finding**: one fault the detector reports, carrying its fault name, the path it is about, a prose description,
   and its repair.
 - **K2 detector**: the `doctor` command. The one place a check of agent configuration lives.
-- **K3 repairing skill**: the `init-buddy-agent-harness`, `repair`, or `enhance` skill. The only surfaces that write a
+- **K3 repairing skill**: the `init-buddy-agent-harness`, `repair-buddy-agent-harness`, or `enhance-buddy-agent-harness` skill. The only surfaces that write a
   correction.
 - **K4 fault name**: the name a finding carries that identifies its fault. It is stable and distinct per fault, and it
   is the one part of a finding a consumer routes by. The path is an input to the repair, and the prose description is
@@ -61,8 +61,8 @@ once it holds a finding belongs to that skill's spec.
 | ID | Actor | Goal |
 | --- | --- | --- |
 | A1.1 | `doctor-buddy-agent-harness` skill | send every finding to the skill that repairs it, or to a person where none does |
-| A2.1 | `repair` skill | tell a finding it owns from one it must hand on, without inspecting the repository |
-| A3.1 | `init-buddy-agent-harness` and `enhance` skills | receive the findings they repair, and no other |
+| A2.1 | `repair-buddy-agent-harness` skill | tell a finding it owns from one it must hand on, without inspecting the repository |
+| A3.1 | `init-buddy-agent-harness` and `enhance-buddy-agent-harness` skills | receive the findings they repair, and no other |
 | A4.1 | person at a shell | know what to do about each fault without running anything else |
 | A5.1 | session-start hook | run the detector with no risk of a write |
 | A6.1 | package maintainer | add a fault or a family and have it reach every consumer without editing one |
@@ -74,7 +74,7 @@ once it holds a finding belongs to that skill's spec.
 - **Trigger**: a consumer holds the detector's report and must decide who acts on each finding.
 - **Entry node**: `Read`
 - **Entry points**:
-  - Skill (primary): the `doctor-buddy-agent-harness` skill and the `repair` skill reading the report.
+  - Skill (primary): the `doctor-buddy-agent-harness` skill and the `repair-buddy-agent-harness` skill reading the report.
   - Command line: `buddy-agent-harness doctor`, whose report the skills read.
 - **Inputs**: the report the detector produced for one repository.
 - **Success**: every finding is with its owner, or reported for a person and routed to no skill.
@@ -164,21 +164,21 @@ once it holds a finding belongs to that skill's spec.
   [bridge-resolution](../bridge-resolution/README.md) states it, the command rendering names no skill and the skill
   rendering names the `init-buddy-agent-harness` skill.
 - **R28** (UC1, E16) The skill rendering of every diverged-copy fault, in each of the four divergence directions, and
-  of the unprotected-copy fault names the `repair` skill and no other skill.
+  of the unprotected-copy fault names the `repair-buddy-agent-harness` skill and no other skill.
 - **R17** (UC1, E7) The skill rendering of every non-standard configuration fault that has a portable form to convert
   to names the `init-buddy-agent-harness` skill.
 - **R18** (UC1, E13) The skill rendering of a non-standard configuration fault with no portable form to convert to
   names no skill.
-- **R19** (UC1, E8) The skill rendering of every configuration fault names the `repair` skill.
+- **R19** (UC1, E8) The skill rendering of every configuration fault names the `repair-buddy-agent-harness` skill.
 - **R20** (UC1, E9) Both renderings of an MCP drift fault where one side is plainly the one to copy from name the
-  `repair` skill: a harness lacks a server the golden set declares, a harness carries a server the golden set lacks,
+  `repair-buddy-agent-harness` skill: a harness lacks a server the golden set declares, a harness carries a server the golden set lacks,
   or only one side changed a field.
 - **R29** (UC1, E12) Neither rendering of any other MCP fault names a skill: a field both sides changed, a change no
   baseline can place, a file that does not parse, or a credential written literally or committed.
 - **R32** (UC1, E17) Both renderings of every agent-worktree fault other than a worktree inside the repository name the
-  `init-buddy-agent-harness` skill, and neither names the `enhance` skill or the `repair` skill.
-- **R33** (UC1, E18) Both renderings of the fault for an agent worktree inside the repository name the `enhance`
-  skill, and neither names the `init-buddy-agent-harness` skill or the `repair` skill.
+  `init-buddy-agent-harness` skill, and neither names the `enhance-buddy-agent-harness` skill or the `repair-buddy-agent-harness` skill.
+- **R33** (UC1, E18) Both renderings of the fault for an agent worktree inside the repository name the `enhance-buddy-agent-harness`
+  skill, and neither names the `init-buddy-agent-harness` skill or the `repair-buddy-agent-harness` skill.
 - **R31** (UC1, E14) No rendering of a global-instructions fault names a skill.
 - **R24** (UC1, E12, E13, E14) A consumer reports a finding whose skill rendering names no skill for a
   person and hands it to no repairing skill.
@@ -198,8 +198,8 @@ None.
 
 - [diagnosis-report](../diagnosis-report/README.md): the home of the report's shape and where each part of a finding
   is carried.
-- [repair](../repair/README.md), [init-buddy-agent-harness](../init-buddy-agent-harness/README.md), and
-  [enhance](../enhance/README.md): what each owner does once it holds a finding.
+- [repair](../repair-buddy-agent-harness/README.md), [init-buddy-agent-harness](../init-buddy-agent-harness/README.md), and
+  [enhance](../enhance-buddy-agent-harness/README.md): what each owner does once it holds a finding.
 - The detecting specs, the home of what each fault means:
   [bridge-resolution](../bridge-resolution/README.md), [instruction-bridges](../instruction-bridges/README.md),
   [global-instructions](../global-instructions/README.md),

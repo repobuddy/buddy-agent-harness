@@ -33,7 +33,7 @@ flowchart TD
   region -->|E32| verify[Verify projections and migrated skills]
   verify -->|E28 verified| formatter{Does the repository have its own formatter?}
   formatter -->|E29 yes| format[Formatter run over the written files]
-  format -->|E30| done([Run reported, repair offered for the findings it owns, enhance offered once])
+  format -->|E30| done([Run reported, repair-buddy-agent-harness offered for the findings it owns, enhance-buddy-agent-harness offered once])
   formatter -->|E31 no| done
 ```
 

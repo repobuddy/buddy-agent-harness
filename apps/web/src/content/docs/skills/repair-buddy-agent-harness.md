@@ -3,11 +3,11 @@ title: 'Skill: repair'
 description: What the repair skill corrects, why doctor detects and repair repairs, and the line it will not cross.
 ---
 
-The `repair` skill corrects agent configuration a repository already has that is **wrong or outdated**.
+The `repair-buddy-agent-harness` skill corrects agent configuration a repository already has that is **wrong or outdated**.
 
-The other three skills each refuse this work on purpose. [`init`](/skills/init-buddy-agent-harness/) consolidates what you already wrote and invents nothing, so it never clobbers a file you authored. [`enhance`](/skills/enhance/) offers guidance the repository is **missing**. [`doctor`](/skills/doctor-buddy-agent-harness/) never writes, which is what makes it safe to run from a session-start hook. Configuration that is present but wrong falls between all three.
+The other three skills each refuse this work on purpose. [`init`](/skills/init-buddy-agent-harness/) consolidates what you already wrote and invents nothing, so it never clobbers a file you authored. [`enhance-buddy-agent-harness`](/skills/enhance-buddy-agent-harness/) offers guidance the repository is **missing**. [`doctor`](/skills/doctor-buddy-agent-harness/) never writes, which is what makes it safe to run from a session-start hook. Configuration that is present but wrong falls between all three.
 
-## `doctor` detects, `repair` repairs
+## `doctor` detects, `repair-buddy-agent-harness` repairs
 
 The skill looks for nothing itself. It runs the `doctor` command, reads the findings, and corrects the ones that are its own. It knows which those are by the finding's `problem` name: the skill keeps one correction per fault it repairs, and a `problem` it holds no correction for is not one it can repair. So a finding added to `doctor` tomorrow is reported and handed on rather than guessed at.
 
@@ -18,7 +18,7 @@ That split is the design, not an implementation detail. Detection has one home, 
 In Claude Code:
 
 ```text
-/buddy-agent-harness:repair
+/buddy-agent-harness:repair-buddy-agent-harness
 ```
 
 Any agent that reads `.agents/skills/` can be asked in prose instead, from the repository root:
@@ -38,7 +38,7 @@ Our agent config is out of date — check it and fix what's wrong.
 
 You can ask for the first directly: "sync the `.claude/skills` copy that drifted from `.agents/skills`" reaches this skill. Rebuilding or replacing a bridge does not; that is `init`'s.
 
-The `instructions-*` findings are worth a note, because they look like configuration faults. A `.gemini/settings.json` that names `AGENTS.md` nowhere is a bridge that was never finished, and `init` is what writes that entry. A `CLAUDE.md` that [suppresses the `AGENTS.md` beside it](/agent-configuration/harnesses/claude-code/#a-claudemd-beside-it-suppresses-it) is instructions that were never consolidated, and consolidating is the thing `init` exists to do. `repair` corrects a file in place; it does not merge two files into one, and it does not decide which of them a repository should keep.
+The `instructions-*` findings are worth a note, because they look like configuration faults. A `.gemini/settings.json` that names `AGENTS.md` nowhere is a bridge that was never finished, and `init` is what writes that entry. A `CLAUDE.md` that [suppresses the `AGENTS.md` beside it](/agent-configuration/harnesses/claude-code/#a-claudemd-beside-it-suppresses-it) is instructions that were never consolidated, and consolidating is the thing `init` exists to do. `repair-buddy-agent-harness` corrects a file in place; it does not merge two files into one, and it does not decide which of them a repository should keep.
 
 **MCP findings** — the `mcp-*` set, reported when a golden MCP server set and a harness's copy of it disagree — are split. `mcp-unprojected` and `mcp-diverged-golden` are the two cases where the golden set is plainly ahead: a harness missing a server it declares, or a field only the golden side changed. Those are the skill's — it runs [`buddy-agent-harness mcp project`](/cli/mcp/) as a dry run, shows the plan beside each target file as it stands, and applies it with `--write` once you approve. A row the command refuses, or one it holds back because the harness side also changed, is reported without an offered write. `mcp-undeclared` and `mcp-diverged-target` are the mirror cases, where the harness side is plainly ahead. For those the skill runs [`mcp reconcile`](/cli/mcp/#mcp-reconcile), offers each field on its own, and passes `--accept` only for the fields you approve; a literal credential is refused and never shown, in any offer or report, in whole or in part. A server the projection refuses for a target is reported with the reason it gave, and no write of it is offered. A hand edit the commands hand back changes only that server's entry; the rest of the file, comments included, is left byte-identical. Every other `mcp-*` finding — `mcp-diverged-both`, `-unknown`, and the two `-unreadable` findings — belongs to nobody: `doctor` states its repair in full and the skill passes it to you unchanged, as needing your decision.
 

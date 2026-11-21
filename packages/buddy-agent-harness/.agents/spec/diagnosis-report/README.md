@@ -58,7 +58,7 @@ and a failure of the tool told apart from a report of faults.
 | --- | --- | --- |
 | A1.1 | `doctor-buddy-agent-harness` skill | branch on the report without parsing prose |
 | A1.2 | `doctor-buddy-agent-harness` skill | learn which references the repository, the user, and the machine owner have set |
-| A2.1 | `repair` skill | read one report that covers every family |
+| A2.1 | `repair-buddy-agent-harness` skill | read one report that covers every family |
 | A3.1 | person at a shell | read the same report without parsing it |
 | A3.2 | person at a shell | trace a report back to the executable that produced it |
 | A4.1 | session-start hook | not be told the tool is broken when only the repository is |
@@ -73,7 +73,7 @@ and a failure of the tool told apart from a report of faults.
 - **Entry points**:
   - Command line (primary): `buddy-agent-harness doctor`.
   - Library: the exported report builder ([entry-point](../entry-point/README.md)).
-  - Skill: the `doctor-buddy-agent-harness` and `repair` skills run the command.
+  - Skill: the `doctor-buddy-agent-harness` and `repair-buddy-agent-harness` skills run the command.
 - **Inputs**: the repository root, which defaults to the current directory; harnesses to check in addition to the
   defaults; the output format.
 - **Success**: one report holding the result of every family, the findings of all of them in one findings section.

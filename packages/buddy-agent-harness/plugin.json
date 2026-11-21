@@ -18,16 +18,16 @@
 				"skills/doctor-buddy-agent-harness/scripts/buddy-agent-harness.mjs": {
 					"forward": "buddy-agent-harness"
 				},
-				"skills/enhance/scripts/buddy-agent-harness.mjs": {
+				"skills/enhance-buddy-agent-harness/scripts/buddy-agent-harness.mjs": {
 					"forward": "buddy-agent-harness"
 				},
 				"skills/init-buddy-agent-harness/scripts/buddy-agent-harness.mjs": {
 					"forward": "buddy-agent-harness"
 				},
-				"skills/repair/scripts/buddy-agent-harness.mjs": {
+				"skills/repair-buddy-agent-harness/scripts/buddy-agent-harness.mjs": {
 					"forward": "buddy-agent-harness"
 				},
-				"skills/enhance/scripts/cyber-agentkit.mjs": {
+				"skills/enhance-buddy-agent-harness/scripts/cyber-agentkit.mjs": {
 					"forward": "cyber-agentkit",
 					"package": "cyber-agentkit",
 					"version": "1.2.0"

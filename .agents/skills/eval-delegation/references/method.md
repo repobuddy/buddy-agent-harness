@@ -93,7 +93,7 @@ empty directory. Never spawn runners as subagents.
 The launcher leaves out the `user` setting source instead of pointing HOME at a sandbox. A sandbox
 HOME needs the credentials copied into it, and it does not hold where `CLAUDE_CONFIG_DIR` points
 back at the host's config; the excluded source holds either way. Measured 2026-09-26 on this
-section: with the host's config, `enhance` on a repository lacking Delegation reports it
+section: with the host's config, `enhance-buddy-agent-harness` on a repository lacking Delegation reports it
 **already global** and offers nothing; through the launcher, it reports it absent and offers it.
 
 Two sources the launcher cannot exclude, so it refuses to run instead: an instruction file in a

@@ -15,8 +15,8 @@ enabled harness reaches. It surveys what the repository has, sorts each artifact
 owner approved, and verifies what landed. It creates what is absent without asking, and asks before it replaces,
 rewrites, or removes anything a person wrote. It projects the skills by running the `init` command, and writes the one
 instruction bridge the command does not. It hands back a report of what it created, consolidated, linked, and left
-alone, offers to continue with the `repair` skill for the `doctor` findings it does not own, and offers the
-`enhance` skill once. Its offer of Claude Code's agent-worktree settings has a spec of its own,
+alone, offers to continue with the `repair-buddy-agent-harness` skill for the `doctor` findings it does not own, and offers the
+`enhance-buddy-agent-harness` skill once. Its offer of Claude Code's agent-worktree settings has a spec of its own,
 [agent-worktree-settings](../agent-worktree-settings/README.md).
 
 It is also where every instruction-bridge finding of `doctor` is repaired, so a finding handed to it must end with the
@@ -30,9 +30,9 @@ bridge written.
   AGENTS.md"). That is `doctor` ([diagnosis-report](../diagnosis-report/README.md)), which routes instruction findings
   here.
 - N3 Correcting configuration that is present and wrong ("fix the broken `.claude/skills` link", "repair my agent
-  config"). That is the `repair` skill ([repair](../repair/README.md)).
-- N4 Proposing guidance the repository lacks ("what should my AGENTS.md say about testing"). That is the `enhance`
-  skill ([enhance](../enhance/README.md)), which this skill offers once and does not decide for.
+  config"). That is the `repair-buddy-agent-harness` skill ([repair](../repair-buddy-agent-harness/README.md)).
+- N4 Proposing guidance the repository lacks ("what should my AGENTS.md say about testing"). That is the `enhance-buddy-agent-harness`
+  skill ([enhance](../enhance-buddy-agent-harness/README.md)), which this skill offers once and does not decide for.
 - N5 Converting MCP server definitions, hooks, subagents, or output styles into another harness's format. MCP
   projection has its own spec ([mcp-projection](../mcp-projection/README.md)).
 - N6 Writing a new skill for the repository ("write a skill that drafts release notes").
@@ -80,7 +80,7 @@ bridge written.
 | A1.1 | user who asks for the setup | the repository ends with one canonical configuration every enabled harness reaches |
 | A2.1 | repository owner | nothing they wrote is replaced, rewritten, or removed without their word |
 | A2.2 | repository owner | nothing is asserted in `AGENTS.md` about the project that the repository does not show and they did not approve |
-| A3.1 | `doctor` and `repair` skills | an instruction-bridge finding handed here ends with the bridge written |
+| A3.1 | `doctor` and `repair-buddy-agent-harness` skills | an instruction-bridge finding handed here ends with the bridge written |
 | A4.1 | later agent session in an enabled harness, which never runs the skill | loads the instructions and skills the repository meant |
 | A4.2 | later agent session asked to change a skill | edits the canonical copy, not a projection |
 | A5.1 | invoking agent | knows from the result what was done and what is left |
@@ -94,7 +94,7 @@ run of the skill.
 
 - **Trigger**: the user asks to initialize, adopt, or migrate the repository's agent configuration, for example
   "set up AGENTS.md and agent skills for this repo", "migrate our CLAUDE.md and .cursorrules to the open standard",
-  or "make our Claude skills work in Codex and Cursor too"; or `doctor` or `repair` hands over an instruction-bridge
+  or "make our Claude skills work in Codex and Cursor too"; or `doctor` or `repair-buddy-agent-harness` hands over an instruction-bridge
   finding that names this skill.
 - **Entry node**: `invoke`
 - **Entry points**:
@@ -193,11 +193,11 @@ run of the skill.
 - **Entry points**:
   - Skill (primary): its verify and report phase.
 - **Inputs**: what the run wrote.
-- **Success**: the report says what was created, consolidated, linked, and left; continuing with `repair` is offered
-  for the `doctor` findings this skill does not own; and `enhance` is offered once.
+- **Success**: the report says what was created, consolidated, linked, and left; continuing with `repair-buddy-agent-harness` is offered
+  for the `doctor` findings this skill does not own; and `enhance-buddy-agent-harness` is offered once.
 - **Extensions**:
   - UC9.1 The repository has no formatter: none is run.
-  - UC9.2 `doctor` reports no finding that `repair` owns: no `repair` offer is made.
+  - UC9.2 `doctor` reports no finding that `repair-buddy-agent-harness` owns: no `repair-buddy-agent-harness` offer is made.
 
 ## Criteria
 
@@ -346,10 +346,10 @@ run of the skill.
 - R57 (UC9, E31) The report names what was created, consolidated, linked, and left canonical-only with the reason for
   each; each agent-worktree offer as written, declined, or already covered; and each single-harness artifact still
   present, split by declined or no canonical form.
-- R65 (UC9, UC9.2, E30, E31) After the report and before the `enhance` offer, the run lists each `doctor` finding
-  that the `repair` skill owns, as [detect-and-repair](../detect-and-repair/README.md) assigns it, and offers once to
-  continue with `repair`; when there is no such finding, no `repair` offer is made.
-- R58 (UC9, E31) After the report, the `enhance` skill is offered exactly once, and this skill writes no instruction
+- R65 (UC9, UC9.2, E30, E31) After the report and before the `enhance-buddy-agent-harness` offer, the run lists each `doctor` finding
+  that the `repair-buddy-agent-harness` skill owns, as [detect-and-repair](../detect-and-repair/README.md) assigns it, and offers once to
+  continue with `repair-buddy-agent-harness`; when there is no such finding, no `repair-buddy-agent-harness` offer is made.
+- R58 (UC9, E31) After the report, the `enhance-buddy-agent-harness` skill is offered exactly once, and this skill writes no instruction
   content whichever way the owner answers.
 
 ## Open questions
@@ -361,8 +361,8 @@ None.
 - [harness-init](../harness-init/README.md): the `init` command this skill runs.
 - [instruction-bridges](../instruction-bridges/README.md) and [detect-and-repair](../detect-and-repair/README.md):
   route every instruction-bridge finding to this skill.
-- [repair](../repair/README.md): the other writing skill, which asks before every correction.
-- [enhance](../enhance/README.md): the skill offered at the end of a run.
+- [repair](../repair-buddy-agent-harness/README.md): the other writing skill, which asks before every correction.
+- [enhance](../enhance-buddy-agent-harness/README.md): the skill offered at the end of a run.
 - [agent-worktree-settings](../agent-worktree-settings/README.md): the agent-worktree settings this skill offers.
 - [worktree-diagnosis](../worktree-diagnosis/README.md): reports the agent-worktree settings this skill offers.
 - [glossary](../glossary.md): the shared terms.

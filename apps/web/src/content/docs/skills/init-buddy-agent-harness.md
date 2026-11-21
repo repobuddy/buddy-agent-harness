@@ -76,9 +76,9 @@ Once a harness instruction file such as `.cursorrules`, `GEMINI.md`, or `.github
 
 Each projection is checked to resolve into `.agents/skills`, and every migrated `SKILL.md` is checked to parse with valid frontmatter. The report states what was created, consolidated, linked, and left canonical-only.
 
-Next the skill runs `doctor` again and lists the findings it does not own that [`repair`](/skills/repair/) does, such as a git-ignored bridge or MCP drift one side is plainly ahead on, and asks once whether to continue with `repair`. With no such finding, it does not ask. A finding about your global instructions is yours to fix in your home directory, and the skill gives you the step.
+Next the skill runs `doctor` again and lists the findings it does not own that [`repair-buddy-agent-harness`](/skills/repair-buddy-agent-harness/) does, such as a git-ignored bridge or MCP drift one side is plainly ahead on, and asks once whether to continue with `repair-buddy-agent-harness`. With no such finding, it does not ask. A finding about your global instructions is yours to fix in your home directory, and the skill gives you the step.
 
-The run ends by asking whether to run [`enhance`](/skills/enhance/), which offers guidance your `AGENTS.md` does not have. Decline and nothing more happens. That offer is the only opinion `init` carries, and even it is a question.
+The run ends by asking whether to run [`enhance-buddy-agent-harness`](/skills/enhance-buddy-agent-harness/), which offers guidance your `AGENTS.md` does not have. Decline and nothing more happens. That offer is the only opinion `init` carries, and even it is a question.
 
 ## Rules the skill follows
 
@@ -93,7 +93,7 @@ These hold regardless of what you ask for mid-run:
 
 ## Agent worktree offers
 
-Where Claude Code is in use, meaning the repository has a `.claude/` directory or you named Claude Code in the run, the skill also offers these settings, each on its own and written only on approval: ignoring `.claude/worktrees/` in `.gitignore`, setting `worktree.baseRef` to `"head"`, and removing each `.claude/worktrees` exclusion an earlier version added to a tree-scanning tool's config. It no longer offers that exclusion, which matches every file inside an agent worktree. A setting the repository already has is not offered, and the report says it is covered. Where agents create worktrees is guidance for `AGENTS.md`, offered by [`enhance`](/skills/enhance/#agent-worktrees). [Agent Worktrees](/agent-configuration/agent-worktrees/) explains why.
+Where Claude Code is in use, meaning the repository has a `.claude/` directory or you named Claude Code in the run, the skill also offers these settings, each on its own and written only on approval: ignoring `.claude/worktrees/` in `.gitignore`, setting `worktree.baseRef` to `"head"`, and removing each `.claude/worktrees` exclusion an earlier version added to a tree-scanning tool's config. It no longer offers that exclusion, which matches every file inside an agent worktree. A setting the repository already has is not offered, and the report says it is covered. Where agents create worktrees is guidance for `AGENTS.md`, offered by [`enhance-buddy-agent-harness`](/skills/enhance-buddy-agent-harness/#agent-worktrees). [Agent Worktrees](/agent-configuration/agent-worktrees/) explains why.
 
 ## Which harnesses get enabled
 
