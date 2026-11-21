@@ -1,4 +1,4 @@
-# repair: decision graph
+# repair-buddy-agent-harness: decision graph
 
 The path of one run, and of each finding within it. The part from `Each` down runs once per finding, so one run can
 hand one finding on, report a second as material, and correct a third. Every leaf is an outcome, and each criterion
@@ -11,7 +11,7 @@ flowchart TD
   Run -->|E3 yes| Each{Does the correction reference hold an entry for the fault?}
   Each -->|E4 no| Hand{Whom does the repair doctor stated name?}
   Hand -->|E5 the init-buddy-agent-harness skill or the init command| Init([Handed to init-buddy-agent-harness])
-  Hand -->|E18 the enhance skill, and not init| Enhance([Handed to enhance])
+  Hand -->|E18 the enhance-buddy-agent-harness skill, and not init| Enhance([Handed to enhance-buddy-agent-harness])
   Hand -->|E6 no skill| Person([Needs your decision])
   Hand -->|E7 a step in the user's home directory| User([For you to do outside the repo])
   Each -->|E8 yes| Material{Would the correction write material content?}

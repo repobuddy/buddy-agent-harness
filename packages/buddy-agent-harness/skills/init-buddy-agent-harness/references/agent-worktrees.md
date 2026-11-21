@@ -8,11 +8,11 @@ Each worktree is a whole checkout inside the repository, config files included. 
 - **A tool exclusion meant for nested worktrees matches the worktree itself.** An agent worktree carries the same `biome.json`, so inside it an exclusion of `**/.claude/worktrees` matches every file: Biome prints "No files were processed" and exits 1, and the pre-commit hook blocks every commit the agent makes. Without the exclusion, Biome in the main checkout stops on the worktree's nested root configuration instead. Neither config fixes it; keeping the worktrees out of the repository does.
 - **Agent worktrees branch from the default branch.** Unless `worktree.baseRef` is `"head"`, a subagent asked to build on a feature branch starts from `main` without that branch's commits, and its work comes back as merge conflicts.
 
-Keeping worktrees out of the repository is guidance, not a setting: the `enhance` skill's Agent worktrees addition tells agents to create them in a sibling `<repo>.worktrees/` directory. The offers here cover what is left. Make them only where Claude Code is in use: a `.claude/` directory exists, or the owner named Claude Code in this run. Claude Code is enabled by default, and that alone does not count. Each is offered on its own, and the owner's answer to one decides nothing about another.
+Keeping worktrees out of the repository is guidance, not a setting: the `enhance-buddy-agent-harness` skill's Agent worktrees addition tells agents to create them in a sibling `<repo>.worktrees/` directory. The offers here cover what is left. Make them only where Claude Code is in use: a `.claude/` directory exists, or the owner named Claude Code in this run. Claude Code is enabled by default, and that alone does not count. Each is offered on its own, and the owner's answer to one decides nothing about another.
 
 ## P1: ignore the worktree directory in git
 
-**Covered when** `git check-ignore -q .claude/worktrees/` succeeds. A rule on a parent directory counts. Where that rule is `.claude/` whole, it also ignores `.claude/skills`, which `doctor` reports as `ignored-bridge`; that is `repair`'s, not this offer's.
+**Covered when** `git check-ignore -q .claude/worktrees/` succeeds. A rule on a parent directory counts. Where that rule is `.claude/` whole, it also ignores `.claude/skills`, which `doctor` reports as `ignored-bridge`; that is `repair-buddy-agent-harness`'s, not this offer's.
 
 Offer the line for `.gitignore`, naming the file and showing it: `.claude/worktrees/`. Offer it even where `AGENTS.md` carries the Agent worktrees guidance: a session started with `--worktree`, or an agent that skips the guidance, still lands there.
 

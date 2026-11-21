@@ -13,13 +13,13 @@ The person who wrote the configuration does not find out unless something checks
 This capability is the `doctor` command's check for these faults. It reports each one, with its path and its repair,
 alongside the other families' findings. It decides only by reading files and the repository's ignore rules, never by
 weighing what the configuration says, and it writes nothing. Every fault here is configuration a person authored, so
-correcting one is judgment, made by the `repair` skill rather than by a command.
+correcting one is judgment, made by the `repair-buddy-agent-harness` skill rather than by a command.
 
 ## Non-goals
 
 - **N1 Repairing.** The detector never writes ([detect-and-repair](../detect-and-repair/README.md) R1). Each fault's
-  correction is the [repair](../repair/README.md) skill's.
-- **N2 Which skill owns a fault's repair.** That every fault here routes to the `repair` skill is
+  correction is the [repair](../repair-buddy-agent-harness/README.md) skill's.
+- **N2 Which skill owns a fault's repair.** That every fault here routes to the `repair-buddy-agent-harness` skill is
   [detect-and-repair](../detect-and-repair/README.md) R19.
 - **N3 Bridge resolution.** Whether a bridge resolves is [bridge-resolution](../bridge-resolution/README.md)'s, and
   whether a harness can read `AGENTS.md` is [instruction-bridges](../instruction-bridges/README.md)'s.
@@ -50,7 +50,7 @@ correcting one is judgment, made by the `repair` skill rather than by a command.
 
 | ID | Actor | Goal |
 | --- | --- | --- |
-| A1.1 | `repair` skill | know every correctable fault without detecting anything itself |
+| A1.1 | `repair-buddy-agent-harness` skill | know every correctable fault without detecting anything itself |
 | A2.1 | person at a shell | see what is wrong and what fixes it |
 | A3.1 | session-start hook | learn of a fault on every session with no risk of a write |
 | A4.1 | `doctor-buddy-agent-harness` skill | hand each fault to the skill that corrects it |
@@ -65,7 +65,7 @@ correcting one is judgment, made by the `repair` skill rather than by a command.
 - **Entry points**:
   - Command line (primary): `buddy-agent-harness doctor`.
   - Library: the exported report builder ([entry-point](../entry-point/README.md)).
-  - Skill: the `doctor-buddy-agent-harness` and `repair` skills run the command.
+  - Skill: the `doctor-buddy-agent-harness` and `repair-buddy-agent-harness` skills run the command.
 - **Inputs**: the repository root.
 - **Success**: every configuration fault present is reported once, at its path, in the same report as the other
   families' findings.
@@ -138,8 +138,8 @@ None.
 ## References
 
 - [graph.md](./graph.md): the four checks.
-- [detect-and-repair](../detect-and-repair/README.md): routing to the `repair` skill, and the read-only detector.
+- [detect-and-repair](../detect-and-repair/README.md): routing to the `repair-buddy-agent-harness` skill, and the read-only detector.
 - [diagnosis-report](../diagnosis-report/README.md): the report the faults are carried in.
-- [repair](../repair/README.md): what the correction of each fault does.
+- [repair](../repair-buddy-agent-harness/README.md): what the correction of each fault does.
 - [frontmatter.md](../../../skills/init-buddy-agent-harness/references/frontmatter.md): which frontmatter problems make
   a harness skip a skill, the basis of K6 and N7.

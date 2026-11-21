@@ -22,7 +22,7 @@ export type BridgeProblem =
 	| 'unpinned-copy'
 
 /**
- * Configuration that is present and **wrong**; repaired by the `repair` skill, since `init` never
+ * Configuration that is present and **wrong**; repaired by the `repair-buddy-agent-harness` skill, since `init` never
  * corrects a file the user already wrote.
  */
 export type ConfigurationFault = 'deprecated-harness' | 'ignored-bridge' | 'unread-local-override' | 'unloadable-skill'
@@ -153,7 +153,7 @@ export const forwarderPath: string = `scripts/${commandInvocation}.mjs`
  */
 export const forwarderInvocation = (args: string): string => `node <this skill's folder>/${forwarderPath} ${args}`
 
-export const repairSkillInvocation = '/buddy-agent-harness:repair'
+export const repairSkillInvocation = '/buddy-agent-harness:repair-buddy-agent-harness'
 
 /**
  * Qualified rather than bare `init`: a skill name is global to the harness loading it, while the
@@ -171,7 +171,7 @@ export const initSkillInvocation: string = `/buddy-agent-harness:${initSkillName
 export const pnpmSkillRef = (invocation: string): string =>
 	`\`${invocation}\` (pnpm install: \`pnpm-${commandInvocation}-${invocation.slice(invocation.indexOf(':') + 1)}\`)`
 
-export const enhanceSkillInvocation = '/buddy-agent-harness:enhance'
+export const enhanceSkillInvocation = '/buddy-agent-harness:enhance-buddy-agent-harness'
 
 export const initSkillRef: string = pnpmSkillRef(initSkillInvocation)
 export const enhanceSkillRef: string = pnpmSkillRef(enhanceSkillInvocation)

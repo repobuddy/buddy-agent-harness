@@ -63,7 +63,7 @@ Every `problem` name routes to exactly one page. Load the page for the finding i
 
 ## Rules
 
-- Never repair a `diverged-*` bridge by re-running `init --force`. Rebuilding overwrites whichever side holds the newer edit. Hand it to `/buddy-agent-harness:repair` (pnpm install: `pnpm-buddy-agent-harness-repair`), which syncs the two file by file.
+- Never repair a `diverged-*` bridge by re-running `init --force`. Rebuilding overwrites whichever side holds the newer edit. Hand it to `/buddy-agent-harness:repair-buddy-agent-harness` (pnpm install: `pnpm-buddy-agent-harness-repair-buddy-agent-harness`), which syncs the two file by file.
 - Edit skills at `.agents/skills/<name>/SKILL.md`. Editing through a bridge is only safe when that bridge is a symlink.
 - Do not add bridges to `.gitignore`. An untracked bridge swallows a real edit silently.
 - Never repeat a value from a file an `mcp-literal-secret` or `mcp-committed-secret` finding points at. The report withheld it on purpose, and quoting it back puts it in the transcript anyway.

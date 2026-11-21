@@ -80,7 +80,7 @@ The offer for `.github/copilot-instructions.md` names the readers of that file t
 
 `CLAUDE.md` keeps its own rule, because what is left of it decides whether Claude Code reads `AGENTS.md` at all: content left behind is read *instead of* `AGENTS.md`, so the consolidation would reach every harness but the one the file was written for. Offer to consolidate and **remove** it, or — where something in it is genuinely Claude-only — to consolidate the shared part and leave the file holding an `@AGENTS.md` import above whatever stays.
 
-**Offer the agent-worktree settings where Claude Code is in use** — a `.claude/` directory exists, or the owner named Claude Code in this run; Claude Code being enabled by default does not count — each on its own: **P1**, ignoring `.claude/worktrees/` in `.gitignore`; **P2**, setting `worktree.baseRef` to `"head"` in `.claude/settings.json`, with its trade-off explained before you ask; and **P4**, removing each `.claude/worktrees` exclusion an earlier run added to a tree-scanning tool's config, one file at a time. Offer no tool exclusion: inside an agent worktree it matches every file. Where agent worktrees go is guidance for `AGENTS.md`, which the `enhance` run below offers as its Agent worktrees addition. `references/agent-worktrees.md` has the lines, how to tell each is already covered, and the trade-off. Each is material: an owner who declines one keeps that file as it was. A setting already covered is not offered; report it as covered.
+**Offer the agent-worktree settings where Claude Code is in use** — a `.claude/` directory exists, or the owner named Claude Code in this run; Claude Code being enabled by default does not count — each on its own: **P1**, ignoring `.claude/worktrees/` in `.gitignore`; **P2**, setting `worktree.baseRef` to `"head"` in `.claude/settings.json`, with its trade-off explained before you ask; and **P4**, removing each `.claude/worktrees` exclusion an earlier run added to a tree-scanning tool's config, one file at a time. Offer no tool exclusion: inside an agent worktree it matches every file. Where agent worktrees go is guidance for `AGENTS.md`, which the `enhance-buddy-agent-harness` run below offers as its Agent worktrees addition. `references/agent-worktrees.md` has the lines, how to tell each is already covered, and the trade-off. Each is material: an owner who declines one keeps that file as it was. A setting already covered is not offered; report it as covered.
 
 A `CLAUDE.local.md` is its own case. It is personal, usually gitignored, and it suppresses `AGENTS.md` exactly as a committed `CLAUDE.md` does. Never consolidate it — it is not project content — and never delete it. Report it, and offer the one fix that keeps both: an `@AGENTS.md` import at the top of it.
 
@@ -105,9 +105,9 @@ Report the artifacts only one harness can read that are still there, split by wh
 
 `init` is not a formatter. If the repository has one, run it over the written files and say so.
 
-Then run `node <this skill's folder>/scripts/buddy-agent-harness.mjs doctor` again and list each finding this skill does not own whose repair names the `repair` skill — a configuration fault, a drifted or unprotected skills copy, or MCP drift one side is plainly ahead on. Offer once to continue with `repair` for them, and take the answer. Where no finding names `repair`, make no offer. A `global-instructions-*` finding is not `repair`'s either: give its step to the user, word for word, as theirs to make outside the repository.
+Then run `node <this skill's folder>/scripts/buddy-agent-harness.mjs doctor` again and list each finding this skill does not own whose repair names the `repair-buddy-agent-harness` skill — a configuration fault, a drifted or unprotected skills copy, or MCP drift one side is plainly ahead on. Offer once to continue with `repair-buddy-agent-harness` for them, and take the answer. Where no finding names `repair-buddy-agent-harness`, make no offer. A `global-instructions-*` finding is not `repair-buddy-agent-harness`'s either: give its step to the user, word for word, as theirs to make outside the repository.
 
-After that, offer to continue with the `enhance` skill, which proposes guidance the repository is missing rather than consolidating what it has. Ask once and take the answer; `init` writes no instruction content of its own either way, and `enhance` decides for itself whether anything is worth offering.
+After that, offer to continue with the `enhance-buddy-agent-harness` skill, which proposes guidance the repository is missing rather than consolidating what it has. Ask once and take the answer; `init` writes no instruction content of its own either way, and `enhance-buddy-agent-harness` decides for itself whether anything is worth offering.
 
 ## Done when
 
@@ -117,7 +117,7 @@ After that, offer to continue with the `enhance` skill, which proposes guidance 
 - **C4.** Each projection resolves into `.agents/skills`, and every copy file changed on both sides holds the side the owner picked, or is unchanged where they gave no answer.
 - **C5.** With Gemini CLI enabled, its settings name `AGENTS.md` as a context file, unless the owner declined that edit.
 - **C6.** The report names what was created, consolidated, linked, left canonical-only, and each agent-worktree offer's outcome.
-- **C7.** `repair` was offered once for the `doctor` findings it owns, or not at all where there were none, and `enhance` was offered exactly once after it.
+- **C7.** `repair-buddy-agent-harness` was offered once for the `doctor` findings it owns, or not at all where there were none, and `enhance-buddy-agent-harness` was offered exactly once after it.
 
 ## Rules
 

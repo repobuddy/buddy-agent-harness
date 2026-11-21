@@ -135,7 +135,7 @@ export function diagnoseGlobalInstructions(
 	env: NodeJS.ProcessEnv = {},
 	start: string = process.cwd(),
 ): { globalInstructions: GlobalInstructionReport[]; findings: BridgeFinding[] } {
-	// Rows are reported with or without the global file, so `enhance` can say whether text handed over
+	// Rows are reported with or without the global file, so `enhance-buddy-agent-harness` can say whether text handed over
 	// for it would load; a finding needs a file that is going unread.
 	const hasGlobal = exists(join(home, globalInstructions))
 	const rows: GlobalInstructionReport[] = []

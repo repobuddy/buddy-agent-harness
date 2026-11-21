@@ -95,8 +95,8 @@ export default defineConfig({
 						{ label: 'Overview', slug: 'skills' },
 						{ label: 'init-buddy-agent-harness', slug: 'skills/init-buddy-agent-harness' },
 						{ label: 'doctor-buddy-agent-harness', slug: 'skills/doctor-buddy-agent-harness' },
-						{ label: 'enhance', slug: 'skills/enhance' },
-						{ label: 'repair', slug: 'skills/repair' },
+						{ label: 'enhance-buddy-agent-harness', slug: 'skills/enhance-buddy-agent-harness' },
+						{ label: 'repair-buddy-agent-harness', slug: 'skills/repair-buddy-agent-harness' },
 					],
 				},
 				{

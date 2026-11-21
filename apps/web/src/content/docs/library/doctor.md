@@ -278,7 +278,7 @@ degraded?.repair({ file: '.claude/skills' }, 'buddy-agent-harness').command
 | `detail` | `string` | What `doctor` prints in the `findings` row for it |
 | `repair` | `(at: Locator, cli: string) => { command: string; instruction: string }` | The repair the CLI reports, for the location `at`, naming the tool as `cli` |
 | `cause` | `UnloadableSkillCause` | Which cause of an `unloadable-skill` finding the row is for; absent on every other row |
-| `skillRepair` | `(at: Locator) => string` | The repair the generated skill gives. It hands a bridge rebuild to the [`init-buddy-agent-harness` skill](/skills/init-buddy-agent-harness/) rather than `init`, since rebuilding can move skills a user wrote, and a diverged or unprotected copy to the [`repair` skill](/skills/repair/) |
+| `skillRepair` | `(at: Locator) => string` | The repair the generated skill gives. It hands a bridge rebuild to the [`init-buddy-agent-harness` skill](/skills/init-buddy-agent-harness/) rather than `init`, since rebuilding can move skills a user wrote, and a diverged or unprotected copy to the [`repair-buddy-agent-harness` skill](/skills/repair-buddy-agent-harness/) |
 
 `at` is a location in parts: `file`, the repository-relative path, plus `server` and `field` when the finding is about an MCP server entry, and `position` when the file does not parse. Read the parts off it rather than splitting a rendered path.
 

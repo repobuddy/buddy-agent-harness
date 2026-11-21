@@ -2,9 +2,9 @@
 
 For documentation — writing style, where a document belongs, sourcing claims, and auditing — use the `technical-writer` skill from [unional/skills](https://github.com/unional/skills). It reads `.agents/LOOKUP.DOC.md` for this repository's authorities and generated tables.
 
-## Changing what the `enhance` skill offers
+## Changing what the `enhance-buddy-agent-harness` skill offers
 
-The `## Delegation` section in `packages/buddy-agent-harness/skills/enhance/references/delegation.md` ships into other people's repositories and loads on every session there. Its wording is a behavioral claim, and the version it replaced read well, was in real use, and produced an unexecutable plan the first time anyone measured it.
+The `## Delegation` section in `packages/buddy-agent-harness/skills/enhance-buddy-agent-harness/references/delegation.md` ships into other people's repositories and loads on every session there. Its wording is a behavioral claim, and the version it replaced read well, was in real use, and produced an unexecutable plan the first time anyone measured it.
 
 Do not edit that wording on taste. Use the `eval-delegation` skill in `.agents/skills/`: it builds the prompts, names the backlog and the scoring key, and records the baseline the candidate has to beat.
 

@@ -23,7 +23,7 @@ comment in the golden set, and never imports a literal credential or a change bo
   The golden set never compared it.
 - N5 Approving every offered field at once. Each field is its own approval.
 - N6 Reading or writing user-scope MCP files.
-- N7 Asking for approval. The [repair](../repair/README.md) skill offers each field and passes only the approved
+- N7 Asking for approval. The [repair](../repair-buddy-agent-harness/README.md) skill offers each field and passes only the approved
   ones.
 
 ## Key terms
@@ -52,7 +52,7 @@ comment in the golden set, and never imports a literal credential or a change bo
 | ID | Actor | Goal |
 | --- | --- | --- |
 | A1.1 | person who edited a harness copy | have that edit kept in the golden set, the one file every harness is projected from |
-| A2.1 | `repair` skill | offer each field on its own, and import only the ones the person approved |
+| A2.1 | `repair-buddy-agent-harness` skill | offer each field on its own, and import only the ones the person approved |
 | A3.1 | person authoring the golden set | find no unapproved or conflicting change in it, and every comment kept |
 | A4.1 | anyone who reads a session transcript | never see a credential the command came across |
 
@@ -64,7 +64,7 @@ comment in the golden set, and never imports a literal credential or a change bo
 - **Entry node**: `G` in [graph.md](./graph.md).
 - **Entry points**:
   - command line (primary): `buddy-agent-harness mcp reconcile`, with no approval.
-  - skill: [repair](../repair/README.md) offers each row to the person.
+  - skill: [repair](../repair-buddy-agent-harness/README.md) offers each row to the person.
 - **Inputs**: the repository root.
 - **Success**: one row per field the harness side is plainly ahead on, its value in golden form, and nothing on disk
   changed.
@@ -83,7 +83,7 @@ comment in the golden set, and never imports a literal credential or a change bo
 - **Entry node**: `Q` in [graph.md](./graph.md).
 - **Entry points**:
   - command line (primary): `buddy-agent-harness mcp reconcile`, naming each approved field by its locator.
-  - skill: [repair](../repair/README.md) passes the fields the person approved.
+  - skill: [repair](../repair-buddy-agent-harness/README.md) passes the fields the person approved.
 - **Inputs**: the repository root, and the locator of each approved field.
 - **Success**: each approved field is in the golden set, every other byte of it is unchanged, and the
   last-projected record shows the field in agreement.
@@ -185,6 +185,6 @@ None.
 - [mcp-diagnosis](../mcp-diagnosis/README.md): the golden set, the dialects, the baseline, the locator, and the
   credential test.
 - [mcp-projection](../mcp-projection/README.md): the forward direction and the hand edit.
-- [repair](../repair/README.md): the skill that offers each field and passes the approved ones.
+- [repair](../repair-buddy-agent-harness/README.md): the skill that offers each field and passes the approved ones.
 - [mcp-canonical-location evidence](../../../../../.research/mcp-canonical-location/evidence.md): E-MCP-12 to
   E-MCP-18 back each dialect's reading; E-MCP-14 and E-MCP-15 give the documented timeout defaults.
