@@ -6,7 +6,7 @@ Give a repository one canonical agent configuration — a root `AGENTS.md` and a
 
 The skill runs a five-phase workflow: survey the repository, classify what it finds, confirm the plan with you, apply it, then verify.
 
-It detects agent configuration you already have — instruction files, skills, commands, subagents, rules, MCP servers, hooks — and either consolidates it into the canonical source, links it back out, or reports it as canonical-only where converting it would mean inventing configuration you did not write. It never removes or rewrites a file you authored without asking first. What is left of a consolidated harness file is yours to decide: delete it, leave a pointer, or leave it as it is; no copy of `AGENTS.md` is written in its place. It ends by offering `repair-buddy-agent-harness` for the `doctor` findings that skill owns, and then `enhance-buddy-agent-harness`.
+It detects agent configuration you already have — instruction files, skills, commands, subagents, rules, MCP servers, hooks — and either consolidates it into the canonical source, links it back out, or reports it as canonical-only where converting it would mean inventing configuration you did not write. It never removes or rewrites a file you authored without asking first. What is left of a consolidated harness file is yours to decide: delete it, leave a pointer, or leave it as it is; no copy of `AGENTS.md` is written in its place. It ends by offering `repair` for the `doctor` findings that skill owns, and then `enhance`.
 
 ## Why the projection step is small
 

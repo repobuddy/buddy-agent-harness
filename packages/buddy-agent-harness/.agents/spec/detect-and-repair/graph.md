@@ -12,10 +12,10 @@ flowchart TD
   Owner -->|E5 instruction bridge| Init([With the init-buddy-agent-harness skill])
   Owner -->|E15 skills bridge whose repair rebuilds it| Init
   Owner -->|E7 non-standard, with a portable form| Init
-  Owner -->|E8 configuration| Repair([With the repair-buddy-agent-harness skill])
+  Owner -->|E8 configuration| Repair([With the repair skill])
   Owner -->|E9 MCP drift, one side plainly the source| Repair
   Owner -->|E17 agent worktree: an ignore, an exclusion, or the base| Init
-  Owner -->|E18 agent worktree inside the repository| Enhance([With the enhance-buddy-agent-harness skill])
+  Owner -->|E18 agent worktree inside the repository| Enhance([With the enhance skill])
   Owner -->|E16 skills bridge: a diverged or an unprotected copy| Repair
   Owner -->|E12 MCP drift needing the user's judgment| Person([Reported for a person, routed to no skill])
   Owner -->|E13 non-standard, with no portable form| Person

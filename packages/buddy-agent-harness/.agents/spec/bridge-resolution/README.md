@@ -56,7 +56,7 @@ another family's finding. Each finding carries the repair this spec states for i
 | A1.2 | `doctor-buddy-agent-harness` skill | learn which bridges do not resolve, and hand each to the skill that repairs it |
 | A2.1 | person at a shell | find out why a freshly cloned repository loads no skills |
 | A3.1 | session-start hook | learn of a broken bridge at every session start with no risk of a write |
-| A4.2 | `repair-buddy-agent-harness` skill | tell a bridge finding it repairs from one it hands on, without inspecting the bridge |
+| A4.2 | `repair` skill | tell a bridge finding it repairs from one it hands on, without inspecting the bridge |
 | A5.1 | `init-buddy-agent-harness` skill | receive every bridge repair that rebuilding the bridge fixes |
 | A6.1 | downstream agent session (never runs the command) | load the repository's project skills |
 
@@ -99,7 +99,7 @@ another family's finding. Each finding carries the repair this spec states for i
 - **Trigger**: a skill reads the findings to decide which ones it owns.
 - **Entry node**: `D1` in [graph.md](./graph.md).
 - **Entry points**:
-  - Skill (primary): `repair-buddy-agent-harness` and `init-buddy-agent-harness` read the findings `doctor` reports.
+  - Skill (primary): `repair` and `init-buddy-agent-harness` read the findings `doctor` reports.
   - Library: the findings `diagnoseBridges` returns.
 - **Inputs**: the findings of one run.
 - **Success**: each skill knows from the finding alone that it is a bridge finding, and which fault it has.

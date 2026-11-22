@@ -96,7 +96,7 @@ describe("a skill's forwarder", () => {
 	}
 
 	it('applies a reported failure to the process', () => {
-		const { status, stdout } = forwarder('repair-buddy-agent-harness', 'doctor', '--harness', 'aider')
+		const { status, stdout } = forwarder('repair', 'doctor', '--harness', 'aider')
 
 		expect(status).toBe(2)
 		expect(stdout).toContain('code: unsupported-harness')

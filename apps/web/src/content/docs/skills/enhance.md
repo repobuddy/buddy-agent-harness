@@ -3,9 +3,9 @@ title: 'Skill: enhance'
 description: What the enhance skill offers a repository, how it decides a section is already covered or carries an outdated version of a shipped one, and the runs behind the wording it ships.
 ---
 
-The `enhance-buddy-agent-harness` skill proposes guidance a repository does not have, and offers a fresh copy of guidance it took from an earlier release. [`init`](/skills/init-buddy-agent-harness/) is the other half: it consolidates what you already wrote and bridges the harnesses that cannot read it, and it invents nothing. Initialization has to be safe to run anywhere, so it carries no opinions. An addition is opinionated by construction.
+The `enhance` skill proposes guidance a repository does not have, and offers a fresh copy of guidance it took from an earlier release. [`init`](/skills/init-buddy-agent-harness/) is the other half: it consolidates what you already wrote and bridges the harnesses that cannot read it, and it invents nothing. Initialization has to be safe to run anywhere, so it carries no opinions. An addition is opinionated by construction.
 
-That is why `enhance-buddy-agent-harness` is opt-in. Every addition is offered and never written on sight, and `init` now ends by asking whether to run it.
+That is why `enhance` is opt-in. Every addition is offered and never written on sight, and `init` now ends by asking whether to run it.
 
 This skill has no CLI command behind it. There is nothing mechanical to hand off: the work is reading your instructions and judging what they already cover.
 
@@ -14,7 +14,7 @@ This skill has no CLI command behind it. There is nothing mechanical to hand off
 In Claude Code:
 
 ```text
-/buddy-agent-harness:enhance-buddy-agent-harness
+/buddy-agent-harness:enhance
 ```
 
 Any agent that reads `.agents/skills/` can be asked in prose instead, from the repository root:
@@ -284,6 +284,6 @@ Claude Code puts its own agent worktrees under `.claude/worktrees/` inside the r
 
 An ignore of `.claude/worktrees/`, in `.gitignore` or in a tool's config, does not count as covering this subject: it accounts for worktrees inside the repository without moving them.
 
-`enhance-buddy-agent-harness` does not offer Claude Code's agent-worktree settings themselves. They are lines in `.gitignore`, a tool config, and `.claude/settings.json`, not guidance in `AGENTS.md`, and [`init`](/skills/init-buddy-agent-harness/#agent-worktree-offers) offers them. [Agent Worktrees](/agent-configuration/agent-worktrees/) is the home for the reasons.
+`enhance` does not offer Claude Code's agent-worktree settings themselves. They are lines in `.gitignore`, a tool config, and `.claude/settings.json`, not guidance in `AGENTS.md`, and [`init`](/skills/init-buddy-agent-harness/#agent-worktree-offers) offers them. [Agent Worktrees](/agent-configuration/agent-worktrees/) is the home for the reasons.
 
 This section has no retired wording, so `references/agent-worktrees.history.md` is empty and an existing section is compared against the current text. No harness scores this wording, so where the skill cannot tell whose words a section is, it offers you two answers instead of three.

@@ -59,21 +59,12 @@ for (const doc of renderDoctorReferences(initHarnessReferences())) {
 // references. Each page one skill reads from another is copied in whole; the copy is checked against
 // its source like any other generated file.
 const mirrors: { from: string[]; to: string[] }[] = [
-	{
-		from: [initSkillName, 'references', 'agents-md.md'],
-		to: ['repair-buddy-agent-harness', 'references', 'agents-md.md'],
-	},
-	{
-		from: [initSkillName, 'references', 'agents-md.md'],
-		to: ['enhance-buddy-agent-harness', 'references', 'agents-md.md'],
-	},
-	{
-		from: [initSkillName, 'references', 'detection.md'],
-		to: ['enhance-buddy-agent-harness', 'references', 'detection.md'],
-	},
+	{ from: [initSkillName, 'references', 'agents-md.md'], to: ['repair', 'references', 'agents-md.md'] },
+	{ from: [initSkillName, 'references', 'agents-md.md'], to: ['enhance', 'references', 'agents-md.md'] },
+	{ from: [initSkillName, 'references', 'detection.md'], to: ['enhance', 'references', 'detection.md'] },
 	{
 		from: [doctorSkill.name, 'references', 'global-instructions.md'],
-		to: ['enhance-buddy-agent-harness', 'references', 'global-instructions.md'],
+		to: ['enhance', 'references', 'global-instructions.md'],
 	},
 	...[...initHarnessReferences()].sort().map((name) => ({
 		from: [initSkillName, 'references', 'harnesses', `${name}.md`],

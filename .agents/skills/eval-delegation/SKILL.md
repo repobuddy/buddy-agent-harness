@@ -1,11 +1,11 @@
 ---
 name: eval-delegation
-description: Measures whether a candidate wording of the Delegation section that the enhance-buddy-agent-harness skill ships actually changes agent behavior, instead of arguing about whether it reads well. Use before changing that wording, or before adding a section beside it.
+description: Measures whether a candidate wording of the Delegation section that the enhance skill ships actually changes agent behavior, instead of arguing about whether it reads well. Use before changing that wording, or before adding a section beside it.
 ---
 
 # Evaluate the Delegation wording
 
-The `## Delegation` section in `packages/buddy-agent-harness/skills/enhance-buddy-agent-harness/references/delegation.md` ships into other people's repositories and is loaded on every session there. Its wording is a behavioral claim: it says agents will route work differently after reading it.
+The `## Delegation` section in `packages/buddy-agent-harness/skills/enhance/references/delegation.md` ships into other people's repositories and is loaded on every session there. Its wording is a behavioral claim: it says agents will route work differently after reading it.
 
 That claim is testable, and it has been wrong before. The version this section replaced read well, was in real use, and produced an unexecutable plan the first time it was measured. **Do not change this wording on taste.** Run the harness.
 
@@ -14,7 +14,7 @@ This skill is narrow on purpose — one section, one backlog, one scoring key. G
 ## When to run it
 
 - Any edit to the shipped section, including a "small" one.
-- Adding another section to `enhance-buddy-agent-harness` that gives an agent instructions about its own work.
+- Adding another section to `enhance` that gives an agent instructions about its own work.
 - A report that the section is being misread in practice. A misread is a failing case; add it to the backlog first.
 
 ## Run it

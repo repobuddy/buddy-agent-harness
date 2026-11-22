@@ -180,7 +180,7 @@ Which harnesses are checked is the same question as for skills: the registry rec
 
 ## Reaching ~/.agents/AGENTS.md
 
-`~/.agents/AGENTS.md` is the user-scope counterpart of the root `AGENTS.md`: instructions that hold in every repository you open. The [`enhance-buddy-agent-harness` skill](/skills/enhance-buddy-agent-harness/) writes text into it when you pick it, and other tools hand text over for it. No harness reads it by itself. Each harness reads a user-scope file of its own, and that file has to load the global one. Where none does, text placed in the global file does nothing in that harness, and nothing says so.
+`~/.agents/AGENTS.md` is the user-scope counterpart of the root `AGENTS.md`: instructions that hold in every repository you open. The [`enhance` skill](/skills/enhance/) writes text into it when you pick it, and other tools hand text over for it. No harness reads it by itself. Each harness reads a user-scope file of its own, and that file has to load the global one. Where none does, text placed in the global file does nothing in that harness, and nothing says so.
 
 `globalInstructions` reports, for each harness installed for you, whether its user-scope file loads the global one. A harness counts as installed where its user-scope directory exists in your home directory, such as `~/.claude`, or where `--harness` names it.
 
@@ -251,7 +251,7 @@ divergence[1]{path,direction}:
 | `both` | A genuine conflict. | `sync` carries every file one side changed and leaves each file both sides changed for you to pick a side, through `sync --resolve`. |
 | `unknown` | No commit where the two agreed was found. | `sync` leaves every differing file for you to pick a side. |
 
-Every direction takes the same repair, the file-by-file [`sync`](/cli/sync/), and none takes a rebuild: rebuilding the copy from `.agents/skills` discards the edits made through it, and the reverse discards the edits made in `.agents/skills`. A program that runs every `command` a report offers therefore rebuilds no diverged bridge. The `both` and `unknown` findings offer no `command`, since the sync cannot finish them until you pick a side for each file it leaves. The [`repair-buddy-agent-harness` skill](/skills/repair-buddy-agent-harness/) owns all four, and asks you for each pick.
+Every direction takes the same repair, the file-by-file [`sync`](/cli/sync/), and none takes a rebuild: rebuilding the copy from `.agents/skills` discards the edits made through it, and the reverse discards the edits made in `.agents/skills`. A program that runs every `command` a report offers therefore rebuilds no diverged bridge. The `both` and `unknown` findings offer no `command`, since the sync cannot finish them until you pick a side for each file it leaves. The [`repair` skill](/skills/repair/) owns all four, and asks you for each pick.
 
 ## The skip-worktree bit
 
@@ -283,7 +283,7 @@ Alongside the bridge and instruction sections, `doctor` reports configuration th
 | `unread-local-override` | an `AGENTS.local.md`. No harness reads that filename, so its content is invisible |
 | `unloadable-skill` | frontmatter that does not parse, or no `description` — the two faults that make a harness skip a skill outright. A `name` that mismatches its directory is only a warning, so it is deliberately not reported |
 
-These four repair through the [`repair-buddy-agent-harness` skill](/skills/repair-buddy-agent-harness/), which offers each correction with its before and after and writes only what you approve.
+These four repair through the [`repair` skill](/skills/repair/), which offers each correction with its before and after and writes only what you approve.
 
 Each finding row carries three fields: `problem` is its name and the only thing a program should branch on, `path` is what it is about, and `detail` is prose for a person. Route on `problem`, never on `detail` — the prose is meant to be read, and improving its wording must not change what a caller does.
 
@@ -293,7 +293,7 @@ Each finding row carries three fields: `problem` is its name and the only thing 
 
 `doctor` also reports configuration that **works, for exactly one harness**: a `.cursor/rules/*.mdc`, a harness-only command, skill, or subagent directory. None of these is a fault. The problem is reach: guidance in a Cursor rule reaches Cursor and nothing else, and nobody finds out except by noticing an agent behave differently in another tool.
 
-Each `nonstandard-*` finding names the canonical form its content converts to: `AGENTS.md` for prose, `.agents/skills/` for a capability. The harness file is then generated from that source rather than authored beside it. Every conversion moves content someone wrote, so each one is offered by the [`init-buddy-agent-harness` skill](/skills/init-buddy-agent-harness/) and never written on sight. `repair-buddy-agent-harness` owns none of them, because it corrects configuration that is wrong and none of this is wrong. `nonstandard-subagent` names no owner at all: there is no cross-harness subagent format to convert to, so the finding reports the gap instead of a repair that cannot run.
+Each `nonstandard-*` finding names the canonical form its content converts to: `AGENTS.md` for prose, `.agents/skills/` for a capability. The harness file is then generated from that source rather than authored beside it. Every conversion moves content someone wrote, so each one is offered by the [`init-buddy-agent-harness` skill](/skills/init-buddy-agent-harness/) and never written on sight. `repair` owns none of them, because it corrects configuration that is wrong and none of this is wrong. `nonstandard-subagent` names no owner at all: there is no cross-harness subagent format to convert to, so the finding reports the gap instead of a repair that cannot run.
 
 Zero of these is a direction, not a gate. Nothing blocks on the count.
 
@@ -309,7 +309,7 @@ Where a repository has a `.claude/` directory, `doctor` reports where the [git w
 
 | Finding | What is missing |
 | --- | --- |
-| `worktrees-in-repository` | nothing missing: an agent worktree sits inside the repository under `.claude/worktrees/`, reported once per worktree, with `git worktree move` to a sibling `<repository>.worktrees/` directory as the repair and [`enhance-buddy-agent-harness`](/skills/enhance-buddy-agent-harness/#agent-worktrees) offering the guidance that keeps new ones out |
+| `worktrees-in-repository` | nothing missing: an agent worktree sits inside the repository under `.claude/worktrees/`, reported once per worktree, with `git worktree move` to a sibling `<repository>.worktrees/` directory as the repair and [`enhance`](/skills/enhance/#agent-worktrees) offering the guidance that keeps new ones out |
 | `worktrees-untracked` | a `.gitignore` rule for `.claude/worktrees/`, so every agent worktree shows as untracked in `git status` |
 | `worktrees-self-ignored` | nothing missing: `biome.json` excludes `.claude/worktrees`, and inside an agent worktree there that exclusion matches every file, so Biome processes nothing; the repair replaces it with `vcs.useIgnoreFile` |
 | `worktree-base-unset` | `worktree.baseRef` in `.claude/settings.json`, so agent worktrees branch from the default branch |

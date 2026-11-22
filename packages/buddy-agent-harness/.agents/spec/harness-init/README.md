@@ -176,8 +176,8 @@ waits for the user to pick a side.
 - **Entry points**:
   - Command line (primary): `buddy-agent-harness init`.
   - Library: the program entry point.
-  - Skill: the skill's apply step, and the `repair-buddy-agent-harness` skill's correction of a drifted copy
-    ([repair](../repair-buddy-agent-harness/README.md)).
+  - Skill: the skill's apply step, and the `repair` skill's correction of a drifted copy
+    ([repair](../repair/README.md)).
 - **Inputs**: the existing copy, the canonical skills directory, their last agreement where git has one, and any
   request to replace targets. The command takes no pick of a side for a file; those go to the `sync` command
   ([copy-sync](../copy-sync/README.md) UC2).
@@ -319,7 +319,7 @@ None.
 - [bridge-resolution](../bridge-resolution/README.md): owns what a copy, its divergence, and its protection mean, as
   `doctor` reports them.
 - [copy-sync](../copy-sync/README.md): the home of the file-by-file sync UC7 runs on an existing copy.
-- [repair](../repair-buddy-agent-harness/README.md): offers that sync for a drifted-copy finding, after the owner approves, and restores
+- [repair](../repair/README.md): offers that sync for a drifted-copy finding, after the owner approves, and restores
   copy protection.
 - [glossary](../glossary.md): the shared terms.
 - [AGENTS.md](https://agents.md/): the open instruction format the canonical instructions follow.

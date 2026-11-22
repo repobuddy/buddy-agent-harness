@@ -107,7 +107,7 @@ The drift findings, then:
 
 Each finding's `path` carries a locator, not only a file: `.cursor/mcp.json#servers.linear` names the server and `.cursor/mcp.json#servers.linear.command` names the field. In a file holding twenty servers, the file alone would be useless.
 
-`mcp-unprojected` and `mcp-diverged-golden` are the two the golden set is plainly ahead on, and [`mcp project`](/cli/mcp/) works out the change: the [`repair-buddy-agent-harness` skill](/skills/repair-buddy-agent-harness/) shows the dry run and applies it with `--write` on approval. `mcp-undeclared` and `mcp-diverged-target` are the two the harness side is plainly ahead on, and [`mcp reconcile`](/cli/mcp/#mcp-reconcile) imports them field by field: the `repair-buddy-agent-harness` skill offers each field on its own and passes only the approved ones. The rest have no automatic repair — `mcp-diverged-both` and `-unknown` are a person's call, and the two `-unreadable` findings need the file fixed by hand first.
+`mcp-unprojected` and `mcp-diverged-golden` are the two the golden set is plainly ahead on, and [`mcp project`](/cli/mcp/) works out the change: the [`repair` skill](/skills/repair/) shows the dry run and applies it with `--write` on approval. `mcp-undeclared` and `mcp-diverged-target` are the two the harness side is plainly ahead on, and [`mcp reconcile`](/cli/mcp/#mcp-reconcile) imports them field by field: the `repair` skill offers each field on its own and passes only the approved ones. The rest have no automatic repair — `mcp-diverged-both` and `-unknown` are a person's call, and the two `-unreadable` findings need the file fixed by hand first.
 
 ## Credentials, and why the report never shows one
 
