@@ -228,7 +228,7 @@ describe('skill forwarders', () => {
 })
 
 /** The bridge problems a rebuilt bridge fixes — every one but the three that need a hand. */
-/** The bridge problems the `repair-buddy-agent-harness` skill owns: a rebuild would discard an edit or change nothing. */
+/** The bridge problems the `repair` skill owns: a rebuild would discard an edit or change nothing. */
 const repairOwned = ['diverged-bridge', 'diverged-canonical', 'diverged-both', 'diverged-unknown', 'unpinned-copy']
 
 describe('the detect-and-repair seam', () => {
@@ -263,9 +263,9 @@ describe('the detect-and-repair seam', () => {
 			expect(entry.skillRepair({ file: '<path>' })).toContain(initSkillInvocation)
 	})
 
-	// detect-and-repair R28: every diverged-copy fault and the unprotected-copy fault go to `repair-buddy-agent-harness`,
+	// detect-and-repair R28: every diverged-copy fault and the unprotected-copy fault go to `repair`,
 	// and to no other skill.
-	it('sends every diverged and unprotected copy to the repair-buddy-agent-harness skill and no other', () => {
+	it('sends every diverged and unprotected copy to the repair skill and no other', () => {
 		for (const entry of bridgeRepairs.filter((repair) => repairOwned.includes(repair.problem))) {
 			const skillRepair = entry.skillRepair({ file: '<path>' })
 			expect(skillRepair, entry.problem).toContain(repairSkillInvocation)
@@ -278,7 +278,7 @@ describe('the detect-and-repair seam', () => {
 		for (const entry of instructionRepairs) expect(entry.skillRepair({ file: '<path>' })).toContain(initSkillInvocation)
 	})
 
-	it('sends every configuration finding to the repair-buddy-agent-harness skill', () => {
+	it('sends every configuration finding to the repair skill', () => {
 		expect(configurationRepairs.length).toBeGreaterThan(0)
 		for (const entry of configurationRepairs)
 			expect(entry.skillRepair({ file: '<path>' })).toContain(repairSkillInvocation)
@@ -311,7 +311,7 @@ describe('the detect-and-repair seam', () => {
 	// is the user's judgment, so no skill is named in either rendering.
 	const mcpProjectable = ['mcp-unprojected', 'mcp-diverged-golden', 'mcp-undeclared', 'mcp-diverged-target']
 
-	it('sends the four findings `mcp project` or `mcp reconcile` can fix to the repair-buddy-agent-harness skill', () => {
+	it('sends the four findings `mcp project` or `mcp reconcile` can fix to the repair skill', () => {
 		for (const entry of mcpRepairs.filter((repair) => mcpProjectable.includes(repair.problem))) {
 			const { instruction } = entry.repair({ file: '<path>', server: 'linear' }, commandInvocation)
 			expect(entry.skillRepair({ file: '<path>', server: 'linear' })).toContain(repairSkillInvocation)
@@ -503,7 +503,7 @@ const initOwned: DoctorProblem[] = [
 	'worktree-base-unset',
 ]
 
-// The `repair-buddy-agent-harness` skill decides who to hand a finding to by asking whether its repair names `init` at
+// The `repair` skill decides who to hand a finding to by asking whether its repair names `init` at
 // all — the `/buddy-agent-harness:init-buddy-agent-harness` skill or a `buddy-agent-harness init` command line, since
 // the command rendering uses the second form for every bridge repair and the first for every
 // instruction repair. That question is only answerable from the report if the two sets coincide

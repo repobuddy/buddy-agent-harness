@@ -97,7 +97,7 @@ The `doctor` command checks both, for the harnesses this repository uses, and re
 - **Trigger**: a skill reads the findings to decide which ones it owns.
 - **Entry node**: `D1` in [graph.md](./graph.md).
 - **Entry points**:
-  - Skill (primary): `init-buddy-agent-harness` and `repair-buddy-agent-harness` read the findings `doctor` reports.
+  - Skill (primary): `init-buddy-agent-harness` and `repair` read the findings `doctor` reports.
 - **Inputs**: the findings of one run.
 - **Success**: the owning skill knows from the finding alone the file, the cause, and that no command fixes it.
 - **Extensions**: extensions: none, every finding carries its path and cause.

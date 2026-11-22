@@ -20,17 +20,17 @@ is offered, never run.
 - N8 **Repairing.** The command never writes. The offers, the explanation of the base trade-off, and the approved
   writes are [agent-worktree-settings](../agent-worktree-settings/README.md)'s, delivered by
   [init-buddy-agent-harness](../init-buddy-agent-harness/README.md), and the guidance is
-  [enhance](../enhance-buddy-agent-harness/README.md)'s.
+  [enhance](../enhance/README.md)'s.
 - N2 **A runnable fix.** Every fault is a line in a file the owner wrote or may want to keep, or a worktree a session
   may be working in, so correcting one is judgment and no finding carries a command.
 - N3 **Moving the worktrees.** The command reports each one inside the repository and names the move; it never moves
-  one. Keeping agents from creating them there is the `enhance-buddy-agent-harness` skill's Agent worktrees addition
-  ([enhance](../enhance-buddy-agent-harness/README.md)).
+  one. Keeping agents from creating them there is the `enhance` skill's Agent worktrees addition
+  ([enhance](../enhance/README.md)).
 - N4 **Harnesses other than Claude Code.** A repository that does not use Claude Code is never reported.
 - N5 **Other tree-walking tools.** Only a Biome config is checked for an exclusion that matches a worktree's own
   files; removing the same exclusion from other tools is offered by the skills, not detected.
 - N9 **Reading the guidance.** Whether `AGENTS.md` tells agents where to create worktrees is judged by meaning, which
-  is the `enhance-buddy-agent-harness` skill's, so the command reports worktrees it finds, not guidance it misses.
+  is the `enhance` skill's, so the command reports worktrees it finds, not guidance it misses.
 - N6 **Reporting an explicit base.** An owner who set the base, either way, has answered; it is not a fault.
 - N7 **The shape of the report.** [diagnosis-report](../diagnosis-report/README.md).
 
@@ -137,7 +137,7 @@ None.
   instruction apart.
 - [agent-worktree-settings](../agent-worktree-settings/README.md): the offers that fix the ignore, exclusion, and
   base faults.
-- [enhance](../enhance-buddy-agent-harness/README.md): the Agent worktrees addition, which keeps agents from creating worktrees inside the
+- [enhance](../enhance/README.md): the Agent worktrees addition, which keeps agents from creating worktrees inside the
   repository.
 - `skills/init-buddy-agent-harness/references/agent-worktrees.md`: where Claude Code puts agent worktrees, what each
   fault costs, and how each line is judged covered.

@@ -1,6 +1,6 @@
-# enhance-buddy-agent-harness: decision graph
+# enhance: decision graph
 
-The decisions the [enhance-buddy-agent-harness spec](./README.md) makes, as an observer sees them. A run judges each addition twice: its
+The decisions the [enhance spec](./README.md) makes, as an observer sees them. A run judges each addition twice: its
 section in the repository (the repository graph) and any copy in the global instructions (the global-copy graph). The
 combination table says what the two verdicts together offer. Double-bordered nodes are outcomes.
 

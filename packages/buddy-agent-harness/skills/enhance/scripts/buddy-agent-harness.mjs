@@ -1,5 +1,5 @@
 // Written by `universal-plugin plugin build` to forward to the buddy-agent-harness CLI of buddy-agent-harness. Edit plugin.json, not this file.
-globalThis.__SKILL_SCRIPT__ = {"package":"buddy-agent-harness","bin":"buddy-agent-harness","version":"2.0.0","entry":"skills/repair-buddy-agent-harness/scripts/buddy-agent-harness.mjs","commands":{},"forward":"own"};
+globalThis.__SKILL_SCRIPT__ = {"package":"buddy-agent-harness","bin":"buddy-agent-harness","version":"2.0.0","entry":"skills/enhance/scripts/buddy-agent-harness.mjs","commands":{},"forward":"own"};
 import { spawnSync } from 'node:child_process'
 import * as fs from 'node:fs'
 import * as path from 'node:path'

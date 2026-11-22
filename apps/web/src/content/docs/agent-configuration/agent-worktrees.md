@@ -3,7 +3,7 @@ title: Agent Worktrees
 description: Where Claude Code puts the git worktrees it creates for agents, why that breaks commits and git status, and how to keep them out of the repository.
 ---
 
-Claude Code runs a session started with `--worktree`, and a subagent set to `isolation: worktree`, in its own git worktree. This page explains what that does to the repository around it and what to change. `enhance-buddy-agent-harness` and `init` offer the changes and `doctor` reports what is still open.
+Claude Code runs a session started with `--worktree`, and a subagent set to `isolation: worktree`, in its own git worktree. This page explains what that does to the repository around it and what to change. `enhance` and `init` offer the changes and `doctor` reports what is still open.
 
 ## Where the worktrees go
 
@@ -33,7 +33,7 @@ The trade-off is real. The default suits agents given tasks unrelated to what yo
 
 No setting changes the directory Claude Code uses. A `WorktreeCreate` hook can place worktrees elsewhere, but it replaces Claude Code's git logic outright: it receives no base, so `worktree.baseRef` stops applying, and Claude Code then removes neither a subagent's worktree nor its branch ([Claude Code hooks](https://code.claude.com/docs/en/hooks)). The skills do not offer one.
 
-Instead, [`enhance-buddy-agent-harness`](/skills/enhance-buddy-agent-harness/#agent-worktrees) offers an Agent worktrees section for `AGENTS.md`. It tells the agent to create a worktree itself in a sibling directory, `../<repo>.worktrees/<name>`, branching from `HEAD`, and to hand a subagent that path rather than using `isolation: "worktree"`. The sibling layout is the one other worktree tools already use.
+Instead, [`enhance`](/skills/enhance/#agent-worktrees) offers an Agent worktrees section for `AGENTS.md`. It tells the agent to create a worktree itself in a sibling directory, `../<repo>.worktrees/<name>`, branching from `HEAD`, and to hand a subagent that path rather than using `isolation: "worktree"`. The sibling layout is the one other worktree tools already use.
 
 ## What to add, and what to remove
 
@@ -51,6 +51,6 @@ The `.gitignore` line stays a backstop with the guidance in place: a session sta
 
 ## Who offers and who reports
 
-[`enhance-buddy-agent-harness`](/skills/enhance-buddy-agent-harness/#agent-worktrees) offers the guidance, and [`init-buddy-agent-harness`](/skills/init-buddy-agent-harness/#agent-worktree-offers) offers each setting on its own, only where Claude Code is in use. Both write only what you approve. A decline writes nothing.
+[`enhance`](/skills/enhance/#agent-worktrees) offers the guidance, and [`init-buddy-agent-harness`](/skills/init-buddy-agent-harness/#agent-worktree-offers) offers each setting on its own, only where Claude Code is in use. Both write only what you approve. A decline writes nothing.
 
 [`doctor`](/cli/doctor/#agent-worktree-findings) reports each worktree it finds inside the repository, a missing `.gitignore` line, a Biome exclusion that matches a worktree's own files, and an unset base, in a repository with a `.claude/` directory.

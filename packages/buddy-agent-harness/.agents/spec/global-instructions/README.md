@@ -4,7 +4,7 @@ Every installed harness that does not load `~/.agents/AGENTS.md` is reported.
 
 ## What
 
-`~/.agents/AGENTS.md` is the user-scope counterpart of a repository's `AGENTS.md`. The `enhance-buddy-agent-harness` skill hands global
+`~/.agents/AGENTS.md` is the user-scope counterpart of a repository's `AGENTS.md`. The `enhance` skill hands global
 placements over to it, and other tools hand text to it too. No harness reads it by itself. Each reads a user-scope
 instruction file of its own, such as `~/.claude/CLAUDE.md` or `~/.codex/AGENTS.md`, and that file has to load the
 global one. Where none does, every line put in the global file does nothing in that harness, and nobody is told.
@@ -53,8 +53,8 @@ this package ships writes there, so every repair is the person's to make.
 | --- | --- | --- |
 | A1.1 | person | know, for each harness they use, whether global text reaches it, and the step that makes it |
 | A2.1 | `doctor-buddy-agent-harness` skill | present each harness's state and hand each step to the person unchanged |
-| A3.1 | `enhance-buddy-agent-harness` skill | say, before handing a global placement over, whether the harness in use will load it |
-| A4.1 | `repair-buddy-agent-harness` skill | recognise these findings as having no correction of its own, and pass the step on unchanged |
+| A3.1 | `enhance` skill | say, before handing a global placement over, whether the harness in use will load it |
+| A4.1 | `repair` skill | recognise these findings as having no correction of its own, and pass the step on unchanged |
 | A5.1 | program diagnosing a repository | read nothing outside the repository, or from its shell, unless asked |
 
 ## Use cases
@@ -79,12 +79,12 @@ this package ships writes there, so every repair is the person's to make.
 
 ### UC2 — Tell whether a global placement will load (A3)
 
-- **Trigger**: `enhance-buddy-agent-harness` is about to hand a placement over to the global file.
+- **Trigger**: `enhance` is about to hand a placement over to the global file.
 - **Entry node**: `D1` in [graph.md](./graph.md).
 - **Entry points**:
-  - Skill (primary): `enhance-buddy-agent-harness` reads the rows `doctor` reports.
+  - Skill (primary): `enhance` reads the rows `doctor` reports.
 - **Inputs**: the home directory and the environment.
-- **Success**: `enhance-buddy-agent-harness` reads which harness is in use, and a row for each installed harness, whether or not the
+- **Success**: `enhance` reads which harness is in use, and a row for each installed harness, whether or not the
   global file exists yet.
 - **Extensions**:
   - UC2.2 The harness in use has no user-scope file: its row says it cannot load a file.
@@ -92,12 +92,12 @@ this package ships writes there, so every repair is the person's to make.
 
 ### UC3 — Pass a global step on unchanged (A4)
 
-- **Trigger**: `repair-buddy-agent-harness` runs `doctor` and meets a global instruction finding.
+- **Trigger**: `repair` runs `doctor` and meets a global instruction finding.
 - **Entry node**: `D1` in [graph.md](./graph.md).
 - **Entry points**:
-  - Skill (primary): `repair-buddy-agent-harness` reads the findings `doctor` reports.
+  - Skill (primary): `repair` reads the findings `doctor` reports.
 - **Inputs**: the findings of one run.
-- **Success**: `repair-buddy-agent-harness` tells from the finding alone that it owns no correction, and hands the step to the person.
+- **Success**: `repair` tells from the finding alone that it owns no correction, and hands the step to the person.
 - **Extensions**: extensions: none, every finding carries its cause and its step.
 
 ### UC4 — Diagnose a repository alone from a program (A5)
@@ -182,7 +182,7 @@ None.
 
 - [diagnosis-report](../diagnosis-report/README.md): the output shape.
 - [detect-and-repair](../detect-and-repair/README.md): every global step goes to the person.
-- [enhance](../enhance-buddy-agent-harness/README.md): the consumer of the rows before a global placement.
+- [enhance](../enhance/README.md): the consumer of the rows before a global placement.
 - [instruction-bridges](../instruction-bridges/README.md): the repository-scope sibling.
 - `.research/agentic-configuration-standards/evidence.md`: the vendor facts behind each harness's user-scope file,
   its import rules, and its relocating variable.

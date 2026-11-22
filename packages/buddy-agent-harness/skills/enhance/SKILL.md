@@ -1,12 +1,12 @@
 ---
-name: enhance-buddy-agent-harness
+name: enhance
 description: Adds guidance missing from a repository's existing AGENTS.md, or refreshes a vetted section it carries in an outdated form — offering each one at a time and writing only what the user approves. Runs on its own or straight after init.
 argument-hint: '[--root <dir>]'
 ---
 
 # Harness Enhance
 
-`init` consolidates what a repository already has. `enhance-buddy-agent-harness` proposes what it does not.
+`init` consolidates what a repository already has. `enhance` proposes what it does not.
 
 The split matters: initialization has to run everywhere and invent nothing, so it carries no opinions. An addition is opinionated by construction, and worth having only where its subject is missing. Keeping them apart is what lets `init` stay safe to run on any repository.
 

@@ -34,7 +34,7 @@ markdown and score nothing either way.
 | Arm | Section |
 | --- | --- |
 | control | none |
-| shipped | the text in `packages/buddy-agent-harness/skills/enhance-buddy-agent-harness/references/list-identifiers.md` |
+| shipped | the text in `packages/buddy-agent-harness/skills/enhance/references/list-identifiers.md` |
 | scoped | below |
 | minimal | below |
 

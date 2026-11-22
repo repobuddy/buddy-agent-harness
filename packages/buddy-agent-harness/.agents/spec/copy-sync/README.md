@@ -27,7 +27,7 @@ says what was written, which side each file took, and which files wait for the o
 - N3 **Choosing a side for a file both sides changed.** Which edit should win cannot be decided from the files; the
   owner picks ([bridge-resolution](../bridge-resolution/README.md) N7).
 - N4 **Asking the owner.** The sync asks no question. A skill that runs it asks, and passes the answers in:
-  [repair](../repair-buddy-agent-harness/README.md) UC3.5, [init-buddy-agent-harness](../init-buddy-agent-harness/README.md) R64.
+  [repair](../repair/README.md) UC3.5, [init-buddy-agent-harness](../init-buddy-agent-harness/README.md) R64.
 - N5 **Committing the result, or editing the committed `.gitignore`.** What lands in history is the owner's.
 - N6 **Syncing anything other than skills.** MCP servers are [mcp-reconcile](../mcp-reconcile/README.md)'s, and
   instruction files have no copy to sync.
@@ -55,7 +55,7 @@ says what was written, which side each file took, and which files wait for the o
 | A1.1 | repository owner on a machine without symlinks | an edit made on either side reaches the other side, and none is lost |
 | A1.2 | repository owner | no side wins a file both sides changed without their pick |
 | A1.3 | repository owner | a copy the sync syncs or keeps never shows as uncommitted changes, and git adds none of its files |
-| A2.1 | program caller (the `repair-buddy-agent-harness` skill, the `init-buddy-agent-harness` skill, a script) | learns which files were written, which side each took, and which wait for the owner, without parsing prose |
+| A2.1 | program caller (the `repair` skill, the `init-buddy-agent-harness` skill, a script) | learns which files were written, which side each took, and which wait for the owner, without parsing prose |
 | A3.1 | later agent session in a harness that reads a copy bridge, which never runs the sync | loads the same skills the canonical skills directory holds |
 
 ## Use cases
@@ -70,7 +70,7 @@ says what was written, which side each file took, and which files wait for the o
   - Command line: `buddy-agent-harness init`, which syncs an existing copy instead of reporting it as a conflict
     ([harness-init](../harness-init/README.md) UC7).
   - Library: the program entry point of [entry-point](../entry-point/README.md).
-  - Skill: the `repair-buddy-agent-harness` skill's correction of a drifted copy ([repair](../repair-buddy-agent-harness/README.md) UC3.5).
+  - Skill: the `repair` skill's correction of a drifted copy ([repair](../repair/README.md) UC3.5).
 - **Inputs**: the repository, its copy bridges, the canonical skills directory, each copy bridge's last agreement
   where git has one, and any resolutions.
 - **Success**: every copy bridge and the canonical skills directory hold the same files with the same content, and
@@ -100,7 +100,7 @@ says what was written, which side each file took, and which files wait for the o
 - **Entry points**:
   - Command line (primary): `buddy-agent-harness sync` with its resolution option.
   - Library: the program entry point.
-  - Skill: the `repair-buddy-agent-harness` skill, after the owner picks each side.
+  - Skill: the `repair` skill, after the owner picks each side.
 - **Inputs**: the resolutions, one per file the owner picked a side for.
 - **Success**: each resolved file holds the picked side's version on both sides, and every other file is synced as in
   UC1.
@@ -134,7 +134,7 @@ says what was written, which side each file took, and which files wait for the o
 - **Entry points**:
   - Command line (primary): the `sync` command's output, in its default form or a form the caller names.
   - Library: the value the program entry point returns.
-  - Skill: the `repair-buddy-agent-harness` skill reads it to offer the owner each file left for the user, and to report.
+  - Skill: the `repair` skill reads it to offer the owner each file left for the user, and to report.
 - **Inputs**: the requested output form.
 - **Success**: the result states, for each copy bridge, what the sync wrote and what it left, in the requested form.
 - **Extensions**:
@@ -222,7 +222,7 @@ None.
   creating, replacing, and protecting the copies it writes.
 - [bridge-resolution](../bridge-resolution/README.md): what a skills bridge, its last agreement, its divergence, and
   copy protection mean, as `doctor` reports them; its diverged-copy repair is this sync.
-- [repair](../repair-buddy-agent-harness/README.md): offers this sync for a drifted copy and asks the owner for each resolution.
+- [repair](../repair/README.md): offers this sync for a drifted copy and asks the owner for each resolution.
 - [init-buddy-agent-harness](../init-buddy-agent-harness/README.md): asks the owner which side wins for each file an
   `init` run leaves for the user, and passes the picks to the `sync` command.
 - [command-output](../command-output/README.md): how a result becomes output, its forms, and their encoding.

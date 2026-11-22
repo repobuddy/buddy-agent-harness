@@ -11,10 +11,7 @@ import { NO_ACCESS, PROJECT, TASKS } from '../scripts/backlog.mjs'
 import { blindDir } from './env.mjs'
 
 const here = dirname(fileURLToPath(import.meta.url))
-const SHIPPED = resolve(
-	here,
-	'../../../../packages/buddy-agent-harness/skills/enhance-buddy-agent-harness/references/list-identifiers.md',
-)
+const SHIPPED = resolve(here, '../../../../packages/buddy-agent-harness/skills/enhance/references/list-identifiers.md')
 
 // The shipped arm reads the text enhance offers, so it can never drift from what ships.
 function readSection(section) {

@@ -11,7 +11,7 @@ On a machine that cannot make symlinks, a harness that cannot read `.agents/skil
 
 `sync` merges each copy with `.agents/skills` file by file instead, against the last commit where the two held the same files. Nothing is lost: a file only one side changed takes that side's version, and a file both sides changed waits for you to pick a side.
 
-The [`repair-buddy-agent-harness` skill](/skills/repair-buddy-agent-harness/) runs it for a [`diverged-*`](/cli/doctor/#divergence) finding and asks you which side wins each file the sync leaves. [`init`](/cli/init/#existing-copies) runs the same sync on an existing copy instead of reporting it as a conflict.
+The [`repair` skill](/skills/repair/) runs it for a [`diverged-*`](/cli/doctor/#divergence) finding and asks you which side wins each file the sync leaves. [`init`](/cli/init/#existing-copies) runs the same sync on an existing copy instead of reporting it as a conflict.
 
 ## Options
 

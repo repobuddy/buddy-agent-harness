@@ -1,6 +1,6 @@
-# enhance-buddy-agent-harness
+# enhance
 
-The `enhance-buddy-agent-harness` skill puts to the owner each vetted section a repository's agent configuration lacks, or carries in a
+The `enhance` skill puts to the owner each vetted section a repository's agent configuration lacks, or carries in a
 retired form.
 
 ## What
@@ -10,7 +10,7 @@ invents nothing, so it never adds guidance the repository lacks. And when this p
 section the owner took earlier, nothing tells the owner: every later agent session keeps reading the superseded
 instruction until someone notices.
 
-The `enhance-buddy-agent-harness` skill is the opinionated half that `init` leaves out. For each vetted section this package ships, it
+The `enhance` skill is the opinionated half that `init` leaves out. For each vetted section this package ships, it
 decides whether the repository lacks it, already carries it, covers it in the owner's own words, or carries a wording
 this package has retired. It offers the missing section, offers the current wording in place of a retired one, and
 asks the owner where it cannot tell whose words a section is. It writes only what the owner approves, and every run
@@ -26,7 +26,7 @@ already loads from outside the repository is not offered again, because loading 
   [`init-buddy-agent-harness`](../init-buddy-agent-harness/README.md)'s.
 - **N2 Creating an `AGENTS.md`.** A repository without one is reported and left alone; creating it is
   [`init-buddy-agent-harness`](../init-buddy-agent-harness/README.md)'s.
-- **N3 Correcting agent configuration that is present and wrong.** That is [`repair-buddy-agent-harness`](../repair-buddy-agent-harness/README.md)'s. A
+- **N3 Correcting agent configuration that is present and wrong.** That is [`repair`](../repair/README.md)'s. A
   section in a retired wording is not a fault in the repository; this package's wording moved.
 - **N4 Diagnosing the repository.** Reporting what is wrong, including whether a harness loads the global
   instruction file and whether agent worktrees are accounted for, is `doctor`'s
@@ -116,7 +116,7 @@ The decision graph is in [graph.md](./graph.md).
   continue.
 - **Entry node**: `start`.
 - **Entry points**:
-  - Skill (primary): `/buddy-agent-harness:enhance-buddy-agent-harness`, optionally naming a repository other than the working directory.
+  - Skill (primary): `/buddy-agent-harness:enhance`, optionally naming a repository other than the working directory.
   - Skill: the offer at the end of `init-buddy-agent-harness`'s report.
 - **Inputs**: the repository root, its merged view, the global instructions, the shipped additions, and `doctor`'s
   report on whether the harness in use loads the global instruction file.
@@ -137,7 +137,7 @@ The decision graph is in [graph.md](./graph.md).
 - **Trigger**: a run finds a covered addition whose section does not carry the current text.
 - **Entry node**: `cur`.
 - **Entry points**:
-  - Skill (primary): `/buddy-agent-harness:enhance-buddy-agent-harness`.
+  - Skill (primary): `/buddy-agent-harness:enhance`.
 - **Inputs**: the section as found, the current text, and the addition's retired wordings.
 - **Success**: a section from a retired wording in the root `AGENTS.md` is offered the current text, and on approval
   that section alone is replaced.
@@ -154,7 +154,7 @@ The decision graph is in [graph.md](./graph.md).
 - **Trigger**: the two provenance questions disagree about a section.
 - **Entry node**: `harn`.
 - **Entry points**:
-  - Skill (primary): `/buddy-agent-harness:enhance-buddy-agent-harness`.
+  - Skill (primary): `/buddy-agent-harness:enhance`.
 - **Inputs**: the section, the wording it partly tracks, the current text, and any scoring harness for that addition.
 - **Success**: the owner answers, and the run acts on the answer: leaves the section, offers the replacement, or
   measures and acts on the scores.
@@ -168,7 +168,7 @@ The decision graph is in [graph.md](./graph.md).
 - **Trigger**: the global instructions hold a section on an addition's subject.
 - **Entry node**: `g0`.
 - **Entry points**:
-  - Skill (primary): `/buddy-agent-harness:enhance-buddy-agent-harness`.
+  - Skill (primary): `/buddy-agent-harness:enhance`.
 - **Inputs**: the global instructions as the agent loads them, and the repository's verdict for the same addition.
 - **Success**: no text is offered that the owner already loads; a retired global copy is refreshed; every global
   copy is named in the report.
@@ -408,13 +408,13 @@ None.
 ## References
 
 - [graph.md](./graph.md): the decision graph and tables the criteria cite.
-- The shipped skill: [SKILL.md](../../../skills/enhance-buddy-agent-harness/SKILL.md) and its
-  [references](../../../skills/enhance-buddy-agent-harness/references/), one file per addition with a sibling store of retired wordings.
+- The shipped skill: [SKILL.md](../../../skills/enhance/SKILL.md) and its
+  [references](../../../skills/enhance/references/), one file per addition with a sibling store of retired wordings.
 - The blind launcher the run policy names:
   [blind-claude.mjs](../../../../../.agents/skills/eval-delegation/scripts/blind-claude.mjs).
 - Sibling specs: [`init-buddy-agent-harness`](../init-buddy-agent-harness/README.md) owns consolidation and the rule
   that material content needs approval; [`global-instructions`](../global-instructions/README.md) owns whether a
   harness loads the global instruction file; [`worktree-diagnosis`](../worktree-diagnosis/README.md) owns reporting
   unaccounted agent worktrees, and sends a worktree it finds inside the repository here; [`agent-worktree-settings`](../agent-worktree-settings/README.md) owns offering the
-  settings that account for them; [`repair-buddy-agent-harness`](../repair-buddy-agent-harness/README.md) owns correcting what is present and wrong.
+  settings that account for them; [`repair`](../repair/README.md) owns correcting what is present and wrong.
 - [AGENTS.md](https://agents.md/): the open instruction format every addition is written into.

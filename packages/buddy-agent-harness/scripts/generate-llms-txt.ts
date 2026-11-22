@@ -53,8 +53,8 @@ const commandPages: Record<string, string | null> = {
 const skillPages: Record<string, string | null> = {
 	'init-buddy-agent-harness': 'skills/init-buddy-agent-harness',
 	'doctor-buddy-agent-harness': 'skills/doctor-buddy-agent-harness',
-	'enhance-buddy-agent-harness': 'skills/enhance-buddy-agent-harness',
-	'repair-buddy-agent-harness': 'skills/repair-buddy-agent-harness',
+	enhance: 'skills/enhance',
+	repair: 'skills/repair',
 }
 
 /** Module `src/index.ts` re-exports from, to the docs page covering it. */

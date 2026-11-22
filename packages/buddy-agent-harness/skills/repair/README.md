@@ -1,0 +1,21 @@
+# Harness Repair
+
+Correct agent configuration a repository already has that is wrong or outdated.
+
+## What it does
+
+`init` consolidates what a repository has, `enhance` offers what it is missing, and `doctor` reports what is wrong. Configuration that is present but **wrong** falls between all three, and that is what this skill takes: a harness name the registry retired, a git-ignored bridge, an `AGENTS.local.md` nothing reads, a skill whose frontmatter makes a harness skip it, a skills copy that drifted from `.agents/skills` or lost its copy protection, an MCP server that differs between the golden set and a harness on the side that is plainly ahead.
+
+Each correction is offered with the file as it stands and as it would read, and written only on approval.
+
+## Why a fourth skill rather than a `--fix` flag
+
+`doctor` stays read-only. Its whole safety property is that it never writes, which is what makes it safe to run from a session-start hook — a repair flag would forfeit that for every caller. Its **bridge** findings are all repairable with existing `init` flags, so a flag there would duplicate `init` rather than add anything; its **configuration** findings need judgment about files you wrote, which is a skill's job and not a flag's.
+
+That split also defines this skill's remit. `repair` owns what `init` deliberately refuses, and the four MCP findings where one side is plainly the one to copy from: `mcp project` or `mcp reconcile` works out the change, and this skill offers it. It also syncs a skills copy that drifted from `.agents/skills`, asking which side wins for each file both sides changed, and restores a copy's protection; neither rebuilds the bridge. Every other bridge finding — including an instruction bridge that was never completed — is reported and handed to `init`, which is what writes bridges in the first place.
+
+## The line it does not cross
+
+`repair` corrects what the **tooling** decides is wrong, never what the project means. The discriminator is the one `init` already applies: content that would stop being true if this tool's output were removed is non-material, and non-material content is all this skill may correct. A statement about how the repository is worked in stays the user's, even when it is out of date — `repair` reports it and offers no write.
+
+`references/classes.md` carries the correction and the stopping point for each class.

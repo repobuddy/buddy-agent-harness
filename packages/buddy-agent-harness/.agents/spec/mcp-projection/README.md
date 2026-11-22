@@ -23,7 +23,7 @@ kept. Each write is recorded, so a later diagnosis can tell which side moved.
 - N4 Reading or writing user-scope MCP files, such as `~/.codex/config.toml`, `~/.claude.json`, or
   `claude_desktop_config.json`.
 - N5 Filling in a value the golden set leaves unset, even one a target would use.
-- N6 Asking for approval. The command plans unless asked to write; the [repair](../repair-buddy-agent-harness/README.md) skill shows the
+- N6 Asking for approval. The command plans unless asked to write; the [repair](../repair/README.md) skill shows the
   plan and asks.
 - N7 A Copilot CLI target. Copilot CLI reads the `.mcp.json` projected for Claude Code
   ([mcp-diagnosis](../mcp-diagnosis/README.md) K3), so it gets no file of its own.
@@ -50,7 +50,7 @@ kept. Each write is recorded, so a later diagnosis can tell which side moved.
 | --- | --- | --- |
 | A1.1 | person authoring the golden set | have every harness carry the servers they wrote, without retyping them per syntax |
 | A1.2 | person authoring the golden set | have a later diagnosis know which side moved after a projection |
-| A2.1 | `repair-buddy-agent-harness` skill | show what would change next to each file as it stands, apply it on approval, and list the hand edits |
+| A2.1 | `repair` skill | show what would change next to each file as it stands, apply it on approval, and list the hand edits |
 | A3.1 | person who edited a harness copy | keep that edit; it is not overwritten |
 | A4.1 | owner of other settings in a shared file | find those settings and comments unchanged |
 
@@ -62,7 +62,7 @@ kept. Each write is recorded, so a later diagnosis can tell which side moved.
 - **Entry node**: `G` in [graph.md](./graph.md).
 - **Entry points**:
   - command line (primary): `buddy-agent-harness mcp project`, a plan unless asked to write.
-  - skill: [repair](../repair-buddy-agent-harness/README.md) shows the plan and asks the command to write on approval.
+  - skill: [repair](../repair/README.md) shows the plan and asks the command to write on approval.
 - **Inputs**: the repository root, and whether to write.
 - **Success**: each server the golden set is plainly ahead on is written into each target, each server that could
   not be written is named with the reason, and the result says per server per target what was or would be done.
@@ -183,7 +183,7 @@ None.
 - [mcp-diagnosis](../mcp-diagnosis/README.md): the golden set, the targets, the dialects, the baseline, and the
   credential test this command inherits.
 - [mcp-reconcile](../mcp-reconcile/README.md): the reverse direction.
-- [repair](../repair-buddy-agent-harness/README.md): the skill that shows the plan and approves the write.
+- [repair](../repair/README.md): the skill that shows the plan and approves the write.
 - [mcp-canonical-location evidence](../../../../../.research/mcp-canonical-location/evidence.md): E-MCP-12 to
   E-MCP-18 back each dialect's write mapping, including which transports and references each harness can hold;
   E-MCP-21 backs what Copilot CLI reads from `.mcp.json`.

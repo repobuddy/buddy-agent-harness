@@ -1,13 +1,13 @@
 ---
-name: repair-buddy-agent-harness
+name: repair
 description: Repairs a repository's agent configuration when it is present but wrong or outdated — a retired harness name, a git-ignored bridge, an AGENTS.local.md nothing reads, a skill a harness refuses to load, a skills copy that drifted from .agents/skills or lost its copy protection, or an MCP server that differs between the golden set and a harness, on the side that is plainly ahead. Also for "sync the .claude/skills copy that drifted from .agents/skills". Runs doctor to find them, then offers each correction with its before and after and writes only what is approved.
 ---
 
 # Harness Repair
 
-`init` consolidates what a repository has. `enhance-buddy-agent-harness` proposes what it does not. `doctor` reports what is wrong. `repair-buddy-agent-harness` corrects it.
+`init` consolidates what a repository has. `enhance` proposes what it does not. `doctor` reports what is wrong. `repair` corrects it.
 
-Each of the other three refuses this work deliberately. `init` has to run anywhere and invent nothing, so it never clobbers a file the user wrote. `enhance-buddy-agent-harness` only offers what is **missing**. `doctor` never writes, which is what makes it safe in a session-start hook. Configuration that is present but wrong falls between them.
+Each of the other three refuses this work deliberately. `init` has to run anywhere and invent nothing, so it never clobbers a file the user wrote. `enhance` only offers what is **missing**. `doctor` never writes, which is what makes it safe in a session-start hook. Configuration that is present but wrong falls between them.
 
 **`doctor` detects; this skill repairs.** Detection has one home, so the two cannot drift and the finding set can grow without touching this file. Do not detect anything yourself — run the command and repair what it reports.
 
@@ -34,7 +34,7 @@ That rule holds for every finding `doctor` reports today and for the ones it rep
 **Do not read ownership off a skill name in `help`.** Many repairs name no skill — some are a shell invocation, some a `git` command, some a reconciliation by hand — and only the instruction, configuration, non-standard, and agent-worktree families, the drifted and unprotected skills copies, and four MCP problems, name one at all. An owner is not something the report can always be asked for.
 
 - **Findings that are yours.** Look the `problem` up in `references/classes.md`, which carries the correction and the stopping point for each.
-- **Findings that are not yours.** Report each one and pass on the repair `doctor` states for it, unchanged. **Who to hand it to is read off that repair, and the question is whether it names `init`, or else `enhance-buddy-agent-harness`.** Some name the `/buddy-agent-harness:init-buddy-agent-harness` (pnpm install: `pnpm-buddy-agent-harness-init-buddy-agent-harness`) skill and some name a `buddy-agent-harness init` command line; both mean the same thing — the finding is `init`'s, because `init` is what writes a bridge and what consolidates an instruction file in the first place, and deciding what to preserve while it does is judgment this skill's corrections never carry. Hand it to the **skill** and never run the command yourself: rebuilding a projection can relocate skills a user wrote, and on the Windows case the naive repair is to recreate the link, the operation that already failed on that machine. A repair naming the `/buddy-agent-harness:enhance-buddy-agent-harness` (pnpm install: `pnpm-buddy-agent-harness-enhance-buddy-agent-harness`) skill and not `init` is `enhance-buddy-agent-harness`'s: it offers guidance for `AGENTS.md`, which this skill never writes; hand it to that skill. A repair naming `init` in **neither** form and not `enhance-buddy-agent-harness` — a `git` invocation, a reconciliation by hand, an MCP finding with no section in `classes.md` — **needs your decision**: no skill owns it, and someone must judge it. Give it that outcome rather than inferring an owner.
+- **Findings that are not yours.** Report each one and pass on the repair `doctor` states for it, unchanged. **Who to hand it to is read off that repair, and the question is whether it names `init`, or else `enhance`.** Some name the `/buddy-agent-harness:init-buddy-agent-harness` (pnpm install: `pnpm-buddy-agent-harness-init-buddy-agent-harness`) skill and some name a `buddy-agent-harness init` command line; both mean the same thing — the finding is `init`'s, because `init` is what writes a bridge and what consolidates an instruction file in the first place, and deciding what to preserve while it does is judgment this skill's corrections never carry. Hand it to the **skill** and never run the command yourself: rebuilding a projection can relocate skills a user wrote, and on the Windows case the naive repair is to recreate the link, the operation that already failed on that machine. A repair naming the `/buddy-agent-harness:enhance` (pnpm install: `pnpm-buddy-agent-harness-enhance`) skill and not `init` is `enhance`'s: it offers guidance for `AGENTS.md`, which this skill never writes; hand it to that skill. A repair naming `init` in **neither** form and not `enhance` — a `git` invocation, a reconciliation by hand, an MCP finding with no section in `classes.md` — **needs your decision**: no skill owns it, and someone must judge it. Give it that outcome rather than inferring an owner.
 - **A step in the user's home directory.** A `global-instructions-missing`, `global-instructions-unbridged`, `global-instructions-overridden`, or `global-instructions-emptied` finding is about a harness's user-scope file not loading `~/.agents/AGENTS.md`. Its repair is the exact line or symlink to add there, or the empty variable to unset, and it is the user's to make: give it the outcome **for you to do outside the repo**, with the step word for word, and write nothing outside the repository yourself, approved or not. It is not a "needs your decision" finding: the step is settled, only its place is out of reach.
 
 ## 3. Draw the line at material content
@@ -70,7 +70,7 @@ Report every run, whichever way it went. One row per finding `doctor` reported, 
 - **still open** — the correction was written and the re-run still reports it;
 - **reported as material** — correcting it would assert what the repository means;
 - **handed to `init-buddy-agent-harness`** — its repair names `init`;
-- **handed to `enhance-buddy-agent-harness`** — its repair names `enhance-buddy-agent-harness` and not `init`;
+- **handed to `enhance`** — its repair names `enhance` and not `init`;
 - **needs your decision** — no skill owns it, and someone must judge it;
 - **for you to do outside the repo** — a step in the user's home directory, given word for word.
 

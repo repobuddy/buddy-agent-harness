@@ -3,21 +3,21 @@ title: Skills
 description: The skills the plugin ships, init, doctor, enhance and repair, the reference skill it brings with it, and when to run the CLI instead.
 ---
 
-The plugin ships four skills. [`init`](/skills/init-buddy-agent-harness/) gives a repository one canonical agent configuration and bridges the harnesses that cannot read it. [`doctor`](/skills/doctor-buddy-agent-harness/) reports whether those bridges still resolve. [`enhance-buddy-agent-harness`](/skills/enhance-buddy-agent-harness/) offers guidance the repository does not have yet. [`repair-buddy-agent-harness`](/skills/repair-buddy-agent-harness/) corrects configuration that is present and wrong.
+The plugin ships four skills. [`init`](/skills/init-buddy-agent-harness/) gives a repository one canonical agent configuration and bridges the harnesses that cannot read it. [`doctor`](/skills/doctor-buddy-agent-harness/) reports whether those bridges still resolve. [`enhance`](/skills/enhance/) offers guidance the repository does not have yet. [`repair`](/skills/repair/) corrects configuration that is present and wrong.
 
 The [`reference` skill](https://github.com/cyber-uni/cyber-agentkit/tree/main/packages/cyber-agentkit/skills/reference), which writes, updates, and finds references, and through which other skills load theirs, ships in the `cyber-agentkit` plugin instead.
 
-`init` and `doctor` each have a CLI command behind them. The skill is the half that needs judgment about files you wrote; the command is the mechanical half. `enhance-buddy-agent-harness` has no command, because there is no mechanical half to hand off.
+`init` and `doctor` each have a CLI command behind them. The skill is the half that needs judgment about files you wrote; the command is the mechanical half. `enhance` has no command, because there is no mechanical half to hand off.
 
 | Reach for | When |
 | --- | --- |
 | the [`init-buddy-agent-harness` skill](/skills/init-buddy-agent-harness/) | adopting or migrating a repository, where existing `CLAUDE.md`, rules, and skill directories have to be sorted first |
 | the [`doctor-buddy-agent-harness` skill](/skills/doctor-buddy-agent-harness/) | a harness loads no project skills, most often after a clone on Windows |
-| the [`enhance-buddy-agent-harness` skill](/skills/enhance-buddy-agent-harness/) | the repository has an `AGENTS.md` and you want the sections it is missing offered to you |
-| the [`repair-buddy-agent-harness` skill](/skills/repair-buddy-agent-harness/) | the configuration is there but wrong — a retired harness name, a git-ignored bridge, an `AGENTS.local.md` nothing reads |
+| the [`enhance` skill](/skills/enhance/) | the repository has an `AGENTS.md` and you want the sections it is missing offered to you |
+| the [`repair` skill](/skills/repair/) | the configuration is there but wrong — a retired harness name, a git-ignored bridge, an `AGENTS.local.md` nothing reads |
 | the [CLI](/cli/) | the repository is already consolidated, or you want the report in a script |
 
-`init` consolidates what you already have; `enhance-buddy-agent-harness` proposes what you do not; `repair-buddy-agent-harness` corrects what is there and wrong. Keeping them apart is what lets `init` stay safe to run on any repository and carry no opinions.
+`init` consolidates what you already have; `enhance` proposes what you do not; `repair` corrects what is there and wrong. Keeping them apart is what lets `init` stay safe to run on any repository and carry no opinions.
 
 ## Install
 
@@ -35,8 +35,8 @@ Four you can run yourself:
 ```text
 /buddy-agent-harness:init-buddy-agent-harness
 /buddy-agent-harness:doctor-buddy-agent-harness
-/buddy-agent-harness:enhance-buddy-agent-harness
-/buddy-agent-harness:repair-buddy-agent-harness
+/buddy-agent-harness:enhance
+/buddy-agent-harness:repair
 ```
 
 To work with a reference, type `/cyber-agentkit:reference`, or ask in words, such as "where do I put my own copy of `plugin-design`?".

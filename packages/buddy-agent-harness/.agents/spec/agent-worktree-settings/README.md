@@ -13,7 +13,7 @@ is a trade-off only the owner can weigh.
 
 A `.claude/worktrees` exclusion in a tree-scanning tool config is the second cost above, so where one exists the offer
 is to remove it. Keeping agent worktrees out of
-the repository is guidance for `AGENTS.md`, the `enhance-buddy-agent-harness` skill's Agent worktrees addition, not a setting.
+the repository is guidance for `AGENTS.md`, the `enhance` skill's Agent worktrees addition, not a setting.
 
 The `init-buddy-agent-harness` skill offers each setting the repository lacks as its own item, explains the base
 trade-off before it asks, and writes only the lines the owner approves, in place. It offers nothing where Claude Code
@@ -24,10 +24,10 @@ is not in use, and nothing for a setting already covered.
 - N1 **Detecting the missing settings for `doctor`.** That is [worktree-diagnosis](../worktree-diagnosis/README.md).
 - N2 **The rest of the setup run.** Surveying, consolidating, bridging, and reporting are
   [init-buddy-agent-harness](../init-buddy-agent-harness/README.md)'s.
-- N3 **Offering the settings from another skill.** The `enhance-buddy-agent-harness` skill does not offer them
-  ([enhance](../enhance-buddy-agent-harness/README.md) N13).
+- N3 **Offering the settings from another skill.** The `enhance` skill does not offer them
+  ([enhance](../enhance/README.md) N13).
 - N4 **Moving the worktrees.** No setting moves Claude Code's place for them. Telling agents to create worktrees
-  outside the repository is [enhance](../enhance-buddy-agent-harness/README.md)'s Agent worktrees addition.
+  outside the repository is [enhance](../enhance/README.md)'s Agent worktrees addition.
 - N5 **Choosing the base for the owner.** Either value is the owner's answer.
 - N6 **A tool exclusion of the worktrees.** Inside an agent worktree it matches every file, so it is never offered.
 
@@ -106,7 +106,7 @@ None.
 - [init-buddy-agent-harness](../init-buddy-agent-harness/README.md): the skill that delivers these offers, and its
   report.
 - [worktree-diagnosis](../worktree-diagnosis/README.md): the `doctor` findings for the same faults.
-- [enhance](../enhance-buddy-agent-harness/README.md): the Agent worktrees addition, which keeps agents from creating worktrees inside the
+- [enhance](../enhance/README.md): the Agent worktrees addition, which keeps agents from creating worktrees inside the
   repository.
 - The shipped skill's `skills/init-buddy-agent-harness/references/agent-worktrees.md`: the setting lines, the
   tree-scanning tools, and how each line is judged covered.

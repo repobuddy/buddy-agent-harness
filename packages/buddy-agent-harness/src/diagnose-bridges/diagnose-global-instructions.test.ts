@@ -104,7 +104,7 @@ describe('diagnoseGlobalInstructions', () => {
 		})
 	})
 
-	// `enhance-buddy-agent-harness` reads the rows to say whether text handed over would load, before the file exists.
+	// `enhance` reads the rows to say whether text handed over would load, before the file exists.
 	it('reports the rows without findings where there is no global file to go unread', () => {
 		expect(diagnose(home(['.claude'], { global: false }))).toEqual({
 			globalInstructions: [{ harness: 'claude-code', path: '~/.claude/CLAUDE.md', kind: 'none', status: 'missing' }],

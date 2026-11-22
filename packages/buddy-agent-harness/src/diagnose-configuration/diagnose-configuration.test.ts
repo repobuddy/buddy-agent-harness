@@ -187,7 +187,7 @@ describe('diagnoseConfiguration', () => {
 	})
 
 	// Every fault here is present-and-wrong configuration a person wrote, so correcting one is a
-	// judgment call the `repair-buddy-agent-harness` skill offers rather than anything a shell can carry out. A caller
+	// judgment call the `repair` skill offers rather than anything a shell can carry out. A caller
 	// that runs each `command` it is handed must therefore run nothing at all for these.
 	//
 	// All four families are present at once on purpose: the claim is universal over the family, so
@@ -220,7 +220,7 @@ describe('diagnoseConfiguration', () => {
 		const [finding] = diagnose(root)
 
 		expect(finding?.repair.instruction).toBe(
-			'move AGENTS.local.md to CLAUDE.local.md, or consolidate it into AGENTS.md — `/buddy-agent-harness:repair-buddy-agent-harness` (pnpm install: `pnpm-buddy-agent-harness-repair-buddy-agent-harness`) offers the correction',
+			'move AGENTS.local.md to CLAUDE.local.md, or consolidate it into AGENTS.md — `/buddy-agent-harness:repair` (pnpm install: `pnpm-buddy-agent-harness-repair`) offers the correction',
 		)
 	})
 

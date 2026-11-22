@@ -84,7 +84,7 @@ record: .agents/buddy-agent-harness/mcp.projected.json
 | --- | --- |
 | `add` | the server is written into a target that did not carry it, creating the file if there was none |
 | `update` | the fields only the golden side changed are rewritten in place |
-| `edit` | the change is due, but this command will not make it byte-safely; the entry is listed for a person or the [`repair-buddy-agent-harness` skill](/skills/repair-buddy-agent-harness/) to apply. See [what it keeps](#what-it-keeps) |
+| `edit` | the change is due, but this command will not make it byte-safely; the entry is listed for a person or the [`repair` skill](/skills/repair/) to apply. See [what it keeps](#what-it-keeps) |
 | `skip` | the target moved, both sides moved, or no baseline can say which side moved, so nothing is written |
 | `refuse` | the target cannot hold this server as written, or the golden set holds a literal credential; `detail` names the field and why |
 
@@ -137,7 +137,7 @@ On `--write`, the command records every server that now agrees with the golden s
 
 ## Approval
 
-The command has no approval of its own — it writes whatever `--write` tells it to, unconditionally. The [`repair-buddy-agent-harness` skill](/skills/repair-buddy-agent-harness/) is what shows a dry run to a person and passes `--write` only once they approve it; see [what it owns](/skills/repair-buddy-agent-harness/#what-it-corrects).
+The command has no approval of its own — it writes whatever `--write` tells it to, unconditionally. The [`repair` skill](/skills/repair/) is what shows a dry run to a person and passes `--write` only once they approve it; see [what it owns](/skills/repair/#what-it-corrects).
 
 ## Non-goals
 
@@ -222,4 +222,4 @@ Values come back through the harness's [dialect](#dialects), so Cursor's `${env:
 
 Approval fails whole, writing nothing, when a `path` names no `import` row, when one field is approved from two harnesses with different values, or when a new server is approved without its `command` or `url`.
 
-On a write, each imported field is recorded in the [last-projected record](#the-last-projected-record) for the harness it came from. The other harnesses still carry the old value, and `doctor` then reports them as `mcp-diverged-golden` for `mcp project` to update. The [`repair-buddy-agent-harness` skill](/skills/repair-buddy-agent-harness/) offers each field on its own and passes `--accept` only for the ones you approve.
+On a write, each imported field is recorded in the [last-projected record](#the-last-projected-record) for the harness it came from. The other harnesses still carry the old value, and `doctor` then reports them as `mcp-diverged-golden` for `mcp project` to update. The [`repair` skill](/skills/repair/) offers each field on its own and passes `--accept` only for the ones you approve.
