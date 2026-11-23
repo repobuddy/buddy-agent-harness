@@ -434,4 +434,7 @@ None.
   harness loads the global instruction file; [`worktree-diagnosis`](../worktree-diagnosis/README.md) owns reporting
   unaccounted agent worktrees, and sends a worktree it finds inside the repository here; [`agent-worktree-settings`](../agent-worktree-settings/README.md) owns offering the
   settings that account for them; [`repair`](../repair/README.md) owns correcting what is present and wrong.
+- [`retro`](../retro/README.md): the sibling spec that owns running a retrospective (N14, K19).
+- Rationale for the Retrospectives addition: the research topic
+  [agent-self-improvement](../../../../../.research/agent-self-improvement/conclusion.md), verdict items 8 to 11.
 - [AGENTS.md](https://agents.md/): the open instruction format every addition is written into.
