@@ -110,6 +110,8 @@ A section from a retired wording in a file that is **not** the root `AGENTS.md` 
 
 Where an addition is **absent**, show its text **verbatim** — the whole thing, not a summary — say where it would go, and ask.
 
+Where an addition's reference has a `## The skill it names` section, check what it says before you offer, and where that skill is not installed for the harness in use, name the plugin to install with the text, as that section says.
+
 **Where it goes is part of the offer, and the addition decides it.** Read its `## Where it belongs` and lead with what that section recommends. An addition whose subject is the repository belongs in the repository's `AGENTS.md`; one whose subject is how the agent works belongs in the owner's own global instruction file, because it holds in every repository they open and a copy per repository is a copy per repository to keep in step. Delegation, list identifiers, session scope, references as links, agent worktrees, and retrospectives are all the second kind, and their references recommend the global file.
 
 The global file is `~/.agents/AGENTS.md`, the user-scope counterpart of the root `AGENTS.md`. No harness reads it by itself; a harness reads it only where a user-scope instruction file of its own loads it. **Say whether the harness in use does**, and do not judge that yourself — `doctor` owns the check:

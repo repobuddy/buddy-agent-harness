@@ -36,12 +36,21 @@ harness that does not exist yet.
 ```markdown
 ## Retrospectives
 
-When you finish a task for the user, check through the `retro` skill whether a retrospective is due, and when one is, do what that skill's setting says: say so, offer to start it, or nothing. Skip the check in a run with no user.
+When you finish a task for the user, check through the `retro` skill of the cyber-kaizen plugin whether a retrospective is due, and when one is, do what that skill's setting says: say so, offer to start it, or nothing. Skip the check in a run with no user.
 
 When you notice a lesson, such as a correction or a repeated mistake, leave it for a retrospective rather than write it into an instruction file or skill yourself, unless the user asks for that change.
 
-Where the `retro` skill is not available, say so rather than run a retrospective of your own.
+Where that skill is not available, say so rather than run a retrospective of your own.
 ```
+
+## The skill it names
+
+The text sends the agent to the `retro` skill of the cyber-kaizen plugin,
+<https://github.com/cyber-uni/cyber-kaizen>. This package does not ship it. Before you offer the
+text, check whether that skill is installed for the harness you are running in: it is when it is
+among the skills you can invoke. Where it is not, or you cannot tell, the offer names cyber-kaizen
+as the plugin to install with this text, and says that until it is installed the agent will only
+say the skill is not available. The text is offered unchanged either way.
 
 ## Where it belongs
 
@@ -63,8 +72,8 @@ text at the end of `~/.agents/AGENTS.md` on that yes, as step 5 of the skill say
 ## Do not edit it
 
 The wording is fixed. In particular, do not name another retrospective skill or command in place of
-`retro`: whether one is due, and what the agent does then, is that skill's setting, and this package
-ships it beside this addition. Offer it as written or not at all.
+cyber-kaizen's `retro`: whether one is due, and what the agent does then, is that skill's setting.
+Offer it as written or not at all.
 
 If the text is ever revised, the same change must do two things:
 
