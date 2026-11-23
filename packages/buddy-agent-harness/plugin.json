@@ -13,7 +13,6 @@
 	"extensions": {
 		"org.cyberuni.universal-plugin": {
 			"skills": "./skills/",
-			"dependencies": ["cyber-agentkit"],
 			"scripts": {
 				"skills/doctor-buddy-agent-harness/scripts/buddy-agent-harness.mjs": {
 					"forward": "buddy-agent-harness"
@@ -47,6 +46,9 @@
 				},
 				"copilot-cli": {}
 			}
+		},
+		"io.github.cyber-uni.plugin-manager": {
+			"dependencies": ["cyber-agentkit"]
 		}
 	}
 }
