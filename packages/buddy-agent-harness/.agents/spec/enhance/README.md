@@ -59,14 +59,14 @@ already loads from outside the repository is not offered again, because loading 
 - **K2 harness**: see [glossary](../glossary.md#harness).
 - **K3 harness in use**: the harness the skill is running in.
 - **K4 addition**: a named section of instruction text this skill can offer. Each addition ships with its current
-  text, what counts as its subject already being covered, where it belongs, and every wording it has retired. Five
-  ship today: Delegation, List identifiers, Session scope, References as links, and Agent worktrees. Each is judged, offered, and
+  text, what counts as its subject already being covered, where it belongs, and every wording it has retired. Six
+  ship today: Delegation, List identifiers, Session scope, References as links, Agent worktrees, and Retrospectives. Each is judged, offered, and
   reported on its own.
 - **K5 current text**: the text an addition offers now.
 - **K6 retired wording**: a text an addition used to offer, kept byte-identical after a revision replaced it.
 - **K7 destination**: the instruction file an addition's text belongs in, declared by the addition: the root
   `AGENTS.md` for a section about the repository, the global instruction file for one about how the agent works. All
-  five shipped additions are the second kind.
+  six shipped additions are the second kind.
 - **K8 global instruction file**: `~/.agents/AGENTS.md`, the user-scope counterpart of the root `AGENTS.md`. A harness
   reads it only where a user-scope instruction file of its own loads it.
 - **K9 global instructions**: the instructions the agent loads from outside the repository, other than the
@@ -94,6 +94,9 @@ already loads from outside the repository is not offered again, because loading 
   against a fixed set of tasks. A harness for one addition does not score another.
 - **K18 hand over**: give the owner a text or a step and the file it belongs in, without writing that file. A hand-over
   is an outcome, not a decline.
+- **K19 retrospective**: a run of the [`retro`](../retro/README.md) skill (N14). That skill decides whether a
+  retrospective is due, and what the agent does when one is: say so, offer to start it, or nothing. It decides from the
+  owner's setting and its own record of the last run.
 
 ## Actors and goals
 
