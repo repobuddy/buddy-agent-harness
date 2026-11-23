@@ -48,10 +48,10 @@ already loads from outside the repository is not offered again, because loading 
   harness that matches them.
 - **N10 Remembering earlier runs.** The skill keeps no record of what it offered or what was declined; the
   repository's current state is the whole input.
-- **N14 Running a retrospective.** Reading what happened in use, keeping a learnings inbox, challenging each
-  candidate lesson, proposing it in its cheapest durable form, keeping the decision record, and deciding when a
-  retrospective is due are the [`retro`](../retro/README.md) skill's, and so is scheduling a run outside a session.
-  The Retrospectives addition only tells the agent when to check and where to turn.
+- **N14 Running a retrospective.** Reading what happened in use, keeping a learnings inbox, challenging each candidate
+  lesson, proposing it in its cheapest durable form, keeping the decision record, and deciding when a retrospective is
+  due are the `retro` skill's, in the [cyber-kaizen](https://github.com/cyber-uni/cyber-kaizen) plugin, and so is
+  scheduling a run outside a session. The Retrospectives addition only tells the agent when to check and where to turn.
 
 ## Key terms
 
@@ -94,9 +94,9 @@ already loads from outside the repository is not offered again, because loading 
   against a fixed set of tasks. A harness for one addition does not score another.
 - **K18 hand over**: give the owner a text or a step and the file it belongs in, without writing that file. A hand-over
   is an outcome, not a decline.
-- **K19 retrospective**: a run of the [`retro`](../retro/README.md) skill (N14). That skill decides whether a
-  retrospective is due, and what the agent does when one is: say so, offer to start it, or nothing. It decides from the
-  owner's setting and its own record of the last run.
+- **K19 retrospective**: a run of the `retro` skill of the [cyber-kaizen](https://github.com/cyber-uni/cyber-kaizen)
+  plugin (N14). That skill decides whether a retrospective is due, and what the agent does when one is: say so, offer to
+  start it, or nothing. It decides from the owner's setting and its own record of the last run.
 
 ## Actors and goals
 
@@ -278,6 +278,8 @@ that revises an addition.
   withholds that one only. (UC1, X1)
 - **R23** A run in a repository from which a section approved on an earlier run has been deleted offers that addition
   again, exactly as a run that never offered it would. (UC1.8, X1)
+- **R92** An offer of Retrospectives where the cyber-kaizen `retro` skill is not installed for the harness in use
+  names that plugin as the one to install with it. (UC1, X1)
 
 ### Already current (UC2)
 
@@ -399,13 +401,12 @@ that revises an addition.
   sibling `<repo>.worktrees/` directory, branching from `HEAD` unless told otherwise; not to use a built-in worktree
   isolation that creates the worktree inside the repository; and to create a subagent's worktree that way before
   handing it the path. (UC6, E41)
-- **R91** The Retrospectives current text directs the agent, when it finishes a task for the user, to check through
-  the `retro` skill whether a retrospective is due and, when one is, to do what that skill's setting says: say so,
-  offer to start it, or nothing; to skip that check in a run with no user; to leave a lesson it notices for a
-  retrospective rather than write it into an instruction file or skill itself, unless the user asks for that change;
-  and, where the `retro` skill is not available, to say so rather than run a retrospective of its own. (UC6, E41)
-- **R92** No version of this package ships the Retrospectives addition without also shipping the `retro` skill its
-  current text names. (UC6, E41)
+- **R91** The Retrospectives current text directs the agent, when it finishes a task for the user, to check through the
+  `retro` skill of the cyber-kaizen plugin whether a retrospective is due and, when one is, to do what that skill's
+  setting says: say so, offer to start it, or nothing; to skip that check in a run with no user; to leave a lesson it
+  notices for a retrospective rather than write it into an instruction file or skill itself, unless the user asks for
+  that change; and, where the `retro` skill is not available, to say so rather than run a retrospective of its own.
+  (UC6, E41)
 - **R68** Each shipped addition's stale check reads that addition's own store of retired wordings. (UC6, E41)
 - **R69** A revision that replaces an addition's current text adds the outgoing wording to that addition's store,
   byte-identical to what it offered, in the same change. (UC6.2, E42, E44)
@@ -434,7 +435,8 @@ None.
   harness loads the global instruction file; [`worktree-diagnosis`](../worktree-diagnosis/README.md) owns reporting
   unaccounted agent worktrees, and sends a worktree it finds inside the repository here; [`agent-worktree-settings`](../agent-worktree-settings/README.md) owns offering the
   settings that account for them; [`repair`](../repair/README.md) owns correcting what is present and wrong.
-- [`retro`](../retro/README.md): the sibling spec that owns running a retrospective (N14, K19).
+- [cyber-kaizen](https://github.com/cyber-uni/cyber-kaizen): the plugin whose `retro` skill owns running a retrospective
+  (N14, K19).
 - Rationale for the Retrospectives addition: the research topic
   [agent-self-improvement](../../../../../.research/agent-self-improvement/conclusion.md), verdict items 8 to 11.
 - [AGENTS.md](https://agents.md/): the open instruction format every addition is written into.
