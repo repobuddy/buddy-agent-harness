@@ -1,5 +1,17 @@
 # buddy-agent-harness
 
+## 2.1.0
+
+### Minor Changes
+
+- 0a3a654: Skills now run the CLI through one forwarding script each, `scripts/buddy-agent-harness.mjs`, written by `universal-plugin plugin build`. Each runner line is `node <this skill's folder>/scripts/buddy-agent-harness.mjs <command>`, with no `npx` fallback beside it. In a checkout the forwarder runs the local build, so testing a skill runs your change. Elsewhere it runs `npx -y buddy-agent-harness@<version>`, the version the skill shipped with.
+  
+  The per-subcommand bundles (`scripts/doctor.mjs`, `init.mjs`, `mcp.mjs`, `sync.mjs`) are gone. They were about 425 KB each and shipped only through npm, so a git-sourced install never had them. `enhance` reaches `cyber-agentkit prose-update` through a pinned `scripts/cyber-agentkit.mjs` forwarder when the `prose-update` skill's own script cannot be reached.
+
+### Patch Changes
+
+- 80f4c9e: The plugin manifest lists its dependency on `cyber-agentkit` under `extensions["io.github.cyber-uni.plugin-manager"]`, the key both universal-plugin and cyber-agentkit read, instead of the `org.cyberuni.universal-plugin` fallback. The Claude Code manifest still declares the dependency. The skill forwarders are rebuilt with universal-plugin 0.24.0: in a checkout whose CLI build output is missing, such as a git-sourced install, a forwarder now runs the published package instead of a bin that cannot load.
+
 ## 2.0.0
 
 ### Major Changes
