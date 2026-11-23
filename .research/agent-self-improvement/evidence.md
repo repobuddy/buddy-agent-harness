@@ -1,6 +1,6 @@
-# Evidence: agent self-improvement without hooks
+# Evidence: agent self-improvement loops for a repository
 
-Claims are grouped by source angle (A1 harness features, A2 research methods, A3 practice). IDs keep their angle prefix.
+Claims are grouped by source angle (A1 harness features, A2 research methods, A3 practice, A4 claude-reflect code, B1 to B5 from the November 21 update). IDs keep their angle prefix.
 
 
 Angle A1 of the agent self-improvement topic. Date of all checks: 2026-11-10. Vendor pages were read through WebFetch (a small model summarizes the page), so quotes are as returned by that summary. Items taken only from search snippets are marked.
@@ -869,3 +869,283 @@ Repo checked: BayramAnnakov/claude-reflect (1,935 stars, pushed 2026-10-03, MIT)
 - Not reusable: logic lives in Claude-only prompts, reads only ~/.claude/projects, shells out to claude -p, no library or CLI, no reasons stored, no recurrence counting, no prune, skills as .claude/commands.
 - Cross-harness readers, recurrence counting, per-line reasons, and Agent Skills output would all be new code.
 - Adoption cost would exceed a rewrite. License is MIT, so borrowing prompts and heuristics is allowed.
+
+Angles B1 to B5 (2026-11-21 to 2026-11-22): B1 Matt Pocock's `/retro`, B2 repository-level loops in practice, B3 fallback scheduling, B4 follow-up on the B1 and B2 gaps (folded into the B1 and B2 entries it corrected), B5 SDD v1's doctrine loop. Read through `gh api` and WebFetch unless marked "snippet only".
+
+## B1-E01
+- claim_id: B1-E01
+- date: 2026-11-21
+- status: confirmed
+- confidence: high
+- source.label: mattpocock/skills, `skills/engineering/retro/SKILL.md` and `docs/engineering/retro.md` (main @ abeeaf9)
+- source.url: https://github.com/mattpocock/skills/blob/main/skills/engineering/retro/SKILL.md
+- source.type: code
+- notes: MIT. Stub in PR #889 (2026-08-16), first working version 2026-08-24, moved to `engineering` and shipped in the plugin 2026-09-24 (PR #1120). User-invoked only: `disable-model-invocation: true`, Codex `allow_implicit_invocation: false`. Docs: running it after every session "mostly produces rules nobody needed"; the author was "burned by auto-hooks".
+
+## B1-E02
+- claim_id: B1-E02
+- date: 2026-11-21
+- status: confirmed
+- confidence: high
+- source.label: `/retro` SKILL.md steps
+- source.url: https://github.com/mattpocock/skills/blob/main/skills/engineering/retro/SKILL.md
+- source.type: code
+- notes: Loads `writing-for-agents`, reads one session's logs (the named one, default the current one), sorts candidates into seven areas (navigation, automated checks, coding standards, global AGENTS.md, tool economy, no-ops, information access), each traced to a moment in the session, and presents them by severity. Proposes only; nothing changes until the user picks. No recurrence count, no cross-session memory ("not a memory system"), no dry run.
+
+## B1-E03
+- claim_id: B1-E03
+- date: 2026-11-21
+- status: confirmed
+- confidence: high
+- source.label: `/retro` placement rules; aihero.dev page
+- source.url: https://www.aihero.dev/skills-retro
+- source.type: code and author docs (page read through a summarizing fetch)
+- notes: AGENTS.md "should be used incredibly sparingly, usually only for navigation pointers". "Default to building the check over writing the rule." "A check can fail. A sentence in a Markdown file cannot." Judgement calls go to `CODING_STANDARDS.md`, read by the `code-review` skill, not loaded every turn. A missing guardrail is itself a finding. AGENTS.md should shrink over time. PR #1083 pushed mechanical findings to deterministic checks.
+
+## B1-E04
+- claim_id: B1-E04
+- date: 2026-11-22
+- status: confirmed
+- confidence: high
+- source.label: aihero.dev `/retro` page and v1.3 changelog (2026-10-05)
+- source.url: https://www.aihero.dev/skills-changelog-v13-implement-spec-pr-retro-and-glossary-md
+- source.type: author docs (summarizing fetch)
+- notes: Run it after a session that was harder than it should have been ("A smooth session has little to teach"), or "on a sample of sessions when you have spare time, or on a session where the agent did something odd". No fixed cadence. Do not automate: an automated retro "finds false positives, keeps fixing them". No worked examples or measured results. Last step of grill-with-docs → to-spec → to-tickets → implement → code-review → retro. The X post (snowflake date 2026-10-05) returned 402 and was not read.
+
+## B1-E05
+- claim_id: B1-E05
+- date: 2026-11-22
+- status: confirmed
+- confidence: high
+- source.label: mattpocock/skills PR #1363 (merged, opened 2026-10-31)
+- source.url: https://github.com/mattpocock/skills/pull/1363
+- source.type: code
+- notes: Experimental `in-progress/chief-of-staff` runs `retro` "on a sample of about one in five of its subagents' sessions", picking first those "where something went wrong", and "in place of retro's last step, decide yourself which candidates are worth pursuing, then pursue them". The PR's own note says findings now become changes without the user picking. Reverses the "do not automate" advice of B1-E04, for subagent sessions only. No results given.
+
+## B1-E06
+- claim_id: B1-E06
+- date: 2026-11-22
+- status: open (user reports, no maintainer reply)
+- confidence: medium
+- source.label: mattpocock/skills issues #1173, #1379, #1421, #1141, #1308
+- source.url: https://github.com/mattpocock/skills/issues/1173
+- source.type: issue threads (#1173 and #1379 read in full)
+- notes: #1173 (open): 15 of 17 retros across 12 sessions were followed by the user asking the agent to prove each candidate was needed; proposes a check before presenting, with zero survivors a complete retro; one comment adds an invented booking link that a live check disproved. #1379 (open, no comments): 37 changes from 7 retros never rechecked; Prettier added against long comments, yet `main` later had 371 comment lines over 120 characters; proposes a ledger with a success signal per change (66 rows: 41 worked, 10 partly, 2 failed, 3 not exercised, 10 not measured); a doc split from 3,728 to 971 words regrew to 1,940. Both self-reported. #1421: a retro missed a user interruption and a scope violation. #1141: subagent sessions not read. #1308 (closed): findings repeat because `.out-of-scope` is ignored. The docs concede it cannot audit earlier checks and may "invent generic advice".
+
+## B2-E01
+- claim_id: B2-E01
+- date: 2026-11-21
+- status: confirmed
+- confidence: high
+- source.label: EveryInc compound-engineering-plugin, `skills/ce-compound/SKILL.md`
+- source.url: https://github.com/EveryInc/compound-engineering-plugin
+- source.type: code
+- notes: Loop brainstorm → plan → work → compound; `ce-plan` reads saved learnings. `/ce-compound` stores a lesson "in its cheapest durable form": test or lint rule, `CODING_STANDARDS.md` condition, or a learning under `docs/solutions/`. Fires only when verified work "corrected a wrong belief"; "Do not auto-invoke it for work that went as first planned". At most one check and one learning per run. Touches an instruction file only interactively, with consent, for a discoverability line. `/lfg` runs it autonomously.
+
+## B2-E02
+- claim_id: B2-E02
+- date: 2026-11-22
+- status: confirmed
+- confidence: high
+- source.label: `/ce-retro` SKILL.md, `references/ledger.md`, `sessions-and-window.md`, `candidates-and-proof.md`, `scripts/retro-state.py`, plan doc
+- source.url: https://github.com/EveryInc/compound-engineering-plugin/pull/2060
+- source.type: code
+- notes: Landed 2026-11-11. Ledger is local, not tracked: `<main checkout>/.context/compound-engineering/ce-retro/`, shared across worktrees; offers to gitignore it; `retro-state.py` is the only writer. `decisions.jsonl` append-only with `target, kind, state, signal, reason, session_ids, harness, date`; `state` one of accepted, routed, routed-skipped, approved-not-applied, rejected; `signal` ("what a later run should see if it worked") required for accepted and routed, `reason` for the rest; paraphrase only. `runs.jsonl` keeps per-harness cutoffs. Plan: "Local ledger, not commit trailers" because squash merges drop trailers. Each run first grades earlier accepted changes against sessions since and the current tree; a failed one becomes a revert or replace candidate. Drops a candidate matching an earlier rejection unless cost evidence is newer; raises the bar for a kind after repeated rejections. Session discovery covers Claude Code, Codex, Cursor, Pi; unknown formats are reported "not recognized". About 5 proposals per run; "Proposing nothing is a complete retro". With no user: writes `candidates.md`, "Apply nothing and record nothing". Scheduled mode is out of scope "after the attended flow is proven". Cites no outside retro skill, by the requester's directive; the repo knows Pocock's other skills, so independence from `/retro` is partial.
+
+## B2-E03
+- claim_id: B2-E03
+- date: 2026-11-22
+- status: confirmed
+- confidence: high
+- source.label: `/ce-compound refresh` references
+- source.url: https://github.com/EveryInc/compound-engineering-plugin
+- source.type: code
+- notes: No ledger; uses doc frontmatter (`status: stale`, `stale_reason`, `stale_date`). Outcomes Keep, Update, Consolidate, Replace, Delete. "Age alone is not staleness." "Unverifiable is not false." Delete only when every claim is recoverable from a named in-repo artifact; "git history is the archive". A rule a check now covers is cut. `mode:non-interactive` exists for schedules; splits are recommend-only there.
+
+## B2-E04
+- claim_id: B2-E04
+- date: 2026-11-21
+- status: confirmed
+- confidence: high
+- source.label: UiPath/uipath-typescript, `claude-docs-update.yml` and `enhance-claude-docs` skill
+- source.url: https://github.com/UiPath/uipath-typescript
+- source.type: code
+- notes: Weekly cron runs `anthropics/claude-code-action@v1` with `/enhance-claude-docs`. Reads review threads of PRs merged in the last 7 days; keeps resolved or acted-on threads, drops bot and style-only ones; asks per candidate whether the feedback was valid, already documented, generalizable; merges repeats across PRs; writes CLAUDE.md, AGENTS.md, `agent_docs/`; one labelled PR, provenance in the PR body only. When a PR is already open, later runs push to its branch. No step shrinks or deletes.
+
+## B2-E05
+- claim_id: B2-E05
+- date: 2026-11-22
+- status: confirmed (counts); cause of the stall inferred
+- confidence: high on counts, low on cause
+- source.label: UiPath `claude-docs-update` PRs and workflow runs
+- source.url: https://github.com/UiPath/uipath-typescript/pull/828
+- source.type: repository data
+- notes: 26 PRs from 2026-04-07 to 2026-10-19: 21 merged, 4 closed, 1 open. The closures were process closures (bot closed to run a review step, re-raised and merged within 0 to 7 days; one human v2 superseded), not content rejections. All 30 listed runs (2026-04-27 to 2026-11-16) succeeded; the workflow is active. #828 has been open and mergeable since 2026-10-19 with no human review, absorbing the runs of 10-26, 11-02, 11-09, 11-16. Earlier merge gaps were 0 to 23 days. Median PR adds 4 to 10 lines across 2 files. `agent_docs/conventions.md` grew 1,481 to 5,394 words and `rules.md` 1,859 to 4,792 between 2026-04-01 and 2026-11-22; growth not proven caused by the loop.
+
+## B2-E06
+- claim_id: B2-E06
+- date: 2026-11-21
+- status: confirmed
+- confidence: high
+- source.label: Spatie, "How Claude reviews our docs every Monday"
+- source.url: https://spatie.be/index.php/blog/how-claude-reviews-our-docs-every-monday
+- source.type: builder write-up
+- notes: Product docs, not agent instructions, but the guards transfer: Claude may edit only the docs folder and cannot commit; a script opens a draft PR; uncertain items become checkboxes; a revert plus comment is a rejection the next run respects; the run fails on edits outside scope; commit and PR text is data to verify in source. No metrics.
+
+## B2-E07
+- claim_id: B2-E07
+- date: 2026-11-21
+- status: confirmed
+- confidence: medium
+- source.label: Cursor, Bugbot learning (2026-04-08)
+- source.url: https://cursor.com/blog/bugbot-learning
+- source.type: vendor blog
+- notes: Learns from downvotes, replies, and reviewer comments on missed bugs; candidate rules are tested on incoming PRs, promoted with evidence, disabled on persistent negative signal. Vendor figures: resolution 52% at launch to 78% across 50,310 PRs; 44,000+ learned rules. Gain not attributed to rules. Promotion is automatic; rules live in the vendor store.
+
+## B2-E08
+- claim_id: B2-E08
+- date: 2026-11-21
+- status: confirmed
+- confidence: high
+- source.label: CodeRabbit docs, Learnings
+- source.url: https://docs.coderabbit.ai/knowledge-base/learnings
+- source.type: official docs
+- notes: Learnings from `@coderabbitai` chat or imported files, in the vendor database; `approval_delay` 0 to 30 days (default 0) auto-approves unless an admin rejects, so the gate fails open. Dashboard shows a "Never Used" count. No results data.
+
+## B2-E09
+- claim_id: B2-E09
+- date: 2026-11-21
+- status: confirmed
+- confidence: high
+- source.label: anthropics/skills skill-creator
+- source.url: https://raw.githubusercontent.com/anthropics/skills/main/skills/skill-creator/SKILL.md
+- source.type: code
+- notes: Improve loop with human review in an eval viewer; description optimizer splits queries 60/40 train/held-out, 3 runs per query, up to 5 iterations, picks by held-out score. The only loop found with a held-out set. One skill, not repo-wide.
+
+## B2-E10
+- claim_id: B2-E10
+- date: 2026-11-21
+- status: unverified
+- confidence: low
+- source.label: Claude Code `/insights`; claudeissues.com 29940; secondary blogs
+- source.url: https://claudeissues.com/issue/29940
+- source.type: issue mirror and blogs, snippet only
+- notes: Reports on about 30 days of sessions with CLAUDE.md suggestions; reported to ignore existing CLAUDE.md, memory, and skills, so suggestions can duplicate or contradict them.
+
+## B2-E11
+- claim_id: B2-E11
+- date: 2026-11-21
+- status: confirmed (abstract)
+- confidence: medium
+- source.label: ETH Zürich, "Evaluating AGENTS.md" (arXiv 2602.11988, ICLR 2026)
+- source.url: https://arxiv.org/abs/2602.11988
+- source.type: research paper, snippet only
+- notes: Likely the AGENTS.md study already cited in A2. Generated context files gave no gain or a small loss; developer-written about +4%; all added over 20% cost; generated files helped only with other docs removed. Studies one-shot files, not evolved ones.
+
+## B2-E12
+- claim_id: B2-E12
+- date: 2026-11-21
+- status: confirmed (absence, by search)
+- confidence: medium
+- source.label: claude-code-action, Codex Action, Copilot instructions docs, gh-aw; `/init`-on-push gist
+- source.url: https://gist.github.com/satyaborg/144b79235787e1d2d79c286af94f67bf
+- source.type: official docs and community, snippet only
+- notes: No official recipe found for a loop that updates instructions from history. A community gist runs `/init` on every push with permissions skipped, regenerating the file with no gate: a counter-example.
+
+## B3-E01
+- claim_id: B3-E01
+- date: 2026-11-22
+- status: confirmed
+- confidence: high
+- source.label: Claude Code docs, scheduled tasks, desktop scheduled tasks, routines
+- source.url: https://code.claude.com/docs/en/scheduled-tasks
+- source.type: official docs
+- notes: `/loop` and `CronCreate`: open session only, expire after 7 days, no catch-up; `.claude/loop.md` holds a default prompt only. Desktop tasks: app open and machine awake, one catch-up run on wake, defined in user-local `~/.claude/scheduled-tasks/`. Cloud tasks (research preview, paid plan, 1h minimum): fresh clone, no local transcripts; no repo-declared form found (page read in part).
+
+## B3-E02
+- claim_id: B3-E02
+- date: 2026-11-22
+- status: confirmed
+- confidence: medium
+- source.label: Codex automations; Cursor Automations; gh-aw schedule syntax
+- source.url: https://learn.chatgpt.com/docs/automations?surface=app
+- source.type: official docs (Codex via summary; Cursor and gh-aw snippet only)
+- notes: Codex automations need the app running and the machine on for local tasks; cloud tasks have no local folder. Cursor Automations are cloud agents, billed per use. gh-aw compiles Markdown workflows to Actions with fuzzy `schedule: daily` (draft spec), so repo-declared. No repo-declared schedule found for Codex or Cursor; no built-in scheduler found for Copilot CLI or Gemini CLI.
+
+## B3-E03
+- claim_id: B3-E03
+- date: 2026-11-22
+- status: confirmed
+- confidence: high
+- source.label: GitHub Actions `schedule` event; claude-code-action docs
+- source.url: https://code.claude.com/docs/en/github-actions
+- source.type: official docs
+- notes: Default branch only; runs can be delayed or dropped; public repos disable scheduled workflows after 60 days without activity. claude-code-action supports cron with `prompt:`, needs an API key or OAuth token secret, costs minutes plus tokens. CI sees repo and PR data only, never local transcripts.
+
+## B3-E04
+- claim_id: B3-E04
+- date: 2026-11-22
+- status: confirmed
+- confidence: high
+- source.label: Claude Code headless docs; Copilot CLI programmatic reference; git-maintenance
+- source.url: https://code.claude.com/docs/en/headless
+- source.type: official docs (Copilot snippet only)
+- notes: `claude -p` denies calls that need approval unless allowed; `--permission-prompts none` for scheduled jobs; `--max-budget-usd` caps cost; `--bare` needs an API key. `copilot -p` needs `--allow-all-tools` and a token variable. `git maintenance start` installs cron, systemd, launchd, or schtasks entries portably, each firing only when the interval since `lastRun` has passed; Windows tasks need a password to run logged out.
+
+## B3-E05
+- claim_id: B3-E05
+- date: 2026-11-22
+- status: confirmed
+- confidence: high
+- source.label: oh-my-zsh settings; Homebrew manpage; update-notifier README
+- source.url: https://github.com/ohmyzsh/ohmyzsh/wiki/Settings
+- source.type: official docs
+- notes: Due-check precedents. oh-my-zsh `mode` `disabled|auto|reminder|prompt` (default prompt), `frequency` in days (default 13). Homebrew `HOMEBREW_AUTO_UPDATE_SECS` (default 86400), `HOMEBREW_NO_AUTO_UPDATE`, piggybacks on commands the user runs. update-notifier `updateCheckInterval` (default 1 day), state in user-local configstore, env opt-out, skipped in CI. No agent-skill precedent for "if overdue, offer" found.
+
+## B3-E06
+- claim_id: B3-E06
+- date: 2026-11-22
+- status: open
+- confidence: low
+- source.label: Vercel AGENTS.md vs skills evals; arXiv 2605.10039
+- source.url: https://vercel.com/blog/agents-md-outperforms-skills-in-our-agent-evals
+- source.type: vendor blog and preprint, snippet only
+- notes: Always-loaded AGENTS.md text was followed more reliably than skills in Vercel's evals (100% vs 79% vs 53%). A preprint over 1,650 Claude Code sessions finds compliance with a trivial instruction falls as a session goes on, so a due-check belongs at session start or the end of a workflow. No measurement found of how reliably an agent runs "check if due, then offer".
+
+## B5-E01
+- claim_id: B5-E01
+- date: 2026-11-22
+- status: confirmed
+- confidence: high
+- source.label: cyber-sdd 0.7.3, `skills/doctrine-loop/SKILL.md` and `agents/sdd-scanner.md`
+- source.url: https://github.com/cyberuni/cyber-sdd
+- source.type: code (the user's own system, read from the installed plugin)
+- notes: The outer loop of SDD v1, run by the `sdd-scanner` delegate beside the mission loop. Fires at lifecycle granularity, never per gate, on six triggers: Ship (mission implemented), Kill (deprecated), a milestone retro the human holds, a recurring pattern (same correction `cause` across missions), drift or staleness (a now-false convention or contradicting governances, drafting a PRUNE), and token waste (a flagged-waste correction, or session cost over a configurable bound). Event-driven by the project's own lifecycle, not by time or hooks.
+
+## B5-E02
+- claim_id: B5-E02
+- date: 2026-11-22
+- status: confirmed
+- confidence: high
+- source.label: doctrine-loop inputs, ledger, ratification
+- source.url: https://github.com/cyberuni/cyber-sdd
+- source.type: code
+- notes: Primary input is the mission's committed combat log (JSONL), which carries categorical corrections only, so the loop works after merge and on another machine; raw transcripts are optional enrichment, needed only for numeric token-waste depth. Drafts land as append-only, unratified `strategy` lines in a git-tracked project `ledger/`, one shard per Scanner session. Recurrence is a `cause` count kept in the ledger mission over mission, not a re-scan of raw logs. Detect-and-draft is the Scanner's; keep-or-cut is the human Council's. The gateway shows the count of pending strategy when the Council returns; ratified strategy re-enters as a new change request.
+
+## B5-E03
+- claim_id: B5-E03
+- date: 2026-11-22
+- status: confirmed
+- confidence: high
+- source.label: doctrine-loop guards
+- source.url: https://github.com/cyberuni/cyber-sdd
+- source.type: code
+- notes: Validate before drafting: each candidate is a hypothesis checked against current code; one already resolved is cut and recorded as a `disposition: resolved` tombstone so it is not re-raised. Idempotent Ship and Kill: a mission already distilled (`distills` field, parsed as JSON, not grepped) gets no second draft. Rule-level recommendations (adopt or drop a rule, set a threshold) need evidence produced or reviewed by a party other than the proposer, or an ablation against a fresh adversarial case. Reviving a dropped dimension needs an ablation showing it can be lost. Open findings become tracked issues after deduping against open and closed issues; filing an issue is not ratification and starts no mission.
+
+### Contradictions (B)
+
+- `/retro`, `/ce-compound`, and the SDD doctrine loop route lessons away from AGENTS.md (checks first, reviewer-only standards, governance changes through review); UiPath's loop writes them into CLAUDE.md, AGENTS.md, and `agent_docs/`, which tripled in words. B2-E11 favours the first.
+- Pocock says do not automate `/retro` (B1-E04), then merged automatic retros with self-applied candidates for one in five subagent sessions (B1-E05).
+- Bugbot promotes rules automatically and reports large gains; every repo-owned loop found keeps a human gate.
+- `/ce-retro` and the doctrine loop both keep a decision record but differ on where: local and untracked (transcript-derived, may hold private paraphrase) versus git-tracked (categorical, publish-safe fields only).
+- `/ce-retro` and the doctrine loop are not independent of the sources they resemble: `/ce-retro` postdates `/retro` and declines to cite it; the doctrine loop is the user's own design.
