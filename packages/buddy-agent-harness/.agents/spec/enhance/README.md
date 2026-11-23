@@ -48,6 +48,10 @@ already loads from outside the repository is not offered again, because loading 
   harness that matches them.
 - **N10 Remembering earlier runs.** The skill keeps no record of what it offered or what was declined; the
   repository's current state is the whole input.
+- **N14 Running a retrospective.** Reading what happened in use, keeping a learnings inbox, challenging each
+  candidate lesson, proposing it in its cheapest durable form, keeping the decision record, and deciding when a
+  retrospective is due are the [`retro`](../retro/README.md) skill's, and so is scheduling a run outside a session.
+  The Retrospectives addition only tells the agent when to check and where to turn.
 
 ## Key terms
 
