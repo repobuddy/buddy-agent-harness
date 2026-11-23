@@ -238,6 +238,8 @@ that revises an addition.
   pull request body, gets References as links offered. (UC1, E3)
 - **R86** An `AGENTS.md` whose only worktree guidance ignores `.claude/worktrees/`, in `.gitignore` or in a tool's
   config, gets Agent worktrees offered. (UC1, E3)
+- **R88** An `AGENTS.md` whose only guidance on retrospectives is a rule to write each lesson or correction straight
+  into an instruction file, or into a learnings file, gets Retrospectives offered. (UC1, E3)
 
 ### Offering an absent addition (UC1)
 
@@ -379,23 +381,31 @@ that revises an addition.
 
 ### Report (UC1 to UC4)
 
-- **R64** Every run, whichever way it went, ends in a report that names the files read, gives each of the five
-  additions one verdict, distinct per verdict, with the reason, names what was offered and the destination
-  recommended, and names each file written or says nothing was. (UC1, E1, E2)
+- **R90** Every run, whichever way it went, ends in a report that names the files read, gives each shipped addition
+  one verdict, distinct per verdict, with the reason, names what was offered and the destination recommended, and
+  names each file written or says nothing was. (UC1, E1, E2)
 - **R84** The report gives each hand-over as an outcome, not a decline. (UC1, E58)
 
 ### Shipping an addition (UC6)
 
 - **R66** No addition's current text names a model, vendor, or version, and a candidate whose text does is rejected
   with the model, vendor, or version named as the cause. (UC6.1, E40)
-- **R67** Each shipped addition states at least one shape of existing prose that counts as its subject covered; List
+- **R89** Each shipped addition states at least one shape of existing prose that counts as its subject covered; List
   identifiers also states a shape of list guidance that does not count, References as links names a
-  commit-message convention as a shape that does not count, and Agent worktrees names an ignore of
-  `.claude/worktrees/` as a shape that does not count. (UC6, E41)
+  commit-message convention as a shape that does not count, Agent worktrees names an ignore of
+  `.claude/worktrees/` as a shape that does not count, and Retrospectives names a rule to write lessons straight
+  into an instruction file as a shape that does not count. (UC6, E41)
 - **R87** The Agent worktrees current text directs the agent to create a git worktree outside the repository, in a
   sibling `<repo>.worktrees/` directory, branching from `HEAD` unless told otherwise; not to use a built-in worktree
   isolation that creates the worktree inside the repository; and to create a subagent's worktree that way before
   handing it the path. (UC6, E41)
+- **R91** The Retrospectives current text directs the agent, when it finishes a task for the user, to check through
+  the `retro` skill whether a retrospective is due and, when one is, to do what that skill's setting says: say so,
+  offer to start it, or nothing; to skip that check in a run with no user; to leave a lesson it notices for a
+  retrospective rather than write it into an instruction file or skill itself, unless the user asks for that change;
+  and, where the `retro` skill is not available, to say so rather than run a retrospective of its own. (UC6, E41)
+- **R92** No version of this package ships the Retrospectives addition without also shipping the `retro` skill its
+  current text names. (UC6, E41)
 - **R68** Each shipped addition's stale check reads that addition's own store of retired wordings. (UC6, E41)
 - **R69** A revision that replaces an addition's current text adds the outgoing wording to that addition's store,
   byte-identical to what it offered, in the same change. (UC6.2, E42, E44)
