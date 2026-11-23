@@ -30,6 +30,7 @@ where the behavior branches. Each spec stands alone, with its own IDs; an ID suc
 | [`init-buddy-agent-harness/`](./init-buddy-agent-harness/README.md) | The `init-buddy-agent-harness` skill consolidates a repository's agent configuration into the canonical form |
 | [`agent-worktree-settings/`](./agent-worktree-settings/README.md) | A repository that uses Claude Code accounts for its agent worktrees, one setting at a time, on the owner's word |
 | [`enhance/`](./enhance/README.md) | The `enhance` skill offers the vetted guidance a repository's `AGENTS.md` lacks, or carries in a retired form |
+| [`retro/`](./retro/README.md) | The `retro` skill turns what happened in a repository's agent sessions into owner-approved changes to its agent setup |
 
 ### Finding what is wrong (`doctor`)
 
