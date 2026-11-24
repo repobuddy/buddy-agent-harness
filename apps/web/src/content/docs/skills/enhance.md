@@ -295,14 +295,14 @@ A `## Retrospectives` section, on what the agent does with what it learns in use
 ```markdown wrap
 ## Retrospectives
 
-When you finish a task for the user, check through the `retro` skill of the cyber-kaizen plugin whether a retrospective is due, and when one is, do what that skill's setting says: say so, offer to start it, or nothing. Skip the check in a run with no user.
+When you finish a task for the user, check through the `retro` skill of the self-improve plugin whether a retrospective is due, and when one is, do what that skill's setting says: say so, offer to start it, or nothing. Skip the check in a run with no user.
 
 When you notice a lesson, such as a correction or a repeated mistake, leave it for a retrospective rather than write it into an instruction file or skill yourself, unless the user asks for that change.
 
 Where that skill is not available, say so rather than run a retrospective of your own.
 ```
 
-An agent told to learn from its mistakes tends to write each lesson into `AGENTS.md` the moment it notices one. That file is loaded into every session, so each unchallenged line costs every later turn, and a loop that wrote lessons straight into its instruction files was found to triple them in seven months. The lessons that help are the ones learned from outcomes, challenged against the current code, and put in their cheapest durable form, often a check rather than a line of instruction. That is the work of the `retro` skill in the [cyber-kaizen](https://github.com/cyber-uni/cyber-kaizen) plugin, which this package does not ship. Where that skill is not installed for the harness you are using, the offer names cyber-kaizen as the plugin to install with the section. This section only tells the agent when to check whether one is due and where to turn, and keeps it from writing a lesson in on its own.
+An agent told to learn from its mistakes tends to write each lesson into `AGENTS.md` the moment it notices one. That file is loaded into every session, so each unchallenged line costs every later turn, and a loop that wrote lessons straight into its instruction files was found to triple them in seven months. The lessons that help are the ones learned from outcomes, challenged against the current code, and put in their cheapest durable form, often a check rather than a line of instruction. That is the work of the `retro` skill in the [self-improve](https://github.com/cyber-uni/self-improve) plugin, which this package does not ship. Where that skill is not installed for the harness you are using, the offer names self-improve as the plugin to install with the section. This section only tells the agent when to check whether one is due and where to turn, and keeps it from writing a lesson in on its own.
 
 The check runs when a task for you ends, not on a timer, because no scheduler works the same in every harness. The `retro` skill decides from your setting and its record of the last run whether one is due, and whether the agent says so, offers to start it, or does nothing. A run with no user skips the check: there is nobody to answer.
 
