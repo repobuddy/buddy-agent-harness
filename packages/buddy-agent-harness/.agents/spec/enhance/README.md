@@ -48,6 +48,10 @@ already loads from outside the repository is not offered again, because loading 
   harness that matches them.
 - **N10 Remembering earlier runs.** The skill keeps no record of what it offered or what was declined; the
   repository's current state is the whole input.
+- **N14 Running a retrospective.** Reading what happened in use, keeping a learnings inbox, challenging each candidate
+  lesson, proposing it in its cheapest durable form, keeping the decision record, and deciding when a retrospective is
+  due are the `retro` skill's, in the [self-improve](https://github.com/cyber-uni/self-improve) plugin, and so is
+  scheduling a run outside a session. The Retrospectives addition only tells the agent when to check and where to turn.
 
 ## Key terms
 
@@ -55,14 +59,14 @@ already loads from outside the repository is not offered again, because loading 
 - **K2 harness**: see [glossary](../glossary.md#harness).
 - **K3 harness in use**: the harness the skill is running in.
 - **K4 addition**: a named section of instruction text this skill can offer. Each addition ships with its current
-  text, what counts as its subject already being covered, where it belongs, and every wording it has retired. Five
-  ship today: Delegation, List identifiers, Session scope, References as links, and Agent worktrees. Each is judged, offered, and
+  text, what counts as its subject already being covered, where it belongs, and every wording it has retired. Six
+  ship today: Delegation, List identifiers, Session scope, References as links, Agent worktrees, and Retrospectives. Each is judged, offered, and
   reported on its own.
 - **K5 current text**: the text an addition offers now.
 - **K6 retired wording**: a text an addition used to offer, kept byte-identical after a revision replaced it.
 - **K7 destination**: the instruction file an addition's text belongs in, declared by the addition: the root
   `AGENTS.md` for a section about the repository, the global instruction file for one about how the agent works. All
-  five shipped additions are the second kind.
+  six shipped additions are the second kind.
 - **K8 global instruction file**: `~/.agents/AGENTS.md`, the user-scope counterpart of the root `AGENTS.md`. A harness
   reads it only where a user-scope instruction file of its own loads it.
 - **K9 global instructions**: the instructions the agent loads from outside the repository, other than the
@@ -90,6 +94,9 @@ already loads from outside the repository is not offered again, because loading 
   against a fixed set of tasks. A harness for one addition does not score another.
 - **K18 hand over**: give the owner a text or a step and the file it belongs in, without writing that file. A hand-over
   is an outcome, not a decline.
+- **K19 retrospective**: a run of the `retro` skill of the [self-improve](https://github.com/cyber-uni/self-improve)
+  plugin (N14). That skill decides whether a retrospective is due, and what the agent does when one is: say so, offer to
+  start it, or nothing. It decides from the owner's setting and its own record of the last run.
 
 ## Actors and goals
 
@@ -231,6 +238,8 @@ that revises an addition.
   pull request body, gets References as links offered. (UC1, E3)
 - **R86** An `AGENTS.md` whose only worktree guidance ignores `.claude/worktrees/`, in `.gitignore` or in a tool's
   config, gets Agent worktrees offered. (UC1, E3)
+- **R88** An `AGENTS.md` whose only guidance on retrospectives is a rule to write each lesson or correction straight
+  into an instruction file, or into a learnings file, gets Retrospectives offered. (UC1, E3)
 
 ### Offering an absent addition (UC1)
 
@@ -269,6 +278,8 @@ that revises an addition.
   withholds that one only. (UC1, X1)
 - **R23** A run in a repository from which a section approved on an earlier run has been deleted offers that addition
   again, exactly as a run that never offered it would. (UC1.8, X1)
+- **R92** An offer of Retrospectives where the self-improve `retro` skill is not installed for the harness in use
+  names that plugin as the one to install with it. (UC1, X1)
 
 ### Already current (UC2)
 
@@ -372,23 +383,30 @@ that revises an addition.
 
 ### Report (UC1 to UC4)
 
-- **R64** Every run, whichever way it went, ends in a report that names the files read, gives each of the five
-  additions one verdict, distinct per verdict, with the reason, names what was offered and the destination
-  recommended, and names each file written or says nothing was. (UC1, E1, E2)
+- **R90** Every run, whichever way it went, ends in a report that names the files read, gives each shipped addition
+  one verdict, distinct per verdict, with the reason, names what was offered and the destination recommended, and
+  names each file written or says nothing was. (UC1, E1, E2)
 - **R84** The report gives each hand-over as an outcome, not a decline. (UC1, E58)
 
 ### Shipping an addition (UC6)
 
 - **R66** No addition's current text names a model, vendor, or version, and a candidate whose text does is rejected
   with the model, vendor, or version named as the cause. (UC6.1, E40)
-- **R67** Each shipped addition states at least one shape of existing prose that counts as its subject covered; List
+- **R89** Each shipped addition states at least one shape of existing prose that counts as its subject covered; List
   identifiers also states a shape of list guidance that does not count, References as links names a
-  commit-message convention as a shape that does not count, and Agent worktrees names an ignore of
-  `.claude/worktrees/` as a shape that does not count. (UC6, E41)
+  commit-message convention as a shape that does not count, Agent worktrees names an ignore of
+  `.claude/worktrees/` as a shape that does not count, and Retrospectives names a rule to write lessons straight
+  into an instruction file as a shape that does not count. (UC6, E41)
 - **R87** The Agent worktrees current text directs the agent to create a git worktree outside the repository, in a
   sibling `<repo>.worktrees/` directory, branching from `HEAD` unless told otherwise; not to use a built-in worktree
   isolation that creates the worktree inside the repository; and to create a subagent's worktree that way before
   handing it the path. (UC6, E41)
+- **R91** The Retrospectives current text directs the agent, when it finishes a task for the user, to check through the
+  `retro` skill of the self-improve plugin whether a retrospective is due and, when one is, to do what that skill's
+  setting says: say so, offer to start it, or nothing; to skip that check in a run with no user; to leave a lesson it
+  notices for a retrospective rather than write it into an instruction file or skill itself, unless the user asks for
+  that change; and, where the `retro` skill is not available, to say so rather than run a retrospective of its own.
+  (UC6, E41)
 - **R68** Each shipped addition's stale check reads that addition's own store of retired wordings. (UC6, E41)
 - **R69** A revision that replaces an addition's current text adds the outgoing wording to that addition's store,
   byte-identical to what it offered, in the same change. (UC6.2, E42, E44)
@@ -417,4 +435,8 @@ None.
   harness loads the global instruction file; [`worktree-diagnosis`](../worktree-diagnosis/README.md) owns reporting
   unaccounted agent worktrees, and sends a worktree it finds inside the repository here; [`agent-worktree-settings`](../agent-worktree-settings/README.md) owns offering the
   settings that account for them; [`repair`](../repair/README.md) owns correcting what is present and wrong.
+- [self-improve](https://github.com/cyber-uni/self-improve): the plugin whose `retro` skill owns running a retrospective
+  (N14, K19).
+- Rationale for the Retrospectives addition: the research topic
+  [agent-self-improvement](../../../../../.research/agent-self-improvement/conclusion.md), verdict items 8 to 11.
 - [AGENTS.md](https://agents.md/): the open instruction format every addition is written into.

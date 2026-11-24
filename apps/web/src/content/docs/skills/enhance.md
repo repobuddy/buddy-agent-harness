@@ -39,7 +39,7 @@ Every run reports, whichever way it went: what it read, the verdict for each add
 
 ## Where an addition goes
 
-Each addition says where it belongs. One about the repository belongs in its `AGENTS.md`. Delegation, List identifiers, Session scope, References as links, and Agent worktrees all describe how the agent works, and that holds in every repository you open, so the skill recommends your global instruction file first, names this repository's `AGENTS.md` as the alternative, and asks which one to write.
+Each addition says where it belongs. One about the repository belongs in its `AGENTS.md`. Delegation, List identifiers, Session scope, References as links, Agent worktrees, and Retrospectives all describe how the agent works, and that holds in every repository you open, so the skill recommends your global instruction file first, names this repository's `AGENTS.md` as the alternative, and asks which one to write.
 
 | Destination | Reaches | Costs |
 | --- | --- | --- |
@@ -287,3 +287,25 @@ An ignore of `.claude/worktrees/`, in `.gitignore` or in a tool's config, does n
 `enhance` does not offer Claude Code's agent-worktree settings themselves. They are lines in `.gitignore`, a tool config, and `.claude/settings.json`, not guidance in `AGENTS.md`, and [`init`](/skills/init-buddy-agent-harness/#agent-worktree-offers) offers them. [Agent Worktrees](/agent-configuration/agent-worktrees/) is the home for the reasons.
 
 This section has no retired wording, so `references/agent-worktrees.history.md` is empty and an existing section is compared against the current text. No harness scores this wording, so where the skill cannot tell whose words a section is, it offers you two answers instead of three.
+
+### Retrospectives
+
+A `## Retrospectives` section, on what the agent does with what it learns in use:
+
+```markdown wrap
+## Retrospectives
+
+When you finish a task for the user, check through the `retro` skill of the self-improve plugin whether a retrospective is due, and when one is, do what that skill's setting says: say so, offer to start it, or nothing. Skip the check in a run with no user.
+
+When you notice a lesson, such as a correction or a repeated mistake, leave it for a retrospective rather than write it into an instruction file or skill yourself, unless the user asks for that change.
+
+Where that skill is not available, say so rather than run a retrospective of your own.
+```
+
+An agent told to learn from its mistakes tends to write each lesson into `AGENTS.md` the moment it notices one. That file is loaded into every session, so each unchallenged line costs every later turn, and a loop that wrote lessons straight into its instruction files was found to triple them in seven months. The lessons that help are the ones learned from outcomes, challenged against the current code, and put in their cheapest durable form, often a check rather than a line of instruction. That is the work of the `retro` skill in the [self-improve](https://github.com/cyber-uni/self-improve) plugin, which this package does not ship. Where that skill is not installed for the harness you are using, the offer names self-improve as the plugin to install with the section. This section only tells the agent when to check whether one is due and where to turn, and keeps it from writing a lesson in on its own.
+
+The check runs when a task for you ends, not on a timer, because no scheduler works the same in every harness. The `retro` skill decides from your setting and its record of the last run whether one is due, and whether the agent says so, offers to start it, or does nothing. A run with no user skips the check: there is nobody to answer.
+
+A rule to write each lesson or correction straight into an instruction file, or into a learnings file, does not count as covering this subject: it is the loop this section replaces.
+
+This section has no retired wording, so `references/retrospectives.history.md` is empty and an existing section is compared against the current text. No harness scores this wording, so where the skill cannot tell whose words a section is, it offers you two answers instead of three.
